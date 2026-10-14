@@ -101,10 +101,12 @@ import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
@@ -2231,6 +2233,17 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ReleaseSavepointStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        // names constraints, not tables
         return null;
     }
 

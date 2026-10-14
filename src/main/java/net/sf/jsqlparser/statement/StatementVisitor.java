@@ -164,6 +164,22 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+    default <S> T visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(SetTransactionStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(SetConstraintsStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(SetConstraintsStatement statement) {
+        visit(statement, null);
+    }
+
     <S> T visit(Commit commit, S context);
 
     default void visit(Commit commit) {

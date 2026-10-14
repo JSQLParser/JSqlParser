@@ -2809,7 +2809,7 @@ Transaction statements
 ======================
 
 ``START TRANSACTION`` produces a ``StartTransaction`` with an ordered list of typed
-transaction modes. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
+``TransactionMode`` values. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
 ``[NOT] DEFERRABLE`` are supported, as is MySQL ``WITH CONSISTENT SNAPSHOT``.
 PostgreSQL accepts mode lists with or without commas; output uses commas.
 The explicit MySQL dialect rejects a transaction containing both ``READ ONLY`` and
@@ -2822,7 +2822,7 @@ Choose the dialect explicitly to parse ``BEGIN`` as a transaction command:
     StartTransaction transaction = (StartTransaction) CCJSqlParserUtil.parse(
         "BEGIN ISOLATION LEVEL SERIALIZABLE READ ONLY",
         parser -> parser.withDialect(Dialect.POSTGRESQL));
-    transaction.getModes().set(1, StartTransaction.Mode.READ_WRITE);
+    transaction.getModes().set(1, TransactionMode.READ_WRITE);
     // BEGIN ISOLATION LEVEL SERIALIZABLE, READ WRITE
     String sql = transaction.toString();
 
@@ -2831,18 +2831,62 @@ MySQL and PostgreSQL dialects distinguish ``BEGIN`` transactions from
 ``BEGIN SELECT ...; END`` blocks by the following tokens. Oracle blocks and opaque
 routine bodies retain their existing handling.
 
-``Commit`` and ``RollbackStatement`` expose optional ``TransactionKeyword``
-(``WORK`` or PostgreSQL ``TRANSACTION``) and ``TransactionChain`` (``CHAIN`` or
-``NO_CHAIN``). A null chain preserves the server's default behavior. The existing
+``Commit`` and ``RollbackStatement`` share ``TransactionCompletionStatement``, which
+exposes the optional ``TransactionKeyword`` (``WORK`` or PostgreSQL ``TRANSACTION``),
+``TransactionChain`` (``CHAIN`` or ``NO_CHAIN``) and MySQL ``TransactionRelease``
+(``RELEASE`` or ``NO_RELEASE``). Null fields preserve the server's default behavior;
+``AND CHAIN`` cannot be combined with ``RELEASE``. The PostgreSQL spellings ``END`` and
+``ABORT`` produce a ``Commit`` and a ``RollbackStatement`` whose ``getCommand()`` is
+``END`` or ``ABORT``, so consumers handle one model per completion:
+
+.. code-block:: java
+
+    Commit end = (Commit) CCJSqlParserUtil.parse("END WORK AND CHAIN",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    // END, WORK, CHAIN
+    String sql = end.getCommand() + ", " + end.getKeyword() + ", " + end.getChain();
+
+``END`` is a statement only with the PostgreSQL dialect, at the start of a statement and
+outside ``BEGIN ... END`` blocks; ``ABORT`` is also read without a dialect. The existing
 rollback work/savepoint/force accessors remain available. ``RELEASE [SAVEPOINT]``
 produces ``ReleaseSavepointStatement``; the MySQL dialect requires ``SAVEPOINT``.
-Savepoint names retain identifier quoting. These statements are traversed by
-statement visitors, deparsers and transaction feature analysis.
+Savepoint names retain identifier quoting.
 
-The validator checks the new statement and mode capabilities. PostgreSQL
-``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
-This support does not include MySQL transaction completion ``[NO] RELEASE``,
-PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED``, or XA commands.
+``SET [scope] TRANSACTION``, PostgreSQL ``SET [scope] SESSION CHARACTERISTICS AS
+TRANSACTION`` and ``SET [scope] TRANSACTION SNAPSHOT 'id'`` produce a
+``SetTransactionStatement``. It reuses ``TransactionMode`` for the characteristics and
+the ``SetScope`` of ``SetStatement`` for the scope keyword written after ``SET``;
+``isSessionCharacteristics()`` marks the PostgreSQL form and ``getSnapshotId()`` returns
+the snapshot as a ``StringValue``. Each dialect accepts the scopes of its server: MySQL
+``GLOBAL``, ``SESSION``, ``LOCAL``, ``PERSIST`` and ``PERSIST_ONLY``, MariaDB ``GLOBAL``,
+``SESSION`` and ``LOCAL``, and PostgreSQL ``SESSION`` and ``LOCAL``, also before
+``SESSION CHARACTERISTICS`` and ``SNAPSHOT``. The MySQL dialect requires commas and
+accepts one isolation level and one access mode. Variable assignments such as
+``SET transaction_isolation = 'READ-COMMITTED'`` remain ``SetStatement``, whose
+``getScope()`` now types the ``getEffectParameter()`` keyword.
+
+``SET CONSTRAINTS {ALL | name [, ...]} {DEFERRED | IMMEDIATE}`` produces a
+``SetConstraintsStatement``. An empty ``getConstraintNames()`` list means ``ALL``, and
+``getTiming()`` reuses ``ConstraintAttributes.Initially``. The MySQL dialect rejects it.
+
+.. code-block:: java
+
+    SetTransactionStatement set = (SetTransactionStatement) CCJSqlParserUtil.parse(
+        "SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    set.setScope(SetScope.GLOBAL);
+    // SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY
+    String sql = set.toString();
+
+These statements are traversed by statement visitors, deparsers and transaction
+feature analysis. The validator checks ``rollback``, ``savepoint``, ``setTransaction``,
+``setConstraints`` and the clause features (``transactionChain``,
+``transactionRelease``, ``transactionEndAbort``, ``setTransactionGlobal``,
+``setTransactionPersist``, ``setTransactionSessionCharacteristics``,
+``setTransactionSnapshot``) against the MySQL and PostgreSQL capability sets.
+PostgreSQL ``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
+This support does not include PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED`` or
+XA commands.
 
 MySQL SHOW statements
 =====================

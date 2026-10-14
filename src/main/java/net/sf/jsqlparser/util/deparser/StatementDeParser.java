@@ -73,10 +73,12 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -464,8 +466,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(RollbackStatement rollbackStatement, S context) {
-        builder.append(rollbackStatement.toString());
-        return builder;
+        return rollbackStatement.appendTo(builder);
     }
 
     @Override
@@ -479,9 +480,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(SetTransactionStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetConstraintsStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(Commit commit, S context) {
-        builder.append(commit.toString());
-        return builder;
+        return commit.appendTo(builder);
     }
 
     @Override

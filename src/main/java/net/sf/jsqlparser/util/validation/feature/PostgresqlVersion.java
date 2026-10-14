@@ -211,7 +211,11 @@ public enum PostgresqlVersion implements Version {
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit, Feature.rollback, Feature.startTransaction,
                     Feature.savepoint, Feature.releaseSavepoint,
-                    Feature.transactionIsolationLevel, Feature.transactionDeferrable)), V11("11",
+                    Feature.transactionIsolationLevel, Feature.transactionDeferrable,
+                    Feature.transactionEndAbort, // https://www.postgresql.org/docs/current/sql-set-transaction.html
+                    Feature.setTransaction, Feature.setTransactionSessionCharacteristics,
+                    Feature.setTransactionSnapshot, // https://www.postgresql.org/docs/current/sql-set-constraints.html
+                    Feature.setConstraints)), V11("11",
                             V10.copy().getFeatures()), V12("12",
                                     V11.copy()
                                             .add(Feature.createAccessMethodTable,

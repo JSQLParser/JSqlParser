@@ -176,6 +176,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isPostgreSqlMaintenanceAhead();
             case K_UNLOCK:
                 return isUnlockTablesAhead() || isBackupLockAhead();
+            case K_END:
+                return isEndTransactionAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -183,7 +185,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return "NOTIFY".equalsIgnoreCase(next.image)
                     || "REASSIGN".equalsIgnoreCase(next.image)
                     || "REVOKE".equalsIgnoreCase(next.image)
-                    || "RELEASE".equalsIgnoreCase(next.image);
+                    || "RELEASE".equalsIgnoreCase(next.image)
+                    || isAbortTransactionAhead();
         }
     }
 
@@ -3352,10 +3355,180 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isTransactionModeAhead() {
-        return isKeywordAhead("ISOLATION") || getToken(1).kind == K_READ
-                || getToken(1).kind == K_DEFERRABLE
-                || getToken(1).kind == K_NOT && getToken(2).kind == K_DEFERRABLE
-                || getToken(1).kind == K_WITH && "CONSISTENT".equalsIgnoreCase(getToken(2).image);
+        return isTransactionModeAt(1);
+    }
+
+    private boolean isTransactionModeAt(int offset) {
+        Token token = getToken(offset);
+        return token.kind == S_IDENTIFIER && "ISOLATION".equalsIgnoreCase(token.image)
+                || token.kind == K_READ || token.kind == K_DEFERRABLE
+                || token.kind == K_NOT && getToken(offset + 1).kind == K_DEFERRABLE
+                || token.kind == K_WITH && "CONSISTENT".equalsIgnoreCase(getToken(offset + 1).image);
+    }
+
+    /**
+     * Whether SET starts transaction characteristics rather than assigning a variable such as
+     * transaction_isolation: [scope] TRANSACTION followed by a mode or SNAPSHOT 'id', or [scope]
+     * SESSION CHARACTERISTICS AS TRANSACTION. requireSetTransactionSyntax() checks the scope.
+     */
+    private boolean isSetTransactionAhead() {
+        if (getToken(1).kind != K_SET) {
+            return false;
+        }
+        if (isSessionCharacteristicsAt(2)) {
+            return true;
+        }
+        int offset = isSetTransactionScopeAt(2) ? 3 : 2;
+        return offset == 3 && isSessionCharacteristicsAt(3)
+                || isWordAt(offset, "TRANSACTION") && (isTransactionModeAt(offset + 1)
+                        || isWordAt(offset + 1, "SNAPSHOT") && getToken(offset + 2).kind == S_CHAR_LITERAL);
+    }
+
+    /** Whether a SET scope keyword of MySQL or PostgreSQL stands at {@code offset}. */
+    private boolean isSetTransactionScopeAt(int offset) {
+        int kind = getToken(offset).kind;
+        return kind == K_GLOBAL || kind == K_SESSION || kind == K_LOCAL
+                || isWordAt(offset, "PERSIST") || isWordAt(offset, "PERSIST_ONLY");
+    }
+
+    /** Whether PostgreSQL's SESSION CHARACTERISTICS AS TRANSACTION starts at {@code offset}. */
+    private boolean isSessionCharacteristicsAt(int offset) {
+        return getToken(offset).kind == K_SESSION && isWordAt(offset + 1, "CHARACTERISTICS")
+                && getToken(offset + 2).kind == K_AS && isWordAt(offset + 3, "TRANSACTION");
+    }
+
+    private boolean isWordAt(int offset, String word) {
+        Token token = getToken(offset);
+        return token.kind == S_IDENTIFIER && word.equalsIgnoreCase(token.image);
+    }
+
+    /** Whether SET CONSTRAINTS names constraint timing rather than assigning a variable. */
+    private boolean isSetConstraintsAhead() {
+        if (getToken(1).kind != K_SET || getToken(2).kind != K_CONSTRAINTS) {
+            return false;
+        }
+        Token next = getToken(3);
+        return next.kind != EOF && next.kind != ST_SEMICOLON && next.kind != K_TO
+                && !"=".equals(next.image) && !":=".equals(next.image) && !".".equals(next.image)
+                && !",".equals(next.image);
+    }
+
+    /**
+     * Whether a PostgreSQL END commits here. Only the PostgreSQL dialect reads END as a statement,
+     * and only when [WORK | TRANSACTION], AND [NO] CHAIN or the statement end follows; blocks stop
+     * their statement lists at END first.
+     */
+    private boolean isEndTransactionAhead() {
+        return getToken(1).kind == K_END
+                && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && isTransactionCompletionTailAt(2);
+    }
+
+    /** Whether a PostgreSQL ABORT rolls back here; read with the PostgreSQL dialect or none. */
+    private boolean isAbortTransactionAhead() {
+        String dialect = getAsString(Feature.dialect);
+        return isWordAt(1, "ABORT") && (dialect == null || Dialect.POSTGRESQL.name().equals(dialect))
+                && isTransactionCompletionTailAt(2);
+    }
+
+    private boolean isTransactionCompletionTailAt(int offset) {
+        Token token = getToken(offset);
+        return token.kind == EOF || token.kind == ST_SEMICOLON || token.kind == K_WORK
+                || token.kind == K_AND || isWordAt(offset, "TRANSACTION");
+    }
+
+    /**
+     * Whether MySQL [NO] RELEASE completes this COMMIT or ROLLBACK. RELEASE SAVEPOINT and RELEASE
+     * name remain separate statements, and PostgreSQL has no RELEASE completion.
+     */
+    private boolean isTransactionReleaseAhead() {
+        int offset = getToken(1).kind == K_NO ? 2 : 1;
+        if (getToken(offset).kind != K_RELEASE
+                || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            return false;
+        }
+        int next = getToken(offset + 1).kind;
+        return next != K_SAVEPOINT && next != S_IDENTIFIER && next != S_QUOTED_IDENTIFIER;
+    }
+
+    /** Rules shared by COMMIT, ROLLBACK and their END and ABORT spellings. */
+    private void requireTransactionCompletionSyntax(TransactionCompletionStatement statement)
+            throws ParseException {
+        TransactionRelease release = statement.getRelease();
+        requireDdlSyntax(release == null || !statement.isPostgresSpelling(),
+                "END and ABORT do not accept RELEASE");
+        requireDdlSyntax(statement.getChain() != TransactionChain.CHAIN
+                || release != TransactionRelease.RELEASE, "AND CHAIN cannot be combined with RELEASE");
+    }
+
+    /**
+     * Dialect rules of the modes of BEGIN, START TRANSACTION and SET TRANSACTION. Only START
+     * TRANSACTION accepts WITH CONSISTENT SNAPSHOT, and PostgreSQL does not.
+     */
+    private void requireTransactionModes(List<TransactionMode> modes, TransactionMode.Context context)
+            throws ParseException {
+        requireDdlSyntax(context == TransactionMode.Context.START_TRANSACTION
+                || !modes.contains(TransactionMode.WITH_CONSISTENT_SNAPSHOT),
+                "Only START TRANSACTION accepts WITH CONSISTENT SNAPSHOT");
+        if (isMySqlDialect()) {
+            requireMySqlTransactionModes(modes, context);
+        } else if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            requireDdlSyntax(!modes.contains(TransactionMode.WITH_CONSISTENT_SNAPSHOT),
+                    "PostgreSQL does not accept WITH CONSISTENT SNAPSHOT");
+        }
+    }
+
+    /**
+     * MySQL: BEGIN takes no modes, START TRANSACTION no isolation level, SET TRANSACTION at most one
+     * isolation level and one access mode, and none of them DEFERRABLE.
+     */
+    private void requireMySqlTransactionModes(List<TransactionMode> modes,
+            TransactionMode.Context context) throws ParseException {
+        requireDdlSyntax(context != TransactionMode.Context.BEGIN || modes.isEmpty(),
+                "MySQL BEGIN does not accept transaction characteristics");
+        int isolationLevels = 0;
+        int accessModes = 0;
+        for (TransactionMode mode : modes) {
+            requireDdlSyntax(!mode.isDeferrability(), "MySQL does not accept DEFERRABLE transactions");
+            isolationLevels += mode.isIsolationLevel() ? 1 : 0;
+            accessModes += mode.isAccessMode() ? 1 : 0;
+        }
+        if (context == TransactionMode.Context.SET_TRANSACTION) {
+            requireDdlSyntax(isolationLevels <= 1 && accessModes <= 1,
+                    "MySQL SET TRANSACTION accepts one isolation level and one access mode");
+        } else {
+            requireDdlSyntax(isolationLevels == 0,
+                    "MySQL START TRANSACTION does not accept ISOLATION LEVEL");
+            requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                    || !modes.contains(TransactionMode.READ_ONLY)
+                    || !modes.contains(TransactionMode.READ_WRITE),
+                    "MySQL transactions cannot specify both READ ONLY and READ WRITE");
+        }
+    }
+
+    /**
+     * Dialect rules of the SET TRANSACTION forms; requireTransactionModes() checks the modes. MySQL
+     * accepts GLOBAL, SESSION, LOCAL, PERSIST and PERSIST_ONLY before TRANSACTION modes, MariaDB
+     * GLOBAL, SESSION and LOCAL. PostgreSQL accepts SESSION and LOCAL before each of its forms,
+     * including the PostgreSQL-only SESSION CHARACTERISTICS and SNAPSHOT.
+     */
+    private void requireSetTransactionSyntax(SetTransactionStatement statement) throws ParseException {
+        SetScope scope = statement.getScope();
+        boolean snapshot = statement.getSnapshotId() != null;
+        boolean postgresForm = snapshot || statement.isSessionCharacteristics();
+        boolean postgresScope = scope == SetScope.NONE || scope == SetScope.SESSION || scope == SetScope.LOCAL;
+        requireDdlSyntax(!snapshot || !statement.isSessionCharacteristics(),
+                "SESSION CHARACTERISTICS does not accept SNAPSHOT");
+        requireDdlSyntax(!postgresForm || postgresScope,
+                "SESSION CHARACTERISTICS and SNAPSHOT accept only SESSION or LOCAL");
+        if (isMySqlDialect()) {
+            requireDdlSyntax(!postgresForm, "MySQL does not accept SESSION CHARACTERISTICS or SNAPSHOT");
+            requireDdlSyntax(!Dialect.MARIADB.name().equals(getAsString(Feature.dialect))
+                    || scope != SetScope.PERSIST && scope != SetScope.PERSIST_ONLY,
+                    "MariaDB does not accept PERSIST or PERSIST_ONLY");
+        } else if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            requireDdlSyntax(postgresScope, "PostgreSQL accepts only SESSION or LOCAL before TRANSACTION");
+        }
     }
 
     private boolean isMySqlSelectModifierAhead() {
@@ -5232,6 +5405,10 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ isMySqlSetPasswordAhead() }) stm = SetPasswordStatement()
             |
+            LOOKAHEAD({ isSetTransactionAhead() }) stm = SetTransactionStatement()
+            |
+            LOOKAHEAD({ isSetConstraintsAhead() }) stm = SetConstraintsStatement()
+            |
             stm = Set()
             |
             stm = Reset()
@@ -5250,9 +5427,10 @@ Statement SingleStatement() :
             |
             stm = SavepointStatement()
             |
+            LOOKAHEAD({ getToken(1).kind == K_ROLLBACK || isAbortTransactionAhead() })
             stm = RollbackStatement()
             |
-            stm = Commit()
+            LOOKAHEAD({ getToken(1).kind == K_COMMIT || isEndTransactionAhead() }) stm = Commit()
             |
             stm = Comment()
             |
@@ -5445,6 +5623,8 @@ Block BeginEndBlock(): {
        { list.add(stm); }
 
         (
+             // END closes the block, even where PostgreSQL could read it as a statement
+             LOOKAHEAD(1, { getToken(1).kind != K_END })
              (
                 (
                     stm = SingleStatement()
@@ -6773,7 +6953,7 @@ SetStatement SetAssignments(): {
     Token tk = null;
 }
 {
-    [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) { set.setEffectParameter(tk.image); } ]
+    [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) { set.setScope(SetScope.fromKeyword(tk.image)); } ]
     SetAssignment(set)
     (
         ","
@@ -23434,8 +23614,6 @@ StartTransaction StartTransaction():
 {
     StartTransaction statement = new StartTransaction();
     TransactionKeyword keyword;
-    StartTransaction.Mode mode;
-    boolean comma;
 }
 {
     (
@@ -23445,27 +23623,9 @@ StartTransaction StartTransaction():
         [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
             keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
     )
-    [
-        LOOKAHEAD({ isTransactionModeAhead() })
-        mode=TransactionMode() { statement.addMode(mode); }
-        (
-            LOOKAHEAD({ ",".equals(getToken(1).image) || isTransactionModeAhead() })
-            { comma = false; }
-            [ "," { comma = true; } ]
-            mode=TransactionMode()
-            { requireDdlSyntax(!isMySqlDialect() || comma, "MySQL transaction characteristics require commas");
-              statement.addMode(mode); }
-        )*
-    ]
-    {
-        requireDdlSyntax(!isMySqlDialect() || statement.getCommand() != StartTransaction.Command.BEGIN
-                || statement.getModes().isEmpty(), "MySQL BEGIN does not accept transaction characteristics");
-        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
-                || !statement.getModes().contains(StartTransaction.Mode.READ_ONLY)
-                || !statement.getModes().contains(StartTransaction.Mode.READ_WRITE),
-                "MySQL transactions cannot specify both READ ONLY and READ WRITE");
-        return statement;
-    }
+    [ LOOKAHEAD({ isTransactionModeAhead() })
+        TransactionModeList(statement.getModes(), statement.getModeContext()) ]
+    { return statement; }
 }
 
 TransactionKeyword TransactionKeyword():
@@ -23484,37 +23644,59 @@ TransactionChain TransactionChain():
     { return negative ? TransactionChain.NO_CHAIN : TransactionChain.CHAIN; }
 }
 
-StartTransaction.Mode TransactionMode():
-{ StartTransaction.Mode mode; }
+TransactionRelease TransactionRelease():
+{ boolean negative = false; }
+{
+    [ <K_NO> { negative = true; } ] <K_RELEASE>
+    { return negative ? TransactionRelease.NO_RELEASE : TransactionRelease.RELEASE; }
+}
+
+/**
+ * Transaction characteristics of BEGIN, START TRANSACTION and SET TRANSACTION. PostgreSQL
+ * separates them with commas or spaces, MySQL with commas; requireTransactionModes() applies the
+ * dialect rules of the context.
+ */
+void TransactionModeList(List<TransactionMode> modes, TransactionMode.Context context):
+{ TransactionMode mode; boolean comma; }
+{
+    mode=TransactionMode() { modes.add(mode); }
+    (
+        LOOKAHEAD({ ",".equals(getToken(1).image) || isTransactionModeAhead() })
+        { comma = false; }
+        [ "," { comma = true; } ]
+        mode=TransactionMode()
+        { requireDdlSyntax(!isMySqlDialect() || comma, "MySQL transaction characteristics require commas");
+          modes.add(mode); }
+    )*
+    { requireTransactionModes(modes, context); }
+}
+
+TransactionMode TransactionMode():
+{ TransactionMode mode; }
 {
     (
         LOOKAHEAD({ isKeywordAhead("ISOLATION") })
         ContextualKeyword("ISOLATION") <K_LEVEL>
         (
             LOOKAHEAD({ isKeywordAhead("SERIALIZABLE") }) ContextualKeyword("SERIALIZABLE")
-            { mode = StartTransaction.Mode.ISOLATION_LEVEL_SERIALIZABLE; }
-            | <K_REPEATABLE> <K_READ> { mode = StartTransaction.Mode.ISOLATION_LEVEL_REPEATABLE_READ; }
+            { mode = TransactionMode.ISOLATION_LEVEL_SERIALIZABLE; }
+            | <K_REPEATABLE> <K_READ> { mode = TransactionMode.ISOLATION_LEVEL_REPEATABLE_READ; }
             | <K_READ>
             ( LOOKAHEAD({ isKeywordAhead("COMMITTED") }) ContextualKeyword("COMMITTED")
-                { mode = StartTransaction.Mode.ISOLATION_LEVEL_READ_COMMITTED; }
-              | ContextualKeyword("UNCOMMITTED") { mode = StartTransaction.Mode.ISOLATION_LEVEL_READ_UNCOMMITTED; } )
+                { mode = TransactionMode.ISOLATION_LEVEL_READ_COMMITTED; }
+              | ContextualKeyword("UNCOMMITTED") { mode = TransactionMode.ISOLATION_LEVEL_READ_UNCOMMITTED; } )
         )
-        { requireDdlSyntax(!isMySqlDialect(), "MySQL START TRANSACTION does not accept ISOLATION LEVEL"); }
         |
         <K_READ>
-        ( <K_ONLY> { mode = StartTransaction.Mode.READ_ONLY; }
-          | ContextualKeyword("WRITE") { mode = StartTransaction.Mode.READ_WRITE; } )
+        ( <K_ONLY> { mode = TransactionMode.READ_ONLY; }
+          | ContextualKeyword("WRITE") { mode = TransactionMode.READ_WRITE; } )
         |
-        <K_DEFERRABLE> { mode = StartTransaction.Mode.DEFERRABLE;
-            requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept DEFERRABLE transactions"); }
+        <K_DEFERRABLE> { mode = TransactionMode.DEFERRABLE; }
         |
-        <K_NOT> <K_DEFERRABLE> { mode = StartTransaction.Mode.NOT_DEFERRABLE;
-            requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept DEFERRABLE transactions"); }
+        <K_NOT> <K_DEFERRABLE> { mode = TransactionMode.NOT_DEFERRABLE; }
         |
         <K_WITH> ContextualKeyword("CONSISTENT") ContextualKeyword("SNAPSHOT")
-        { mode = StartTransaction.Mode.WITH_CONSISTENT_SNAPSHOT;
-          requireDdlSyntax(!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)),
-              "PostgreSQL does not accept WITH CONSISTENT SNAPSHOT"); }
+        { mode = TransactionMode.WITH_CONSISTENT_SNAPSHOT; }
     )
     { return mode; }
 }
@@ -23541,11 +23723,18 @@ RollbackStatement RollbackStatement():
     RollbackStatement statement = new RollbackStatement();
     TransactionKeyword keyword;
     TransactionChain chain;
+    TransactionRelease release;
     String name;
     Token identifier;
 }
 {
-    <K_ROLLBACK>
+    (
+        <K_ROLLBACK>
+        |
+        // The action keeps the JAVACODE call from being the lookahead's first unit.
+        LOOKAHEAD({ isWordAt(1, "ABORT") }) { statement.setCommand(RollbackStatement.Command.ABORT); }
+        consumeTransactionWord()
+    )
     [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
         keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
     // FORCE INSTALL starts a new statement, whereas FORCE 'id' belongs here.
@@ -23560,17 +23749,98 @@ RollbackStatement RollbackStatement():
             chain=TransactionChain() { statement.setChain(chain); }
         )
     ]
-    { return statement; }
+    [ LOOKAHEAD({ statement.getSavepointName() == null
+            && statement.getForceDistributedTransactionIdentifier() == null && isTransactionReleaseAhead() })
+        release=TransactionRelease() { statement.setRelease(release); } ]
+    {
+        requireDdlSyntax(statement.getCommand() != RollbackStatement.Command.ABORT
+                || statement.getSavepointName() == null && statement.getForceDistributedTransactionIdentifier() == null,
+                "ABORT does not accept TO SAVEPOINT or FORCE");
+        requireTransactionCompletionSyntax(statement);
+        return statement;
+    }
 }
 
 Commit Commit():
-{ Commit commit = new Commit(); TransactionKeyword keyword; TransactionChain chain; }
+{ Commit commit = new Commit(); TransactionKeyword keyword; TransactionChain chain; TransactionRelease release; }
 {
-    <K_COMMIT>
+    ( <K_COMMIT> | <K_END> { commit.setCommand(Commit.Command.END); } )
     [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
         keyword=TransactionKeyword() { commit.setKeyword(keyword); } ]
     [ chain=TransactionChain() { commit.setChain(chain); } ]
-    { return commit; }
+    [ LOOKAHEAD({ isTransactionReleaseAhead() }) release=TransactionRelease() { commit.setRelease(release); } ]
+    {
+        requireTransactionCompletionSyntax(commit);
+        return commit;
+    }
+}
+
+/**
+ * Consumes a statement word that is not a token, such as ABORT. As a JAVACODE production it does
+ * not add identifiers to the tokens that can start or follow a statement.
+ */
+JAVACODE
+void consumeTransactionWord() {
+    getNextToken();
+}
+
+/**
+ * SET [scope] TRANSACTION modes, SET [scope] SESSION CHARACTERISTICS AS TRANSACTION modes and
+ * SET [scope] TRANSACTION SNAPSHOT 'id'. The modes are those of BEGIN and START TRANSACTION, and
+ * requireSetTransactionSyntax() checks which scope each dialect accepts.
+ */
+SetTransactionStatement SetTransactionStatement():
+{ SetTransactionStatement statement = new SetTransactionStatement(); Token snapshot; }
+{
+    <K_SET>
+    [
+        // SESSION CHARACTERISTICS is a form of its own; SET SESSION SESSION CHARACTERISTICS has both
+        LOOKAHEAD({ isSetTransactionScopeAt(1) && !isSessionCharacteristicsAt(1) })
+        (
+            <K_GLOBAL> { statement.setScope(SetScope.GLOBAL); }
+            |
+            <K_SESSION> { statement.setScope(SetScope.SESSION); }
+            |
+            <K_LOCAL> { statement.setScope(SetScope.LOCAL); }
+            |
+            LOOKAHEAD({ isKeywordAhead("PERSIST") }) ContextualKeyword("PERSIST")
+            { statement.setScope(SetScope.PERSIST); }
+            |
+            ContextualKeyword("PERSIST_ONLY") { statement.setScope(SetScope.PERSIST_ONLY); }
+        )
+    ]
+    [ LOOKAHEAD({ isSessionCharacteristicsAt(1) }) <K_SESSION> ContextualKeyword("CHARACTERISTICS") <K_AS>
+        { statement.setSessionCharacteristics(true); } ]
+    ContextualKeyword("TRANSACTION")
+    (
+        LOOKAHEAD({ isKeywordAhead("SNAPSHOT") }) ContextualKeyword("SNAPSHOT") snapshot=<S_CHAR_LITERAL>
+        { statement.setSnapshotId(stringValue(snapshot)); }
+        |
+        TransactionModeList(statement.getModes(), TransactionMode.Context.SET_TRANSACTION)
+    )
+    { requireSetTransactionSyntax(statement); return statement; }
+}
+
+/** SET CONSTRAINTS {ALL | name [, ...]} {DEFERRED | IMMEDIATE}. */
+SetConstraintsStatement SetConstraintsStatement():
+{ SetConstraintsStatement statement = new SetConstraintsStatement(); String name; Token timing; }
+{
+    <K_SET> <K_CONSTRAINTS>
+    (
+        // ALL is reserved, so a constraint of that name is quoted
+        LOOKAHEAD({ getToken(1).kind == K_ALL }) <K_ALL>
+        |
+        name=AccessQualifiedName() { statement.addConstraintName(name); }
+        ( "," name=AccessQualifiedName() { statement.addConstraintName(name); } )*
+    )
+    timing=<S_IDENTIFIER>
+    {
+        requireDdlSyntax("DEFERRED".equalsIgnoreCase(timing.image) || "IMMEDIATE".equalsIgnoreCase(timing.image),
+                "Expected DEFERRED or IMMEDIATE");
+        requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept SET CONSTRAINTS");
+        statement.setTiming(ConstraintAttributes.Initially.valueOf(timing.image.toUpperCase(Locale.ROOT)));
+        return statement;
+    }
 }
 
 Comment Comment():
