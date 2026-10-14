@@ -114,7 +114,9 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -380,6 +382,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(ShowTablesStatement showTables, S context) {
         getValidator(ShowTablesStatementValidator.class).validate(showTables);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
+        getValidator(ShowTableStatusStatementValidator.class).validate(showTableStatus);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ShowCreateStatement showCreate, S context) {
+        getValidator(ShowCreateStatementValidator.class).validate(showCreate);
         return null;
     }
 
@@ -772,6 +786,16 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(ShowTablesStatement showTables) {
         visit(showTables, null);
+    }
+
+    @Override
+    public void visit(ShowTableStatusStatement showTableStatus) {
+        visit(showTableStatus, null);
+    }
+
+    @Override
+    public void visit(ShowCreateStatement showCreate) {
+        visit(showCreate, null);
     }
 
     public void visit(Block block) {

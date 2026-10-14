@@ -2053,3 +2053,47 @@ The validator checks the new statement and mode capabilities. PostgreSQL
 ``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
 This support does not include MySQL transaction completion ``[NO] RELEASE``,
 PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED``, or XA commands.
+
+MySQL SHOW statements
+=====================
+
+The MySQL statements that read table, column and object definitions parse to typed
+statements in every dialect:
+
+* ``SHOW [EXTENDED] [FULL] {COLUMNS | FIELDS} {FROM | IN} t [{FROM | IN} db]
+  [LIKE 'p' | WHERE expr]`` extends ``ShowColumnsStatement``. ``getTable()`` returns the
+  ``Table``; ``getTableName()`` and ``setTableName(String)`` remain and are derived from it.
+  ``isExtended()``, ``isFull()`` and ``isFieldsKeyword()`` record the modifiers and the
+  ``FIELDS`` spelling, ``getTableSelectionMode()`` and ``getDbSelectionMode()`` the
+  ``FROM``/``IN`` spelling, and ``getDbName()``, ``getLikeExpression()`` and
+  ``getWhereCondition()`` the optional clauses.
+* ``SHOW TABLE STATUS [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
+  ``ShowTableStatusStatement``, with the same accessors as ``ShowTablesStatement``.
+* ``SHOW CREATE`` parses to ``ShowCreateStatement``. ``getObjectType()`` is ``TABLE``,
+  ``VIEW``, ``PROCEDURE``, ``FUNCTION``, ``TRIGGER``, ``EVENT``, ``DATABASE`` or ``USER``.
+  The first six name the object with ``getName()``, a ``Table``. ``DATABASE`` uses
+  ``getDatabaseName()``, ``isSchemaKeyword()`` and ``isIfNotExists()``. ``USER`` uses
+  ``getAccount()``, a ``UserAccount`` without authentication; ``isCurrentUser()`` and
+  ``isCurrentUserParentheses()`` describe ``CURRENT_USER`` and ``CURRENT_USER()``.
+
+.. code-block:: java
+
+    ShowColumnsStatement columns = (ShowColumnsStatement) CCJSqlParserUtil.parse(
+        "SHOW FULL COLUMNS FROM orders FROM shop LIKE 'c%'");
+    columns.getTableName();   // orders
+    columns.getDbName();      // shop
+
+    ShowCreateStatement create = (ShowCreateStatement) CCJSqlParserUtil.parse(
+        "SHOW CREATE USER 'app'@'%'");
+    create.getAccount().getHost().getNotExcapedValue();   // %
+
+A typed statement is used only when it covers the whole statement. Other dialects'
+``SHOW`` forms, such as ``SHOW COLUMNS IN SCHEMA s`` or ``SHOW CREATE TABLE t FORMAT f``,
+remain ``UnsupportedStatement``.
+
+Table visitors report the table of ``SHOW COLUMNS`` (qualified by the ``FROM db`` clause)
+and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now
+``SHOW COLUMNS`` raised ``UnsupportedOperationException``. ``SHOW TABLE STATUS`` names no
+table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
+features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
+``RETURNS_RESULT_SET``.
