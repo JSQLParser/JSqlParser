@@ -647,6 +647,24 @@ public enum Feature {
     /** Additional structured catalog targets of COMMENT ON. */
     commentOnIndex, commentOnSchema, commentOnSequence, commentOnDomain, commentOnType, commentOnMaterializedView, commentOnFunction, commentOnConstraint,
 
+    /** COMMENT ON TRIGGER, POLICY or RULE within a table. */
+    commentOnTrigger, commentOnPolicy, commentOnRule,
+
+    /** COMMENT ON PROCEDURE, ROUTINE, AGGREGATE or CAST. */
+    commentOnProcedure, commentOnRoutine, commentOnAggregate, commentOnCast,
+
+    /** COMMENT ON COLLATION, FOREIGN TABLE or STATISTICS. */
+    commentOnCollation, commentOnForeignTable, commentOnStatistics,
+
+    /** COMMENT ON DATABASE, ROLE or TABLESPACE. */
+    commentOnDatabase, commentOnRole, commentOnTablespace,
+
+    /** COMMENT ON ACCESS METHOD, EXTENSION, FOREIGN DATA WRAPPER, LANGUAGE or SERVER. */
+    commentOnAccessMethod, commentOnExtension, commentOnForeignDataWrapper, commentOnLanguage, commentOnServer,
+
+    /** COMMENT ON EVENT TRIGGER, PUBLICATION or SUBSCRIPTION. */
+    commentOnEventTrigger, commentOnPublication, commentOnSubscription,
+
     /**
      * SQL "DESCRIBE" statement is allowed
      *

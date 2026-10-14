@@ -20291,36 +20291,81 @@ Table CommentObjectName():
             : new Table(names.getNames()); }
 }
 
+/** The object kind decides the shape of the reference that follows it. */
 CommentTarget CommentTarget():
 {
     CommentTarget result = new CommentTarget();
+    CommentTarget.Kind kind;
     Table name;
-    String constraintName;
+    String objectName;
     RoutineReference routine;
+    ColDataType type;
 }
 {
+    kind=CommentTargetKind(result) { result.setKind(kind); }
     (
-        <K_FUNCTION> routine=RoutineReference(false)
-        { result.setKind(CommentTarget.Kind.FUNCTION); result.setRoutine(routine); }
+        LOOKAHEAD({ kind.isRoutine() })
+        routine=RoutineReference(kind == CommentTarget.Kind.AGGREGATE) { result.setRoutine(routine); }
         |
-        <K_CONSTRAINT> constraintName=RelObjectName()
-        { result.setKind(CommentTarget.Kind.CONSTRAINT); result.setName(new Table(constraintName, false)); }
+        LOOKAHEAD({ kind.isOwnedByRelation() })
+        objectName=RelObjectName() { result.setName(new Table(objectName, false)); }
         <K_ON>
-        [ LOOKAHEAD({ getToken(1).kind == K_DOMAIN && !".".equals(getToken(2).image)
-                && getToken(2).kind != K_IS }) <K_DOMAIN> { result.setOnDomain(true); } ]
+        [ LOOKAHEAD({ kind == CommentTarget.Kind.CONSTRAINT && getToken(1).kind == K_DOMAIN
+                && !".".equals(getToken(2).image) && getToken(2).kind != K_IS })
+          <K_DOMAIN> { result.setOnDomain(true); } ]
         name=CommentObjectName() { result.setRelation(name); }
         |
-        (
-            <K_INDEX> { result.setKind(CommentTarget.Kind.INDEX); }
-            | <K_SCHEMA> { result.setKind(CommentTarget.Kind.SCHEMA); }
-            | <K_SEQUENCE> { result.setKind(CommentTarget.Kind.SEQUENCE); }
-            | <K_MATERIALIZED> <K_VIEW> { result.setKind(CommentTarget.Kind.MATERIALIZED_VIEW); }
-            | <K_DOMAIN> { result.setKind(CommentTarget.Kind.DOMAIN); }
-            | <K_TYPE> { result.setKind(CommentTarget.Kind.TYPE); }
-        )
+        LOOKAHEAD({ kind == CommentTarget.Kind.CAST })
+        "(" type=ColDataType() { result.setSourceType(type); }
+        <K_AS> type=ColDataType() { result.setTargetType(type); } ")"
+        |
         name=CommentObjectName() { result.setName(name); }
     )
     { return result; }
+}
+
+/** Kind words without a token are matched contextually and remain ordinary identifiers. */
+CommentTarget.Kind CommentTargetKind(CommentTarget target):
+{ CommentTarget.Kind kind; }
+{
+    (
+        <K_INDEX> { kind = CommentTarget.Kind.INDEX; }
+        | <K_SCHEMA> { kind = CommentTarget.Kind.SCHEMA; }
+        | <K_SEQUENCE> { kind = CommentTarget.Kind.SEQUENCE; }
+        | <K_MATERIALIZED> <K_VIEW> { kind = CommentTarget.Kind.MATERIALIZED_VIEW; }
+        | <K_DOMAIN> { kind = CommentTarget.Kind.DOMAIN; }
+        | <K_TYPE> { kind = CommentTarget.Kind.TYPE; }
+        | <K_FUNCTION> { kind = CommentTarget.Kind.FUNCTION; }
+        | <K_CONSTRAINT> { kind = CommentTarget.Kind.CONSTRAINT; }
+        | <K_TRIGGER> { kind = CommentTarget.Kind.TRIGGER; }
+        | <K_POLICY> { kind = CommentTarget.Kind.POLICY; }
+        | LOOKAHEAD({ isKeywordAhead("RULE") }) ContextualKeyword("RULE") { kind = CommentTarget.Kind.RULE; }
+        | <K_PROCEDURE> { kind = CommentTarget.Kind.PROCEDURE; }
+        | LOOKAHEAD({ isKeywordAhead("ROUTINE") }) ContextualKeyword("ROUTINE") { kind = CommentTarget.Kind.ROUTINE; }
+        | <K_AGGREGATE> { kind = CommentTarget.Kind.AGGREGATE; }
+        | <K_CAST> { kind = CommentTarget.Kind.CAST; }
+        | LOOKAHEAD({ isKeywordAhead("ACCESS") }) ContextualKeyword("ACCESS") ContextualKeyword("METHOD")
+          { kind = CommentTarget.Kind.ACCESS_METHOD; }
+        | LOOKAHEAD({ isKeywordAhead("COLLATION") }) ContextualKeyword("COLLATION") { kind = CommentTarget.Kind.COLLATION; }
+        | <K_DATABASE> { kind = CommentTarget.Kind.DATABASE; }
+        | <K_EVENT> <K_TRIGGER> { kind = CommentTarget.Kind.EVENT_TRIGGER; }
+        | LOOKAHEAD({ isKeywordAhead("EXTENSION") }) ContextualKeyword("EXTENSION") { kind = CommentTarget.Kind.EXTENSION; }
+        | <K_FOREIGN>
+          (
+              <K_DATA> ContextualKeyword("WRAPPER") { kind = CommentTarget.Kind.FOREIGN_DATA_WRAPPER; }
+              | <K_TABLE> { kind = CommentTarget.Kind.FOREIGN_TABLE; }
+          )
+        | LOOKAHEAD({ isKeywordAhead("PROCEDURAL") || isKeywordAhead("LANGUAGE") })
+          [ LOOKAHEAD({ isKeywordAhead("PROCEDURAL") }) ContextualKeyword("PROCEDURAL") { target.setProcedural(true); } ]
+          ContextualKeyword("LANGUAGE") { kind = CommentTarget.Kind.LANGUAGE; }
+        | LOOKAHEAD({ isKeywordAhead("PUBLICATION") }) ContextualKeyword("PUBLICATION") { kind = CommentTarget.Kind.PUBLICATION; }
+        | LOOKAHEAD({ isKeywordAhead("ROLE") }) ContextualKeyword("ROLE") { kind = CommentTarget.Kind.ROLE; }
+        | LOOKAHEAD({ isKeywordAhead("SERVER") }) ContextualKeyword("SERVER") { kind = CommentTarget.Kind.SERVER; }
+        | LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS") { kind = CommentTarget.Kind.STATISTICS; }
+        | LOOKAHEAD({ isKeywordAhead("SUBSCRIPTION") }) ContextualKeyword("SUBSCRIPTION") { kind = CommentTarget.Kind.SUBSCRIPTION; }
+        | <K_TABLESPACE> { kind = CommentTarget.Kind.TABLESPACE; }
+    )
+    { return kind; }
 }
 
 /** Consumes a keyword that remains an ordinary identifier outside this grammar context. */
@@ -21427,7 +21472,9 @@ RoutineReference RoutineReference(boolean aggregate):
         (
             "*" { requireTypeDdlSyntax(aggregate, "Only aggregate signatures accept *"); result.setAllArguments(true); }
             |
-            [ argument=RoutineSignatureArgument() { arguments.add(argument); }
+            // ORDER is non-reserved, so ORDER BY without direct arguments is not an argument name
+            [ LOOKAHEAD(1, { getToken(1).kind != K_ORDER || getToken(2).kind != K_BY })
+              argument=RoutineSignatureArgument() { arguments.add(argument); }
               ( "," argument=RoutineSignatureArgument() { arguments.add(argument); } )* ]
             [ <K_ORDER> <K_BY> { requireTypeDdlSyntax(aggregate, "ORDER BY requires an aggregate signature"); orderBy = new ArrayList<RoutineReference.Argument>(); }
               argument=RoutineSignatureArgument() { orderBy.add(argument); }
