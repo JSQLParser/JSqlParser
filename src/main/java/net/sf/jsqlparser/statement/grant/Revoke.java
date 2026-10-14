@@ -17,8 +17,10 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Revoke implements Statement {
     private PrivilegeClause clause = new PrivilegeClause();
+    private boolean ifExists;
     private GrantOption.Kind optionFor;
     private CascadeBehavior behavior;
+    private boolean ignoreUnknownUser;
 
     public PrivilegeClause getClause() {
         return clause;
@@ -26,6 +28,24 @@ public class Revoke implements Statement {
 
     public void setClause(PrivilegeClause clause) {
         this.clause = clause;
+    }
+
+    /** MySQL {@code REVOKE IF EXISTS}. */
+    public boolean isIfExists() {
+        return ifExists;
+    }
+
+    public void setIfExists(boolean ifExists) {
+        this.ifExists = ifExists;
+    }
+
+    /** MySQL {@code IGNORE UNKNOWN USER}. */
+    public boolean isIgnoreUnknownUser() {
+        return ignoreUnknownUser;
+    }
+
+    public void setIgnoreUnknownUser(boolean ignoreUnknownUser) {
+        this.ignoreUnknownUser = ignoreUnknownUser;
     }
 
     public GrantOption.Kind getOptionFor() {
@@ -46,15 +66,21 @@ public class Revoke implements Statement {
 
     public void appendTo(StringBuilder sql, Consumer<Expression> visitor) {
         sql.append("REVOKE ");
+        if (ifExists) {
+            sql.append("IF EXISTS ");
+        }
         if (optionFor != null) {
             sql.append(optionFor).append(" OPTION FOR ");
         }
         clause.appendTo(sql, true, visitor);
-        if (clause.getGrantedBy() != null) {
-            sql.append(" GRANTED BY ").append(clause.getGrantedBy());
+        if (clause.getGrantor() != null) {
+            sql.append(" GRANTED BY ").append(clause.getGrantor());
         }
         if (behavior != null) {
             sql.append(' ').append(behavior);
+        }
+        if (ignoreUnknownUser) {
+            sql.append(" IGNORE UNKNOWN USER");
         }
     }
 

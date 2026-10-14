@@ -1898,7 +1898,7 @@ character in ``getQuoteStr()`` and its text in ``getValue()``::
 ``PrivilegeTarget`` kinds, multiple role memberships and grantor information.
 ``getPrivileges()`` is a mutable string view of the typed privilege list.
 ``getRole()`` and ``getObjectName()`` expose the first role or named target for
-legacy callers; use ``getRoles()`` and ``getTarget()`` for the complete lists.
+legacy callers; use ``getRoleItems()`` and ``getTarget()`` for the complete lists.
 Names in ``PrivilegeTarget`` are multipart identifiers, not SQL clause text.
 Routine targets use ``RoutineReference`` data-type signatures, with null
 arguments for an omitted signature and an empty list for explicit ``()``.
@@ -1926,6 +1926,63 @@ References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html
 `REVOKE <https://www.postgresql.org/docs/18/sql-revoke.html>`_,
 `ALTER DEFAULT PRIVILEGES <https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html>`_,
 `CREATE TRIGGER <https://www.postgresql.org/docs/18/sql-createtrigger.html>`_.
+
+MySQL privileges and accounts in GRANT and REVOKE
+-------------------------------------------------
+
+``Grant`` and ``Revoke`` also parse the MySQL forms, in every dialect:
+
+- **Privilege levels**: ``PrivilegeTarget.getWildcard()`` is ``DEFAULT_DATABASE`` for ``*``,
+  ``GLOBAL`` for ``*.*`` and ``DATABASE`` for ``db.*``, whose database is the single entry
+  of ``getNames()``. Named levels such as ``db.tbl`` keep a null wildcard. Only named
+  table targets are reported by table-name discovery.
+- **Privileges**: MySQL static privileges are ``Privilege.Kind`` constants, for example
+  ``CREATE_TEMPORARY_TABLES`` or ``REPLICATION_SLAVE``; ``getName()`` returns the SQL
+  spelling. Another identifier, such as ``BACKUP_ADMIN``, is a dynamic privilege of kind
+  ``DYNAMIC`` with ``getDynamicName()``.
+- **Grantees**: ``PrivilegeClause.getGranteeItems()`` returns ``Grantee`` values, which
+  MySQL and PostgreSQL share. ``ACCOUNT`` holds a ``UserAccount``: a MySQL ``user[@host]``,
+  read like the ``CREATE USER`` account names above, or a PostgreSQL role name without
+  host. The other kinds are
+  PostgreSQL ``GROUP name``, ``PUBLIC``, ``CURRENT_USER`` (MySQL also ``CURRENT_USER()``),
+  ``CURRENT_ROLE`` and ``SESSION_USER``. ``getGrantor()`` types ``GRANTED BY`` the same way.
+- **Role memberships**: ``getRoleItems()`` holds the granted roles as ``UserAccount``
+  values, so ``'reader'`` and ``'writer'@'%'`` keep their quoting and host. A membership
+  has no privileges and no target.
+- **MySQL clauses**: ``PROXY ON user`` is a ``PROXY`` privilege on an ``ACCOUNT`` target
+  (``PrivilegeTarget.getAccount()``). ``REVOKE ALL [PRIVILEGES], GRANT OPTION FROM ...``
+  has the privileges ``ALL`` and ``GRANT_OPTION`` and no target. ``Revoke`` records
+  ``IF EXISTS`` and ``IGNORE UNKNOWN USER``; ``Grant.getAsUser()`` and ``getWithRole()``
+  hold ``AS user [WITH ROLE ...]``; the role selection is a ``RoleSelection`` from
+  ``net.sf.jsqlparser.statement.create.user``.
+
+.. code-block:: java
+
+    Grant grant = (Grant) CCJSqlParserUtil.parse(
+        "GRANT SELECT, BACKUP_ADMIN ON db1.* TO 'app'@'%', CURRENT_USER");
+    grant.getTarget().getWildcard();                    // DATABASE
+    grant.getPrivilegeItems().get(1).getDynamicName();  // BACKUP_ADMIN
+    UserAccount app = grant.getClause().getGranteeItems().get(0).getAccount();
+    app.getHost().getValue();                           // %
+
+``Grant.getOptions()`` lists every ``WITH`` option, including PostgreSQL membership
+options such as ``WITH INHERIT TRUE, SET FALSE``. Privileges take only ``GRANT OPTION``;
+memberships take distinct ``ADMIN``, ``INHERIT`` and ``SET`` options.
+
+The string accessors are kept and derived from the typed state: ``getUsers()``,
+``getGrantees()`` and ``getRoles()`` are mutable string views that write through,
+``getOption()`` is the first option and ``getGrantedBy()`` renders the grantor.
+``getObjectName()`` returns a wildcard level as written, for example ``db1.*``, and
+``setObjectName()`` replaces it with a named target. Assigned text is converted with
+``Grantee.valueOf()``: special role names are recognized and other text is kept as the
+account name. Parsed memberships have no target; ``new Grant()`` still starts with an
+empty table target, and ``setRole()`` clears it.
+
+The MySQL and MariaDB validation capabilities now include ``revoke``.
+
+References: `GRANT <https://dev.mysql.com/doc/refman/8.4/en/grant.html>`_,
+`REVOKE <https://dev.mysql.com/doc/refman/8.4/en/revoke.html>`_,
+`Specifying Account Names <https://dev.mysql.com/doc/refman/8.4/en/account-names.html>`_.
 
 Migrating shared ALTER enums
 ----------------------------
