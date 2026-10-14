@@ -16593,7 +16593,7 @@ void CreateTableOptions(List<TableOption> options):
 }
 
 TableOption CreateTableOption():
-{ TableOption option; List<String> tokens; List<IndexOption> storageParameters; }
+{ TableOption option; List<String> tokens; List<IndexOption> storageParameters; String name; }
 {
     (
       LOOKAHEAD(<K_WITH> "(") <K_WITH> storageParameters=PostgreSqlIndexOptions() {
@@ -16604,6 +16604,12 @@ TableOption CreateTableOption():
           option = new TableOption(TableOption.Kind.WITHOUT_OIDS, "WITHOUT OIDS", null, false);
       }
       |
+      LOOKAHEAD(<K_ON> <K_COMMIT>) option=OnCommitTableOption()
+      |
+      // USING INDEX TABLESPACE stays a raw parameter
+      LOOKAHEAD(2, { getToken(2).kind != K_INDEX }) <K_USING> name=RelObjectName()
+      { option = TableOption.accessMethod(name); }
+      |
       LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
       |
       // Snowflake: COPY is reserved because it starts the COPY statement
@@ -16611,6 +16617,28 @@ TableOption CreateTableOption():
       <K_COPY> ContextualKeyword("GRANTS") { option = TableOption.raw("COPY", "GRANTS"); }
       | tokens=CreateParameter() { option = TableOption.raw(tokens); } )
     { return option; }
+}
+
+/** Temporary table ON COMMIT action, including Oracle's private temporary table forms. */
+TableOption OnCommitTableOption():
+{ TableOption.OnCommitAction action; }
+{
+    <K_ON> <K_COMMIT>
+    (
+        <K_DELETE> <K_ROWS> { action = TableOption.OnCommitAction.DELETE_ROWS; }
+        |
+        <K_DROP> { action = TableOption.OnCommitAction.DROP; }
+        [ LOOKAHEAD({ isKeywordAhead("DEFINITION") }) ContextualKeyword("DEFINITION")
+            { action = TableOption.OnCommitAction.DROP_DEFINITION; } ]
+        |
+        LOOKAHEAD({ isKeywordAhead("PRESERVE") }) ContextualKeyword("PRESERVE")
+        (
+            <K_ROWS> { action = TableOption.OnCommitAction.PRESERVE_ROWS; }
+            |
+            ContextualKeyword("DEFINITION") { action = TableOption.OnCommitAction.PRESERVE_DEFINITION; }
+        )
+    )
+    { return TableOption.onCommit(action); }
 }
 
 TableOption MySqlTableOption(): {
@@ -18920,7 +18948,9 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
  */
 AlterExpression AlterExpressionDrop():
 {
-    AlterExpression alterExp = new AlterExpressionDrop();
+    AlterExpressionDrop drop = new AlterExpressionDrop();
+    AlterExpression alterExp = drop;
+    CascadeBehavior behavior;
     Token tk;
     Token tk2;
     List<String> columnNames = null;
@@ -18959,8 +18989,9 @@ AlterExpression AlterExpressionDrop():
             (tk=KeywordOrIdentifier() ) { alterExp.setColumnName(tk.image); }
             [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
             [
-                "CASCADE" { alterExp.addParameters("CASCADE"); }
-                [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+                // Oracle CASCADE CONSTRAINTS remains a raw parameter
+                LOOKAHEAD(2) "CASCADE" "CONSTRAINTS" { alterExp.addParameters("CASCADE", "CONSTRAINTS"); }
+                | behavior=TypeAlterBehavior() { drop.setBehavior(behavior); }
             ]
         )
         |
@@ -18975,24 +19006,24 @@ AlterExpression AlterExpressionDrop():
         (
            tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
            columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
-           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+           [ behavior=TypeAlterBehavior() { drop.setBehavior(behavior); } ]
         )
         |
         (
            tk=<K_PRIMARY> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_PRIMARY_KEY); }
-           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+           [ behavior=TypeAlterBehavior() { drop.setBehavior(behavior); } ]
         )
         |
         (
            tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
            columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
-           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+           [ behavior=TypeAlterBehavior() { drop.setBehavior(behavior); } ]
         )
         |
         (
             <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
             ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setConstraintName(tk.image); }
-            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+            [ behavior=TypeAlterBehavior() { drop.setBehavior(behavior); } ]
         )
     )
     { return alterExp; }
