@@ -2496,13 +2496,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // Preserve generic ALTER's historical placement of USING and COMMENT options.
             if (!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
                     && !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
-                for (String option : new ArrayList<String>(key.getIndexSpec())) {
-                    if (option.toUpperCase(Locale.ROOT).startsWith("USING ")) {
-                        alterExp.addParameters("USING", option.substring("USING ".length()));
-                        key.getIndexSpec().remove(option);
-                    } else if (option.toUpperCase(Locale.ROOT).startsWith("COMMENT ")) {
-                        key.setCommentText(option.substring("COMMENT ".length()));
-                        key.getIndexSpec().remove(option);
+                for (IndexSpecOption option : new ArrayList<IndexSpecOption>(key.getSpecOptions())) {
+                    if (option.getKind() == IndexSpecOption.Kind.INDEX_TYPE) {
+                        alterExp.addParameters("USING", option.getValue());
+                        key.getSpecOptions().remove(option);
+                    } else if (option.getKind() == IndexSpecOption.Kind.COMMENT) {
+                        key.setCommentText(option.getValue());
+                        key.getSpecOptions().remove(option);
                     }
                 }
             }
@@ -15195,8 +15195,6 @@ CreateIndex CreateIndex():
     Expression where = null;
     String indexType;
     Index index;
-    List<String> parameter = new ArrayList<String>();
-    List<String> tailParameters = new ArrayList<String>();
     ObjectNames name;
 }
 {
@@ -15241,45 +15239,54 @@ CreateIndex CreateIndex():
         { createIndex.setTableSpace(tableSpace); } ]
     [ LOOKAHEAD(2) <K_WHERE> where=Expression() { createIndex.setWhere(where); } ]
     ( LOOKAHEAD(2, { getToken(1).kind != K_LOCK || getToken(2).kind != K_TABLE })
-        parameter=CreateIndexTailOption() { tailParameters.addAll(parameter); } )*
+        CreateIndexTailOption(createIndex, index) )*
     {
         index.setColumns(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
-        createIndex.setTailParameters(tailParameters);
         return createIndex;
     }
 }
 
-List<String> CreateIndexTailOption():
+/**
+ * Index options shared with table key definitions are kept on the index, ALGORITHM and LOCK on
+ * the statement. Other trailing tokens remain opaque index options.
+ */
+void CreateIndexTailOption(CreateIndex statement, Index index):
 {
-    List<String> option;
+    AlgorithmOrLockOption algorithmOrLock;
+    IndexSpecOption option;
+    List<String> parameter;
 }
 {
     (
         LOOKAHEAD({ getToken(1).kind == K_ALGORITHM || getToken(1).kind == K_LOCK })
-        option=IndexAlgorithmOrLockOption()
+        algorithmOrLock=IndexAlgorithmOrLockOption()
+        { statement.addAlgorithmOrLockOptions(algorithmOrLock); }
         |
-        option=CreateParameter()
+        LOOKAHEAD(IndexSpecOption(), { !(getToken(1).kind == K_USING && getToken(2).kind == K_INDEX) })
+        option=IndexSpecOption() { index.getIndexOptions().addSpecOptions(option); }
+        |
+        parameter=CreateParameter()
+        { index.getIndexOptions().addSpecOptions(IndexSpecOption.raw(parameter)); }
     )
-    { return option; }
 }
 
 // CREATE INDEX and DROP INDEX share MySQL's algorithm_option / lock_option syntax.
-// Keep the legacy token list, including optional equals signs and the original order.
-List<String> IndexAlgorithmOrLockOption():
+AlgorithmOrLockOption IndexAlgorithmOrLockOption():
 {
-    List<String> option = new ArrayList<String>();
-    Token keyword;
+    AlgorithmOrLockOption.Kind kind;
+    boolean useEquals = false;
     Token value;
 }
 {
-    ( keyword=<K_ALGORITHM> | keyword=<K_LOCK> ) { option.add(keyword.image); }
-    [ "=" { option.add("="); } ]
+    ( <K_ALGORITHM> { kind = AlgorithmOrLockOption.Kind.ALGORITHM; }
+        | <K_LOCK> { kind = AlgorithmOrLockOption.Kind.LOCK; } )
+    [ "=" { useEquals = true; } ]
     // COPY is one of MySQL's ALGORITHM values and also starts the COPY statement
     ( value=<K_DEFAULT> | value=<K_NONE> | value=<K_EXCLUSIVE> | value=<K_COPY>
         | value=<S_IDENTIFIER> )
-    { option.add(value.image); return option; }
+    { return new AlgorithmOrLockOption(kind, value.image, useEquals); }
 }
 
 List<String> ColumnDefinitionParameter(): {
@@ -16058,7 +16065,7 @@ TableElement TableIndexSpec(boolean createContext):
     String indexName = null;
     String using = null;
     List<KeyElement> columns;
-    List<String> indexOptions = new ArrayList<String>();
+    List<IndexSpecOption> indexOptions = new ArrayList<IndexSpecOption>();
     TableElement index;
     Boolean nullsDistinct = null;
     IndexOptions.Clustering clustering = null;
@@ -16067,15 +16074,19 @@ TableElement TableIndexSpec(boolean createContext):
     (
         typeToken=<K_PRIMARY> keywordToken=<K_KEY>
         clustering=SqlServerIndexClustering()
-        [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET }) indexName=RelObjectName() ]
+        [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET
+                && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
+        // MySQL's index_type may also precede the key list: PRIMARY KEY USING BTREE (id)
+        [ LOOKAHEAD({ getToken(1).kind == K_USING && getToken(2).kind != K_INDEX
+                && getToken(2).kind != K_COLUMNS }) using=UsingIndexType() ]
         columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
             index = new KeyConstraint()
                     .withIndexName(indexName)
                     .withType(typeToken.image + " " + keywordToken.image)
-                    .withColumns(columns)
-                    .withIndexSpec(indexOptions);
+                    .withUsing(using).withColumns(columns)
+                    .withSpecOptions(indexOptions);
         }
         |
         typeToken=<K_UNIQUE>
@@ -16097,12 +16108,12 @@ TableElement TableIndexSpec(boolean createContext):
                         .withIndexName(indexName)
                         .withType(typeToken.image
                                 + (keywordToken != null ? " " + keywordToken.image : ""))
-                        .withUsing(using).withColumns(columns).withIndexSpec(indexOptions);
+                        .withUsing(using).withColumns(columns).withSpecOptions(indexOptions);
             } else {
                 index = new KeyConstraint().withType(typeToken.image)
                         .withIndexKeyword(keywordToken != null ? keywordToken.image : null)
                         .withIndexName(indexName).withUsing(using).withColumns(columns)
-                        .withIndexSpec(indexOptions);
+                        .withSpecOptions(indexOptions);
             }
         }
         |
@@ -16116,7 +16127,7 @@ TableElement TableIndexSpec(boolean createContext):
             index = new Index().withType(createContext ? typeToken.image : null)
                     .withIndexKeyword(typeToken.image).withKind(Index.Kind.INDEX)
                     .withName(indexName).withUsing(using).withColumns(columns)
-                    .withIndexSpec(indexOptions);
+                    .withSpecOptions(indexOptions);
         }
         |
         typeToken=<K_KEY>
@@ -16129,7 +16140,7 @@ TableElement TableIndexSpec(boolean createContext):
             index = new Index().withType(createContext ? typeToken.image : null)
                     .withIndexKeyword(typeToken.image).withKind(Index.Kind.INDEX)
                     .withName(indexName).withUsing(using).withColumns(columns)
-                    .withIndexSpec(indexOptions);
+                    .withSpecOptions(indexOptions);
         }
         |
         (typeToken=<K_FULLTEXT> | typeToken=<K_SPATIAL>)
@@ -16143,7 +16154,7 @@ TableElement TableIndexSpec(boolean createContext):
                                     ? " " + keywordToken.image : ""))
                     .withIndexKeyword(!createContext && keywordToken != null
                             ? keywordToken.image : null)
-                    .withName(indexName).withColumns(columns).withIndexSpec(indexOptions);
+                    .withName(indexName).withColumns(columns).withSpecOptions(indexOptions);
         }
     )
     { ((IndexOptionSource) index).setNullsDistinct(nullsDistinct);
@@ -16152,8 +16163,13 @@ TableElement TableIndexSpec(boolean createContext):
     { return index; }
 }
 
-void TableIndexOptions(boolean createContext, List<String> options):
+/**
+ * Index options after the key list, shared by CREATE TABLE and ALTER TABLE key definitions.
+ * CREATE TABLE also retains other accepted tokens as opaque options.
+ */
+void TableIndexOptions(boolean createContext, List<IndexSpecOption> options):
 {
+    IndexSpecOption option;
     List<String> parameter;
 }
 {
@@ -16164,9 +16180,18 @@ void TableIndexOptions(boolean createContext, List<String> options):
                 && getToken(1).kind != K_DEFERRABLE && !isKeywordAhead("INITIALLY")
                 && !(getToken(1).kind == K_NOT && (getToken(2).kind == K_DEFERRABLE
                     || "VALID".equalsIgnoreCase(getToken(2).image))) })
-            parameter=CreateParameter() { options.addAll(parameter); } )*
+            (
+                LOOKAHEAD(IndexSpecOption()) option=IndexSpecOption() { options.add(option); }
+                |
+                parameter=CreateParameter() { options.add(IndexSpecOption.raw(parameter)); }
+            )
+        )*
         |
-        LOOKAHEAD({ !createContext }) IndexOptionList(options)
+        LOOKAHEAD({ !createContext })
+        (
+            LOOKAHEAD(IndexSpecOption(), { !(getToken(1).kind == K_USING && getToken(2).kind == K_INDEX) })
+            option=IndexSpecOption() { options.add(option); }
+        )*
     )
 }
 
@@ -17960,7 +17985,9 @@ Drop Drop():
     Table indexTable = null;
     int indexTablePosition = 0;
     List<String> dropArgs = new ArrayList<String>();
-    List<String> indexOption;
+    AlgorithmOrLockOption indexOption;
+    List<AlgorithmOrLockOption> indexOptions = new ArrayList<AlgorithmOrLockOption>();
+    int indexOptionPosition = 0;
     boolean useTemporary = false;
     boolean foreign = false;
     boolean eventTrigger = false;
@@ -18039,16 +18066,19 @@ Drop Drop():
         <K_ENGINE> [ "=" { drop.setEngineUseEquals(true); } ] engine=RelObjectName() { drop.setEngine(engine); }
     ]
     (
+        // MySQL DROP INDEX accepts a trailing algorithm_option / lock_option, e.g.
+        // "DROP INDEX i ON t ALGORITHM = INPLACE LOCK = NONE". LOCK also starts a LOCK TABLE
+        // statement, so it is only taken here when it cannot begin the next statement.
         LOOKAHEAD({ getToken(1).kind == K_ALGORITHM
                 || (getToken(1).kind == K_LOCK && getToken(2).kind != K_TABLE) })
-        indexOption=IndexAlgorithmOrLockOption() { dropArgs.addAll(indexOption); }
+        indexOption=IndexAlgorithmOrLockOption() {
+            if (indexOptions.isEmpty()) {
+                indexOptionPosition = dropArgs.size();
+            }
+            indexOptions.add(indexOption);
+        }
         |
-        (
-            tk=<S_IDENTIFIER>
-            // MySQL DROP INDEX accepts a trailing algorithm_option / lock_option,
-            // e.g. "DROP INDEX i ON t ALGORITHM = INPLACE LOCK = NONE".
-            | tk=<K_ALGORITHM> | tk=<K_NONE> | tk="="
-        ) { dropArgs.add(tk.image); }
+        tk=<S_IDENTIFIER> { dropArgs.add(tk.image); }
         |
         (
             <K_ON> name = DropObjectName() {
@@ -18061,11 +18091,6 @@ Drop Drop():
                 }
             }
         )
-        |
-        // The lock_option of DROP INDEX. LOCK also starts a LOCK TABLE statement, so it is only
-        // taken as a DROP argument when it cannot be the beginning of the next statement.
-        LOOKAHEAD({ getToken(1).kind == K_LOCK && getToken(2).kind != K_TABLE })
-        tk=<K_LOCK> { dropArgs.add(tk.image); }
     )*
     [ <K_CASCADE> { behavior = CascadeBehavior.CASCADE; } | <K_RESTRICT> { behavior = CascadeBehavior.RESTRICT; } ]
     {
@@ -18074,6 +18099,9 @@ Drop Drop():
         }
         if (indexTable != null) {
             drop.setTable(indexTable, indexTablePosition);
+        }
+        if (!indexOptions.isEmpty()) {
+            drop.setAlgorithmOrLockOptions(indexOptions, indexOptionPosition);
         }
         drop.setBehavior(behavior);
 
@@ -18368,15 +18396,6 @@ void IndexWithComment(IndexOptionSource index):
     }
 }
 
-void IndexOptionList(List<String> list) :
-{}
-{
-    (
-       LOOKAHEAD(2, { !(getToken(1).kind == K_USING && getToken(2).kind == K_INDEX) })
-       IndexOption(list)
-    )*
-}
-
 String UsingIndexType() :
 {
     String sk = null;
@@ -18388,48 +18407,35 @@ String UsingIndexType() :
     }
 }
 
-void IndexOption(List<String> list) :
+/** MySQL's index_option, shared by CREATE INDEX and the key definitions of CREATE/ALTER TABLE. */
+IndexSpecOption IndexSpecOption():
 {
-    Token tk1 = null;
-    Token tk2 = null;
-    String sk1 = null;
-    boolean useEqual = false;
-    TableOption attribute;
+    Token token;
+    String value;
+    TableOption scalar;
+    IndexSpecOption option;
 }
 {
     (
-      LOOKAHEAD({ isMySqlEngineAttributeAhead() }) attribute=MySqlScalarTableOption()
-      { list.addAll(attribute.getTokens()); }
-    |
-      tk1=<K_KEY_BLOCK_SIZE> ["=" { useEqual = true; } ] tk2=<S_LONG>
-      {
-        list.add("KEY_BLOCK_SIZE" +  (useEqual ? " = " : "") + tk2.image);
-      }
-    |
-      tk1=<K_WITH> <K_PARSER> tk2=<S_IDENTIFIER>
-      {
-        list.add("WITH PARSER " + tk2.image);
-      }
-    |
-      tk1=<K_COMMENT> tk2=<S_CHAR_LITERAL>
-      {
-        list.add("COMMENT " + tk2.image);
-      }
-    |
-      tk1=<K_VISIBLE>
-      {
-        list.add("VISIBLE");
-      }
-    |
-      tk1=<K_INVISIBLE>
-      {
-        list.add("INVISIBLE");
-      }
-    |
-      sk1 = UsingIndexType(){
-        list.add("USING " + sk1);
-      }
+        // KEY_BLOCK_SIZE and the engine attributes share the scalar syntax of table options.
+        LOOKAHEAD({ getToken(1).kind == K_KEY_BLOCK_SIZE || isMySqlEngineAttributeAhead() })
+        scalar=MySqlScalarTableOption() {
+            option = IndexSpecOption.of(IndexSpecOption.Kind.valueOf(scalar.getKind().name()),
+                    scalar.getValue(), scalar.isUseEquals());
+        }
+        |
+        value=UsingIndexType() { option = IndexSpecOption.of(IndexSpecOption.Kind.INDEX_TYPE, value); }
+        |
+        <K_WITH> <K_PARSER> value=RelObjectName()
+        { option = IndexSpecOption.of(IndexSpecOption.Kind.PARSER, value); }
+        |
+        <K_COMMENT> token=<S_CHAR_LITERAL> { option = IndexSpecOption.comment(stringValue(token)); }
+        |
+        <K_VISIBLE> { option = IndexSpecOption.visibility(true); }
+        |
+        <K_INVISIBLE> { option = IndexSpecOption.visibility(false); }
     )
+    { return option; }
 }
 
 TablePartitioning CreateTablePartitioning():
@@ -18922,6 +18928,7 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
     List<ConstraintState> constraints = null;
     CheckConstraint checkCs = null;
     IndexOptions.Clustering clustering = null;
+    String using = null;
 }
 {
     <K_CONSTRAINT>
@@ -18951,12 +18958,14 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             |
             ( tk=<K_PRIMARY> tk2=<K_KEY>
                 clustering=SqlServerIndexClustering()
+                [ LOOKAHEAD({ getToken(1).kind == K_USING && getToken(2).kind != K_INDEX })
+                    using=UsingIndexType() ]
                 columnNames=ColumnsNamesList()
                 {
                     index = new KeyConstraint()
                         .withName(sk3)
                         .withType(tk.image + " " + tk2.image)
-                        .withClustering(clustering)
+                        .withClustering(clustering).withUsing(using)
                         .withColumnsNames(columnNames);
                     alterExp.setConstraint(index);
                 }
@@ -18981,12 +18990,14 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             (
                 tk=<K_UNIQUE> (tk2=<K_KEY> | tk2=<K_INDEX>)?
                   clustering=SqlServerIndexClustering()
+                  [ LOOKAHEAD({ getToken(1).kind == K_USING && getToken(2).kind != K_INDEX })
+                      using=UsingIndexType() ]
                   columnNames=ColumnsNamesList()
                   {
                       index = new KeyConstraint()
                         .withName(sk3)
                         .withType(tk.image + (tk2!=null?" " + tk2.image:""))
-                        .withClustering(clustering)
+                        .withClustering(clustering).withUsing(using)
                         .withColumnsNames(columnNames);
                       alterExp.setConstraint(index);
                   }
@@ -19197,7 +19208,7 @@ AlterExpression AlterExpressionAddAlterModify():
     TableElement element;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
-    List<String> indexSpec = new ArrayList<String>();
+    List<IndexSpecOption> indexSpec = new ArrayList<IndexSpecOption>();
     List<PartitionDefinition> partitionDefinition = null;
 }
 {
@@ -19219,9 +19230,9 @@ AlterExpression AlterExpressionAddAlterModify():
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ALTER
                 && getToken(1).kind == K_INDEX })
-        tk=<K_INDEX> sk3=RelObjectName() IndexOptionList(indexSpec) {
+        tk=<K_INDEX> sk3=RelObjectName() TableIndexOptions(false, indexSpec) {
             index = new Index().withIndexKeyword(tk.image).withName(sk3)
-                    .withKind(Index.Kind.INDEX).withIndexSpec(indexSpec);
+                    .withKind(Index.Kind.INDEX).withSpecOptions(indexSpec);
             alterExp.setIndex(index);
         }
         |

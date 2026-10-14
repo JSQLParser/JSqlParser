@@ -113,6 +113,11 @@ public class KeyConstraint extends NamedConstraint implements KeyColumnSource, I
         return this;
     }
 
+    public KeyConstraint withSpecOptions(List<IndexSpecOption> value) {
+        setSpecOptions(value);
+        return this;
+    }
+
     public KeyConstraint withClustering(IndexOptions.Clustering value) {
         setClustering(value);
         return this;

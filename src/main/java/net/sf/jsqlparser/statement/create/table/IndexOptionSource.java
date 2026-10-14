@@ -33,6 +33,14 @@ public interface IndexOptionSource {
         getIndexOptions().setIndexSpec(value);
     }
 
+    default List<IndexSpecOption> getSpecOptions() {
+        return getIndexOptions().getSpecOptions();
+    }
+
+    default void setSpecOptions(List<IndexSpecOption> value) {
+        getIndexOptions().setSpecOptions(value);
+    }
+
     default String getCommentText() {
         return getIndexOptions().getCommentText();
     }

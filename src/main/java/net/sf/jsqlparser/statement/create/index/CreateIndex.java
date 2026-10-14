@@ -23,7 +23,7 @@ public class CreateIndex implements Statement {
     private Table table;
     private Index index;
     private IndexOptions detachedOptions;
-    private List<String> tailParameters;
+    private final List<AlgorithmOrLockOption> algorithmOrLockOptions = new ArrayList<>();
     private boolean indexTypeBeforeOn = false;
     private boolean usingIfNotExists = false;
     private boolean concurrently;
@@ -170,6 +170,7 @@ public class CreateIndex implements Statement {
                 detachedOptions.setNullsDistinct(previousOptions.getNullsDistinct());
                 detachedOptions.setStorageParameters(previousOptions.getStorageParameters());
                 detachedOptions.setTableSpace(previousOptions.getTableSpace());
+                detachedOptions.setSpecOptions(previousOptions.getSpecOptions());
             }
         } else {
             if (previousOptions != null && previousOptions != index.getIndexOptions()) {
@@ -185,6 +186,9 @@ public class CreateIndex implements Statement {
                 if (index.getTableSpace() == null) {
                     index.setTableSpace(previousOptions.getTableSpace());
                 }
+                if (index.getSpecOptions() == null) {
+                    index.setSpecOptions(previousOptions.getSpecOptions());
+                }
             }
             detachedOptions = null;
         }
@@ -199,12 +203,56 @@ public class CreateIndex implements Statement {
         this.table = table;
     }
 
-    public List<String> getTailParameters() {
-        return tailParameters;
+    /**
+     * Returns the mutable MySQL ALGORITHM and LOCK clauses in source order. They are rendered after
+     * the index options, as MySQL requires.
+     */
+    public List<AlgorithmOrLockOption> getAlgorithmOrLockOptions() {
+        return algorithmOrLockOptions;
     }
 
+    /** Copies the list membership and retains the option nodes; null clears the clauses. */
+    public void setAlgorithmOrLockOptions(List<AlgorithmOrLockOption> options) {
+        algorithmOrLockOptions.clear();
+        if (options != null) {
+            algorithmOrLockOptions.addAll(options);
+        }
+    }
+
+    public CreateIndex withAlgorithmOrLockOptions(List<AlgorithmOrLockOption> options) {
+        setAlgorithmOrLockOptions(options);
+        return this;
+    }
+
+    public CreateIndex addAlgorithmOrLockOptions(AlgorithmOrLockOption... options) {
+        Collections.addAll(algorithmOrLockOptions, options);
+        return this;
+    }
+
+    /**
+     * Returns an unmodifiable token snapshot of the trailing clauses: the index options after the
+     * key list ({@link Index#getSpecOptions()}), followed by {@link #getAlgorithmOrLockOptions()}.
+     * Edit those nodes instead of the snapshot.
+     */
+    public List<String> getTailParameters() {
+        List<String> tokens = new ArrayList<>();
+        IndexOptions options = getOptions();
+        if (options != null && options.getIndexSpec() != null) {
+            tokens.addAll(options.getIndexSpec());
+        }
+        for (AlgorithmOrLockOption option : algorithmOrLockOptions) {
+            tokens.addAll(option.getTokens());
+        }
+        return Collections.unmodifiableList(tokens);
+    }
+
+    /**
+     * Replaces the index options after the key list and the ALGORITHM and LOCK clauses with one
+     * opaque option holding a copy of the tokens, without parsing them. Null clears them.
+     */
     public void setTailParameters(List<String> tailParameters) {
-        this.tailParameters = tailParameters;
+        algorithmOrLockOptions.clear();
+        getOrCreateOptions().setIndexSpec(tailParameters);
     }
 
     @Override
@@ -223,10 +271,13 @@ public class CreateIndex implements Statement {
         appendIndexTarget(buffer);
         appendIndexColumns(buffer, expressionPrinter);
         appendPostgreSqlTail(buffer, expressionPrinter);
-        if (tailParameters != null) {
-            for (String param : tailParameters) {
-                buffer.append(" ").append(param);
+        if (index.getSpecOptions() != null) {
+            for (IndexSpecOption option : index.getSpecOptions()) {
+                buffer.append(" ").append(option);
             }
+        }
+        for (AlgorithmOrLockOption option : algorithmOrLockOptions) {
+            buffer.append(" ").append(option);
         }
         return buffer;
     }
