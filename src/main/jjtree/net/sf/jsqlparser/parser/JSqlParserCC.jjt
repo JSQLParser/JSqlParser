@@ -182,7 +182,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private void captureOpaqueStatements(Statements statements) throws ParseException {
-        while (getAsBoolean(Feature.allowUnsupportedStatements) && isOpaqueStatementAhead()) {
+        if (!getAsBoolean(Feature.allowUnsupportedStatements)) {
+            return;
+        }
+        while (isOpaqueStatementAhead()) {
             statements.add(UnsupportedStatement());
             while (getToken(1).kind == ST_SEMICOLON) {
                 getNextToken();
@@ -694,8 +697,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isPostgreSqlJsonAccess(Token token) {
-        return ("->".equals(token.image) || "->>".equals(token.image)
-                || "#>".equals(token.image) || "#>>".equals(token.image))
+        // reject non-operator images with one charAt before the equals chain: this
+        // runs after every primary expression
+        String image = token.image;
+        if (image == null || image.length() < 2 || (image.charAt(0) != '-' && image.charAt(0) != '#')) {
+            return false;
+        }
+        return ("->".equals(image) || "->>".equals(image)
+                || "#>".equals(image) || "#>>".equals(image))
                 && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
     }
 
@@ -2704,6 +2713,95 @@ PARSER_END(CCJSqlParser)
 TOKEN_MGR_DECLS : {
     public FeatureConfiguration configuration = new FeatureConfiguration();
 
+    // The configuration is wired before parsing starts (CCJSqlParser.getConfiguration /
+    // withConfiguration) and no lexical action mutates it mid-parse. Cache the dialect and
+    // flag lookups the per-token actions need, keyed on the wired configuration's identity,
+    // so every token pays a field read instead of a map lookup.
+    private FeatureConfiguration lexicalConfiguration;
+    private boolean lexicalPostgreSqlDialect;
+    private boolean lexicalBigQueryDialect;
+    private boolean lexicalAllowHashLineComments;
+    private boolean lexicalAllowBackslashEscapes;
+    private boolean lexicalAllowDoubleQuotedStrings;
+    private boolean lexicalAllowSquareBracketQuotation;
+
+    private void refreshLexicalConfiguration(FeatureConfiguration wired) {
+        lexicalConfiguration = wired;
+        Object dialect = wired.getValue(Feature.dialect);
+        lexicalPostgreSqlDialect = AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(dialect);
+        lexicalBigQueryDialect = AbstractJSqlParser.Dialect.BIGQUERY.name().equals(dialect);
+        lexicalAllowHashLineComments = Boolean.TRUE.equals(wired.getValue(Feature.allowHashLineComments));
+        lexicalAllowBackslashEscapes = wired.getAsBoolean(Feature.allowBackslashEscapeCharacter);
+        lexicalAllowDoubleQuotedStrings = wired.getAsBoolean(Feature.allowDoubleQuotedStrings);
+        lexicalAllowSquareBracketQuotation = wired.getAsBoolean(Feature.allowSquareBracketQuotation);
+    }
+
+    private boolean isPostgreSqlDialect() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalPostgreSqlDialect;
+    }
+
+    private boolean isBigQueryDialect() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalBigQueryDialect;
+    }
+
+    private boolean isAllowHashLineComments() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalAllowHashLineComments;
+    }
+
+    private boolean isAllowBackslashEscapes() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalAllowBackslashEscapes;
+    }
+
+    private boolean isAllowDoubleQuotedStrings() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalAllowDoubleQuotedStrings;
+    }
+
+    private boolean isAllowSquareBracketQuotation() {
+        FeatureConfiguration wired = input_stream.featureConfiguration;
+        if (wired == null) {
+            return false;
+        }
+        if (wired != lexicalConfiguration) {
+            refreshLexicalConfiguration(wired);
+        }
+        return lexicalAllowSquareBracketQuotation;
+    }
+
 
     // Identify the index of the quoting/escaping tokens
     public int charLiteralIndex = -1;
@@ -2768,7 +2866,7 @@ TOKEN_MGR_DECLS : {
         // disambiguation can fetch PATTERN tokens before its production is entered.
         if (rowPatternContext == null && t.kind == S_IDENTIFIER
                 && "MATCH_RECOGNIZE".equalsIgnoreCase(t.image)
-                && AbstractJSqlParser.Dialect.BIGQUERY.name().equals(configuration.getValue(Feature.dialect))) {
+                && isBigQueryDialect()) {
             rowPatternContext = new RowPatternTokenContext();
         }
         if (rowPatternContext != null) {
@@ -3640,8 +3738,7 @@ TOKEN:
     // that never opted in (the stream is only wired through the feature
     // consumers / withConfiguration); getValue avoids the String-based
     // getAsBoolean roundtrip
-    if (matchedToken.kind == S_IDENTIFIER && input_stream.featureConfiguration != null
-            && Boolean.TRUE.equals(configuration.getValue(Feature.allowHashLineComments))) {
+    if (matchedToken.kind == S_IDENTIFIER && isAllowHashLineComments()) {
         int hashIndex = matchedToken.image.indexOf('#');
         if (hashIndex > 0) {
             truncateIdentifierToken(matchedToken, hashIndex);
@@ -3649,8 +3746,7 @@ TOKEN:
     }
     // PostgreSQL does not allow # or @ in unquoted identifiers. Re-lex them as
     // operators, including #>, #>>, #- and @?, when touching the left operand.
-    if (matchedToken.kind == S_IDENTIFIER
-            && AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))) {
+    if (matchedToken.kind == S_IDENTIFIER && isPostgreSqlDialect()) {
         int hashIndex = matchedToken.image.indexOf('#');
         int atIndex = matchedToken.image.indexOf('@');
         int operatorIndex = hashIndex < 0 ? atIndex
@@ -3676,8 +3772,7 @@ TOKEN:
     // that never opted in (the stream is only wired through the feature
     // consumers / withConfiguration); getValue avoids the String-based
     // getAsBoolean roundtrip
-    if (input_stream.featureConfiguration != null
-            && Boolean.TRUE.equals(configuration.getValue(Feature.allowHashLineComments))) {
+    if (isAllowHashLineComments()) {
         int hashIndex = matchedToken.image.indexOf('#');
         if (hashIndex > 0) {
             truncateIdentifierToken(matchedToken, hashIndex);
@@ -3728,8 +3823,8 @@ TOKEN:
         // escapes the next character only with backslash escapes or in a PostgreSQL E'' string;
         // otherwise the literal ends at the first quote that is not doubled, so LIKE ... ESCAPE '\\'
         // still works.
-        boolean backslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
-                || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
+        boolean backslashEscapes = isAllowBackslashEscapes()
+                || (isPostgreSqlDialect()
                     && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
         int end = closingSingleQuote(matchedToken.image, backslashEscapes);
         if (end > 0 && end < matchedToken.image.length()) {
@@ -3747,14 +3842,13 @@ TOKEN:
             // the active quoting rules: a backslash escapes the next character only in
             // double-quoted strings with backslash escapes, as in MySQL.
             int end = closingQuote(matchedToken.image, 0, '"',
-                    configuration.getAsBoolean(Feature.allowDoubleQuotedStrings)
-                    && configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter));
+                    isAllowDoubleQuotedStrings() && isAllowBackslashEscapes());
             if (end > 0 && end < matchedToken.image.length()) {
                 matchedToken.image = image.substring(0, end);
                 input_stream.backup(image.length() - end);
             }
         }
-        if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
+        if ( !isAllowSquareBracketQuotation()
             && matchedToken.image.charAt(0) == '[' ) {
 
             matchedToken.image = "[";
@@ -3762,7 +3856,7 @@ TOKEN:
             matchedToken.kind = squaredBracketOpenIndex;
             input_stream.backup(image.length() - 1);
         }
-        if ( configuration.getAsBoolean(Feature.allowDoubleQuotedStrings)
+        if ( isAllowDoubleQuotedStrings()
             && matchedToken.image.charAt(0) == '"' ) {
             // `charLiteralIndex` defined in TokenManagerDeclaration above
             matchedToken.kind = charLiteralIndex;
@@ -12019,7 +12113,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     Token token = null;
     Token sign = null;
     Token innerSign;
-    List<Token> innerSigns = new ArrayList<Token>();
+    List<Token> innerSigns = null;
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
@@ -12033,7 +12127,8 @@ Expression PrimaryExpression() #PrimaryExpression:
     [
         ( sign="+" | sign="-" | sign="~" )
         // DuckDB's chained signs, e.g. - -1 or +-+1
-        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
+        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" )
+            { if (innerSigns == null) { innerSigns = new ArrayList<Token>(); } innerSigns.add(innerSign); } )*
     ]
     (
         <K_NULL> { retval = new NullValue(); }
@@ -12249,8 +12344,10 @@ Expression PrimaryExpression() #PrimaryExpression:
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
         }
-        for (int i = innerSigns.size() - 1; i >= 0; i--) {
-            retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+        if (innerSigns != null) {
+            for (int i = innerSigns.size() - 1; i >= 0; i--) {
+                retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+            }
         }
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
