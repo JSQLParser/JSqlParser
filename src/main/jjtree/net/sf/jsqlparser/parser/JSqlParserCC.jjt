@@ -1265,6 +1265,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Both named-parameter forms match only a single-token name (or K_OUTER) directly followed
+     * by their assignment token; the 2-token lookahead fails for anything else, so this first
+     * check is equivalent to running that scan.
+     */
+    private boolean isNamedParameterAssignmentAhead() {
+        int kind = getToken(2).kind;
+        return kind == K_ORACLE_NAMED_PARAMETER_ASSIGNMENT
+                || kind == K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT;
+    }
+
     /** Distinguish EXISTS identifiers from predicates before suffixes and clause boundaries. */
     private boolean isExistsIdentifierAhead() {
         if (getToken(1).kind != K_EXISTS) {
@@ -11048,6 +11059,10 @@ Expression Condition():
         LOOKAHEAD(2, { !isExistsIdentifierAhead() })
         result=ExistsExpression()
         |
+          // last alternative of the choice: entering it and letting the productions
+          // themselves reject is equivalent to scanning first, so skip the deep
+          // lookahead simulation (this path runs for every plain condition)
+          LOOKAHEAD({ !interrupted })
           [ LOOKAHEAD(2, { getToken(1).kind == K_PRIOR }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
           left=SimpleExpression() { result = left; }
 
@@ -11198,7 +11213,10 @@ Expression SQLCondition():
         |
         LOOKAHEAD(2, { !isExistsIdentifierAhead() })
         result=ExistsExpression()
-        | left = SimpleExpression() { result = left; }
+        |
+          // last alternative of the choice: skip the redundant lookahead simulation
+          LOOKAHEAD({ !interrupted })
+          left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
                 LOOKAHEAD(2, <K_OVERLAPS>) result=OverlapsCondition(left)
@@ -11663,9 +11681,9 @@ ExpressionList ComplexExpressionList():
 }
 {
     (
-        LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+        LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=OracleNamedFunctionParameter()
         |
-        LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
+        LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=PostgresNamedFunctionParameter()
         |
         expr=Expression()
     )
@@ -11676,9 +11694,9 @@ ExpressionList ComplexExpressionList():
     (
         LOOKAHEAD(2, {!interrupted}) ","
         (
-            LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=OracleNamedFunctionParameter()
             |
-            LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
+            LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=PostgresNamedFunctionParameter()
             |
             LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
