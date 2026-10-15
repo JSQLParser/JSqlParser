@@ -57,19 +57,24 @@ public class FeatureConfiguration {
     }
 
     public boolean getAsBoolean(Feature f) {
-        return Boolean.parseBoolean(String.valueOf(getValue(f)));
+        Object value = getValue(f);
+        return value instanceof Boolean ? (Boolean) value
+                : Boolean.parseBoolean(String.valueOf(value));
     }
 
     public Long getAsLong(Feature f) {
-        return Long.valueOf(String.valueOf(getValue(f)));
+        Object value = getValue(f);
+        return value instanceof Long ? (Long) value : Long.valueOf(String.valueOf(value));
     }
 
     public int getAsInt(Feature f) {
-        return Integer.parseInt(String.valueOf(getValue(f)));
+        Object value = getValue(f);
+        return value instanceof Integer ? (Integer) value : Integer.parseInt(String.valueOf(value));
     }
 
     public Integer getAsInteger(Feature f) {
-        return Integer.parseInt(String.valueOf(getValue(f)));
+        Object value = getValue(f);
+        return value instanceof Integer ? (Integer) value : Integer.valueOf(String.valueOf(value));
     }
 
     public String getAsString(Feature f) {
