@@ -223,6 +223,7 @@ import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.LateralView;
+import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
@@ -701,7 +702,26 @@ public class TablesNamesFinder<Void>
         if (exprList != null) {
             visit(exprList, context);
         }
+        // an attribute column names a field of the result, only an attribute function is visited
+        if (function.getAttribute() != function.getAttributeColumn()) {
+            visitExpression((Expression) function.getAttribute(), context);
+        }
+        visitOrderBy(function.getOrderByElements(), context);
+        visitAggregateModifiers(function.getKeep(), function.getHavingClause(),
+                function.getKeywordArguments(), function.getLimit(), context);
         return null;
+    }
+
+    private <S> void visitAggregateModifiers(KeepExpression keep, Function.HavingClause having,
+            List<Function.KeywordArgument> keywordArguments, Limit limit, S context) {
+        visitExpression(keep, context);
+        visitExpression(having, context);
+        if (keywordArguments != null) {
+            for (Function.KeywordArgument keywordArgument : keywordArguments) {
+                visitExpression(keywordArgument.getExpression(), context);
+            }
+        }
+        visitLimit(limit, context);
     }
 
     @Override
@@ -739,7 +759,8 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(FullTextSearch fullTextSearch, S context) {
-
+        visitExpressions(fullTextSearch.getMatchColumns(), context);
+        visitExpression(fullTextSearch.getAgainstValue(), context);
         return null;
     }
 
@@ -769,7 +790,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(IsUnknownExpression isUnknownExpression, S context) {
-
+        isUnknownExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
@@ -782,6 +803,7 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(LikeExpression likeExpression, S context) {
         visitBinaryExpression(likeExpression);
+        visitExpression(likeExpression.getEscape(), context);
         return null;
     }
 
@@ -1029,9 +1051,8 @@ public class TablesNamesFinder<Void>
         if (analytic.getOffset() != null) {
             analytic.getOffset().accept(this, context);
         }
-        if (analytic.getKeep() != null) {
-            analytic.getKeep().accept(this, context);
-        }
+        visitAggregateModifiers(analytic.getKeep(), analytic.getHavingClause(),
+                analytic.getKeywordArguments(), analytic.getLimit(), context);
         if (analytic.getFilterExpression() != null) {
             analytic.getFilterExpression().accept(this, context);
         }
@@ -1048,29 +1069,24 @@ public class TablesNamesFinder<Void>
                 element.getExpression().accept(this, context);
             }
         }
-
-        if (analytic.getWindowElement() != null) {
-            if (analytic.getWindowElement().getRange() != null) {
-                if (analytic.getWindowElement().getRange().getStart() != null
-                        && analytic.getWindowElement().getRange().getStart()
-                                .getExpression() != null) {
-                    analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
-                            context);
-                }
-                if (analytic.getWindowElement().getRange().getEnd() != null
-                        && analytic.getWindowElement().getRange().getEnd()
-                                .getExpression() != null) {
-                    analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
-                            context);
-                }
-            }
-            if (analytic.getWindowElement().getOffset() != null
-                    && analytic.getWindowElement().getOffset().getExpression() != null) {
-                analytic.getWindowElement().getOffset().getExpression().accept(this, context);
-            }
-
-        }
+        visitWindowElement(analytic.getWindowElement(), context);
         return null;
+    }
+
+    private <S> void visitWindowElement(WindowElement windowElement, S context) {
+        if (windowElement != null) {
+            if (windowElement.getRange() != null) {
+                if (windowElement.getRange().getStart() != null) {
+                    visitExpression(windowElement.getRange().getStart().getExpression(), context);
+                }
+                if (windowElement.getRange().getEnd() != null) {
+                    visitExpression(windowElement.getRange().getEnd().getExpression(), context);
+                }
+            }
+            if (windowElement.getOffset() != null) {
+                visitExpression(windowElement.getOffset().getExpression(), context);
+            }
+        }
     }
 
     @Override
@@ -1365,6 +1381,9 @@ public class TablesNamesFinder<Void>
         if (jsonExpr.getExpression() != null) {
             jsonExpr.getExpression().accept(this, context);
         }
+        for (Expression ident : jsonExpr.getIdents()) {
+            visitExpression(ident, context);
+        }
         return null;
     }
 
@@ -1436,13 +1455,14 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(KeepExpression keepExpression, S context) {
-
+        visitOrderBy(keepExpression.getOrderByElements(), context);
         return null;
     }
 
     @Override
     public <S> Void visit(MySQLGroupConcat groupConcat, S context) {
-
+        visitExpressions(groupConcat.getExpressionList(), context);
+        visitOrderBy(groupConcat.getOrderByElements(), context);
         return null;
     }
 
@@ -2001,7 +2021,8 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(TableFunction tableFunction, S context) {
         if (tableFunction.getFunctions() != null) {
             for (var function : tableFunction.getFunctions()) {
-                visit(function, null);
+                // dispatch dynamically, XMLTABLE and JSON_TABLE are Function subclasses
+                function.accept(this, context);
             }
         }
         return null;
@@ -2450,6 +2471,9 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(TimezoneExpression timezoneExpression, S context) {
         timezoneExpression.getLeftExpression().accept(this, context);
+        for (Expression timezone : timezoneExpression.getTimezoneExpressions()) {
+            visitExpression(timezone, context);
+        }
         return null;
     }
 
@@ -2491,11 +2515,21 @@ public class TablesNamesFinder<Void>
         if (expr != null) {
             expr.accept(this, context);
         }
+        if (expression.getKey() instanceof Expression) {
+            ((Expression) expression.getKey()).accept(this, context);
+        }
+        if (expression.getValue() instanceof Expression) {
+            ((Expression) expression.getValue()).accept(this, context);
+        }
+        visitOrderBy(expression.getExpressionOrderByElements(), context);
 
         expr = expression.getFilterExpression();
         if (expr != null) {
             expr.accept(this, context);
         }
+        visitExpressions(expression.getPartitionExpressionList(), context);
+        visitOrderBy(expression.getOrderByElements(), context);
+        visitWindowElement(expression.getWindowElement(), context);
         return null;
     }
 
