@@ -68,6 +68,24 @@ public class SimpleCharStream {
     String mySqlCommentError;
     boolean mySqlMinusSubstitution;
 
+    // derived from featureConfiguration, refreshed on identity change: the
+    // configuration is wired before parsing starts and is not mutated mid-parse
+    private FeatureConfiguration derivedFrom;
+    private boolean derivedMySqlDialect;
+    private boolean derivedBlankLineSeparator = true;
+    private boolean derivedAllowHashLineComments;
+
+    private void refreshDerivedFeatures() {
+        derivedFrom = featureConfiguration;
+        derivedMySqlDialect = featureConfiguration != null
+                && AbstractJSqlParser.Dialect.MYSQL.name()
+                        .equals(featureConfiguration.getValue(Feature.dialect));
+        derivedBlankLineSeparator = featureConfiguration == null
+                || featureConfiguration.getAsBoolean(Feature.allowBlankLinesAsStatementSeparator);
+        derivedAllowHashLineComments = featureConfiguration != null
+                && featureConfiguration.getAsBoolean(Feature.allowHashLineComments);
+    }
+
     /**
      * Constructor.
      */
@@ -201,17 +219,16 @@ public class SimpleCharStream {
 
         absoluteTokenBegin = totalCharsRead;
 
-        if (c == '#' && featureConfiguration != null
-                && featureConfiguration.getAsBoolean(Feature.allowHashLineComments)) {
+        if (featureConfiguration != derivedFrom) {
+            refreshDerivedFeatures();
+        }
+
+        if (c == '#' && derivedAllowHashLineComments) {
             buffer[bufpos] = HASH_SUBSTITUTION;
             c = HASH_SUBSTITUTION;
-        } else if ((c == '-' || c == '/' || c == '*') && featureConfiguration != null
-                && AbstractJSqlParser.Dialect.MYSQL.name()
-                        .equals(featureConfiguration.getValue(Feature.dialect))) {
+        } else if ((c == '-' || c == '/' || c == '*') && derivedMySqlDialect) {
             c = mySqlCommentBoundary(c);
-        } else if (c == '\n' && featureConfiguration != null
-                && !featureConfiguration
-                        .getAsBoolean(Feature.allowBlankLinesAsStatementSeparator)
+        } else if (c == '\n' && !derivedBlankLineSeparator
                 && peekCharacters(2).equals("\n\n")) {
             // Blanking the first newline of the run stops ST_SEMICOLON matching "\n\n\n";
             // line and column tracking was already updated when the newline was read.
