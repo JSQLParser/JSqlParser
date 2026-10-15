@@ -1039,6 +1039,47 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         function.setExtraKeyword(getNextToken().image);
     }
 
+    /**
+     * An unquoted YEAR, MONTH, DAY, HOUR, MINUTE or SECOND passed on its own as a function argument, as in
+     * DATEADD(day, 1, d), is a date unit. Anywhere else it is an ordinary identifier, so it is parsed as a
+     * Column and only converted here, once it is known to be a whole argument.
+     */
+    private void normalizeDateUnitArguments(Function function) {
+        ExpressionList<?> parameters = function.getParameters();
+        if (parameters == null || parameters instanceof ParenthesedExpressionList) {
+            return;
+        }
+        ExpressionList<Expression> normalized = null;
+        for (int i = 0; i < parameters.size(); i++) {
+            if (!isDateUnitColumn(parameters.get(i))) {
+                continue;
+            }
+            Column column = (Column) parameters.get(i);
+            DateUnitExpression unit = new DateUnitExpression(column.getColumnName());
+            linkAST(unit, column.getASTNode());
+            if (normalized == null) {
+                normalized = new ExpressionList<Expression>(parameters);
+                normalized.setASTNode(parameters.getASTNode());
+            }
+            normalized.set(i, unit);
+        }
+        if (normalized != null) {
+            function.setParameters(normalized);
+        }
+    }
+
+    private static boolean isDateUnitColumn(Expression expression) {
+        if (!(expression instanceof Column)) {
+            return false;
+        }
+        Node node = ((Column) expression).getASTNode();
+        if (node == null) {
+            return false;
+        }
+        Token first = node.jjtGetFirstToken();
+        return first != null && first == node.jjtGetLastToken() && first.kind == K_DATE_LITERAL;
+    }
+
     private void normalizeOdbcTimestampInterval(Function function) {
         if (!function.isEscaped() || function.getMultipartName().size() != 1
                 || !("TIMESTAMPADD".equalsIgnoreCase(function.getName())
@@ -12074,8 +12115,6 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD({ !interrupted && isFunctionAhead() })
                   retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
-        | LOOKAHEAD(2) retval = DateUnitExpression()
-
         | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
         | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -12392,13 +12431,6 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
         expr.setValue(t.image);
         return expr;
     }
-}
-
-DateUnitExpression DateUnitExpression() : {
-    Token t;
-}
-{
-    t=<K_DATE_LITERAL>  { return new DateUnitExpression( t.image ); }
 }
 
 RangeExpression RangeExpression(Expression startExpression):
@@ -14052,6 +14084,7 @@ Function Function() #Function:
         | function = InternalFunction(false)
     )
     {
+        normalizeDateUnitArguments(function);
         linkAST(function,jjtThis);
         return function;
     }
