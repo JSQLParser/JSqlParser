@@ -11063,7 +11063,7 @@ Expression Condition():
           // themselves reject is equivalent to scanning first, so skip the deep
           // lookahead simulation (this path runs for every plain condition)
           LOOKAHEAD({ !interrupted })
-          [ LOOKAHEAD(2, { getToken(1).kind == K_PRIOR }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
+          [ LOOKAHEAD({ getToken(1).kind == K_PRIOR }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
           left=SimpleExpression() { result = left; }
 
           // Consume Oracle (+) once, before dispatching
@@ -11219,7 +11219,7 @@ Expression SQLCondition():
           left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
-                LOOKAHEAD(2, <K_OVERLAPS>) result=OverlapsCondition(left)
+                LOOKAHEAD({ getToken(1).kind == K_OVERLAPS }) result=OverlapsCondition(left)
                 |
                 LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
                 |
@@ -12112,7 +12112,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         //| LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
-        | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
+        | LOOKAHEAD({ !interrupted && (getToken(1).kind == K_TIME_KEY_EXPR || getToken(1).kind == K_CURRENT) })
+          (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
@@ -12132,7 +12133,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, { !interrupted && getToken(1).kind == K_KEY && getToken(2).kind != OPENING_BRACKET }) retval=KeyExpression()
 
-        | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
+        | LOOKAHEAD({ !interrupted && getToken(1).kind == K_ALL }) <K_ALL> { retval = new AllValue(); }
 
         | LOOKAHEAD({ !interrupted && isCharacterSetIntroducedStringAhead() })
                   retval=CharacterSetIntroducedString()
@@ -12146,7 +12147,8 @@ Expression PrimaryExpression() #PrimaryExpression:
                 "(" "+" ")" { ((Column) retval).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); }
             ]
 
-        | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
+        | LOOKAHEAD({ !interrupted && (getToken(1).kind == K_TRUE || getToken(1).kind == K_FALSE) })
+          (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
         | retval=CharacterLiteral() { linkAST(retval,jjtThis); }
 
