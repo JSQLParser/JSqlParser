@@ -2713,11 +2713,10 @@ PARSER_END(CCJSqlParser)
 TOKEN_MGR_DECLS : {
     public FeatureConfiguration configuration = new FeatureConfiguration();
 
-    // The configuration is wired before parsing starts (CCJSqlParser.getConfiguration /
-    // withConfiguration) and no lexical action mutates it mid-parse. Cache the dialect and
-    // flag lookups the per-token actions need, keyed on the wired configuration's identity,
-    // so every token pays a field read instead of a map lookup.
+    // The public configuration can be replaced or mutated, including between ReInit calls.
+    // Subclasses may provide dynamic values without going through setValue.
     private FeatureConfiguration lexicalConfiguration;
+    private long lexicalModificationCount;
     private boolean lexicalPostgreSqlDialect;
     private boolean lexicalBigQueryDialect;
     private boolean lexicalAllowHashLineComments;
@@ -2725,80 +2724,53 @@ TOKEN_MGR_DECLS : {
     private boolean lexicalAllowDoubleQuotedStrings;
     private boolean lexicalAllowSquareBracketQuotation;
 
-    private void refreshLexicalConfiguration(FeatureConfiguration wired) {
-        lexicalConfiguration = wired;
-        Object dialect = wired.getValue(Feature.dialect);
+    private void refreshLexicalConfiguration() {
+        long modificationCount = configuration.getModificationCount();
+        if (configuration == lexicalConfiguration && modificationCount == lexicalModificationCount
+                && configuration.getClass() == FeatureConfiguration.class) {
+            return;
+        }
+        Object dialect = configuration.getValue(Feature.dialect);
         lexicalPostgreSqlDialect = AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(dialect);
         lexicalBigQueryDialect = AbstractJSqlParser.Dialect.BIGQUERY.name().equals(dialect);
-        lexicalAllowHashLineComments = Boolean.TRUE.equals(wired.getValue(Feature.allowHashLineComments));
-        lexicalAllowBackslashEscapes = wired.getAsBoolean(Feature.allowBackslashEscapeCharacter);
-        lexicalAllowDoubleQuotedStrings = wired.getAsBoolean(Feature.allowDoubleQuotedStrings);
-        lexicalAllowSquareBracketQuotation = wired.getAsBoolean(Feature.allowSquareBracketQuotation);
+        lexicalAllowHashLineComments = Boolean.TRUE.equals(configuration.getValue(Feature.allowHashLineComments));
+        lexicalAllowBackslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter);
+        lexicalAllowDoubleQuotedStrings = configuration.getAsBoolean(Feature.allowDoubleQuotedStrings);
+        lexicalAllowSquareBracketQuotation = configuration.getAsBoolean(Feature.allowSquareBracketQuotation);
+        lexicalConfiguration = configuration;
+        lexicalModificationCount = modificationCount;
     }
 
     private boolean isPostgreSqlDialect() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
-            return false;
-        }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalPostgreSqlDialect;
     }
 
     private boolean isBigQueryDialect() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
-            return false;
-        }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalBigQueryDialect;
     }
 
     private boolean isAllowHashLineComments() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
+        if (input_stream.featureConfiguration == null) {
             return false;
         }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalAllowHashLineComments;
     }
 
     private boolean isAllowBackslashEscapes() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
-            return false;
-        }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalAllowBackslashEscapes;
     }
 
     private boolean isAllowDoubleQuotedStrings() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
-            return false;
-        }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalAllowDoubleQuotedStrings;
     }
 
     private boolean isAllowSquareBracketQuotation() {
-        FeatureConfiguration wired = input_stream.featureConfiguration;
-        if (wired == null) {
-            return false;
-        }
-        if (wired != lexicalConfiguration) {
-            refreshLexicalConfiguration(wired);
-        }
+        refreshLexicalConfiguration();
         return lexicalAllowSquareBracketQuotation;
     }
 

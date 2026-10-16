@@ -68,15 +68,14 @@ public class SimpleCharStream {
     String mySqlCommentError;
     boolean mySqlMinusSubstitution;
 
-    // derived from featureConfiguration, refreshed on identity change: the
-    // configuration is wired before parsing starts and is not mutated mid-parse
+    // ReInit retains the configuration, which callers can mutate between parses.
     private FeatureConfiguration derivedFrom;
+    private long derivedModificationCount;
     private boolean derivedMySqlDialect;
     private boolean derivedBlankLineSeparator = true;
     private boolean derivedAllowHashLineComments;
 
     private void refreshDerivedFeatures() {
-        derivedFrom = featureConfiguration;
         derivedMySqlDialect = featureConfiguration != null
                 && AbstractJSqlParser.Dialect.MYSQL.name()
                         .equals(featureConfiguration.getValue(Feature.dialect));
@@ -84,6 +83,9 @@ public class SimpleCharStream {
                 || featureConfiguration.getAsBoolean(Feature.allowBlankLinesAsStatementSeparator);
         derivedAllowHashLineComments = featureConfiguration != null
                 && featureConfiguration.getAsBoolean(Feature.allowHashLineComments);
+        derivedFrom = featureConfiguration;
+        derivedModificationCount = featureConfiguration == null ? 0
+                : featureConfiguration.getModificationCount();
     }
 
     /**
@@ -219,7 +221,9 @@ public class SimpleCharStream {
 
         absoluteTokenBegin = totalCharsRead;
 
-        if (featureConfiguration != derivedFrom) {
+        if (featureConfiguration != derivedFrom || featureConfiguration != null
+                && (featureConfiguration.getModificationCount() != derivedModificationCount
+                        || featureConfiguration.getClass() != FeatureConfiguration.class)) {
             refreshDerivedFeatures();
         }
 

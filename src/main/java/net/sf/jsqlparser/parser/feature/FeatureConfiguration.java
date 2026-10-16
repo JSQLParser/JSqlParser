@@ -20,6 +20,7 @@ public class FeatureConfiguration {
     private static final Logger LOG = Logger.getLogger(FeatureConfiguration.class.getName());
 
     private final Map<Feature, Object> featureEnabled = new EnumMap<>(Feature.class);
+    private long modificationCount;
 
     public FeatureConfiguration() {
         // set default-value for all switchable features
@@ -35,12 +36,18 @@ public class FeatureConfiguration {
     public FeatureConfiguration setValue(Feature feature, Object value) {
         if (feature.isConfigurable()) {
             featureEnabled.put(feature, value);
+            modificationCount++;
         } else {
             if (LOG.isLoggable(Level.WARNING)) {
                 LOG.warning(feature.name() + " is not switchable - cannot set enabled = " + value);
             }
         }
         return this;
+    }
+
+    /** Returns a change stamp for caches of derived feature values. */
+    public long getModificationCount() {
+        return modificationCount;
     }
 
     /**
