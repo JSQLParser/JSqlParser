@@ -1,0 +1,2 @@
+# key<TAB>context fingerprint<TAB>reason<TAB>regression test
+ConnectionOrCloudConnectionDefinition	f0d3e3f23a41c3cf239c643bae45e52bfadc80e117be4d15cb8af2b7f54931bb	AT conn and AT CLOUD share the first token; retain the second-token decision.	LookaheadCleanupTest.preservesCloudAndOrdinaryConnections

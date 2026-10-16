@@ -120,6 +120,31 @@ When adding a new keyword token to the Grammar:
     2) If the keyword must be reserved (e. |_| g. core SQL syntax like ``SELECT``, ``FROM``, ``WHERE``), add it to the ``Reserved SQL Keywords`` TOKEN block **after** the ``MAX_NON_RESERVED_WORD`` sentinel.
     3) Verify that existing tests pass and that the keyword can be used as a ``Schema``, ``Table``, ``Column``, ``Function`` or ``Alias`` name where expected.
 
+Review Lookahead Changes
+------------------------------
+
+Run the reusable lookahead report against the commit used as the review baseline:
+
+.. code-block:: shell
+
+    ./gradlew lookaheadAudit -PlookaheadBase=HEAD
+
+The default baseline is ``HEAD``, so this command also examines uncommitted grammar changes. CI uses the pull request base commit. Results are written to ``build/reports/lookahead/report.json``. The analyzer runs with the project's existing JDK and JavaCC dependencies; it does not require Python or modify sources.
+
+The machine calculation is fresh for both versions. Review the changed decisions, dependency roots, and stale evidence in the summary instead of manually rechecking every unchanged lookahead. Structural anchors ignore source line numbers and unrelated lookahead insertions. Identical anchors remain ambiguous and cannot reuse an individual evidence record.
+
+The report computes lexical FIRST/nullable/FOLLOW facts and follows direct and indirect production calls. Nullable competing alternatives contribute FOLLOW to the decision; unknown actions on either side prevent a disjoint-prefix suggestion. A changed callee can invalidate evidence even when the local FIRST set stays the same; a caller's nullable suffix can change a callee's FOLLOW context. Semantic predicates, Java actions and production declarations are treated conservatively, rather than assumed equivalent.
+
+All checked-in production Java files, runtime resources, ``build.gradle``, ``settings.gradle``, ``gradle.properties``, ``pom.xml`` and Gradle wrapper properties are monitored as opaque inputs. The dedicated cleanup regression test, analyzer sources and resolved JavaCC core/Java generator JARs are also bound to the evidence. Unrecognized watched symlinks fail the check instead of being skipped. Generated parser behavior is bound to the grammar and generator JARs; commit-derived build/version metadata is excluded. Evidence covers tracked static inputs and tested behavior, not every possible runtime configuration.
+
+``config/lookahead-evidence.tsv`` stores a small number of investigated decisions, their exact context fingerprint, reason and regression reference. It is not an approval of all historical sites or permission to publish changes. The report writes current unambiguous bindings to ``binding-candidates.tsv``; review and rerun the referenced tests before updating a stale record. A production name is accepted only when it identifies one decision; otherwise use a unique structural anchor or disambiguate the case.
+
+Pure one-terminal probes can suggest an equivalent token-kind condition. Non-nullable branches with disjoint FIRST sets can suggest default dispatch instead of a deeper scan. These are reusable syntactic rules, not an equivalence theorem for imperative JavaCC code. Retain state/dialect/interruption checks, verify complete consumption and AST behavior, and test malformed neighbors before adopting a candidate.
+
+Error locations can change when a rejected branch is entered directly. In the ``DBMSDestination`` cleanup, ``EXA AT conn TABLE`` remains invalid, but now reports the missing table name after consuming ``TABLE`` instead of falling through to the ``STATEMENT`` alternative. The dedicated regression checks this consumption boundary; exact diagnostic text is not promised unchanged.
+
+The dedicated report step does not turn historical debt into a new mandatory gate. ``-PlookaheadFailOnFindings=true`` opts into failure when contexts need review; generation or analysis errors always fail. ``LookaheadAuditTest`` exercises changed dependencies, nullable/FOLLOW effects, stable anchors, opaque inputs and conservative handling; ordinary ``check`` runs these tests alongside the parser regressions. Full applicable checks and paired project JMH measurements are still required before publishing a cleanup.
+
 
 Commit a Pull Request
 ---------------------------------
