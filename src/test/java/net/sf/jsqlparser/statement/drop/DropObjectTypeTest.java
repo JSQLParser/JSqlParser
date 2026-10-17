@@ -1,0 +1,202 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2026 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
+package net.sf.jsqlparser.statement.drop;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import java.util.Set;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.CascadeBehavior;
+import net.sf.jsqlparser.util.TablesNamesFinder;
+import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
+import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+class DropObjectTypeTest {
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP TRIGGER IF EXISTS trg ON users CASCADE",
+            "DROP TRIGGER trg ON app.users", "DROP RULE r1 ON v",
+            "DROP RULE IF EXISTS r1 ON v RESTRICT"})
+    void triggerAndRuleOwnersAreTables(String sql) throws JSQLParserException {
+        for (Drop drop : roundTrip(sql, Dialect.POSTGRESQL)) {
+            assertEquals(sql, drop.toString());
+            String owner = sql.replaceAll(".* ON (\\S+).*", "$1");
+            assertEquals(owner, drop.getTable().getFullyQualifiedName());
+            assertEquals(Set.of(owner), new TablesNamesFinder().getTables(drop));
+        }
+    }
+
+    @Test
+    void ownerTableReplacesLegacyOnTokens() throws JSQLParserException {
+        Drop drop = parse("DROP TRIGGER IF EXISTS trg ON users CASCADE", Dialect.POSTGRESQL);
+        assertEquals("trg", drop.getName().getName());
+        assertEquals(CascadeBehavior.CASCADE, drop.getBehavior());
+        assertEquals(List.of("ON", "users", "CASCADE"), drop.getParameters());
+
+        drop.getTable().setName("accounts");
+        drop.setBehavior(CascadeBehavior.RESTRICT);
+        assertEquals("DROP TRIGGER IF EXISTS trg ON accounts RESTRICT", drop.toString());
+        assertEquals(List.of("ON", "accounts", "RESTRICT"), drop.getParameters());
+
+        StringBuilder builder = new StringBuilder();
+        SelectDeParser tables = new SelectDeParser() {
+            @Override
+            public <S> StringBuilder visit(Table table, S context) {
+                return getBuilder().append("renamed");
+            }
+        };
+        drop.accept(new StatementDeParser(new ExpressionDeParser(), tables, builder), null);
+        assertEquals("DROP TRIGGER IF EXISTS trg ON renamed RESTRICT", builder.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP TRIGGER safety ON DATABASE", "DROP TRIGGER safety ON ALL SERVER"})
+    void sqlServerTriggerScopesAreNotTables(String sql) throws JSQLParserException {
+        Drop drop = parse(sql, Dialect.SQLSERVER);
+        assertNull(drop.getTable());
+        assertTrue(new TablesNamesFinder().getTables(drop).isEmpty());
+        assertEquals(sql, drop.toString());
+    }
+
+    @Test
+    void cascadeAndRestrictAreTyped() throws JSQLParserException {
+        Drop table = parse("DROP TABLE IF EXISTS t1, t2 RESTRICT", Dialect.MYSQL);
+        assertEquals(CascadeBehavior.RESTRICT, table.getBehavior());
+        assertEquals(List.of("RESTRICT"), table.getParameters());
+
+        Drop index = parse("DROP INDEX a_idx, b_idx CASCADE", Dialect.POSTGRESQL);
+        assertEquals(CascadeBehavior.CASCADE, index.getBehavior());
+        index.setBehavior(null);
+        assertEquals("DROP INDEX a_idx, b_idx", index.toString());
+        assertNull(index.getParameters());
+
+        Drop plain = parse("DROP SCHEMA s", Dialect.POSTGRESQL);
+        assertNull(plain.getBehavior());
+        assertNull(plain.getParameters());
+    }
+
+    @Test
+    void rawParametersAndBehaviorFollowExplicitRules() throws JSQLParserException {
+        Drop drop = parse("DROP INDEX i ON t CASCADE", Dialect.MYSQL);
+        drop.addParameters("LOCK", "NONE");
+        assertEquals(List.of("ON", "t", "LOCK", "NONE", "CASCADE"), drop.getParameters());
+        assertEquals("DROP INDEX i ON t LOCK NONE CASCADE", drop.toString());
+
+        drop.setParameters(List.of("RESTRICT"));
+        assertNull(drop.getBehavior());
+        assertNull(drop.getTable());
+        assertEquals("DROP INDEX i RESTRICT", drop.toString());
+
+        // Raw tokens are not parsed: the builder spelling renders the same SQL.
+        Drop legacy = new Drop().withType("VIEW").withName(new Table("v")).addParameters("CASCADE");
+        assertNull(legacy.getBehavior());
+        assertEquals("DROP VIEW v CASCADE", legacy.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP TYPE IF EXISTS mood CASCADE", "DROP TYPE mood, app.color",
+            "DROP DOMAIN d1", "DROP DOMAIN IF EXISTS d1 RESTRICT", "DROP EVENT TRIGGER etg",
+            "DROP EVENT TRIGGER IF EXISTS etg CASCADE", "DROP TABLESPACE IF EXISTS fast",
+            "DROP DATABASE IF EXISTS mydb WITH (FORCE)", "DROP DATABASE mydb WITH (FORCE)"})
+    void postgreSqlObjectTypes(String sql) throws JSQLParserException {
+        for (Drop drop : roundTrip(sql, Dialect.POSTGRESQL)) {
+            assertEquals(sql, drop.toString());
+            assertNotEquals(Drop.ObjectType.OTHER, drop.getObjectType());
+            assertTrue(new TablesNamesFinder().getTables(drop).isEmpty());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP EVENT IF EXISTS ev1", "DROP EVENT db1.ev1", "DROP TABLESPACE ts1",
+            "DROP TABLESPACE ts1 ENGINE = InnoDB", "DROP UNDO TABLESPACE ts1",
+            "DROP UNDO TABLESPACE ts1 ENGINE InnoDB"})
+    void mySqlObjectTypes(String sql) throws JSQLParserException {
+        for (Drop drop : roundTrip(sql, Dialect.MYSQL)) {
+            assertEquals(sql, drop.toString());
+        }
+    }
+
+    @Test
+    void objectTypeFields() throws JSQLParserException {
+        Drop eventTrigger = parse("DROP EVENT TRIGGER etg", Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.EVENT_TRIGGER, eventTrigger.getObjectType());
+        assertEquals("EVENT TRIGGER", eventTrigger.getType());
+        assertEquals("etg", eventTrigger.getName().getName());
+
+        Drop event = parse("DROP EVENT IF EXISTS ev1", Dialect.MYSQL);
+        assertEquals(Drop.ObjectType.EVENT, event.getObjectType());
+
+        Drop type = parse("DROP TYPE mood, app.color CASCADE", Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.TYPE, type.getObjectType());
+        assertEquals("app", type.getNames().get(1).getSchemaName());
+
+        Drop tablespace = parse("DROP UNDO TABLESPACE ts1 ENGINE=InnoDB", Dialect.MYSQL);
+        assertEquals(Drop.ObjectType.TABLESPACE, tablespace.getObjectType());
+        assertTrue(tablespace.isUndo());
+        assertEquals("InnoDB", tablespace.getEngine());
+        assertTrue(tablespace.isEngineUseEquals());
+        assertEquals("DROP UNDO TABLESPACE ts1 ENGINE = InnoDB", tablespace.toString());
+        tablespace.withUndo(false).withEngine("NDB").setEngineUseEquals(false);
+        assertEquals("DROP TABLESPACE ts1 ENGINE NDB", tablespace.toString());
+
+        Drop database = parse("DROP DATABASE mydb (FORCE)", Dialect.POSTGRESQL);
+        assertTrue(database.isForce());
+        assertEquals("DROP DATABASE mydb WITH (FORCE)", database.toString());
+        database.setForce(false);
+        assertEquals("DROP DATABASE mydb", database.toString());
+
+        assertEquals("DROP DATABASE IF EXISTS d WITH (FORCE)", new Drop()
+                .withObjectType(Drop.ObjectType.DATABASE).withIfExists(true)
+                .withName(new Table("d")).withForce(true).toString());
+    }
+
+    @Test
+    void clauseWordsRemainNames() throws JSQLParserException {
+        assertEquals("engine",
+                parse("DROP TABLESPACE engine", Dialect.MYSQL).getName().getName());
+        assertEquals("undo", parse("DROP TABLE undo", Dialect.MYSQL).getName().getName());
+        assertEquals("owned", parse("DROP TABLE owned", Dialect.POSTGRESQL).getName().getName());
+        assertEquals(2, CCJSqlParserUtil.parseStatements(
+                "DROP DATABASE d; WITH x AS (SELECT 1) SELECT * FROM x",
+                parser -> parser.withDialect(Dialect.POSTGRESQL)).size());
+    }
+
+    @Test
+    void rejectsMisplacedClauses() {
+        for (String sql : List.of("DROP TABLE t WITH (FORCE)", "DROP DATABASE d WITH (FORCE",
+                "DROP TABLE t ENGINE = InnoDB", "DROP TABLESPACE ts ENGINE",
+                "DROP TABLE t CASCADE x",
+                "DROP TRIGGER t ON a ON b", "DROP EVENT TRIGGER", "DROP TYPE")) {
+            assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.MYSQL), sql);
+        }
+    }
+
+    private static Drop parse(String sql, Dialect dialect) throws JSQLParserException {
+        return (Drop) CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(dialect));
+    }
+
+    private static List<Drop> roundTrip(String sql, Dialect dialect) throws JSQLParserException {
+        Drop drop = (Drop) assertSqlCanBeParsedAndDeparsed(sql, true,
+                parser -> parser.withDialect(dialect));
+        StringBuilder builder = new StringBuilder();
+        drop.accept(new StatementDeParser(builder), null);
+        assertEquals(drop.toString(), builder.toString());
+        return List.of(drop, parse(drop.toString(), dialect));
+    }
+}

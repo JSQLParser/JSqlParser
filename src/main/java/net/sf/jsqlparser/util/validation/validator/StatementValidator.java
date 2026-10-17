@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.role.AlterRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.role.RoleOption;
 import net.sf.jsqlparser.statement.grant.Revoke;
 import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
@@ -204,6 +205,12 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(Drop drop, S context) {
         getValidator(DropValidator.class).validate(drop);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ReassignOwned statement, S context) {
+        validateFeature(Feature.reassignOwned);
         return null;
     }
 
@@ -700,6 +707,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(Drop drop) {
         visit(drop, null);
+    }
+
+    public void visit(ReassignOwned statement) {
+        visit(statement, null);
     }
 
     public void visit(Insert insert) {

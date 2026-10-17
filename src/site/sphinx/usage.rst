@@ -245,6 +245,70 @@ are independent: ``isNoInherit()`` is true and
 ``getConstraintAttributes().isNotValid()`` is true. Clearing one flag preserves
 the other when the statement is rendered.
 
+DROP targets
+------------
+
+``Drop`` keeps the parts of a DROP statement that are not plain object names in
+typed properties:
+
+* FUNCTION, PROCEDURE, ROUTINE and AGGREGATE targets are ``RoutineReference``
+  items in ``getRoutines()``, the model that GRANT and COMMENT use. Every target
+  keeps its own signature, so ``DROP PROCEDURE p(int)`` and
+  ``DROP FUNCTION f(int), g(text)`` render as written. Null arguments mean an
+  omitted signature; an empty list is an explicit ``()``.
+* USER, ROLE and GROUP targets and the roles of PostgreSQL ``DROP OWNED BY`` are
+  ``UserAccount`` items in ``getAccounts()``, read with the MySQL account-name rule
+  that CREATE USER uses. MySQL accounts keep their host, as in ``'app'@'%'``,
+  and a quoted PostgreSQL role name such as ``"Admin"`` keeps ``"`` in
+  ``getQuoteStr()``.
+* ``DROP TRIGGER t ON tbl`` and ``DROP RULE r ON tbl`` expose ``tbl`` through
+  ``getTable()``, like ``DROP INDEX i ON tbl``, and table discovery reports it.
+  SQL Server's ``ON DATABASE`` and ``ON ALL SERVER`` trigger scopes stay
+  parameters.
+* ``getBehavior()`` holds an explicit CASCADE or RESTRICT as a
+  ``CascadeBehavior``. It is rendered last.
+* ``isUndo()``, ``getEngine()`` and ``isEngineUseEquals()`` cover MySQL
+  ``DROP [UNDO] TABLESPACE name [ENGINE [=] engine]``. ``isForce()`` covers
+  PostgreSQL ``DROP DATABASE name [WITH] (FORCE)``; the optional WITH is
+  always rendered.
+
+TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
+object types. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
+
+.. code-block:: java
+
+    Drop drop = (Drop) CCJSqlParserUtil.parse("DROP FUNCTION f(int), g(text) CASCADE",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    RoutineReference g = drop.getRoutines().get(1);
+    g.getArguments().get(0).setDataType(new ColDataType("varchar"));
+    // DROP FUNCTION f(int), g(varchar) CASCADE
+    String sql = drop.toString();
+
+The legacy accessors remain and are derived from these properties:
+
+* ``getName()`` and ``getNames()`` return read-only snapshots of routine and
+  account names. Edit ``getRoutines()`` or ``getAccounts()`` to change them.
+* ``getTypeToParameters()`` and ``getParamsByType()`` return a read-only map with
+  the argument declarations of the last routine, where the legacy
+  single-signature form kept them. The map now also covers PROCEDURE, ROUTINE
+  and AGGREGATE.
+* ``getParameters()`` is a snapshot that includes ON with the owner table and
+  the CASCADE or RESTRICT keyword. ``setParameters()`` replaces the clause with
+  raw tokens and clears both; ``addParameters()`` keeps them. Raw tokens are not
+  parsed: ``addParameters("CASCADE")`` leaves ``getBehavior()`` null.
+* ``setName()``, ``setNames()``, ``addNames()`` and ``setTypeToParameters()``
+  first convert routine and account targets to the legacy names and single
+  signature, so ``setName()`` on ``DROP FUNCTION f(int)`` still renders
+  ``DROP FUNCTION g(int)``. Use ``getRoutines()`` to keep several signatures.
+
+Migration: mutating the map returned by ``getTypeToParameters()`` for a parsed
+routine now throws ``UnsupportedOperationException``; edit its
+``RoutineReference`` instead. ``getObjectType()`` reports the new ``AGGREGATE``,
+``DOMAIN``, ``EVENT_TRIGGER``, ``GROUP``, ``OWNED``, ``ROLE``, ``ROUTINE``,
+``RULE``, ``TYPE`` and ``USER`` kinds where it reported ``OTHER``.
+``DROP OWNED BY r`` no longer returns the name ``BY``.
+
 DROP INDEX owners
 -----------------
 

@@ -37,6 +37,7 @@ import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.role.AlterRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.grant.Revoke;
 import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
 import net.sf.jsqlparser.statement.create.type.CreateType;
@@ -173,6 +174,14 @@ public interface StatementVisitor<T> {
 
     default void visit(Drop drop) {
         this.visit(drop, null);
+    }
+
+    default <S> T visit(ReassignOwned statement, S context) {
+        return null;
+    }
+
+    default void visit(ReassignOwned statement) {
+        this.visit(statement, null);
     }
 
     <S> T visit(Truncate truncate, S context);
