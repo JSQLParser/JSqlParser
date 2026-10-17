@@ -1918,6 +1918,7 @@ public class AlterExpression implements Serializable {
         private final boolean withType;
         private boolean useSetData;
         private Expression usingExpression;
+        private ColumnPosition position;
 
         public boolean isUseSetData() {
             return useSetData;
@@ -1950,6 +1951,48 @@ public class AlterExpression implements Serializable {
         public void setIdentityAlterations(List<IdentityAlteration> identityAlterations) {
             this.identityAlterations =
                     identityAlterations == null ? null : new ArrayList<>(identityAlterations);
+        }
+
+        /**
+         * Returns the MySQL FIRST/AFTER placement rendered after this definition, or null when the
+         * column keeps its position.
+         */
+        public ColumnPosition getPosition() {
+            return position;
+        }
+
+        public void setPosition(ColumnPosition position) {
+            this.position = position;
+        }
+
+        public ColumnDataType withPosition(ColumnPosition position) {
+            setPosition(position);
+            return this;
+        }
+
+        /**
+         * Returns the legacy specification snapshot: the option tokens followed by the tokens of
+         * {@link #getPosition()}. Returns null only when both are unset.
+         */
+        @Override
+        public List<String> getColumnSpecs() {
+            List<String> specs = super.getColumnSpecs();
+            if (position == null) {
+                return specs;
+            }
+            List<String> tokens = specs == null ? new ArrayList<>() : new ArrayList<>(specs);
+            tokens.addAll(position.getTokens());
+            return Collections.unmodifiableList(tokens);
+        }
+
+        /**
+         * Replaces every option and the position with opaque tokens, matching
+         * {@link #getColumnSpecs()}. Tokens are never parsed.
+         */
+        @Override
+        public void setColumnSpecs(List<String> list) {
+            super.setColumnSpecs(list);
+            position = null;
         }
 
         public ColumnDataType(boolean withType) {
@@ -1985,6 +2028,9 @@ public class AlterExpression implements Serializable {
             if (usingExpression != null) {
                 builder.append(" USING ");
                 expressionPrinter.accept(usingExpression);
+            }
+            if (position != null) {
+                builder.append(' ').append(position);
             }
         }
 

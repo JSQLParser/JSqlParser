@@ -39,8 +39,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class ColumnDefinitionStateTest {
     @ParameterizedTest
-    @ValueSource(strings = {"CREATE TABLE t (id INT COLUMN_FORMAT DYNAMIC)",
-            "ALTER TABLE t ADD COLUMN id INT COLUMN_FORMAT DYNAMIC",
+    @ValueSource(strings = {"CREATE TABLE t (id INT COLUMN_FORMAT COMPRESSED)",
+            "ALTER TABLE t ADD COLUMN id INT COLUMN_FORMAT COMPRESSED",
             "CREATE TABLE t (id INT DEFAULT 1)", "ALTER TABLE t ADD COLUMN id INT DEFAULT 1"})
     void specificationSnapshotsAreReadOnlyForRawAndStructuredOptions(String sql)
             throws JSQLParserException {
@@ -55,12 +55,12 @@ class ColumnDefinitionStateTest {
             assertTrue(column.getColumnOptions().stream()
                     .allMatch(raw -> raw.getKind() == ColumnOption.Kind.OTHER));
             ColumnOption rawOption = column.getColumnOptions().stream()
-                    .filter(raw -> raw.getTokens().contains("DYNAMIC"))
+                    .filter(raw -> raw.getTokens().contains("COMPRESSED"))
                     .findFirst().orElseThrow();
             List<String> rawTokens = new ArrayList<>(rawOption.getTokens());
-            rawTokens.set(rawTokens.indexOf("DYNAMIC"), "FIXED");
+            rawTokens.set(rawTokens.indexOf("COMPRESSED"), "FIXED");
             rawOption.setTokens(rawTokens);
-            assertEquals(List.of("COLUMN_FORMAT", "DYNAMIC"), snapshot);
+            assertEquals(List.of("COLUMN_FORMAT", "COMPRESSED"), snapshot);
             assertEquals(List.of("COLUMN_FORMAT", "FIXED"), column.getColumnSpecs());
         } else {
             option.setDefaultExpression(new LongValue(2));

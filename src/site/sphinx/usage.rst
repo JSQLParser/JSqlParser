@@ -797,6 +797,38 @@ Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
 COLLATE option. Consumers can map both directly without reconstructing tokens.
 StringValue comment bodies retain their SQL escape representation.
 
+MySQL column attributes have their own kinds: ``SRID`` (``getSrid()``),
+``COLUMN_FORMAT`` (``getColumnFormat()``: FIXED, DYNAMIC or DEFAULT), and
+``ENGINE_ATTRIBUTE``/``SECONDARY_ENGINE_ATTRIBUTE`` (``getEngineAttribute()``
+and ``isUseEquals()`` for the optional equals sign). Engine attribute literals
+are visited and rendered like comment literals. Inline ``UNIQUE KEY`` is one
+``KeyConstraint`` of type ``UNIQUE KEY``. A bare inline ``KEY``, MySQL's column
+synonym for PRIMARY KEY, keeps its ``KEY`` spelling and reports
+``ConstraintKind.PRIMARY_KEY``. Other values, such as Percona Server's
+``COLUMN_FORMAT COMPRESSED``, remain opaque options.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT KEY, g POINT SRID 4326 COLUMN_FORMAT FIXED)");
+    List<ColumnDefinition> columns = table.getColumnDefinitions();
+    columns.get(0).getColumnOptions().get(0).getConstraintKind(); // PRIMARY_KEY
+    ColumnOption srid = columns.get(1).getColumnOptions().get(0);
+    srid.getSrid();                                                // 4326
+    srid.setSrid(0);
+    columns.get(1).addColumnOptions(
+            ColumnOption.engineAttribute(new StringValue("{}")));
+    // CREATE TABLE t (id INT KEY, g POINT SRID 0 COLUMN_FORMAT FIXED ENGINE_ATTRIBUTE '{}')
+
+Migration: these attributes were previously one opaque option per token, and
+``UNIQUE KEY`` was a UNIQUE constraint followed by an opaque ``KEY``. Inspect the
+kinds instead of the opaque nodes. ``getColumnSpecs()`` and ``getTokens()`` keep
+the previous token split, for example ``[SRID, 4326]`` and ``[UNIQUE, KEY]``.
+When constructing the KEY spelling, set the kind after the type:
+``new KeyConstraint().withType("KEY").withKind(ConstraintKind.PRIMARY_KEY)``.
+``CHAR(n) BINARY`` remains an opaque option: MySQL treats ``BINARY`` as part of
+the data type's character set clause, not as a column attribute.
+
 ``ColumnDefinition`` stores all options in one ordered list, including opaque
 ``ColumnOption.Kind.OTHER`` nodes. ``getColumnOptions()`` returns that mutable
 list. ``getColumnSpecs()`` returns an **unmodifiable snapshot** for both raw and
@@ -841,10 +873,10 @@ snapshot. Raw tokens are never parsed or classified.
 
 .. code-block:: java
 
-    ColumnOption raw = ColumnOption.raw("COLUMN_FORMAT", "DYNAMIC");
+    ColumnOption raw = ColumnOption.raw("SELECTIVITY", "10");
     List<String> tokens = new ArrayList<>(raw.getTokens());
-    tokens.set(1, "FIXED");
-    raw.setTokens(tokens); // COLUMN_FORMAT FIXED
+    tokens.set(1, "20");
+    raw.setTokens(tokens); // SELECTIVITY 20
 
 Migration: raw token getter edits now throw ``UnsupportedOperationException``,
 as do edits to structured token snapshots that previously changed a discarded
@@ -856,6 +888,28 @@ structured option with raw text, replace its node in the column's option list:
 .. code-block:: java
 
     column.getColumnOptions().set(0, ColumnOption.raw("DEFAULT", "8"));
+
+MySQL column positions
+~~~~~~~~~~~~~~~~~~~~~~
+
+The trailing ``FIRST`` or ``AFTER column`` of an ALTER TABLE ADD, CHANGE or
+MODIFY column definition is a ``ColumnPosition`` on the
+``AlterExpression.ColumnDataType``, not a column option. ``getColumnSpecs()``
+still ends with its tokens, and ``setColumnSpecs`` replaces the options and the
+position. Migration: ``getColumnOptions()`` no longer contains the two opaque
+``AFTER`` and column-name nodes. As in MySQL, the position must follow the
+column attributes; a position followed by further attributes is now rejected.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+            "ALTER TABLE t ADD COLUMN c INT NOT NULL AFTER id");
+    AlterExpression.ColumnDataType column =
+            alter.getAlterExpressions().get(0).getColDataTypeList().get(0);
+    column.getPosition().getColumnName();                         // id
+    column.getColumnSpecs();                                      // [NOT, NULL, AFTER, id]
+    column.setPosition(ColumnPosition.first());
+    // ALTER TABLE t ADD COLUMN c INT NOT NULL FIRST
 
 Inspect logical replication statements
 ======================================

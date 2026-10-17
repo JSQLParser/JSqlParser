@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColumnOption implements Serializable {
 
     public enum Kind {
-        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, STORAGE, COMPRESSION, FOREIGN_OPTIONS, OTHER
+        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, STORAGE, COMPRESSION, FOREIGN_OPTIONS, SRID, COLUMN_FORMAT, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, OTHER
     }
 
     /** PostgreSQL storage strategies and MySQL column storage locations. */
@@ -32,7 +32,23 @@ public class ColumnOption implements Serializable {
         PLAIN, EXTERNAL, EXTENDED, MAIN, DEFAULT, DISK, MEMORY
     }
 
+    /** MySQL {@code COLUMN_FORMAT} values. */
+    public enum ColumnFormat {
+        FIXED, DYNAMIC, DEFAULT
+    }
+
+    /**
+     * Inline key spellings whose legacy tokens are split on spaces. KEY is MySQL's column-level
+     * synonym for PRIMARY KEY.
+     */
+    private static final List<String> KEY_SPELLINGS =
+            Arrays.asList("PRIMARY KEY", "UNIQUE KEY", "KEY");
+
     private List<ForeignDataOption> foreignOptions;
+    private Long srid;
+    private ColumnFormat columnFormat;
+    private StringValue engineAttribute;
+    private boolean useEquals;
 
     public List<ForeignDataOption> getForeignOptions() {
         return foreignOptions;
@@ -81,6 +97,77 @@ public class ColumnOption implements Serializable {
 
     public void setCompression(String compression) {
         this.compression = Objects.requireNonNull(compression, "compression");
+    }
+
+    /** Creates a MySQL {@code SRID} option for a spatial column. */
+    public static ColumnOption srid(long srid) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.SRID;
+        option.setSrid(srid);
+        return option;
+    }
+
+    /** Returns the spatial reference system identifier of an SRID option, or null. */
+    public Long getSrid() {
+        return srid;
+    }
+
+    public void setSrid(long srid) {
+        this.srid = srid;
+    }
+
+    /** Creates a MySQL {@code COLUMN_FORMAT} option. */
+    public static ColumnOption columnFormat(ColumnFormat columnFormat) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.COLUMN_FORMAT;
+        option.setColumnFormat(columnFormat);
+        return option;
+    }
+
+    public ColumnFormat getColumnFormat() {
+        return columnFormat;
+    }
+
+    public void setColumnFormat(ColumnFormat columnFormat) {
+        this.columnFormat = Objects.requireNonNull(columnFormat, "columnFormat");
+    }
+
+    /** Creates a MySQL {@code ENGINE_ATTRIBUTE} option with a JSON string literal. */
+    public static ColumnOption engineAttribute(StringValue attribute) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.ENGINE_ATTRIBUTE;
+        option.setEngineAttribute(attribute);
+        return option;
+    }
+
+    /** Creates a MySQL {@code SECONDARY_ENGINE_ATTRIBUTE} option with a JSON string literal. */
+    public static ColumnOption secondaryEngineAttribute(StringValue attribute) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.SECONDARY_ENGINE_ATTRIBUTE;
+        option.setEngineAttribute(attribute);
+        return option;
+    }
+
+    /** Returns the literal of an ENGINE_ATTRIBUTE or SECONDARY_ENGINE_ATTRIBUTE option, or null. */
+    public StringValue getEngineAttribute() {
+        return engineAttribute;
+    }
+
+    public void setEngineAttribute(StringValue attribute) {
+        engineAttribute = Objects.requireNonNull(attribute, "attribute");
+    }
+
+    /** Whether an engine attribute is written with the optional equals sign. */
+    public boolean isUseEquals() {
+        return useEquals;
+    }
+
+    public void setUseEquals(boolean useEquals) {
+        this.useEquals = useEquals;
+    }
+
+    private boolean isEngineAttribute() {
+        return kind == Kind.ENGINE_ATTRIBUTE || kind == Kind.SECONDARY_ENGINE_ATTRIBUTE;
     }
 
     private Kind kind = Kind.OTHER;
@@ -192,7 +279,7 @@ public class ColumnOption implements Serializable {
         generatedDefinition = Objects.requireNonNull(definition, "definition");
     }
 
-    /** Visits expressions of the selected option kind, including comment literals. */
+    /** Visits expressions of the selected option kind, including comment and attribute literals. */
     public void visitExpressions(Consumer<Expression> visitor) {
         if (kind == Kind.FOREIGN_OPTIONS) {
             ForeignDataOption.visitExpressions(foreignOptions, visitor);
@@ -200,13 +287,14 @@ public class ColumnOption implements Serializable {
             visitor.accept(defaultExpression);
         } else if (kind == Kind.COMMENT) {
             visitor.accept(comment);
+        } else if (isEngineAttribute()) {
+            visitor.accept(engineAttribute);
         } else if (kind == Kind.ON_UPDATE) {
             visitor.accept(onUpdateExpression);
         } else if (kind == Kind.GENERATED) {
             visitor.accept(generatedDefinition.getExpression());
         }
     }
-
 
     /** Creates a DEFAULT option. Use a NullValue expression for SQL NULL. */
     public static ColumnOption defaultValue(Expression expression) {
@@ -321,10 +409,17 @@ public class ColumnOption implements Serializable {
             case GENERATED:
                 return generatedDefinition.getTokens();
             case CONSTRAINT:
-                if ("PRIMARY KEY".equals(constraint.toString())) {
-                    return Collections.unmodifiableList(Arrays.asList("PRIMARY", "KEY"));
-                }
-                return Collections.singletonList(toString());
+                return constraintTokens();
+            case SRID:
+                return Collections.unmodifiableList(Arrays.asList("SRID", String.valueOf(srid)));
+            case COLUMN_FORMAT:
+                return Collections.unmodifiableList(
+                        Arrays.asList("COLUMN_FORMAT", columnFormat.name()));
+            case ENGINE_ATTRIBUTE:
+            case SECONDARY_ENGINE_ATTRIBUTE:
+                return Collections.unmodifiableList(useEquals
+                        ? Arrays.asList(kind.name(), "=", engineAttribute.toString())
+                        : Arrays.asList(kind.name(), engineAttribute.toString()));
             case OTHER:
             case SERIAL_DEFAULT_VALUE:
                 return tokens == null ? null
@@ -332,6 +427,14 @@ public class ColumnOption implements Serializable {
             default:
                 return Collections.singletonList(toString());
         }
+    }
+
+    private List<String> constraintTokens() {
+        String sql = constraint.toString();
+        if (KEY_SPELLINGS.contains(sql)) {
+            return Collections.unmodifiableList(Arrays.asList(sql.split(" ")));
+        }
+        return Collections.singletonList(sql);
     }
 
     /**
@@ -373,6 +476,17 @@ public class ColumnOption implements Serializable {
                 break;
             case COMPRESSION:
                 builder.append("COMPRESSION ").append(compression);
+                break;
+            case SRID:
+                builder.append("SRID ").append(srid);
+                break;
+            case COLUMN_FORMAT:
+                builder.append("COLUMN_FORMAT ").append(columnFormat);
+                break;
+            case ENGINE_ATTRIBUTE:
+            case SECONDARY_ENGINE_ATTRIBUTE:
+                builder.append(kind).append(useEquals ? " = " : " ");
+                expressionPrinter.accept(engineAttribute);
                 break;
             case DEFAULT:
                 builder.append("DEFAULT ");

@@ -42,20 +42,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ColumnOptionTokenTest {
+    // Percona Server's COLUMN_FORMAT COMPRESSED is not modeled and stays opaque.
     @ParameterizedTest
-    @ValueSource(strings = {"CREATE TABLE t (id INT COLUMN_FORMAT DYNAMIC)",
-            "ALTER TABLE t ADD COLUMN id INT COLUMN_FORMAT DYNAMIC"})
+    @ValueSource(strings = {"CREATE TABLE t (id INT COLUMN_FORMAT COMPRESSED)",
+            "ALTER TABLE t ADD COLUMN id INT COLUMN_FORMAT COMPRESSED"})
     void parsedRawOptionsUseExplicitTokenReplacement(String sql) throws JSQLParserException {
         Statement statement = parse(sql);
         ColumnOption option = column(statement).getColumnOptions().stream()
-                .filter(raw -> raw.getTokens().contains("DYNAMIC")).findFirst().orElseThrow();
+                .filter(raw -> raw.getTokens().contains("COMPRESSED")).findFirst().orElseThrow();
         List<String> snapshot = option.getTokens();
         assertReadOnly(snapshot);
         List<String> replacement = new ArrayList<>(snapshot);
-        replacement.set(replacement.indexOf("DYNAMIC"), "FIXED");
+        replacement.set(replacement.indexOf("COMPRESSED"), "FIXED");
         option.setTokens(replacement);
         replacement.clear();
-        assertTrue(snapshot.contains("DYNAMIC"));
+        assertTrue(snapshot.contains("COMPRESSED"));
         assertTrue(option.getTokens().contains("FIXED"));
         assertEquals(ColumnOption.Kind.OTHER, option.getKind());
         assertTrue(statement.toString().contains("COLUMN_FORMAT FIXED"));

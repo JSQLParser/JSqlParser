@@ -15402,6 +15402,8 @@ ColumnOption ColumnDefinitionOption(): {
     ObjectNames collationNames;
     String collation;
     String compression;
+    Token engineAttribute;
+    boolean useEquals = false;
 } {
     (
         LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && isKeywordAhead("OPTIONS") })
@@ -15437,6 +15439,26 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD({ isKeywordAhead("COMPRESSION") }) ContextualKeyword("COMPRESSION") compression=RelObjectName()
         { option = ColumnOption.compression(compression); }
         |
+        // MySQL column attributes. Other values keep the raw fallback, e.g. Percona's COMPRESSED.
+        LOOKAHEAD({ isKeywordAhead("COLUMN_FORMAT") && (getToken(2).kind == K_DEFAULT
+                || "FIXED".equalsIgnoreCase(getToken(2).image)
+                || "DYNAMIC".equalsIgnoreCase(getToken(2).image)) })
+        ContextualKeyword("COLUMN_FORMAT") ( tk=<K_DEFAULT> | tk=<S_IDENTIFIER> )
+        { option = ColumnOption.columnFormat(accessEnum(ColumnOption.ColumnFormat.class, tk.image)); }
+        |
+        LOOKAHEAD({ isKeywordAhead("SRID") && getToken(2).kind == S_LONG })
+        ContextualKeyword("SRID") tk=<S_LONG> { option = ColumnOption.srid(Long.parseLong(tk.image)); }
+        |
+        LOOKAHEAD({ isMySqlEngineAttributeAhead() && (getToken(2).kind == S_CHAR_LITERAL
+                || "=".equals(getToken(2).image) && getToken(3).kind == S_CHAR_LITERAL) })
+        engineAttribute=<S_IDENTIFIER> [ "=" { useEquals = true; } ] tk=<S_CHAR_LITERAL>
+        {
+            option = "ENGINE_ATTRIBUTE".equalsIgnoreCase(engineAttribute.image)
+                    ? ColumnOption.engineAttribute(stringValue(tk))
+                    : ColumnOption.secondaryEngineAttribute(stringValue(tk));
+            option.setUseEquals(useEquals);
+        }
+        |
         LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
         ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
           | collationNames=RelObjectNames() { collation = String.join(".", collationNames.getNames()); } )
@@ -15448,7 +15470,10 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
         { option = ColumnOption.onUpdate(defaultExpression); }
         |
-        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] ( <K_PRIMARY> <K_KEY> | <K_UNIQUE> ))
+        // Keep SQL Server's inline FOREIGN KEY prefix together so its KEY is not a primary key.
+        LOOKAHEAD(<K_FOREIGN> <K_KEY>) <K_FOREIGN> <K_KEY> { option = ColumnOption.raw("FOREIGN", "KEY"); }
+        |
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] ( <K_PRIMARY> <K_KEY> | <K_UNIQUE> | <K_KEY> ))
         constraint=ColumnKeyConstraint() { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>)
@@ -15513,7 +15538,10 @@ Expression ColumnGenerationExpression():
     { return expression; }
 }
 
-/** Keeps a column key's name and attributes on the same node in CREATE and ALTER. */
+/**
+ * Keeps a column key's name and attributes on the same node in CREATE and ALTER, including MySQL's
+ * UNIQUE KEY and KEY (PRIMARY KEY) spellings.
+ */
 KeyConstraint ColumnKeyConstraint():
 {
     KeyConstraint constraint = new KeyConstraint();
@@ -15525,7 +15553,11 @@ KeyConstraint ColumnKeyConstraint():
     (
         <K_PRIMARY> <K_KEY> { constraint.setType("PRIMARY KEY"); }
         |
+        // MySQL accepts KEY as a column-level synonym for PRIMARY KEY; keep its spelling.
+        <K_KEY> { constraint.setType("KEY"); constraint.setKind(ConstraintKind.PRIMARY_KEY); }
+        |
         <K_UNIQUE> { constraint.setType("UNIQUE"); }
+        [ LOOKAHEAD(1) <K_KEY> { constraint.setType("UNIQUE KEY"); } ]
         [ <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT> {
             constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
         } ]
@@ -18362,6 +18394,7 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     Expression usingExpression = null;
     List<IdentityAlteration> identityAlterations = null;
     IdentityAlteration identityAlteration;
+    ColumnPosition position = null;
 }
 {
     columnName = RelObjectName()
@@ -18375,10 +18408,14 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     [ LOOKAHEAD({ getToken(1).kind == K_TYPE || getToken(1).kind == K_SET && getToken(2).kind == K_DATA })
       useSetData=TypeChangePrefix() { withType = true; } ]
     ( LOOKAHEAD(2) dataType = ColDataType() )?
-    ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING) }) option = ColumnDefinitionOption() {
+    ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING)
+            && getToken(1).kind != K_FIRST && !isKeywordAhead("AFTER") })
+        option = ColumnDefinitionOption() {
         columnOptions.add(option);
     } )*
     [ LOOKAHEAD({ withType && getToken(1).kind == K_USING }) <K_USING> usingExpression=Expression() ]
+    [ LOOKAHEAD({ getToken(1).kind == K_FIRST || isKeywordAhead("AFTER") })
+        position = ColumnPosition() ]
     )
     {
         requireDdlSyntax(!withType || dataType != null, "TYPE requires a data type");
@@ -18387,8 +18424,25 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
         result.setUsingExpression(usingExpression);
         result.setIdentityAlterations(identityAlterations);
         result.setColumnOptions(columnOptions);
+        result.setPosition(position);
         return result;
     }
+}
+
+/** MySQL places an ADD, CHANGE or MODIFY column definition with a trailing FIRST or AFTER col. */
+ColumnPosition ColumnPosition():
+{
+    ColumnPosition position;
+    String columnName;
+}
+{
+    (
+        <K_FIRST> { position = ColumnPosition.first(); }
+        |
+        ContextualKeyword("AFTER") columnName = RelObjectName()
+        { position = ColumnPosition.after(columnName); }
+    )
+    { return position; }
 }
 
 /** Type changes in ALTER TABLE and ALTER TYPE accept the same optional SET DATA prefix. */
