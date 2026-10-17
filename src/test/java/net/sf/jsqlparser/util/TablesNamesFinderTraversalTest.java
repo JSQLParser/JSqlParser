@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -30,6 +31,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class TablesNamesFinderTraversalTest {
+    private static final String SUBQUERY = "(SELECT max(x) FROM t2)";
+
     @ParameterizedTest
     @MethodSource("nestedTables")
     void findsTablesInNestedChildren(String sql, List<String> expected) throws JSQLParserException {
@@ -98,7 +101,110 @@ class TablesNamesFinderTraversalTest {
                 tables("UPSERT INTO t1 VALUES (1)", "t1"),
                 tables("SELECT POSITION('x' IN 'xx') FROM t1", "t1"),
                 tables("IF a>1 DELETE FROM t3", "t3"),
-                tables("SELECT sum(x) OVER (ORDER BY (SELECT a FROM t2)) FROM t1", "t1", "t2"));
+                tables("SELECT sum(x) OVER (ORDER BY (SELECT a FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT max(a) KEEP (DENSE_RANK FIRST ORDER BY (SELECT x FROM t2)) FROM t1",
+                        "t1", "t2"),
+                tables("SELECT max(a) KEEP (DENSE_RANK FIRST ORDER BY (SELECT x FROM t2)) OVER (PARTITION BY b) FROM t1",
+                        "t1", "t2"),
+                tables("SELECT array_agg(a LIMIT (SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT any_value(a HAVING MAX (SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT any_value(a HAVING MAX (SELECT x FROM t2)) OVER () FROM t1", "t1",
+                        "t2"),
+                tables("SELECT group_concat(a SEPARATOR (SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT group_concat(a ORDER BY (SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT f(a).g((SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT a FROM t1 WHERE (SELECT x FROM t2) IS UNKNOWN", "t1", "t2"),
+                tables("SELECT a FROM t1 WHERE MATCH (a) AGAINST ((SELECT x FROM t2))", "t1",
+                        "t2"),
+                tables("SELECT JSON_OBJECTAGG(KEY a VALUE (SELECT x FROM t2)) FROM t1", "t1",
+                        "t2"),
+                tables("SELECT JSON_ARRAYAGG(a ORDER BY (SELECT x FROM t2)) FROM t1", "t1", "t2"),
+                tables("SELECT JSON_ARRAYAGG(a) OVER (PARTITION BY (SELECT x FROM t2) ORDER BY (SELECT y FROM t3)) FROM t1",
+                        "t1", "t2", "t3"),
+                tables("SELECT JSON_ARRAYAGG(a) OVER (ORDER BY b ROWS (SELECT x FROM t2) PRECEDING) FROM t1",
+                        "t1", "t2"),
+                tables("SELECT * FROM XMLTABLE('/r' PASSING (SELECT x FROM t2) COLUMNS a int PATH 'a') x",
+                        "t2"),
+                tables("SELECT * FROM JSON_TABLE((SELECT x FROM t2), '$' COLUMNS (a int PATH '$.a')) j",
+                        "t2"),
+                tables("SELECT * FROM generate_series(1, (SELECT max(x) FROM t2)) g", "t2"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("postgresTables")
+    void findsTablesInPostgresExpressionChildren(String sql, List<String> expected)
+            throws JSQLParserException {
+        Statement statement = CCJSqlParserUtil.parse(sql,
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertThat(new TablesNamesFinder<>().getTables(statement))
+                .containsExactlyInAnyOrderElementsOf(expected);
+        assertThat(new TablesNamesFinder<>().getTablesOrOtherSources(statement))
+                .containsAll(expected);
+    }
+
+    private static Stream<Arguments> postgresTables() {
+        return Stream.of(
+                // aggregate ORDER BY inside the call
+                tables("SELECT string_agg(a, ',' ORDER BY " + SUBQUERY + ") FROM t1", "t1",
+                        "t2"),
+                tables("SELECT array_agg(a ORDER BY " + SUBQUERY + ") FROM t1", "t1",
+                        "t2"),
+                // LIKE ... ESCAPE
+                tables("SELECT a FROM t1 WHERE a LIKE 'a' ESCAPE " + SUBQUERY, "t1",
+                        "t2"),
+                // AT TIME ZONE, zone operand
+                tables("SELECT now() AT TIME ZONE " + SUBQUERY, "t2"),
+                // JSON operators, right operand
+                tables("SELECT j -> " + SUBQUERY + " FROM t1", "t1", "t2"),
+                tables("SELECT j ->> " + SUBQUERY + " FROM t1", "t1", "t2"),
+                tables("SELECT j #> ARRAY[" + SUBQUERY + "] FROM t1", "t1", "t2"),
+                tables("SELECT j #>> ARRAY[" + SUBQUERY + "] FROM t1", "t1", "t2"),
+                // array slice bounds and subscript
+                tables("SELECT a[1:(SELECT count(*)::int FROM t2)] FROM t1", "t1",
+                        "t2"),
+                tables("SELECT a[(SELECT count(*)::int FROM t2):2] FROM t1", "t1",
+                        "t2"),
+                tables("SELECT a[(SELECT count(*)::int FROM t2)] FROM t1", "t1",
+                        "t2"),
+                // positions that were already traversed
+                tables("SELECT f(" + SUBQUERY + ") FROM t1", "t1", "t2"),
+                tables("SELECT count(*) FILTER (WHERE a = " + SUBQUERY + ") FROM t1", "t1",
+                        "t2"),
+                tables("SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY " + SUBQUERY
+                        + ") FROM t1", "t1", "t2"),
+                tables("SELECT sum(a) OVER (PARTITION BY " + SUBQUERY + ") FROM t1", "t1",
+                        "t2"),
+                tables("SELECT sum(a) OVER (ORDER BY " + SUBQUERY + ") FROM t1", "t1",
+                        "t2"),
+                tables("SELECT sum(a) OVER (ORDER BY b ROWS BETWEEN " + SUBQUERY
+                        + " PRECEDING AND CURRENT ROW) FROM t1", "t1", "t2"),
+                tables("SELECT a FROM t1 LIMIT " + SUBQUERY, "t1", "t2"),
+                tables("SELECT a FROM t1 OFFSET " + SUBQUERY, "t1", "t2"),
+                tables("SELECT a FROM t1 FETCH FIRST " + SUBQUERY + " ROWS ONLY", "t1",
+                        "t2"),
+                tables("SELECT a FROM t1 WHERE a = ANY (SELECT x FROM t2)", "t1",
+                        "t2"),
+                tables("SELECT a FROM t1 WHERE a > ALL (SELECT x FROM t2)", "t1",
+                        "t2"),
+                tables("SELECT a FROM t1 WHERE a = SOME (SELECT x FROM t2)", "t1",
+                        "t2"),
+                tables("SELECT ARRAY(SELECT x FROM t2)", "t2"),
+                tables("SELECT * FROM (VALUES (" + SUBQUERY + ")) v(x)", "t2"),
+                tables("SELECT substring(a FROM " + SUBQUERY + ") FROM t1", "t1", "t2"),
+                tables("SELECT trim(BOTH " + SUBQUERY + " FROM a) FROM t1", "t1", "t2"),
+                tables("SELECT position(" + SUBQUERY + " IN a) FROM t1", "t1", "t2"),
+                tables("SELECT overlay(a PLACING " + SUBQUERY + " FROM 1) FROM t1", "t1",
+                        "t2"),
+                tables("SELECT CASE WHEN a = 1 THEN " + SUBQUERY + " END FROM t1", "t1",
+                        "t2"),
+                tables("SELECT CAST(" + SUBQUERY + " AS text) FROM t1", "t1", "t2"),
+                tables("SELECT " + SUBQUERY + "::text FROM t1", "t1", "t2"),
+                tables("SELECT count(*) FROM t1 GROUP BY " + SUBQUERY, "t1", "t2"),
+                tables("SELECT count(*) FROM t1 GROUP BY GROUPING SETS ((" + SUBQUERY + "))", "t1",
+                        "t2"),
+                tables("SELECT DISTINCT ON (" + SUBQUERY + ") a FROM t1", "t1", "t2"),
+                tables("SELECT * FROM t1, LATERAL (SELECT x FROM t2) p", "t1",
+                        "t2"));
     }
 
     private static Arguments tables(String sql, String... names) {
@@ -122,7 +228,12 @@ class TablesNamesFinderTraversalTest {
                 tables("f()[OFFSET((SELECT x FROM t2)):OFFSET((SELECT y FROM t3))]", "t2", "t3"),
                 tables("POSITION('x' IN (SELECT a FROM t2))", "t2"),
                 tables("sum(x) OVER (PARTITION BY (SELECT a FROM t2))", "t2"),
-                tables("a[1]"), tables("f()[1]"), tables("f()[:2]"), tables("f()[:]"));
+                tables("string_agg(a, ',' ORDER BY (SELECT x FROM t2))", "t2"),
+                tables("a LIKE 'a' ESCAPE (SELECT x FROM t2)", "t2"),
+                tables("now() AT TIME ZONE (SELECT x FROM t2)", "t2"),
+                tables("(SELECT x FROM t2) IS UNKNOWN", "t2"),
+                tables("a[1]"), tables("f()[1]"), tables("f()[:2]"), tables("f()[:]"),
+                tables("f(a).b.c"));
     }
 
     @ParameterizedTest
@@ -162,6 +273,16 @@ class TablesNamesFinderTraversalTest {
         assertThat(finder.getTables(statement)).containsExactlyInAnyOrder("t1", "t2", "t3", "t4",
                 "t5");
         assertThat(finder.visits).isEqualTo(Map.of("t1", 1, "t2", 1, "t3", 1, "t4", 1, "t5", 1));
+    }
+
+    @Test
+    void visitsAggregateChildrenOnce() throws JSQLParserException {
+        CountingFinder finder = new CountingFinder();
+        Statement statement = CCJSqlParserUtil.parse(
+                "SELECT max(a) KEEP (DENSE_RANK FIRST ORDER BY (SELECT x FROM t2)) OVER (PARTITION BY (SELECT y FROM t3)), string_agg(a, ',' ORDER BY (SELECT z FROM t4)) FROM t1");
+        assertThat(finder.getTables(statement)).containsExactlyInAnyOrder("t1", "t2", "t3",
+                "t4");
+        assertThat(finder.visits).isEqualTo(Map.of("t1", 1, "t2", 1, "t3", 1, "t4", 1));
     }
 
     @Test
