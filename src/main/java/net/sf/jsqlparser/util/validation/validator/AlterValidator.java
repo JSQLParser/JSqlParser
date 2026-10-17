@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -49,6 +50,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
     public void validate(Alter alter, AlterExpression e) {
         TableDefinitionTraversal.visit(e, this::validateOptionalExpression,
                 this::validateOptionalFromItem);
+        TableElement definition = e.getActiveTableDefinition();
         for (ValidationCapability c : getCapabilities()) {
 
             validateOptionalColumnName(c, e.getColumnOldName());
@@ -64,7 +66,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
                         ColumnSetNotNull::getColumnName));
             }
 
-            if (e.getColDataTypeList() != null) {
+            if (e.hasActiveColumnDefinitions()) {
                 boolean validateForExist =
                         !EnumSet.of(AlterOperation.ADD).contains(e.getOperation());
                 validateOptionalColumnNames(c,
@@ -80,15 +82,16 @@ public class AlterValidator extends AbstractValidator<Alter> {
                 validateOptionalColumnNames(c, e.getDropColumns());
             }
 
-            validateConstraint(c, e.getConstraint());
-            validateIndex(c, e);
+            validateConstraint(c, definition);
+            validateIndex(c, e, definition);
         }
     }
 
-    private void validateConstraint(ValidationCapability capability, NamedConstraint constraint) {
-        if (constraint == null) {
+    private void validateConstraint(ValidationCapability capability, TableElement definition) {
+        if (!(definition instanceof NamedConstraint)) {
             return;
         }
+        NamedConstraint constraint = (NamedConstraint) definition;
         validateOptionalName(capability, NamedObject.constraint, constraint.getName(), null, false,
                 NamedObject.table);
         if (constraint instanceof ForeignKeyConstraint) {
@@ -129,19 +132,20 @@ public class AlterValidator extends AbstractValidator<Alter> {
         }
     }
 
-    private void validateIndex(ValidationCapability capability, AlterExpression expression) {
+    private void validateIndex(ValidationCapability capability, AlterExpression expression,
+            TableElement definition) {
         Index index = expression.getIndex();
-        if (index == null) {
-            return;
-        }
         boolean rename = expression.getOperation() == AlterOperation.RENAME_INDEX
                 || expression.getOperation() == AlterOperation.RENAME_KEY;
+        if (index == null || definition != index && !rename) {
+            return;
+        }
         if (rename && expression.getOldIndex() != null) {
             validateName(capability, NamedObject.index, expression.getOldIndex().getName());
         }
         boolean introducedName = expression.getOperation() == AlterOperation.ADD || rename;
         validateOptionalName(capability, NamedObject.index, index.getName(), null, !introducedName);
-        if (index.getColumns() != null) {
+        if (definition == index && index.getColumns() != null) {
             validateOptionalColumnNames(capability, index.getColumns().stream()
                     .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
                     .collect(toList()), NamedObject.index);

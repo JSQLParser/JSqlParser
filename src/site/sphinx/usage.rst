@@ -689,9 +689,24 @@ its column definitions through the general ALTER body. ``getColDataTypeList()``
 continues to expose stored metadata even when another body takes precedence.
 ``AlterDeParser`` uses the active path, so expression visitors rewrite the
 selected default or column expressions without rendering inactive metadata.
+``TableDefinitionTraversal`` and the table-name finder visit the expressions
+and tables belonging to the selected body. The metadata validator uses that
+same selection. For example, adding a column definition to an action that still
+stores an earlier foreign key renders the column and does not require the
+inactive foreign table or its columns to exist. ``getConstraint()`` and
+``getIndex()`` still expose the stored objects for direct inspection.
+
+``getActiveTableDefinition()`` returns the original definition contributing to
+the current body, or ``null`` when another payload takes precedence. A legacy
+``ADD CONSTRAINT`` header contributes only its keys; its unused storage options
+are not traversed. Column options likewise visit only the payload selected by
+their ``Kind``, including after changing an option to ``FOREIGN_OPTIONS``.
+
 Custom ``AlterExpression`` subclasses overriding ``appendBody`` should also
-override ``usesColumnActionBody()`` and ``hasActiveColumnDefinitions()`` when
-they change those dispatch rules.
+reflect their dispatch in ``usesColumnActionBody()``, ``usesGeneralBody()`` and
+``hasActiveConstraintHeader()``. Subclasses rendering a separate definition can
+override ``getActiveTableDefinition()``. The general-body hook also determines
+``hasActiveColumnDefinitions()``.
 
 Structured column attributes
 ============================

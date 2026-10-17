@@ -31,12 +31,12 @@ public class AlterExpressionCharset extends AlterExpression {
     }
 
     @Override
-    public boolean hasActiveColumnDefinitions() {
+    public boolean hasActiveConstraintHeader() {
         return false;
     }
 
     @Override
-    public boolean hasActiveTableDefinition() {
+    protected boolean usesGeneralBody() {
         return false;
     }
 

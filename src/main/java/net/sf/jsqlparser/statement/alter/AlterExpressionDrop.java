@@ -30,8 +30,13 @@ public class AlterExpressionDrop extends AlterExpression {
     }
 
     @Override
-    public boolean hasActiveColumnDefinitions() {
-        return hasColumnDefinitionPayload() && !isDropSpecialOperation()
+    public boolean hasActiveConstraintHeader() {
+        return false;
+    }
+
+    @Override
+    protected boolean usesGeneralBody() {
+        return !isDropSpecialOperation()
                 && getOperation() != AlterOperation.DROP_PARTITION;
     }
 

@@ -56,8 +56,13 @@ public class AlterExpressionRename extends AlterExpression implements ColumnRena
     }
 
     @Override
-    public boolean hasActiveColumnDefinitions() {
-        return getOperation() == AlterOperation.RENAME && hasColumnDefinitionPayload();
+    public boolean hasActiveConstraintHeader() {
+        return false;
+    }
+
+    @Override
+    protected boolean usesGeneralBody() {
+        return getOperation() == AlterOperation.RENAME;
     }
 
     @Override

@@ -33,6 +33,7 @@ import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
 import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
@@ -52,68 +53,83 @@ public final class TableDefinitionTraversal {
         accept(createIndex.getWhere(), expressions);
     }
 
-    /** Visits the structured definitions and expressions belonging to a single ALTER action. */
+    /**
+     * Visits expressions and tables contributing to the rendered ALTER action. Inactive metadata is
+     * retained by the AST's getters but is not visited.
+     */
     public static void visit(AlterExpression action, Consumer<Expression> expressions,
+            Consumer<Table> tables) {
+        if (visitSpecialBody(action, expressions, tables)) {
+            return;
+        }
+        if (action.getOperation() == AlterOperation.RENAME_TABLE
+                && action.getOldIndex() == null
+                && !(action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionDrop)) {
+            accept(action.getNewTable(), tables);
+        }
+        action.getColumnDefaults()
+                .forEach(column -> accept(column.getDefaultExpression(), expressions));
+        if (action.hasActiveColumnDefinitions()) {
+            action.getColDataTypeList().forEach(column -> visit(column, expressions, tables));
+        }
+        TableElement definition = action.getActiveTableDefinition();
+        if (action.hasActiveConstraintHeader() && definition instanceof KeyColumnSource) {
+            visitKeys((KeyColumnSource) definition, expressions);
+        } else if (definition != null) {
+            visit(definition, expressions, tables);
+        }
+    }
+
+    private static boolean visitSpecialBody(AlterExpression action,
+            Consumer<Expression> expressions,
             Consumer<Table> tables) {
         if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) {
             ((net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) action).getOrderByElements()
                     .forEach(element -> accept(element.getExpression(), expressions));
-        }
-        if (action instanceof net.sf.jsqlparser.statement.alter.RelationAlterAction) {
+        } else if (action instanceof net.sf.jsqlparser.statement.alter.RelationAlterAction) {
             net.sf.jsqlparser.statement.alter.RelationAlterAction relation =
                     (net.sf.jsqlparser.statement.alter.RelationAlterAction) action;
             relation.visitExpressions(expressions);
             relation.visitTables(tables);
-        }
-        if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionTableOption) {
+        } else if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionTableOption) {
             visit(((net.sf.jsqlparser.statement.alter.AlterExpressionTableOption) action)
                     .getStructuredTableOption(), expressions, tables);
-        }
-        if (action.getOperation() == AlterOperation.RENAME_TABLE) {
-            accept(action.getNewTable(), tables);
-        }
-        if (action instanceof AlterForeignDataOptions) {
+        } else if (action instanceof AlterForeignDataOptions) {
             ForeignDataOption.visitExpressions(((AlterForeignDataOptions) action).getOptions(),
                     expressions);
-        }
-        if (action.getColumnSetDefaultList() != null) {
-            action.getColumnSetDefaultList()
-                    .forEach(column -> accept(column.getDefaultExpression(), expressions));
-        }
-        if (action.getColDataTypeList() != null) {
-            action.getColDataTypeList().forEach(column -> visit(column, expressions, tables));
-        }
-        if (action.getConstraint() != null) {
-            visit(action.getConstraint(), expressions, tables);
-        }
-        if (action.getIndex() != null) {
-            visit(action.getIndex(), expressions, tables);
-        }
-        if (action instanceof AlterExpressionPartition) {
-            AlterExpressionPartition partition = (AlterExpressionPartition) action;
-            switch (partition.getOperation()) {
-                case ATTACH_PARTITION:
-                    accept(partition.getPartitionTable(), tables);
-                    visit(partition.getPartitionBound(), expressions);
-                    break;
-                case DETACH_PARTITION:
-                    accept(partition.getPartitionTable(), tables);
-                    break;
-                case EXCHANGE_PARTITION:
-                    accept(partition.getExchangeTable(), tables);
-                    break;
-                case PARTITION_BY:
-                    visit(partition.getPartitioning(), expressions);
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (action instanceof AlterExpressionPrimaryKey) {
+        } else if (action instanceof AlterExpressionPartition) {
+            visitPartitionAction((AlterExpressionPartition) action, expressions, tables);
+        } else if (action instanceof AlterExpressionPrimaryKey) {
             AlterExpressionPrimaryKey primaryKey = (AlterExpressionPrimaryKey) action;
+            visit(primaryKey.getConstraint(), expressions, tables);
             if (primaryKey.isUsingHash()) {
                 accept(primaryKey.getBucketCount(), expressions);
             }
+        } else {
+            return action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionCharset
+                    || action instanceof net.sf.jsqlparser.statement.alter.AlterConstraintAttributes;
+        }
+        return true;
+    }
+
+    private static void visitPartitionAction(AlterExpressionPartition partition,
+            Consumer<Expression> expressions, Consumer<Table> tables) {
+        switch (partition.getOperation()) {
+            case ATTACH_PARTITION:
+                accept(partition.getPartitionTable(), tables);
+                visit(partition.getPartitionBound(), expressions);
+                break;
+            case DETACH_PARTITION:
+                accept(partition.getPartitionTable(), tables);
+                break;
+            case EXCHANGE_PARTITION:
+                accept(partition.getExchangeTable(), tables);
+                break;
+            case PARTITION_BY:
+                visit(partition.getPartitioning(), expressions);
+                break;
+            default:
+                break;
         }
     }
 
@@ -195,22 +211,22 @@ public final class TableDefinitionTraversal {
         if (element instanceof LikeClause) {
             accept(((LikeClause) element).getTable(), tables);
         } else if (element instanceof ColumnDefinition) {
-            ColumnDefinition column = (ColumnDefinition) element;
-            if (column.getColumnOptions() != null) {
-                for (ColumnOption option : column.getColumnOptions()) {
-                    option.visitExpressions(expressions);
-                    if (option.getForeignKeyReference() != null) {
-                        accept(option.getForeignKeyReference().getTable(), tables);
-                    }
-                    if (option.getConstraint() != null) {
-                        visit(option.getConstraint(), expressions, tables);
-                    }
-                }
-            }
-            if (column instanceof AlterExpression.ColumnDataType) {
-                accept(((AlterExpression.ColumnDataType) column).getUsingExpression(), expressions);
-            }
-        } else if (element instanceof NotNullConstraint) {
+            visitColumn((ColumnDefinition) element, expressions, tables);
+        } else if (element instanceof NamedConstraint) {
+            visitConstraint((NamedConstraint) element, expressions, tables);
+        }
+        if (element instanceof KeyColumnSource) {
+            visitKeys((KeyColumnSource) element, expressions);
+        }
+        if (element instanceof IndexOptionSource) {
+            visitOptions(((IndexOptionSource) element).getIndexOptions().getStorageParameters(),
+                    expressions);
+        }
+    }
+
+    private static void visitConstraint(NamedConstraint element, Consumer<Expression> expressions,
+            Consumer<Table> tables) {
+        if (element instanceof NotNullConstraint) {
             accept(((NotNullConstraint) element).getColumn(), expressions);
         } else if (element instanceof CheckConstraint) {
             accept(((CheckConstraint) element).getExpression(), expressions);
@@ -223,18 +239,42 @@ public final class TableDefinitionTraversal {
         } else if (element instanceof ForeignKeyConstraint) {
             accept(((ForeignKeyConstraint) element).getTable(), tables);
         }
-        if (element instanceof KeyColumnSource) {
-            List<KeyElement> keys = ((KeyColumnSource) element).getColumns();
-            if (keys != null) {
-                for (KeyElement key : keys) {
-                    accept(key.getExpression(), expressions);
-                    visitOptions(key.getOperatorClassParameters(), expressions);
-                }
+    }
+
+    private static void visitColumn(ColumnDefinition column, Consumer<Expression> expressions,
+            Consumer<Table> tables) {
+        if (column instanceof AlterExpression.ColumnDataType
+                && ((AlterExpression.ColumnDataType) column).getIdentityAlterations() != null) {
+            return;
+        }
+        if (column.getColumnOptions() != null) {
+            for (ColumnOption option : column.getColumnOptions()) {
+                visitColumnOption(option, expressions, tables);
             }
         }
-        if (element instanceof IndexOptionSource) {
-            visitOptions(((IndexOptionSource) element).getIndexOptions().getStorageParameters(),
-                    expressions);
+        if (column instanceof AlterExpression.ColumnDataType) {
+            accept(((AlterExpression.ColumnDataType) column).getUsingExpression(), expressions);
+        }
+    }
+
+    private static void visitColumnOption(ColumnOption option, Consumer<Expression> expressions,
+            Consumer<Table> tables) {
+        option.visitExpressions(expressions);
+        if (option.getKind() == ColumnOption.Kind.REFERENCE
+                && option.getForeignKeyReference() != null) {
+            accept(option.getForeignKeyReference().getTable(), tables);
+        }
+        if (option.getKind() == ColumnOption.Kind.CONSTRAINT && option.getConstraint() != null) {
+            visit(option.getConstraint(), expressions, tables);
+        }
+    }
+
+    private static void visitKeys(KeyColumnSource source, Consumer<Expression> expressions) {
+        if (source.getColumns() != null) {
+            for (KeyElement key : source.getColumns()) {
+                accept(key.getExpression(), expressions);
+                visitOptions(key.getOperatorClassParameters(), expressions);
+            }
         }
     }
 
