@@ -405,6 +405,14 @@ The existing getter and setter names remain, but their return and parameter type
 have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
 clears the clause. Foreign-key referential actions retain their separate enum.
 
+``ALTER TABLE`` drop actions expose the same enum through
+``AlterExpressionDrop.getBehavior()``, for example in
+``ALTER TABLE t DROP COLUMN IF EXISTS c RESTRICT`` and
+``ALTER TABLE t DROP CONSTRAINT c CASCADE``. Oracle's ``CASCADE CONSTRAINTS`` and
+``INVALIDATE`` remain raw parameters. ``getParameters()`` still ends with the
+behavior keyword; when a behavior is set, it returns a read-only snapshot, so use
+``setBehavior`` to change the clause.
+
 Edit shared table options
 -------------------------
 
@@ -432,13 +440,33 @@ returns an unmodifiable snapshot.
 Any structured setter leaves the opaque representation; it never recovers
 previous values from those tokens. ``setTokens(null)`` clears opaque tokens
 without restoring discarded properties, and leaves structured options alone.
-``setUnionTables``, ``setStorageParameters`` and ``setForeignTableOptions``
-replace the current contents with their respective structured payloads. Their
-lists and child nodes remain editable. An empty UNION list means ``UNION ()``;
+``setUnionTables``, ``setStorageParameters``, ``setForeignTableOptions`` and
+``setOnCommitAction`` replace the current contents with their respective
+structured payloads. Their lists and child nodes remain editable. An empty
+UNION list means ``UNION ()``;
 a null payload omits its value. A non-null ``setTablespaceStorage`` also selects
 TABLESPACE; supply its tablespace name with ``setValue``. Choose the new kind and spelling explicitly
 when using the scalar setters. These methods edit the AST rather than checking
 database-specific DDL validity.
+
+A temporary table's ``ON COMMIT`` clause and a table access method are single
+options. ``Kind.ON_COMMIT`` exposes ``getOnCommitAction()``: ``PRESERVE_ROWS``,
+``DELETE_ROWS`` or ``DROP``, plus ``PRESERVE_DEFINITION`` and ``DROP_DEFINITION``
+for Oracle private temporary tables. ``Kind.ACCESS_METHOD`` stores the method of
+``USING method`` as its value, including ``CREATE TABLE … USING method AS query``.
+Use ``TableOption.onCommit`` and ``TableOption.accessMethod`` to build them.
+``getTableOptionsStrings()`` keeps the legacy word tokens, such as ``ON``,
+``COMMIT``, ``DELETE`` and ``ROWS``.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TEMP TABLE t (id INT) USING heap ON COMMIT DROP",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    table.getTableOption(TableOption.Kind.ACCESS_METHOD).orElseThrow().getValue(); // heap
+    table.getTableOption(TableOption.Kind.ON_COMMIT).orElseThrow()
+            .setOnCommitAction(TableOption.OnCommitAction.PRESERVE_ROWS);
+    // CREATE TEMP TABLE t (id INT) USING heap ON COMMIT PRESERVE ROWS
 
 Inspect PostgreSQL schema statements
 ------------------------------------
