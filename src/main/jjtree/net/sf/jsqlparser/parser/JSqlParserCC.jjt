@@ -10463,6 +10463,7 @@ GroupByElement GroupByColumnReferences():
 }
 {
     <K_GROUP> <K_BY>
+    [ LOOKAHEAD(<K_DISTINCT>) <K_DISTINCT> { groupBy.setDistinct(true); } ]
     (
         LOOKAHEAD(2) (
             <K_GROUPING> <K_SETS>

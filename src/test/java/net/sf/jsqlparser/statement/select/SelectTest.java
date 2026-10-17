@@ -4793,6 +4793,13 @@ public class SelectTest {
     }
 
     @Test
+    public void testGroupingSetsDistinctIssue2785() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT 1 GROUP BY DISTINCT GROUPING SETS ((1), (1))");
+        assertTrue(select.getGroupBy().isDistinct());
+    }
+
+    @Test
     public void testLongQualifiedNamesIssue763() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT mongodb.test.test.intField, postgres.test.test.intField, postgres.test.test.datefield FROM mongodb.test.test JOIN postgres.postgres.test.test ON mongodb.test.test.intField = postgres.test.test.intField WHERE mongodb.test.test.intField = 123");
