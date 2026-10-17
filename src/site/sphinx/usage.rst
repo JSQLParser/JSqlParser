@@ -1733,6 +1733,20 @@ the PostgreSQL ``CreateRole`` AST for this ambiguous form::
         "CREATE USER app",
         parser -> parser.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL));
 
+MySQL account names (``user[@host]``) of ``CREATE USER`` and of view, trigger and
+routine ``DEFINER`` clauses share one grammar rule and are read into separate user
+and host ``StringValue`` parts (``UserAccount`` and ``MySqlDefiner``). Every MySQL
+spelling is accepted, including ``app@localhost``, ``app@'%'`` and
+``'app'@localhost``. A part quoted with ``'``, ``"`` or a backquote keeps its quote
+character in ``getQuoteStr()`` and its text in ``getValue()``::
+
+    CreateUser createUser = (CreateUser) CCJSqlParserUtil.parse(
+        "CREATE USER `app`@'%' IDENTIFIED BY 'secret'");
+    UserAccount account = createUser.getAccounts().get(0);
+    account.getUser().getValue();    // app
+    account.getUser().getQuoteStr(); // `
+    account.getHost().getValue();    // %
+
 ``Grant`` retains its string-based getters, setters and fluent methods. Its
 ``PrivilegeClause`` exposes typed ``Privilege`` items, column lists,
 ``PrivilegeTarget`` kinds, multiple role memberships and grantor information.
