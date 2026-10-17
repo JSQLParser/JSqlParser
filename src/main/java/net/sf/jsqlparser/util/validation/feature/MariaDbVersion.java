@@ -116,6 +116,10 @@ public enum MariaDbVersion implements Version {
                     Feature.createSchema, // https://mariadb.com/kb/en/create-trigger/
                     Feature.createTrigger,
 
+                    // https://mariadb.com/kb/en/create-database/
+                    // https://mariadb.com/kb/en/alter-database/
+                    Feature.createDatabase, Feature.alterDatabase,
+
                     // https://mariadb.com/kb/en/describe/
                     Feature.describe, // https://mariadb.com/kb/en/explain/
                     Feature.explain, // https://mariadb.com/kb/en/show/

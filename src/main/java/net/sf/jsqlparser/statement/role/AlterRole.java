@@ -14,9 +14,16 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.statement.ConfigurationParameterChange;
+import net.sf.jsqlparser.statement.ConfigurationParameterChange.ValueKind;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
+/**
+ * PostgreSQL {@code ALTER ROLE}, {@code ALTER USER} or {@code ALTER GROUP}. The {@code SET} and
+ * {@code RESET} actions use the shared {@link ConfigurationParameterChange}; the parameter
+ * accessors of this class read and edit that change.
+ */
 public class AlterRole implements Statement {
     public enum Action {
         OPTIONS, RENAME, SET, RESET, ADD_USER, DROP_USER
@@ -28,11 +35,7 @@ public class AlterRole implements Statement {
     private boolean useWith;
     private String newName;
     private String database;
-    private String parameter;
-    private boolean useEquals;
-    private boolean fromCurrent;
-    private boolean useDefault;
-    private ExpressionList<Expression> values;
+    private ConfigurationParameterChange parameterChange;
     private List<String> users;
     private List<RoleOption> options = new ArrayList<>();
 
@@ -52,12 +55,68 @@ public class AlterRole implements Statement {
         this.name = name;
     }
 
+    /**
+     * The role action. For {@code SET} and {@code RESET}, the action of the parameter change
+     * decides which of the two is returned.
+     *
+     * @return the action
+     */
     public Action getAction() {
+        if (parameterChange != null && (action == Action.SET || action == Action.RESET)) {
+            return parameterChange.getAction() == ConfigurationParameterChange.Action.RESET
+                    ? Action.RESET
+                    : Action.SET;
+        }
         return action;
     }
 
+    /**
+     * Selects the role action. {@code SET} and {@code RESET} are also applied to the parameter
+     * change, which is created when missing. Other actions keep the parameter change for a later
+     * switch back.
+     *
+     * @param action the action
+     */
     public void setAction(Action action) {
         this.action = action;
+        if (action == Action.SET || action == Action.RESET) {
+            ensureParameterChange().setAction(action == Action.RESET
+                    ? ConfigurationParameterChange.Action.RESET
+                    : ConfigurationParameterChange.Action.SET);
+        }
+    }
+
+    /**
+     * The configuration parameter change of the {@code SET} and {@code RESET} actions.
+     *
+     * @return the change, or {@code null} if none was set
+     */
+    public ConfigurationParameterChange getParameterChange() {
+        return parameterChange;
+    }
+
+    /**
+     * Sets the configuration parameter change; a non-null change also selects its {@code SET} or
+     * {@code RESET} action.
+     *
+     * @param parameterChange the change
+     */
+    public void setParameterChange(ConfigurationParameterChange parameterChange) {
+        this.parameterChange = parameterChange;
+        if (parameterChange != null) {
+            action = parameterChange.getAction() == ConfigurationParameterChange.Action.RESET
+                    ? Action.RESET
+                    : Action.SET;
+        }
+    }
+
+    private ConfigurationParameterChange ensureParameterChange() {
+        if (parameterChange == null) {
+            parameterChange = new ConfigurationParameterChange(action == Action.RESET
+                    ? ConfigurationParameterChange.Action.RESET
+                    : ConfigurationParameterChange.Action.SET, null);
+        }
+        return parameterChange;
     }
 
     public boolean isUseWith() {
@@ -93,43 +152,75 @@ public class AlterRole implements Statement {
     }
 
     public String getParameter() {
-        return parameter;
+        return parameterChange == null ? null : parameterChange.getParameter();
     }
 
     public void setParameter(String parameter) {
-        this.parameter = parameter;
+        ensureParameterChange().setParameter(parameter);
     }
 
     public boolean isUseEquals() {
-        return useEquals;
+        return parameterChange != null && parameterChange.isUseEquals();
     }
 
     public void setUseEquals(boolean useEquals) {
-        this.useEquals = useEquals;
+        ensureParameterChange().setUseEquals(useEquals);
     }
 
+    /**
+     * Whether the parameter change assigns {@code FROM CURRENT}.
+     *
+     * @return {@code true} for {@link ValueKind#FROM_CURRENT}
+     */
     public boolean isFromCurrent() {
-        return fromCurrent;
+        return hasValueKind(ValueKind.FROM_CURRENT);
     }
 
+    /**
+     * Selects {@link ValueKind#FROM_CURRENT}; {@code false} returns from it to the explicit values.
+     *
+     * @param fromCurrent whether to assign {@code FROM CURRENT}
+     */
     public void setFromCurrent(boolean fromCurrent) {
-        this.fromCurrent = fromCurrent;
+        setValueKind(ValueKind.FROM_CURRENT, fromCurrent);
     }
 
+    /**
+     * Whether the parameter change assigns {@code DEFAULT}.
+     *
+     * @return {@code true} for {@link ValueKind#DEFAULT}
+     */
     public boolean isUseDefault() {
-        return useDefault;
+        return hasValueKind(ValueKind.DEFAULT);
     }
 
+    /**
+     * Selects {@link ValueKind#DEFAULT}; {@code false} returns from it to the explicit values.
+     *
+     * @param useDefault whether to assign {@code DEFAULT}
+     */
     public void setUseDefault(boolean useDefault) {
-        this.useDefault = useDefault;
+        setValueKind(ValueKind.DEFAULT, useDefault);
+    }
+
+    private boolean hasValueKind(ValueKind kind) {
+        return parameterChange != null && parameterChange.getValueKind() == kind;
+    }
+
+    private void setValueKind(ValueKind kind, boolean selected) {
+        if (selected) {
+            ensureParameterChange().setValueKind(kind);
+        } else if (hasValueKind(kind)) {
+            parameterChange.setValueKind(ValueKind.VALUES);
+        }
     }
 
     public ExpressionList<Expression> getValues() {
-        return values;
+        return parameterChange == null ? null : parameterChange.getValues();
     }
 
     public void setValues(ExpressionList<Expression> values) {
-        this.values = values;
+        ensureParameterChange().setValues(values);
     }
 
     public List<String> getUsers() {
@@ -145,7 +236,7 @@ public class AlterRole implements Statement {
         if (database != null) {
             sql.append(" IN DATABASE ").append(database);
         }
-        switch (action) {
+        switch (getAction()) {
             case OPTIONS:
                 if (useWith) {
                     sql.append(" WITH");
@@ -159,25 +250,11 @@ public class AlterRole implements Statement {
                 sql.append(" RENAME TO ").append(newName);
                 break;
             case RESET:
-                sql.append(" RESET ").append(parameter);
-                break;
             case SET:
-                sql.append(" SET ").append(parameter);
-                if (fromCurrent) {
-                    sql.append(" FROM CURRENT");
-                } else {
-                    sql.append(useEquals ? " = " : " TO ");
-                    if (useDefault) {
-                        sql.append("DEFAULT");
-                    } else {
-                        for (int i = 0; i < values.size(); i++) {
-                            if (i > 0) {
-                                sql.append(", ");
-                            }
-                            visitor.accept(values.get(i));
-                        }
-                    }
+                if (parameterChange == null) {
+                    throw new IllegalStateException("Expected a configuration parameter change");
                 }
+                parameterChange.appendTo(sql.append(' '), visitor);
                 break;
             case ADD_USER:
             case DROP_USER:
