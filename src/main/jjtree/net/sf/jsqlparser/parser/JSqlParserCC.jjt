@@ -681,7 +681,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     /**
      * Pratt arithmetic operator precedence loop.
-     * Handles: ^, ** (prec=7), *, /, %, DIV (prec=6)  and  +, -, ||, |, &, <<, >> (prec=5)
+     * Handles: ^, ** (prec=7), *, /, %, DIV (prec=6), +, -, || (prec=5)  and  |, &, #, <<, >> (prec=4)
      * Called only in real-parse mode (not syntactic-LOOKAHEAD mode) so action
      * blocks execute correctly. Safe now that no syntactic production LOOKAHEADs
      * scan through arithmetic expressions.
@@ -762,16 +762,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == OP_SLASH || op == K_DIV)                           prec = 6;
             // ^ binds tighter than * / %, both as PostgreSQL's power and as MySQL's XOR
             else if (op == OP_CARET || op == OP_POWER)                        prec = 7;
-            else if (op == S_HASH_OPERATOR)                                   prec = 5;
-            else if (op == OP_CONCAT || op == OP_PIPE
-                  || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
+            else if (op == OP_CONCAT
+                  || (op == OP_PIPE && getToken(2).kind == OP_PIPE))          prec = 5;
+            // the bitwise operators bind looser than + and -, as in PostgreSQL, MySQL and SQLite
+            else if (op == S_HASH_OPERATOR || op == OP_PIPE
+                  || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 4;
             else {
                 // Handle unnamed tokens by image
                 String img = t.image;
                 // DuckDB's LIMIT 10%: the % ends the row count instead of starting a modulo
                 if (t == limitPercentToken) break;
                 if      ("*".equals(img) || "%".equals(img))                  prec = 6;
-                else if ("+".equals(img) || "-".equals(img) || "&".equals(img)) prec = 5;
+                else if ("+".equals(img) || "-".equals(img))                  prec = 5;
+                else if ("&".equals(img))                                     prec = 4;
                 else break; // not an arithmetic operator
             }
 
