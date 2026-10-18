@@ -12,7 +12,11 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -216,5 +220,36 @@ public class ExpressionPrecedenceTest {
         Expression addition = CCJSqlParserUtil.parseCondExpression("1 + not 2");
         Addition add = Assertions.assertInstanceOf(Addition.class, addition);
         Assertions.assertInstanceOf(NotExpression.class, add.getRightExpression());
+    }
+
+    @Test
+    public void testCaretBindsTighterThanMultiplication() throws JSQLParserException {
+        // PostgreSQL's power and MySQL's XOR both evaluate 2 * 3 ^ 2 as 2 * (3 ^ 2)
+        Multiplication multiplication = Assertions.assertInstanceOf(Multiplication.class,
+                CCJSqlParserUtil.parseExpression("2 * 3 ^ 2"));
+        Assertions.assertInstanceOf(LongValue.class, multiplication.getLeftExpression());
+        Assertions.assertInstanceOf(BitwiseXor.class, multiplication.getRightExpression());
+
+        Division division = Assertions.assertInstanceOf(Division.class,
+                CCJSqlParserUtil.parseExpression("10 / 2 ^ 2"));
+        Assertions.assertInstanceOf(BitwiseXor.class, division.getRightExpression());
+
+        Modulo modulo = Assertions.assertInstanceOf(Modulo.class,
+                CCJSqlParserUtil.parseExpression("18 % 4 ^ 2"));
+        Assertions.assertInstanceOf(BitwiseXor.class, modulo.getRightExpression());
+
+        multiplication = Assertions.assertInstanceOf(Multiplication.class,
+                CCJSqlParserUtil.parseExpression("2 ^ 3 * 2"));
+        Assertions.assertInstanceOf(BitwiseXor.class, multiplication.getLeftExpression());
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT pi() * r ^ 2 FROM circles");
+    }
+
+    @Test
+    public void testCaretIsLeftAssociative() throws JSQLParserException {
+        BitwiseXor outer = Assertions.assertInstanceOf(BitwiseXor.class,
+                CCJSqlParserUtil.parseExpression("2 ^ 3 ^ 2"));
+        Assertions.assertInstanceOf(BitwiseXor.class, outer.getLeftExpression());
+        Assertions.assertInstanceOf(LongValue.class, outer.getRightExpression());
     }
 }

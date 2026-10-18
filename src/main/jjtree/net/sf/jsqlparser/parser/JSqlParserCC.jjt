@@ -681,7 +681,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     /**
      * Pratt arithmetic operator precedence loop.
-     * Handles: *, /, %, ^, DIV (prec=6)  and  +, -, ||, |, &, <<, >> (prec=5)
+     * Handles: ^, ** (prec=7), *, /, %, DIV (prec=6)  and  +, -, ||, |, &, <<, >> (prec=5)
      * Called only in real-parse mode (not syntactic-LOOKAHEAD mode) so action
      * blocks execute correctly. Safe now that no syntactic production LOOKAHEADs
      * scan through arithmetic expressions.
@@ -759,8 +759,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (jsonAccess || op == OP_JSON_PATH_DELETE || op == OP_JSON_PATH_EXISTS
                     || (op == OP_CONCAT && Dialect.POSTGRESQL.name()
                             .equals(getAsString(Feature.dialect))))          prec = 4;
-            else if (op == OP_SLASH || op == OP_CARET || op == K_DIV)         prec = 6;
-            else if (op == OP_POWER)                                          prec = 7;
+            else if (op == OP_SLASH || op == K_DIV)                           prec = 6;
+            // ^ binds tighter than * / %, both as PostgreSQL's power and as MySQL's XOR
+            else if (op == OP_CARET || op == OP_POWER)                        prec = 7;
             else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
