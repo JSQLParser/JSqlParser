@@ -265,7 +265,7 @@ tasks.register('xmldoc', Javadoc) {
 }
 
 test {
-    environment = [ 'EXPORT_TEST_TO_FILE': 'False' ]
+    environment 'EXPORT_TEST_TO_FILE', 'False'
     useJUnitPlatform()
 
     // set heap size for the test JVM(s)
@@ -845,4 +845,25 @@ tasks.register('checkGrammarAmbiguity') {
 
 tasks.named('check') {
     dependsOn('checkGrammarAmbiguity')
+}
+
+// Report base/working-tree context changes without making historical lookahead debt a new gate.
+// The analyzer lives in test sources: no audit classes or dependencies enter the library JAR.
+tasks.register('lookaheadAudit', JavaExec) {
+    group = 'verification'
+    description = 'Reports changed lookahead decisions and stale evidence against a Git base.'
+    dependsOn(testClasses)
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'net.sf.jsqlparser.parser.audit.LookaheadAudit'
+    javaLauncher = javaToolchains.launcherFor(java.toolchain)
+    jvmArgs '-Xss4m', '-Xmx1g', '-Dfile.encoding=UTF-8'
+    workingDir = projectDir
+    doFirst {
+        args = [projectDir.absolutePath,
+                providers.gradleProperty('lookaheadBase').getOrElse('HEAD'),
+                layout.buildDirectory.dir('reports/lookahead').get().asFile.absolutePath,
+                file('config/lookahead-evidence.tsv').absolutePath,
+                providers.gradleProperty('lookaheadFailOnFindings').getOrElse('false'),
+                providers.gradleProperty('lookaheadFull').getOrElse('false')]
+    }
 }

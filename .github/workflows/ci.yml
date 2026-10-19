@@ -45,6 +45,28 @@ jobs:
       - name: Check for grammar ambiguities
         run: ./gradlew checkGrammarAmbiguity --no-daemon
 
+      - name: Restore and save lookahead facts
+        uses: actions/cache@v5
+        with:
+          path: build/lookahead-cache/
+          key: lookahead-facts-${{ runner.os }}-${{ hashFiles('src/test/java/net/sf/jsqlparser/parser/audit/**', 'build.gradle', 'gradle/wrapper/gradle-wrapper.properties') }}-${{ github.sha }}
+          restore-keys: |
+            lookahead-facts-${{ runner.os }}-${{ hashFiles('src/test/java/net/sf/jsqlparser/parser/audit/**', 'build.gradle', 'gradle/wrapper/gradle-wrapper.properties') }}-
+
+      - name: Report changed lookahead contexts
+        env:
+          LOOKAHEAD_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+        run: ./gradlew lookaheadAudit --no-daemon -PlookaheadBase="$LOOKAHEAD_BASE"
+
+      - name: Upload lookahead review report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: lookahead-review
+          path: build/reports/lookahead/
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload grammar warning report
         if: failure()
         uses: actions/upload-artifact@v5
