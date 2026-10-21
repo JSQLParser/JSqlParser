@@ -2389,6 +2389,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testBooleanTestAfterPredicate() throws JSQLParserException {
+        // SQL:2016 6.39: a boolean test applies to any boolean primary, so an
+        // IS TRUE/FALSE test chains onto a comparison or predicate result
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a > 0 IS TRUE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IN (1, 2) IS FALSE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IS NULL IS NOT TRUE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IS TRUE IS FALSE");
+    }
+
+    @Test
     public void testIsUnknown() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS UNKNOWN";
         assertSqlCanBeParsedAndDeparsed(statement);
