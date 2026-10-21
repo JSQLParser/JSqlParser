@@ -2223,6 +2223,58 @@ References: MySQL `CREATE DATABASE <https://dev.mysql.com/doc/refman/8.4/en/crea
 PostgreSQL `CREATE DATABASE <https://www.postgresql.org/docs/18/sql-createdatabase.html>`_,
 `ALTER DATABASE <https://www.postgresql.org/docs/18/sql-alterdatabase.html>`_.
 
+Routine and trigger alterations
+-------------------------------
+
+PostgreSQL ``ALTER FUNCTION``, ``ALTER PROCEDURE`` and ``ALTER ROUTINE`` and MySQL
+``ALTER FUNCTION`` and ``ALTER PROCEDURE`` parse to ``AlterRoutine``. ``getRoutineType()``
+names the keyword and ``getRoutine()`` is a ``RoutineReference`` with the optional
+PostgreSQL argument types. ``getAction()`` is ``CHARACTERISTICS``, ``RENAME``, ``OWNER``,
+``SET_SCHEMA`` or ``DEPENDS_ON_EXTENSION`` (``isNoDependency()`` for ``NO DEPENDS``);
+payloads of the other actions are kept. ``getCharacteristics()`` is a mutable list of
+``RoutineCharacteristic`` in source order, shared by both dialects. Each ``Kind`` renders
+its own keywords, such as ``IMMUTABLE``, ``CALLED_ON_NULL_INPUT``, ``PARALLEL_SAFE``,
+``COST`` or MySQL's ``READS_SQL_DATA``. ``SECURITY_DEFINER`` and ``SECURITY_INVOKER`` keep
+the ``[EXTERNAL] SECURITY`` or ``SQL SECURITY`` spelling in ``getSecurityClause()``.
+``COST``, ``ROWS``, ``SUPPORT`` and ``COMMENT`` keep their value as SQL text in ``getValue()``.
+``getComment()`` returns the ``COMMENT`` literal as a ``StringValue`` read with the dialect's
+escaping, so ``getNotExcapedValue()`` is the text MySQL stores. ``SET`` and ``RESET`` reuse
+``ConfigurationParameterChange``:
+
+.. code-block:: java
+
+    AlterRoutine alter = (AlterRoutine) CCJSqlParserUtil.parse(
+        "ALTER FUNCTION f(int) IMMUTABLE SET search_path = public",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    alter.getRoutine().getArguments();                // [int]
+    alter.getCharacteristics().get(0).getKind();      // IMMUTABLE
+    alter.getCharacteristics().get(1).getParameterChange().getParameter(); // search_path
+
+The characteristics of one statement belong to one dialect, and MySQL's take no argument
+list. Other forms after ``ALTER FUNCTION`` or ``ALTER PROCEDURE``, such as Oracle's
+``COMPILE`` or SQL Server routine definitions without the SQL Server dialect, remain an
+``UnsupportedStatement``. PostgreSQL's ``ALTER TRIGGER name ON table RENAME TO`` and
+``[NO] DEPENDS ON EXTENSION`` parse to ``AlterTrigger``; table visitors report its table.
+Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
+``alterTrigger``; PostgreSQL enables all of them, MySQL and MariaDB the first two.
+
+``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
+``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
+triggers use. MySQL ``CREATE TRIGGER`` accepts ``IF NOT EXISTS`` (``isIfNotExists()``)
+and keeps MariaDB's ``OR REPLACE``. A ``BEGIN ... END`` trigger body with only SQL
+statements remains a ``Block``; a compound body with procedural statements such as
+``IF``, ``DECLARE`` or loops is an ``UnsupportedStatement`` with its tokens, captured with
+the boundary of routine bodies. In both cases the semicolon after ``END`` separates the
+next statement.
+
+References: PostgreSQL `ALTER FUNCTION <https://www.postgresql.org/docs/18/sql-alterfunction.html>`_,
+`ALTER PROCEDURE <https://www.postgresql.org/docs/18/sql-alterprocedure.html>`_,
+`ALTER ROUTINE <https://www.postgresql.org/docs/18/sql-alterroutine.html>`_,
+`ALTER TRIGGER <https://www.postgresql.org/docs/18/sql-altertrigger.html>`_;
+MySQL `ALTER FUNCTION <https://dev.mysql.com/doc/refman/8.4/en/alter-function.html>`_,
+`ALTER PROCEDURE <https://dev.mysql.com/doc/refman/8.4/en/alter-procedure.html>`_,
+`CREATE TRIGGER <https://dev.mysql.com/doc/refman/8.4/en/create-trigger.html>`_.
+
 MySQL table maintenance statements
 ----------------------------------
 

@@ -101,6 +101,10 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-database.html
                     Feature.createDatabase, Feature.alterDatabase,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-function.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-procedure.html
+                    Feature.alterFunction, Feature.alterProcedure,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
                     Feature.createSchema, // https://dev.mysql.com/doc/refman/8.0/en/create-view.html
                     Feature.createView,

@@ -164,6 +164,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **PostgreSQL RLS**
       - ``CREATE POLICY`` · ``ALTER TABLE … ENABLE``/``DISABLE``/``FORCE``/``NO FORCE ROW LEVEL SECURITY``
+    * - **Routine changes**
+      - ``ALTER FUNCTION`` · ``ALTER PROCEDURE`` · ``ALTER ROUTINE`` · PostgreSQL ``ALTER TRIGGER``
     * - **Salesforce SOQL**
       - ``INCLUDES`` · ``EXCLUDES``
 

@@ -115,6 +115,8 @@ import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterDomain;
 import net.sf.jsqlparser.statement.alter.AlterExtension;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
@@ -3204,6 +3206,18 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterCollation statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRoutine statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTrigger statement, S context) {
+        visit(statement.getTable(), context);
         return null;
     }
 }
