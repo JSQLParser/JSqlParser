@@ -128,7 +128,8 @@ public enum MariaDbVersion implements Version {
                     Feature.showColumns, // https://mariadb.com/kb/en/show-index/
                     Feature.showIndex, // https://mariadb.com/kb/en/use/
                     Feature.use, // https://mariadb.com/kb/en/grant/
-                    Feature.grant, // https://mariadb.com/kb/en/commit/
+                    Feature.grant, // https://mariadb.com/kb/en/revoke/
+                    Feature.revoke, // https://mariadb.com/kb/en/commit/
                     Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,
