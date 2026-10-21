@@ -2414,7 +2414,7 @@ public class SelectTest {
     }
 
     @Test
-    public void testGroupByAllDistinct_PostgreSql() throws JSQLParserException {
+    public void testGroupByAllDistinctPostgreSql() throws JSQLParserException {
         // PostgreSQL: GROUP BY [ ALL | DISTINCT ] grouping_element [, ...]
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT 1 GROUP BY DISTINCT GROUPING SETS ((1), (1))",
