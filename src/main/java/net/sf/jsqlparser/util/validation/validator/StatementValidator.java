@@ -69,6 +69,9 @@ import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
+import net.sf.jsqlparser.statement.SetPasswordStatement;
+import net.sf.jsqlparser.statement.SetRoleStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -82,6 +85,8 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -464,6 +469,37 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(AlterUser alterUser, S context) {
+        validateFeature(Feature.alterUser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(RenameUser renameUser, S context) {
+        validateFeature(Feature.renameUser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetRoleStatement setRole, S context) {
+        validateFeature(Feature.setRole);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        validateFeature(Feature.setDefaultRole);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetPasswordStatement setPassword, S context) {
+        validateFeature(Feature.setPassword);
+        validateOptionalExpression(setPassword.getPassword());
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateEvent createEvent, S context) {
         if (createEvent.getBody() != null) {
             createEvent.getBody().accept(this, context);
@@ -826,6 +862,26 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateUser createUser) {
         visit(createUser, null);
+    }
+
+    public void visit(AlterUser alterUser) {
+        visit(alterUser, null);
+    }
+
+    public void visit(RenameUser renameUser) {
+        visit(renameUser, null);
+    }
+
+    public void visit(SetRoleStatement setRole) {
+        visit(setRole, null);
+    }
+
+    public void visit(SetDefaultRoleStatement setDefaultRole) {
+        visit(setDefaultRole, null);
+    }
+
+    public void visit(SetPasswordStatement setPassword) {
+        visit(setPassword, null);
     }
 
     public void visit(CreateEvent createEvent) {

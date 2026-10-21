@@ -2178,6 +2178,65 @@ Table visitors and metadata validation use the table list. Validators report the
 analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
 report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
 
+MySQL account management statements
+-----------------------------------
+
+``CREATE USER`` and ``ALTER USER`` share ``UserOptions`` (``getOptions()``) in MySQL's
+clause order: the ``DEFAULT ROLE`` roles, the ``REQUIRE`` options (``TlsOption``), the
+``WITH`` resource limits (``ResourceLimit``), the password and locking options
+(``PasswordLockOption``) in source order, and ``COMMENT`` or ``ATTRIBUTE``. Omitted
+clauses stay omitted. ``UserAuthentication`` adds ``ALTER USER``'s ``REPLACE 'current'``
+(``getCurrentCredential()``), ``RETAIN CURRENT PASSWORD`` and the
+``DISCARD_OLD_PASSWORD`` mode.
+
+.. code-block:: java
+
+    AlterUser alter = (AlterUser) CCJSqlParserUtil.parse(
+        "ALTER USER 'app'@'%' IDENTIFIED BY 'new' RETAIN CURRENT PASSWORD "
+            + "PASSWORD EXPIRE INTERVAL 90 DAY ACCOUNT LOCK");
+    alter.getAccounts().get(0).getAuthentication().isRetainCurrentPassword(); // true
+    alter.getOptions().getPasswordLockOptions(); // [PASSWORD EXPIRE INTERVAL 90 DAY, ACCOUNT LOCK]
+
+``ALTER USER USER() ...`` keeps ``USER()`` as the unquoted account name, as
+``DEFINER = CURRENT_USER`` does; ``isUserFunction()`` identifies it.
+``ALTER USER acct DEFAULT ROLE {NONE | ALL | role, ...}`` stores a ``RoleSelection`` in
+``getOptions().getDefaultRoles()``. PostgreSQL's ``ALTER USER``, an alias of ``ALTER ROLE``
+(``WITH LOGIN``, ``PASSWORD 'x'``, ``SET``, ``RENAME TO`` ...), still parses to
+``AlterRole``. MySQL syntax is recognized by ``IF EXISTS``, ``USER()``, quoted names,
+hosts, account lists, a missing action or a MySQL account clause.
+
+``RENAME USER`` parses to ``RenameUser`` with ordered ``from``/``to`` pairs. MySQL
+``CREATE ROLE [IF NOT EXISTS] role, ...`` with quoted names, hosts or several roles keeps
+them in ``CreateRole.getRoles()``, and ``getName()`` is null. A single unquoted name, which
+both databases accept, keeps the PostgreSQL ``getName()``; so does an unquoted ``r@h``, which
+the lexer reads as one identifier, unless the MySQL or MariaDB dialect is selected. Role names
+use the shared account spelling and are ``UserAccount`` values without authentication.
+
+``SET DEFAULT ROLE`` (MySQL's ``TO``, MariaDB's ``FOR``) and ``SET PASSWORD FOR`` parse to
+``SetDefaultRoleStatement`` and ``SetPasswordStatement`` in every dialect. ``SET ROLE`` and
+``SET PASSWORD`` without ``FOR`` share the variable assignment shape that PostgreSQL uses
+for ``SET ROLE name`` and ``SET ROLE NONE``, so they remain a ``SetStatement`` unless
+``Dialect.MYSQL`` or ``Dialect.MARIADB`` is selected. With these dialects every form parses
+to ``SetRoleStatement`` (``DEFAULT``, ``NONE``, ``ALL [EXCEPT ...]`` or a role list) or
+``SetPasswordStatement`` (``= password`` or ``TO RANDOM``, then ``REPLACE`` and
+``RETAIN CURRENT PASSWORD``). The MySQL-only ``SET ROLE ALL EXCEPT ...`` and role names
+with a quoted user or host, such as ``'r'@'%'``, parse to ``SetRoleStatement`` in every
+dialect.
+
+.. code-block:: java
+
+    SetRoleStatement setRole = (SetRoleStatement) CCJSqlParserUtil.parse(
+        "SET ROLE ALL EXCEPT 'admin'@'%'",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    setRole.getRoles().getKind();  // ALL_EXCEPT
+    setRole.getRoles().getRoles(); // ['admin'@'%']
+
+Validators report ``alterUser``, ``renameUser``, ``setRole``, ``setDefaultRole`` and
+``setPassword``; the MySQL and MariaDB capabilities enable them and ``createRole``.
+Feature analysis reports ``MODIFIES_SCHEMA``, or ``MODIFIES_SESSION`` for ``SET ROLE``.
+Multi-factor authentication clauses are not modeled. Serialized account SQL can contain
+passwords; avoid logging real credentials.
+
 Legacy MySQL GROUP BY ordering
 ==============================
 

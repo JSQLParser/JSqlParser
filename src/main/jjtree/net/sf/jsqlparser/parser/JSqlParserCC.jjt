@@ -2279,7 +2279,144 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (isAccessKeywordAhead("ROLE") || isAccessKeywordAhead("GROUP")) { return true; }
         return isAccessKeywordAhead("USER") && !"MAPPING".equalsIgnoreCase(getToken(2).image)
             && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
-                || "WITH".equalsIgnoreCase(getToken(3).image) || isRoleOptionAhead(3));
+                || !isMySqlUserOptionAhead(3)
+                    && ("WITH".equalsIgnoreCase(getToken(3).image) || isRoleOptionAhead(3)));
+    }
+
+    /**
+     * Whether a MySQL CREATE/ALTER USER clause starts at the offset: authentication, DEFAULT ROLE,
+     * REQUIRE, WITH resource limits, password and locking options, COMMENT or ATTRIBUTE. PostgreSQL
+     * role attributes such as WITH LOGIN or PASSWORD 'x' do not match.
+     */
+    private boolean isMySqlUserOptionAhead(int offset) {
+        Token token = getToken(offset);
+        switch (token.kind) {
+            case K_IDENTIFIED:
+            case K_DISCARD:
+                return true;
+            case K_COMMENT:
+                return getToken(offset + 1).kind == S_CHAR_LITERAL;
+            case K_DEFAULT:
+                return "ROLE".equalsIgnoreCase(getToken(offset + 1).image);
+            case K_WITH:
+                return isMySqlResourceLimitAhead(offset + 1);
+            default:
+                return isMySqlPasswordLockOptionAhead(offset) || token.kind == S_IDENTIFIER
+                        && ("REQUIRE".equalsIgnoreCase(token.image)
+                            || "ATTRIBUTE".equalsIgnoreCase(token.image));
+        }
+    }
+
+    private boolean isMySqlResourceLimitAhead(int offset) {
+        Token token = getToken(offset);
+        return token.kind == S_IDENTIFIER && getToken(offset + 1).kind == S_LONG
+                && Arrays.asList("MAX_QUERIES_PER_HOUR", "MAX_UPDATES_PER_HOUR",
+                    "MAX_CONNECTIONS_PER_HOUR", "MAX_USER_CONNECTIONS")
+                    .contains(token.image.toUpperCase(Locale.ROOT));
+    }
+
+    private boolean isMySqlPasswordLockOptionAhead(int offset) {
+        Token token = getToken(offset);
+        Token next = getToken(offset + 1);
+        if (token.kind == K_PASSWORD) {
+            return next.kind == K_HISTORY || next.kind == S_IDENTIFIER
+                    && Arrays.asList("EXPIRE", "REUSE", "REQUIRE")
+                        .contains(next.image.toUpperCase(Locale.ROOT));
+        }
+        if (token.kind != S_IDENTIFIER) {
+            return false;
+        }
+        String word = token.image.toUpperCase(Locale.ROOT);
+        return "ACCOUNT".equals(word)
+                    && (next.kind == K_LOCK || "UNLOCK".equalsIgnoreCase(next.image))
+                || "FAILED_LOGIN_ATTEMPTS".equals(word) || "PASSWORD_LOCK_TIME".equals(word);
+    }
+
+    private boolean isMySqlTlsOptionAhead() {
+        int offset = getToken(1).kind == K_AND ? 2 : 1;
+        Token token = getToken(offset);
+        return token.kind == S_IDENTIFIER && Arrays.asList("SSL", "X509", "CIPHER", "ISSUER",
+            "SUBJECT").contains(token.image.toUpperCase(Locale.ROOT));
+    }
+
+    /**
+     * Whether ALTER USER uses MySQL account syntax rather than the PostgreSQL alias of ALTER ROLE,
+     * which names one unquoted role followed by an action: IF EXISTS, USER(), a quoted name, a
+     * host, an account list, no action at all, or a MySQL account clause.
+     */
+    private boolean isMySqlAlterUserAhead() {
+        if (getToken(1).kind != K_USER) { return false; }
+        Token name = getToken(2);
+        if (name.kind == K_IF || name.kind == S_CHAR_LITERAL
+                || name.kind == K_USER && "(".equals(getToken(3).image)
+                || isMySqlAccountHostAhead(2, false)) {
+            return true;
+        }
+        Token next = getToken(3);
+        return ",".equals(next.image) || next.kind == EOF || next.kind == ST_SEMICOLON
+                || isMySqlUserOptionAhead(3);
+    }
+
+    /**
+     * Whether CREATE ROLE uses MySQL syntax: IF NOT EXISTS, a quoted name, a host or a list. An
+     * unquoted name@host, which PostgreSQL reads as one role name, counts only in the MySQL and
+     * MariaDB dialects.
+     */
+    private boolean isMySqlCreateRoleAhead() {
+        if (!isAccessKeywordAhead("ROLE")) { return false; }
+        Token name = getToken(2);
+        return name.kind == K_IF || name.kind == S_CHAR_LITERAL
+                || isMySqlAccountHostAhead(2, isMySqlDialect()) || ",".equals(getToken(3).image);
+    }
+
+    /**
+     * Whether the account name at the offset has a host that only MySQL accepts: @ before the host,
+     * a user@ identifier before a quoted host or an @host identifier after a quoted user. An unquoted
+     * user@host, which the lexer reads as one identifier, counts only when merged is set.
+     */
+    private boolean isMySqlAccountHostAhead(int offset, boolean merged) {
+        Token name = getToken(offset);
+        if (name.kind == S_IDENTIFIER && name.image.indexOf('@') > 0) {
+            return merged || name.image.endsWith("@");
+        }
+        Token next = getToken(offset + 1);
+        return next.kind == K_AT_SIGN
+                || next.kind == S_AT_IDENTIFIER && !next.image.startsWith("@@");
+    }
+
+    /**
+     * Whether a MySQL SET ROLE statement starts here. The MySQL and MariaDB dialects type every
+     * form; elsewhere only ALL EXCEPT and role names with a quoted user or host do, so that
+     * SET ROLE name and SET ROLE NONE remain the SetStatement that PostgreSQL uses.
+     */
+    private boolean isMySqlSetRoleAhead() {
+        if (getToken(1).kind != K_SET || getToken(2).kind != S_IDENTIFIER
+                || !"ROLE".equalsIgnoreCase(getToken(2).image)) {
+            return false;
+        }
+        Token next = getToken(3);
+        if (next.kind == EOF || next.kind == ST_SEMICOLON || next.kind == K_TO
+                || "=".equals(next.image) || ":=".equals(next.image) || ".".equals(next.image)) {
+            return false;
+        }
+        if (isMySqlDialect()) { return true; }
+        if (next.kind == K_ALL) { return getToken(4).kind == K_EXCEPT; }
+        // role [@ host] [, role [@ host]] ...
+        for (int i = 3; ; i += 2) {
+            if (isMySqlAccountHostAhead(i, false)) { return true; }
+            if (!",".equals(getToken(i + 1).image)) { return false; }
+        }
+    }
+
+    /**
+     * Whether a MySQL SET PASSWORD statement starts here: always with FOR, otherwise only in the
+     * MySQL and MariaDB dialects, where SET PASSWORD = 'x' is not a variable assignment.
+     */
+    private boolean isMySqlSetPasswordAhead() {
+        if (getToken(1).kind != K_SET || getToken(2).kind != K_PASSWORD) { return false; }
+        Token next = getToken(3);
+        return next.kind == K_FOR
+                || isMySqlDialect() && ("=".equals(next.image) || next.kind == K_TO);
     }
 
     private boolean isAccessKeywordAhead(String word) {
@@ -4029,6 +4166,10 @@ Statement SingleStatement() :
             |
             LOOKAHEAD(2) stm = Alter()
             |
+            LOOKAHEAD({ getToken(1).kind == K_RENAME && getToken(2).kind == K_USER
+                    && getToken(3).kind != K_TO && !".".equals(getToken(3).image) })
+            stm = RenameUser()
+            |
             // @todo: merge this into the ALTER TABLE statement
             stm = RenameTableStatement()
             |
@@ -4067,6 +4208,14 @@ Statement SingleStatement() :
                         && (isInformixIsolationLevel(getToken(3))
                             || getToken(3).kind == K_TO && isInformixIsolationLevel(getToken(4)))) })
             stm = OpaqueSetStatement()
+            |
+            LOOKAHEAD({ isMySqlSetRoleAhead() }) stm = SetRoleStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_SET && getToken(2).kind == K_DEFAULT
+                    && "ROLE".equalsIgnoreCase(getToken(3).image) })
+            stm = SetDefaultRoleStatement()
+            |
+            LOOKAHEAD({ isMySqlSetPasswordAhead() }) stm = SetPasswordStatement()
             |
             stm = Set()
             |
@@ -15859,7 +16008,355 @@ CreateUser CreateUser():
     [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createUser.setIfNotExists(true); } ]
     account=MySqlUserAccount() { createUser.addAccounts(account); }
     ( "," account=MySqlUserAccount() { createUser.addAccounts(account); } )*
+    MySqlUserOptions(createUser.getOptions(), true)
     { return createUser; }
+}
+
+/**
+ * MySQL account options shared by CREATE USER and ALTER USER, in the fixed clause order. Only
+ * CREATE USER lists DEFAULT ROLE here; ALTER USER uses its own single-account form.
+ */
+void MySqlUserOptions(UserOptions options, boolean create):
+{
+    RoleSelection roles;
+    TlsOption tls;
+    ResourceLimit limit;
+    PasswordLockOption option;
+    Token value;
+}
+{
+    [
+        LOOKAHEAD({ getToken(1).kind == K_DEFAULT && "ROLE".equalsIgnoreCase(getToken(2).image) })
+        <K_DEFAULT> ContextualKeyword("ROLE") roles=MySqlRoleSelection(false)
+        {
+            requireAccessSyntax(create,
+                    "ALTER USER accepts DEFAULT ROLE only for a single account");
+            requireAccessSyntax(roles.getKind() == RoleSelection.Kind.ROLES,
+                    "CREATE USER DEFAULT ROLE requires role names");
+            options.setDefaultRoles(roles);
+        }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("REQUIRE") }) ContextualKeyword("REQUIRE")
+        (
+            LOOKAHEAD({ getToken(1).kind == K_NONE }) <K_NONE>
+            { options.addTlsOptions(new TlsOption(TlsOption.Kind.NONE)); }
+            |
+            tls=MySqlTlsOption()
+            {
+                requireAccessSyntax(!tls.isAndKeyword(), "REQUIRE cannot start with AND");
+                options.addTlsOptions(tls);
+            }
+            (
+                LOOKAHEAD({ isMySqlTlsOptionAhead() })
+                tls=MySqlTlsOption() { options.addTlsOptions(tls); }
+            )*
+        )
+    ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && isMySqlResourceLimitAhead(2) }) <K_WITH>
+        (
+            LOOKAHEAD({ isMySqlResourceLimitAhead(1) })
+            limit=MySqlResourceLimit() { options.addResourceLimits(limit); }
+        )+
+    ]
+    (
+        LOOKAHEAD({ isMySqlPasswordLockOptionAhead(1) })
+        option=MySqlPasswordLockOption() { options.addPasswordLockOptions(option); }
+    )*
+    [
+        LOOKAHEAD({ getToken(1).kind == K_COMMENT && getToken(2).kind == S_CHAR_LITERAL })
+        <K_COMMENT> value=<S_CHAR_LITERAL> { options.setComment(stringValue(value)); }
+        |
+        LOOKAHEAD({ isKeywordAhead("ATTRIBUTE") && getToken(2).kind == S_CHAR_LITERAL })
+        ContextualKeyword("ATTRIBUTE") value=<S_CHAR_LITERAL>
+        { options.setAttribute(stringValue(value)); }
+    ]
+}
+
+/** One REQUIRE option, preceded by the optional AND that separates the options. */
+TlsOption MySqlTlsOption():
+{
+    TlsOption option = new TlsOption();
+    Token word;
+    Token value;
+}
+{
+    [ <K_AND> { option.setAndKeyword(true); } ]
+    word=<S_IDENTIFIER> { option.setKind(accessEnum(TlsOption.Kind.class, word.image)); }
+    [
+        LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL })
+        value=<S_CHAR_LITERAL> { option.setValue(stringValue(value)); }
+    ]
+    {
+        requireAccessSyntax(option.getKind().hasValue() == (option.getValue() != null),
+                "Invalid REQUIRE option " + word.image);
+        return option;
+    }
+}
+
+ResourceLimit MySqlResourceLimit():
+{
+    Token word;
+    Token value;
+}
+{
+    word=<S_IDENTIFIER> value=<S_LONG>
+    {
+        return new ResourceLimit(accessEnum(ResourceLimit.Kind.class, word.image),
+                Long.parseLong(value.image));
+    }
+}
+
+PasswordLockOption MySqlPasswordLockOption():
+{
+    PasswordLockOption option = null;
+    Token value;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("ACCOUNT") }) ContextualKeyword("ACCOUNT")
+        (
+            <K_LOCK> { option = new PasswordLockOption(PasswordLockOption.Kind.ACCOUNT_LOCK); }
+            |
+            ContextualKeyword("UNLOCK")
+            { option = new PasswordLockOption(PasswordLockOption.Kind.ACCOUNT_UNLOCK); }
+        )
+        |
+        LOOKAHEAD({ isKeywordAhead("FAILED_LOGIN_ATTEMPTS") })
+        ContextualKeyword("FAILED_LOGIN_ATTEMPTS") value=<S_LONG>
+        {
+            option = new PasswordLockOption(PasswordLockOption.Kind.FAILED_LOGIN_ATTEMPTS)
+                    .withValue(Long.valueOf(value.image));
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("PASSWORD_LOCK_TIME") }) ContextualKeyword("PASSWORD_LOCK_TIME")
+        { option = new PasswordLockOption(PasswordLockOption.Kind.PASSWORD_LOCK_TIME); }
+        (
+            value=<S_LONG> { option.setValue(Long.valueOf(value.image)); }
+            |
+            <K_UNBOUNDED> { option.setSetting(PasswordLockOption.Setting.UNBOUNDED); }
+        )
+        |
+        <K_PASSWORD>
+        (
+            LOOKAHEAD({ isKeywordAhead("EXPIRE") }) ContextualKeyword("EXPIRE")
+            { option = new PasswordLockOption(PasswordLockOption.Kind.PASSWORD_EXPIRE); }
+            [
+                <K_DEFAULT> { option.setSetting(PasswordLockOption.Setting.DEFAULT); }
+                |
+                <K_NEVER> { option.setSetting(PasswordLockOption.Setting.NEVER); }
+                |
+                <K_INTERVAL> value=<S_LONG> MySqlDayUnit()
+                { option.setValue(Long.valueOf(value.image)); }
+            ]
+            |
+            <K_HISTORY>
+            { option = new PasswordLockOption(PasswordLockOption.Kind.PASSWORD_HISTORY); }
+            (
+                <K_DEFAULT> { option.setSetting(PasswordLockOption.Setting.DEFAULT); }
+                |
+                value=<S_LONG> { option.setValue(Long.valueOf(value.image)); }
+            )
+            |
+            LOOKAHEAD({ isKeywordAhead("REUSE") }) ContextualKeyword("REUSE") <K_INTERVAL>
+            { option = new PasswordLockOption(PasswordLockOption.Kind.PASSWORD_REUSE_INTERVAL); }
+            (
+                <K_DEFAULT> { option.setSetting(PasswordLockOption.Setting.DEFAULT); }
+                |
+                value=<S_LONG> MySqlDayUnit() { option.setValue(Long.valueOf(value.image)); }
+            )
+            |
+            ContextualKeyword("REQUIRE") <K_CURRENT>
+            { option = new PasswordLockOption(PasswordLockOption.Kind.PASSWORD_REQUIRE_CURRENT); }
+            [
+                <K_DEFAULT> { option.setSetting(PasswordLockOption.Setting.DEFAULT); }
+                |
+                LOOKAHEAD({ isKeywordAhead("OPTIONAL") }) ContextualKeyword("OPTIONAL")
+                { option.setSetting(PasswordLockOption.Setting.OPTIONAL); }
+            ]
+        )
+    )
+    { return option; }
+}
+
+void MySqlDayUnit():
+{ Token unit; }
+{
+    unit=<K_DATE_LITERAL>
+    { requireAccessSyntax("DAY".equalsIgnoreCase(unit.image), "Expected DAY"); }
+}
+
+/**
+ * ALTER USER authentication: an IDENTIFIED clause, whose password assignment may add REPLACE and
+ * RETAIN CURRENT PASSWORD, or DISCARD OLD PASSWORD.
+ */
+UserAuthentication MySqlAlterUserAuthentication():
+{
+    UserAuthentication authentication;
+    Token value;
+}
+{
+    (
+        authentication=MySqlUserAuthentication()
+        [
+            LOOKAHEAD({ getToken(1).kind == K_REPLACE && getToken(2).kind == S_CHAR_LITERAL })
+            <K_REPLACE> value=<S_CHAR_LITERAL>
+            { authentication.setCurrentCredential(stringValue(value)); }
+        ]
+        [
+            LOOKAHEAD({ isKeywordAhead("RETAIN") }) ContextualKeyword("RETAIN") <K_CURRENT> <K_PASSWORD>
+            { authentication.setRetainCurrentPassword(true); }
+        ]
+        {
+            requireAccessSyntax(authentication.getMode().isPasswordAssignment()
+                    || authentication.getCurrentCredential() == null
+                        && !authentication.isRetainCurrentPassword(),
+                    "REPLACE and RETAIN CURRENT PASSWORD require a password assignment");
+        }
+        |
+        <K_DISCARD> ContextualKeyword("OLD") <K_PASSWORD>
+        {
+            authentication = new UserAuthentication()
+                    .withMode(UserAuthentication.Mode.DISCARD_OLD_PASSWORD);
+        }
+    )
+    { return authentication; }
+}
+
+UserAccount MySqlAlterUserAccount():
+{
+    UserAccount account;
+    UserAuthentication authentication;
+}
+{
+    account=MySqlAccountName()
+    [
+        LOOKAHEAD({ getToken(1).kind == K_IDENTIFIED || getToken(1).kind == K_DISCARD })
+        authentication=MySqlAlterUserAuthentication() { account.setAuthentication(authentication); }
+    ]
+    { return account; }
+}
+
+/**
+ * MySQL ALTER USER: accounts with authentication changes and the options shared with CREATE USER,
+ * USER() with a password change, or one account with DEFAULT ROLE.
+ */
+AlterUser AlterUser():
+{
+    AlterUser alterUser = new AlterUser();
+    UserAccount account;
+    UserAuthentication authentication;
+    RoleSelection roles;
+}
+{
+    <K_USER>
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alterUser.setIfExists(true); } ]
+    (
+        LOOKAHEAD({ getToken(1).kind == K_USER && "(".equals(getToken(2).image) })
+        <K_USER> "(" ")" authentication=MySqlAlterUserAuthentication()
+        {
+            requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.BY_PASSWORD
+                    || authentication.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
+                    || authentication.getMode() == UserAuthentication.Mode.DISCARD_OLD_PASSWORD,
+                    "USER() accepts IDENTIFIED BY or DISCARD OLD PASSWORD");
+            alterUser.withUserFunction(authentication);
+        }
+        |
+        account=MySqlAlterUserAccount() { alterUser.addAccounts(account); }
+        (
+            LOOKAHEAD({ getToken(1).kind == K_DEFAULT && "ROLE".equalsIgnoreCase(getToken(2).image) })
+            <K_DEFAULT> ContextualKeyword("ROLE") roles=MySqlRoleSelection(false)
+            {
+                requireAccessSyntax(account.getAuthentication() == null,
+                        "DEFAULT ROLE cannot follow an authentication change");
+                alterUser.getOptions().setDefaultRoles(roles);
+            }
+            |
+            ( "," account=MySqlAlterUserAccount() { alterUser.addAccounts(account); } )*
+            MySqlUserOptions(alterUser.getOptions(), false)
+        )
+    )
+    { return alterUser; }
+}
+
+/** MySQL CREATE ROLE [IF NOT EXISTS] role [, role] ... with account-style role names. */
+CreateRole MySqlCreateRole():
+{
+    CreateRole role = new CreateRole();
+    List<UserAccount> roles;
+}
+{
+    ContextualKeyword("ROLE")
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { role.setIfNotExists(true); } ]
+    roles=MySqlAccountNameList() { role.setRoles(roles); }
+    { return role; }
+}
+
+RenameUser RenameUser():
+{
+    RenameUser renameUser = new RenameUser();
+    UserAccount from;
+    UserAccount to;
+}
+{
+    <K_RENAME> <K_USER>
+    from=MySqlAccountName() <K_TO> to=MySqlAccountName() { renameUser.addRename(from, to); }
+    (
+        "," from=MySqlAccountName() <K_TO> to=MySqlAccountName()
+        { renameUser.addRename(from, to); }
+    )*
+    { return renameUser; }
+}
+
+SetRoleStatement SetRoleStatement():
+{ RoleSelection roles; }
+{
+    <K_SET> ContextualKeyword("ROLE") roles=MySqlRoleSelection(true)
+    { return new SetRoleStatement(roles); }
+}
+
+/** MySQL SET DEFAULT ROLE ... TO accounts, or MariaDB's form with an optional FOR account. */
+SetDefaultRoleStatement SetDefaultRoleStatement():
+{
+    SetDefaultRoleStatement statement = new SetDefaultRoleStatement();
+    RoleSelection roles;
+    List<UserAccount> accounts;
+}
+{
+    <K_SET> <K_DEFAULT> ContextualKeyword("ROLE") roles=MySqlRoleSelection(false)
+    { statement.setRoles(roles); }
+    [
+        ( <K_TO> | <K_FOR> { statement.setForKeyword(true); } )
+        accounts=MySqlAccountNameList() { statement.setAccounts(accounts); }
+    ]
+    { return statement; }
+}
+
+SetPasswordStatement SetPasswordStatement():
+{
+    SetPasswordStatement statement = new SetPasswordStatement();
+    UserAccount account;
+    Expression password;
+    Token value;
+}
+{
+    <K_SET> <K_PASSWORD>
+    [ <K_FOR> account=MySqlAccountName() { statement.setAccount(account); } ]
+    (
+        "=" password=Expression() { statement.setPassword(password); }
+        |
+        <K_TO> <K_RANDOM> { statement.setRandom(true); }
+    )
+    [
+        LOOKAHEAD({ getToken(1).kind == K_REPLACE && getToken(2).kind == S_CHAR_LITERAL })
+        <K_REPLACE> value=<S_CHAR_LITERAL> { statement.setCurrentCredential(stringValue(value)); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("RETAIN") }) ContextualKeyword("RETAIN") <K_CURRENT> <K_PASSWORD>
+        { statement.setRetainCurrentPassword(true); }
+    ]
+    { return statement; }
 }
 
 EventSchedule MySqlEventSchedule():
@@ -20074,6 +20571,8 @@ Statement Alter():
                 |
                 LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
                 |
+                LOOKAHEAD({ isMySqlAlterUserAhead() }) statement = AlterUser()
+                |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
                 statement = AlterRole()
                 |
@@ -21541,6 +22040,9 @@ Statement Create():
         LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
+        |
+        LOOKAHEAD({ isMySqlCreateRoleAhead() }) statement = MySqlCreateRole()
+        { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }
         |
         LOOKAHEAD({ isPostgreSqlRoleAhead() }) statement = CreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }

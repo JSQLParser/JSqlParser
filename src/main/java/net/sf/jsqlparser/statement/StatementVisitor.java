@@ -55,6 +55,8 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -212,6 +214,46 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateUser createUser) {
         this.visit(createUser, null);
+    }
+
+    default <S> T visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    default void visit(AlterUser alterUser) {
+        this.visit(alterUser, null);
+    }
+
+    default <S> T visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    default void visit(RenameUser renameUser) {
+        this.visit(renameUser, null);
+    }
+
+    default <S> T visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    default void visit(SetRoleStatement setRole) {
+        this.visit(setRole, null);
+    }
+
+    default <S> T visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    default void visit(SetDefaultRoleStatement setDefaultRole) {
+        this.visit(setDefaultRole, null);
+    }
+
+    default <S> T visit(SetPasswordStatement setPassword, S context) {
+        return null;
+    }
+
+    default void visit(SetPasswordStatement setPassword) {
+        this.visit(setPassword, null);
     }
 
     <S> T visit(CreateEvent createEvent, S context);

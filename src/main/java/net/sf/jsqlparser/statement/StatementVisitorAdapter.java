@@ -57,6 +57,8 @@ import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -399,6 +401,31 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetPasswordStatement setPassword, S context) {
         return null;
     }
 

@@ -707,6 +707,17 @@ public enum Feature {
      */
     grant, revoke, createRole, alterRole, alterDefaultPrivileges,
     /**
+     * MySQL/MariaDB account management: "ALTER USER", "RENAME USER", "SET ROLE", "SET DEFAULT ROLE"
+     * and "SET PASSWORD"
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterUser
+     * @see net.sf.jsqlparser.statement.alter.RenameUser
+     * @see net.sf.jsqlparser.statement.SetRoleStatement
+     * @see net.sf.jsqlparser.statement.SetDefaultRoleStatement
+     * @see net.sf.jsqlparser.statement.SetPasswordStatement
+     */
+    alterUser, renameUser, setRole, setDefaultRole, setPassword,
+    /**
      * @see Function
      */
     function,
