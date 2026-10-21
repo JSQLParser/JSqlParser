@@ -2178,6 +2178,28 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * True when an IS after a condition opens a postfix test
+     * (IS [NOT] TRUE/FALSE/UNKNOWN/NULL/JSON) rather than IS DISTINCT FROM or
+     * another comparison form, which has a right-hand operand of its own.
+     */
+    private boolean isPostfixIsTestAhead() {
+        if (getToken(1).kind != K_IS) {
+            return false;
+        }
+        int offset = getToken(2).kind == K_NOT ? 3 : 2;
+        switch (getToken(offset).kind) {
+            case K_TRUE:
+            case K_FALSE:
+            case K_UNKNOWN:
+            case K_NULL:
+            case K_JSON:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * True when the pending {@code ON} opens the ON CONFLICT clause of the enclosing
      * INSERT rather than another trailing join condition: after a join, the trailing
      * ON expressions of Issue #1302 and the INSERT clause claim the same ON token.
@@ -11163,6 +11185,18 @@ Expression Condition():
                     | LOOKAHEAD(3) result=IsDistinctExpression(left)
                     | result=SimilarToExpression(left)
                 )
+                // SQL:2016 6.39: a boolean test applies to any boolean primary,
+                // so postfix IS predicates chain onto a comparison or predicate
+                // result: "a > 0 IS TRUE", "a IS NULL IS NOT TRUE".
+                (
+                    LOOKAHEAD({ isPostfixIsTestAhead() })
+                    (
+                        LOOKAHEAD(3) result=IsBooleanExpression(result)
+                        | LOOKAHEAD(3) result=IsUnknownExpression(result)
+                        | LOOKAHEAD(3) result=IsNullExpression(result)
+                        | LOOKAHEAD(3) result=IsJsonExpression(result)
+                    )
+                )*
             ]
     )
     {
