@@ -22,6 +22,8 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -308,5 +310,39 @@ public class ExpressionPrecedenceTest {
         BitwiseAnd and = Assertions.assertInstanceOf(BitwiseAnd.class,
                 CCJSqlParserUtil.parseExpression("a & b | | c"));
         Assertions.assertInstanceOf(Concat.class, and.getRightExpression());
+    }
+
+    @Test
+    public void testMySqlBitwiseOperatorsAreTiered() throws JSQLParserException {
+        // MySQL tiers the bitwise operators: << and >> above &, & above |
+        BitwiseOr or = Assertions.assertInstanceOf(BitwiseOr.class,
+                CCJSqlParserUtil.parseExpression("1 | 2 & 4", false,
+                        parser -> parser.withDialect(Dialect.MYSQL)));
+        Assertions.assertInstanceOf(BitwiseAnd.class, or.getRightExpression());
+
+        BitwiseAnd and = Assertions.assertInstanceOf(BitwiseAnd.class,
+                CCJSqlParserUtil.parseExpression("3 & 1 << 2", false,
+                        parser -> parser.withDialect(Dialect.MYSQL)));
+        Assertions.assertInstanceOf(BitwiseLeftShift.class, and.getRightExpression());
+
+        // the whole chain still sits below + and -, as in the default dialect
+        BitwiseAnd shifted = Assertions.assertInstanceOf(BitwiseAnd.class,
+                CCJSqlParserUtil.parseExpression("1 & 7 - 2", false,
+                        parser -> parser.withDialect(Dialect.MYSQL)));
+        Assertions.assertInstanceOf(Subtraction.class, shifted.getRightExpression());
+    }
+
+    @Test
+    public void testXorBindsBetweenAndAndOr() throws JSQLParserException {
+        // MySQL: XOR sits between AND and OR
+        OrExpression or = Assertions.assertInstanceOf(OrExpression.class,
+                CCJSqlParserUtil.parseExpression("1 OR 1 XOR 1", false,
+                        parser -> parser.withDialect(Dialect.MYSQL)));
+        Assertions.assertInstanceOf(XorExpression.class, or.getRightExpression());
+
+        XorExpression xor = Assertions.assertInstanceOf(XorExpression.class,
+                CCJSqlParserUtil.parseExpression("1 XOR 1 AND 1", false,
+                        parser -> parser.withDialect(Dialect.MYSQL)));
+        Assertions.assertInstanceOf(AndExpression.class, xor.getRightExpression());
     }
 }
