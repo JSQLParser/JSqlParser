@@ -75,6 +75,20 @@ public class DeleteTest {
     }
 
     @Test
+    public void testDeleteRequiresTargetTable() {
+        // a missing target must not parse into a Delete whose toString()
+        // prints a literal "null" for the absent table
+        for (String statement : new String[] {
+                "DELETE",
+                "DELETE FROM",
+                "DELETE FROM WHERE a = 1",
+                "DELETE FROM USING t"}) {
+            assertThrows(JSQLParserException.class,
+                    () -> parserManager.parse(new StringReader(statement)));
+        }
+    }
+
+    @Test
     public void testDeleteWithOrderBy() throws JSQLParserException {
         String stmt = "DELETE FROM tablename WHERE a = 1 AND b = 1 ORDER BY col";
         assertSqlCanBeParsedAndDeparsed(stmt);
