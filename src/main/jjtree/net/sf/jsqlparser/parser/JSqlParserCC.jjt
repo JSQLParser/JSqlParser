@@ -2265,6 +2265,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (!valid) { throw new ParseException(message); }
     }
 
+    private static void requireDeleteSyntax(boolean valid, String message) throws ParseException {
+        if (!valid) { throw new ParseException(message); }
+    }
+
     private static <E extends Enum<E>> E replicationEnum(Class<E> type, String value) throws ParseException {
         try { return Enum.valueOf(type, MultiPartName.unquote(value).toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException exception) { throw new ParseException("Unknown " + type.getSimpleName() + ": " + value); }
@@ -7689,6 +7693,8 @@ Delete Delete():
         if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
         }
+        requireDeleteSyntax(table != null || !tables.isEmpty(),
+                "DELETE requires a target table");
         return delete.withWithItemsList(with)
               .withTables(tables)
               .withTable(table)
