@@ -2459,7 +2459,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
             default:
                 return false;
+        }
+    }
 
+    /**
      * True when the item after a comma inside a T-SQL/Snowflake ADD list is
      * another column definition or table constraint rather than the start of a
      * new alter action, which the enclosing productions handle.

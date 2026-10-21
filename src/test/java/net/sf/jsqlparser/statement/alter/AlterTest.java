@@ -98,7 +98,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testAlterTableAddColumnList_TSql() throws JSQLParserException {
+    public void testAlterTableAddColumnListTSql() throws JSQLParserException {
         // T-SQL and Snowflake let one ADD list several columns without repeating ADD
         Alter alter = (Alter) CCJSqlParserUtil.parse(
                 "ALTER TABLE t ADD a int, b varchar(10) NOT NULL, c int",
@@ -116,7 +116,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testAlterTableAddColumnListWithConstraint_TSql() throws JSQLParserException {
+    public void testAlterTableAddColumnListWithConstraintTSql() throws JSQLParserException {
         // T-SQL mixes column definitions and table constraints in one ADD list
         Alter alter = (Alter) CCJSqlParserUtil.parse(
                 "ALTER TABLE t ADD a int, CONSTRAINT ck CHECK (a > 0)",
@@ -129,7 +129,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testAlterTableAddColumnList_Snowflake() throws JSQLParserException {
+    public void testAlterTableAddColumnListSnowflake() throws JSQLParserException {
         Alter alter = (Alter) CCJSqlParserUtil.parse(
                 "ALTER TABLE t ADD COLUMN a int, b int",
                 parser -> parser.withDialect(Dialect.SNOWFLAKE));
