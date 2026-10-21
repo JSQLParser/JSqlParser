@@ -9,8 +9,15 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.comment.CommentTarget;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
@@ -29,7 +36,39 @@ class CommentValidatorTest extends ValidationTestAsserts {
                 Arguments.of("MATERIALIZED VIEW mv", Feature.commentOnMaterializedView),
                 Arguments.of("FUNCTION f(IN x integer)", Feature.commentOnFunction),
                 Arguments.of("CONSTRAINT ck ON t", Feature.commentOnConstraint),
-                Arguments.of("CONSTRAINT ck ON DOMAIN d", Feature.commentOnConstraint));
+                Arguments.of("CONSTRAINT ck ON DOMAIN d", Feature.commentOnConstraint),
+                Arguments.of("TRIGGER trg ON t", Feature.commentOnTrigger),
+                Arguments.of("POLICY p ON t", Feature.commentOnPolicy),
+                Arguments.of("RULE r ON v", Feature.commentOnRule),
+                Arguments.of("PROCEDURE p(integer)", Feature.commentOnProcedure),
+                Arguments.of("ROUTINE r", Feature.commentOnRoutine),
+                Arguments.of("AGGREGATE a(*)", Feature.commentOnAggregate),
+                Arguments.of("CAST (integer AS text)", Feature.commentOnCast),
+                Arguments.of("ACCESS METHOD am", Feature.commentOnAccessMethod),
+                Arguments.of("COLLATION c", Feature.commentOnCollation),
+                Arguments.of("DATABASE d", Feature.commentOnDatabase),
+                Arguments.of("EVENT TRIGGER et", Feature.commentOnEventTrigger),
+                Arguments.of("EXTENSION e", Feature.commentOnExtension),
+                Arguments.of("FOREIGN DATA WRAPPER w", Feature.commentOnForeignDataWrapper),
+                Arguments.of("FOREIGN TABLE ft", Feature.commentOnForeignTable),
+                Arguments.of("PROCEDURAL LANGUAGE l", Feature.commentOnLanguage),
+                Arguments.of("PUBLICATION p", Feature.commentOnPublication),
+                Arguments.of("ROLE r", Feature.commentOnRole),
+                Arguments.of("SERVER s", Feature.commentOnServer),
+                Arguments.of("STATISTICS st", Feature.commentOnStatistics),
+                Arguments.of("SUBSCRIPTION s", Feature.commentOnSubscription),
+                Arguments.of("TABLESPACE ts", Feature.commentOnTablespace));
+    }
+
+    @Test
+    void coversEveryTargetKind() throws Exception {
+        Set<CommentTarget.Kind> kinds = EnumSet.noneOf(CommentTarget.Kind.class);
+        for (Arguments arguments : targets().collect(Collectors.toList())) {
+            Comment comment = (Comment) CCJSqlParserUtil
+                    .parse("COMMENT ON " + arguments.get()[0] + " IS NULL");
+            kinds.add(comment.getTarget().getKind());
+        }
+        assertEquals(EnumSet.allOf(CommentTarget.Kind.class), kinds);
     }
 
     @ParameterizedTest
