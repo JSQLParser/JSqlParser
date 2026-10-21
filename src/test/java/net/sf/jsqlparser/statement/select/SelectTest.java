@@ -2399,6 +2399,21 @@ public class SelectTest {
     }
 
     @Test
+    public void testSelectWithoutTargetList_PostgreSql() throws JSQLParserException {
+        // PostgreSQL permits SELECT with no target expressions
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT FROM t", parser -> parser.withDialect(Dialect.POSTGRESQL));
+        PlainSelect select = (PlainSelect) ((Select) stmt).getSelectBody();
+        assertTrue(select.getSelectItems().isEmpty());
+        assertDeparse(select, "SELECT FROM t");
+
+        // the reported case: empty target list inside a derived table
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT count(*) FROM (SELECT FROM (VALUES (1, 'a'), (2, 'b')) AS t(id, label)) AS q",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+    }
+
+    @Test
     public void testIsUnknown() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS UNKNOWN";
         assertSqlCanBeParsedAndDeparsed(statement);

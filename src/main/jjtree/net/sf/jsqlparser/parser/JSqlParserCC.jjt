@@ -8985,7 +8985,14 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
 
-    selectItems=SelectItemsList()
+    (
+        // PostgreSQL allows SELECT with no target expressions.
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && getToken(1).kind == K_FROM })
+        { selectItems = new ArrayList<SelectItem<?>>(); }
+        |
+        selectItems=SelectItemsList()
+    )
 
     [ LOOKAHEAD(<K_INTO>)
         (
