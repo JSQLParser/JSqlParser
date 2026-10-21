@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.IndexSpecOption;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
@@ -2072,13 +2073,14 @@ public class AlterTest {
         assertEquals("col1", columnNames.get(0));
         assertEquals("col2", columnNames.get(1));
 
-        List<String> indexSpec = index.getIndexSpec();
-        assertNotNull(indexSpec);
-        assertEquals(4, indexSpec.size());
-        assertEquals("KEY_BLOCK_SIZE = 8", indexSpec.get(0));
-        assertEquals("WITH PARSER ngram", indexSpec.get(1));
-        assertEquals("COMMENT 'fulltext'", indexSpec.get(2));
-        assertEquals("INVISIBLE", indexSpec.get(3));
+        List<IndexSpecOption> options = index.getSpecOptions();
+        assertEquals(4, options.size());
+        assertEquals("KEY_BLOCK_SIZE = 8", options.get(0).toString());
+        assertEquals("WITH PARSER ngram", options.get(1).toString());
+        assertEquals("COMMENT 'fulltext'", options.get(2).toString());
+        assertEquals("INVISIBLE", options.get(3).toString());
+        assertEquals(List.of("KEY_BLOCK_SIZE", "=", "8", "WITH", "PARSER", "ngram", "COMMENT",
+                "'fulltext'", "INVISIBLE"), index.getIndexSpec());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
@@ -2134,13 +2136,14 @@ public class AlterTest {
         assertEquals("idx_lastname", index.getName());
         assertEquals("last_name", index.getColumnsNames().get(0));
 
-        List<String> indexSpec = index.getIndexSpec();
-        assertNotNull(indexSpec);
-        assertEquals(4, indexSpec.size());
-        assertEquals("USING BTREE", indexSpec.get(0));
-        assertEquals("KEY_BLOCK_SIZE = 16", indexSpec.get(1));
-        assertEquals("COMMENT 'Performance tuning'", indexSpec.get(2));
-        assertEquals("VISIBLE", indexSpec.get(3));
+        List<IndexSpecOption> options = index.getSpecOptions();
+        assertEquals(4, options.size());
+        assertEquals("USING BTREE", options.get(0).toString());
+        assertEquals("KEY_BLOCK_SIZE = 16", options.get(1).toString());
+        assertEquals("COMMENT 'Performance tuning'", options.get(2).toString());
+        assertEquals("VISIBLE", options.get(3).toString());
+        assertEquals(List.of("USING", "BTREE", "KEY_BLOCK_SIZE", "=", "16", "COMMENT",
+                "'Performance tuning'", "VISIBLE"), index.getIndexSpec());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
