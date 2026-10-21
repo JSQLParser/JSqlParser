@@ -2399,7 +2399,7 @@ public class SelectTest {
     }
 
     @Test
-    public void testSelectWithoutTargetList_PostgreSql() throws JSQLParserException {
+    public void testSelectWithoutTargetListPostgreSql() throws JSQLParserException {
         // PostgreSQL permits SELECT with no target expressions
         Statement stmt = CCJSqlParserUtil.parse(
                 "SELECT FROM t", parser -> parser.withDialect(Dialect.POSTGRESQL));
