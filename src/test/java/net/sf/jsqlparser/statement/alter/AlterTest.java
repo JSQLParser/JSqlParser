@@ -98,6 +98,49 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddColumnList_TSql() throws JSQLParserException {
+        // T-SQL and Snowflake let one ADD list several columns without repeating ADD
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD a int, b varchar(10) NOT NULL, c int",
+                parser -> parser.withDialect(Dialect.SQLSERVER));
+        assertEquals(1, alter.getAlterExpressions().size());
+        AlterExpression alterExp = alter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
+        assertEquals(3, colDataTypes.size());
+        assertEquals("a", colDataTypes.get(0).getColumnName());
+        assertEquals("b", colDataTypes.get(1).getColumnName());
+        assertEquals("varchar (10)", colDataTypes.get(1).getColDataType().toString());
+        assertEquals("c", colDataTypes.get(2).getColumnName());
+        assertDeparse(alter, "ALTER TABLE t ADD a int, b varchar (10) NOT NULL, c int");
+    }
+
+    @Test
+    public void testAlterTableAddColumnListWithConstraint_TSql() throws JSQLParserException {
+        // T-SQL mixes column definitions and table constraints in one ADD list
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD a int, CONSTRAINT ck CHECK (a > 0)",
+                parser -> parser.withDialect(Dialect.SQLSERVER));
+        assertEquals(1, alter.getAlterExpressions().size());
+        AlterExpression alterExp = alter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals(1, alterExp.getColDataTypeList().size());
+        assertNotNull(alterExp.getConstraint());
+    }
+
+    @Test
+    public void testAlterTableAddColumnList_Snowflake() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD COLUMN a int, b int",
+                parser -> parser.withDialect(Dialect.SNOWFLAKE));
+        assertEquals(1, alter.getAlterExpressions().size());
+        List<ColumnDataType> colDataTypes =
+                alter.getAlterExpressions().get(0).getColDataTypeList();
+        assertEquals(2, colDataTypes.size());
+        assertDeparse(alter, "ALTER TABLE t ADD COLUMN a int, b int");
+    }
+
+    @Test
     public void testAlterTableBackBrackets() throws JSQLParserException {
         String sql = "ALTER TABLE tablename add column (field  string comment 'aaaaa')";
         Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql);

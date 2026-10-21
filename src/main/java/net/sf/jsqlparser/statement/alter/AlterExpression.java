@@ -90,6 +90,9 @@ public class AlterExpression implements Serializable {
 
     private boolean useBrackets = false;
 
+    // T-SQL/Snowflake ADD lists items comma-separated, without brackets.
+    private boolean bareAddList = false;
+
     private boolean useIfNotExists = false;
 
     private String partitionType;
@@ -135,6 +138,14 @@ public class AlterExpression implements Serializable {
 
     public void useBrackets(boolean useBrackets) {
         this.useBrackets = useBrackets;
+    }
+
+    public boolean isBareAddList() {
+        return bareAddList;
+    }
+
+    public void setBareAddList(boolean bareAddList) {
+        this.bareAddList = bareAddList;
     }
 
     public void hasColumn(boolean hasColumn) {
@@ -1638,7 +1649,7 @@ public class AlterExpression implements Serializable {
                     b.append(optionalSpecifier).append(" ");
                 }
                 b.append(columnOldName).append(" ");
-            } else if (colDataTypeList.size() > 1) {
+            } else if (colDataTypeList.size() > 1 && !bareAddList) {
                 b.append("(");
             } else {
                 if (hasColumn) {
@@ -1664,8 +1675,13 @@ public class AlterExpression implements Serializable {
             if (useBrackets && colDataTypeList.size() == 1) {
                 b.append(')');
             }
-            if (colDataTypeList.size() > 1) {
+            if (colDataTypeList.size() > 1 && !bareAddList) {
                 b.append(")");
+            }
+            if (constraint != null && bareAddList) {
+                // T-SQL/Snowflake ADD lists may append a table constraint after
+                // the column definitions.
+                b.append(", ").append(constraint);
             }
         } else if (getColumnSetNotNullList() != null) {
             b.append("COLUMN ");
