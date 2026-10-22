@@ -143,6 +143,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **ClickHouse column selection** | `COLUMNS('regexp')` select items with chained `APPLY`, `EXCEPT`, and `REPLACE` transformers |
 | **DML** | `INSERT` · `UPDATE` · `UPSERT` · `MERGE` · `DELETE` · `TRUNCATE TABLE` |
 | **DDL** | `CREATE …` · `ALTER …` · `DROP …` |
+| **Oracle vector types** | `VECTOR(*, *)` · `VECTOR(*, FLOAT32)` · `VECTOR(3, *)`, including dense and sparse storage formats |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `OPTIMIZE` · `REPAIR TABLE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
