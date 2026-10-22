@@ -168,6 +168,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE POLICY`` · ``ALTER TABLE … ENABLE``/``DISABLE``/``FORCE``/``NO FORCE ROW LEVEL SECURITY``
     * - **Routine changes**
       - ``ALTER FUNCTION`` · ``ALTER PROCEDURE`` · ``ALTER ROUTINE`` · PostgreSQL ``ALTER TRIGGER``
+    * - **MySQL metadata statements**
+      - ``SHOW [FULL] COLUMNS``/``FIELDS`` · ``SHOW TABLE STATUS`` · ``SHOW CREATE TABLE``/``VIEW``/``PROCEDURE``/``FUNCTION``/``TRIGGER``/``EVENT``/``DATABASE``/``USER``
     * - **Salesforce SOQL**
       - ``INCLUDES`` · ``EXCLUDES``
 

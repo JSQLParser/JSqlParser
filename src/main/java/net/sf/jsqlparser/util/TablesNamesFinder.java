@@ -254,7 +254,9 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -1942,7 +1944,14 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
-        throwUnsupported(showColumnsStatement);
+        Table table = showColumnsStatement.getTable();
+        if (table != null && showColumnsStatement.getDbName() != null) {
+            // MySQL: the trailing FROM db names the database of the table
+            table = new Table(showColumnsStatement.getDbName(), table.getName());
+        }
+        if (table != null) {
+            visit(table, context);
+        }
         return null;
     }
 
@@ -2398,6 +2407,32 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(ShowTablesStatement showTables) {
         StatementVisitor.super.visit(showTables);
+    }
+
+    @Override
+    public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
+        // reads the status of the tables of a database, but names no table
+        return null;
+    }
+
+    @Override
+    public void visit(ShowTableStatusStatement showTableStatus) {
+        StatementVisitor.super.visit(showTableStatus);
+    }
+
+    @Override
+    public <S> Void visit(ShowCreateStatement showCreate, S context) {
+        ShowCreateStatement.ObjectType type = showCreate.getObjectType();
+        if ((type == ShowCreateStatement.ObjectType.TABLE
+                || type == ShowCreateStatement.ObjectType.VIEW) && showCreate.getName() != null) {
+            visit(showCreate.getName(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(ShowCreateStatement showCreate) {
+        StatementVisitor.super.visit(showCreate);
     }
 
     @Override

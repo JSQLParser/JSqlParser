@@ -737,6 +737,18 @@ public enum Feature {
      */
     showIndex,
     /**
+     * MySQL/MariaDB "SHOW TABLE STATUS" statement is allowed
+     *
+     * @see ShowTableStatusStatement
+     */
+    showTableStatus,
+    /**
+     * MySQL/MariaDB "SHOW CREATE" statement is allowed
+     *
+     * @see ShowCreateStatement
+     */
+    showCreate,
+    /**
      * @see UseStatement
      */
     use,

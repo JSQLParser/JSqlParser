@@ -91,7 +91,9 @@ import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -364,6 +366,22 @@ public interface StatementVisitor<T> {
 
     default void visit(ShowTablesStatement showTables) {
         this.visit(showTables, null);
+    }
+
+    default <S> T visit(ShowTableStatusStatement showTableStatus, S context) {
+        return null;
+    }
+
+    default void visit(ShowTableStatusStatement showTableStatus) {
+        this.visit(showTableStatus, null);
+    }
+
+    default <S> T visit(ShowCreateStatement showCreate, S context) {
+        return null;
+    }
+
+    default void visit(ShowCreateStatement showCreate) {
+        this.visit(showCreate, null);
     }
 
     <S> T visit(Merge merge, S context);
