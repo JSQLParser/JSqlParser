@@ -8974,7 +8974,7 @@ PlainSelect PlainSelect() #PlainSelect:
         }
     }
 
-    [
+    [ LOOKAHEAD(<K_AS> (<K_STRUCT> | <K_VALUE>))
         <K_AS>
         (
             <K_STRUCT> { plainSelect.setBigQuerySelectQualifier( PlainSelect.BigQuerySelectQualifier.AS_STRUCT ); }
