@@ -903,7 +903,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     /**
      * Pratt boolean operator precedence loop.
-     * Handles OR (prec=2), XOR (prec=3), AND/&& (prec=4).
+     * Handles OR (prec=2), XOR (prec=3 under MySQL, else 2), AND/&& (prec=4).
      * Safe to use now that no syntactic production LOOKAHEADs scan through expressions.
      */
     protected Expression prattExpressionRest(Expression left, int minPrec) throws ParseException {
@@ -913,7 +913,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             boolean ternary = "?".equals(t.image) && isTernaryAhead();
             int prec;
             if      (op == K_AND || op == OP_DOUBLEAND) prec = 4;
-            else if (op == K_XOR || op == K_OR)         prec = 2;
+            // MySQL puts XOR between AND and OR; other dialects keep one
+            // left-associative level for OR and XOR.
+            else if (op == K_XOR)
+                prec = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 3 : 2;
+            else if (op == K_OR)                        prec = 2;
             else if (ternary)                           prec = 2;
             else break;
             if (prec < minPrec) break;
@@ -989,8 +993,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == OP_CONCAT
                   || (op == OP_PIPE && getToken(2).kind == OP_PIPE))          prec = 5;
             // the bitwise operators bind looser than + and -, as in PostgreSQL, MySQL and SQLite
-            else if (op == S_HASH_OPERATOR || op == OP_PIPE
-                  || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 4;
+            else if (op == S_HASH_OPERATOR || op == OP_LSHIFT
+                  || op == OP_RSHIFT)                                         prec = 4;
+            else if (op == OP_PIPE) {
+                // MySQL tiers bitwise: <<, >> above & above |. Other dialects
+                // (PostgreSQL, SQLite, ...) keep one left-associative level.
+                prec = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 2 : 4;
+            }
             else {
                 // Handle unnamed tokens by image
                 String img = t.image;
@@ -998,7 +1007,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 if (t == limitPercentToken) break;
                 if      ("*".equals(img) || "%".equals(img))                  prec = 6;
                 else if ("+".equals(img) || "-".equals(img))                  prec = 5;
-                else if ("&".equals(img))                                     prec = 4;
+                else if ("&".equals(img)) {
+                    prec = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 3 : 4;
+                }
                 else break; // not an arithmetic operator
             }
 
@@ -12659,7 +12670,12 @@ Expression SimpleExpression():
     [ LOOKAHEAD( 5, { getToken(1).kind == S_AT_IDENTIFIER } ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
     retval=PrimaryExpression()
     // PostgreSQL path operators bind below arithmetic and above comparisons.
-    { retval = prattArithRest(retval, 4); }
+    // MySQL also gives | and & their own tiers below <<, >>, so the loop's
+    // entry floor drops to 2 there instead of the shared bitwise level 4.
+    {
+        int arithFloor = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 2 : 4;
+        retval = prattArithRest(retval, arithFloor);
+    }
     {
         if (user != null) {
             VariableAssignment assignment = new VariableAssignment();
