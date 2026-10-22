@@ -452,6 +452,19 @@ public enum Feature {
      */
     alterIndex,
 
+    /**
+     * MySQL and PostgreSQL "CREATE TABLESPACE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.tablespace.CreateTablespace
+     */
+    createTablespace,
+    /**
+     * MySQL and PostgreSQL "ALTER TABLESPACE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTablespace
+     */
+    alterTablespace,
+
 
     /**
      * SQL "ANALYZE" statement is allowed

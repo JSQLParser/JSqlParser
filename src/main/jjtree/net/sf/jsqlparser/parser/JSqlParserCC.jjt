@@ -78,6 +78,7 @@ import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.synonym.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.*;
 import net.sf.jsqlparser.statement.create.user.*;
 import net.sf.jsqlparser.statement.create.view.*;
@@ -2976,6 +2977,28 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                         "Unsupported view column action: " + column);
             }
         }
+    }
+
+    /** Whether a MySQL tablespace option, which reuses a table option model, starts here. */
+    private boolean isMySqlTablespaceOptionAhead(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_ENGINE || token.kind == K_ENCRYPTION) {
+            return true;
+        }
+        return token.kind == S_IDENTIFIER && ("AUTOEXTEND_SIZE".equalsIgnoreCase(token.image)
+                || "FILE_BLOCK_SIZE".equalsIgnoreCase(token.image)
+                || "ENGINE_ATTRIBUTE".equalsIgnoreCase(token.image));
+    }
+
+    /** Only CREATE TABLESPACE sets FILE_BLOCK_SIZE, and undo tablespaces accept only ENGINE. */
+    private TableOption validateTablespaceOption(TableOption option, boolean create, boolean undo)
+            throws ParseException {
+        TableOption.Kind kind = option.getKind();
+        requireDdlSyntax(kind == TableOption.Kind.ENGINE
+                || !undo && (create || kind != TableOption.Kind.FILE_BLOCK_SIZE),
+                (create ? "CREATE " : "ALTER ") + (undo ? "UNDO " : "") + "TABLESPACE does not accept "
+                        + option.getName());
+        return option;
     }
 
     private boolean isIdentityAlterationAhead() {
@@ -20990,6 +21013,10 @@ Statement Alter():
                 LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
                 statement = PostgreSqlTablespaceMove()
                 |
+                // other ALTER TABLESPACE forms, such as Oracle data file clauses, remain unsupported
+                LOOKAHEAD(AlterTablespace() ( <ST_SEMICOLON> | <EOF> ))
+                statement = AlterTablespace()
+                |
                 statement = AlterForeignTable()
                 |
                 statement = AlterTable(false)
@@ -21044,6 +21071,139 @@ AlterTablespaceMove PostgreSqlTablespaceMove():
     <K_SET> <K_TABLESPACE> name=RelObjectName() { result.setTargetTablespace(name); }
     [ <K_NOWAIT> { result.setNoWait(true); } ]
     { return result; }
+}
+
+/**
+ * MySQL CREATE [UNDO] TABLESPACE with InnoDB options, or PostgreSQL CREATE TABLESPACE with an
+ * owner, a location and tablespace parameters.
+ */
+CreateTablespace CreateTablespace():
+{
+    CreateTablespace statement = new CreateTablespace();
+    String name;
+    Token token;
+    StringValue dataFile;
+    List<IndexOption> parameters;
+    List<TableOption> options;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("UNDO") }) ContextualKeyword("UNDO") <K_TABLESPACE>
+        name=RelObjectName() { statement.setUndo(true); statement.setName(name); }
+        dataFile=MySqlTablespaceDataFile() { statement.setDataFile(dataFile); }
+        [ LOOKAHEAD({ isMySqlTablespaceOptionAhead(1) }) options=MySqlTablespaceOptions(true, true)
+          { statement.setOptions(options); } ]
+        |
+        <K_TABLESPACE> name=RelObjectName() { statement.setName(name); }
+        (
+            LOOKAHEAD({ isKeywordAhead("OWNER") || isKeywordAhead("LOCATION") })
+            [ LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER")
+              name=RelObjectName() { statement.setOwner(name); } ]
+            ContextualKeyword("LOCATION") token=<S_CHAR_LITERAL>
+            { statement.setLocation(stringValue(token)); }
+            [ LOOKAHEAD(<K_WITH> "(") <K_WITH> parameters=PostgreSqlIndexOptions()
+              { statement.setParameters(parameters); } ]
+            |
+            [ dataFile=MySqlTablespaceDataFile() { statement.setDataFile(dataFile); } ]
+            [ LOOKAHEAD({ isMySqlTablespaceOptionAhead(1) }) options=MySqlTablespaceOptions(true, false)
+              { statement.setOptions(options); } ]
+        )
+    )
+    { return statement; }
+}
+
+StringValue MySqlTablespaceDataFile():
+{ Token token; }
+{
+    <K_ADD> ContextualKeyword("DATAFILE") token=<S_CHAR_LITERAL> { return stringValue(token); }
+}
+
+/**
+ * MySQL ALTER [UNDO] TABLESPACE and PostgreSQL ALTER TABLESPACE. Alter() selects this production
+ * only when it matches the whole statement.
+ */
+AlterTablespace AlterTablespace():
+{
+    AlterTablespace statement = new AlterTablespace();
+    String name;
+    List<IndexOption> parameters;
+    List<String> names = new ArrayList<String>();
+    List<TableOption> options;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("UNDO") }) ContextualKeyword("UNDO") <K_TABLESPACE>
+        name=RelObjectName() { statement.setUndo(true); statement.setName(name); }
+        <K_SET>
+        (
+            <K_ACTIVE> { statement.setState(AlterTablespace.State.ACTIVE); }
+            | LOOKAHEAD({ isKeywordAhead("INACTIVE") }) ContextualKeyword("INACTIVE")
+              { statement.setState(AlterTablespace.State.INACTIVE); }
+        )
+        { statement.setAction(AlterTablespace.Action.SET_STATE); }
+        [ LOOKAHEAD({ isMySqlTablespaceOptionAhead(1) }) options=MySqlTablespaceOptions(false, true)
+          { statement.setOptions(options); } ]
+        |
+        <K_TABLESPACE> name=RelObjectName() { statement.setName(name); }
+        (
+            <K_RENAME> <K_TO> name=RelObjectName()
+            { statement.setAction(AlterTablespace.Action.RENAME); statement.setNewName(name); }
+            |
+            LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+            { statement.setAction(AlterTablespace.Action.OWNER); statement.setOwner(name); }
+            |
+            <K_SET> parameters=PostgreSqlIndexOptions()
+            { statement.setAction(AlterTablespace.Action.SET_PARAMETERS); statement.setParameters(parameters); }
+            |
+            <K_RESET> "(" name=PostgreSqlStorageParameterName() { names.add(name); }
+            ( "," name=PostgreSqlStorageParameterName() { names.add(name); } )* ")"
+            { statement.setAction(AlterTablespace.Action.RESET_PARAMETERS); statement.setResetParameters(names); }
+            |
+            LOOKAHEAD({ isMySqlTablespaceOptionAhead(1) }) options=MySqlTablespaceOptions(false, false)
+            { statement.setAction(AlterTablespace.Action.OPTIONS); statement.setOptions(options); }
+        )
+    )
+    { return statement; }
+}
+
+/**
+ * MySQL tablespace options in source order, optionally separated by commas. Each clause accepts
+ * only the options that it defines.
+ */
+List<TableOption> MySqlTablespaceOptions(boolean create, boolean undo):
+{
+    List<TableOption> options = new ArrayList<TableOption>();
+    TableOption option;
+}
+{
+    option=MySqlTablespaceOption() { options.add(validateTablespaceOption(option, create, undo)); }
+    (
+        LOOKAHEAD({ isMySqlTablespaceOptionAhead(1)
+                || getToken(1).kind == K_COMMA && isMySqlTablespaceOptionAhead(2) })
+        [ "," ] option=MySqlTablespaceOption()
+        { options.add(validateTablespaceOption(option, create, undo)); }
+    )*
+    { return options; }
+}
+
+/** Reuses the table option models for ENGINE, ENCRYPTION, AUTOEXTEND_SIZE and ENGINE_ATTRIBUTE. */
+TableOption MySqlTablespaceOption():
+{
+    TableOption option;
+    String value;
+    boolean useEquals = false;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("FILE_BLOCK_SIZE") }) ContextualKeyword("FILE_BLOCK_SIZE")
+        [ "=" { useEquals = true; } ] value=MySqlSizeNumber()
+        { option = new TableOption(TableOption.Kind.FILE_BLOCK_SIZE, "FILE_BLOCK_SIZE", value, useEquals); }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_ENGINE }) option=MySqlTableOption()
+        |
+        option=MySqlScalarTableOption()
+    )
+    { return option; }
 }
 
 /** The new relation statements reuse the same actions as structured ALTER TABLE properties. */
@@ -22495,6 +22655,11 @@ Statement Create():
         LOOKAHEAD({ isKeywordAhead("RULE") }) statement = CreateRule(isUsingOrReplace)
         |
         LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
+        |
+        LOOKAHEAD({ getToken(1).kind == K_TABLESPACE
+                || isKeywordAhead("UNDO") && getToken(2).kind == K_TABLESPACE })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE TABLESPACE does not support OR REPLACE"); }
+        statement = CreateTablespace()
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
         |
