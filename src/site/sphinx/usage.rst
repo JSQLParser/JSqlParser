@@ -2368,7 +2368,15 @@ Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
 
 ``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
 ``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
-triggers use. MySQL ``CREATE TRIGGER`` accepts ``IF NOT EXISTS`` (``isIfNotExists()``)
+triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,
+``CreateFunctionalStatement.getCharacteristics()`` lists the characteristics between the
+routine header and its body, such as ``COMMENT``, ``DETERMINISTIC``, ``READS SQL DATA`` or
+``SQL SECURITY INVOKER``, with the same ``RoutineCharacteristic`` kinds; ``DETERMINISTIC``
+and ``NOT_DETERMINISTIC`` occur only here. ``getFunctionDeclarationParts()`` still holds
+every token and renders the statement unchanged, so the list is read-only. Replacing the
+tokens with ``setFunctionDeclarationParts(parts)`` clears it, while
+``setFunctionDeclarationParts(parts, characteristics)`` sets both, and appending tokens
+keeps it. Without a MySQL dialect the list stays empty. MySQL ``CREATE TRIGGER`` accepts ``IF NOT EXISTS`` (``isIfNotExists()``)
 and keeps MariaDB's ``OR REPLACE``. A ``BEGIN ... END`` trigger body with only SQL
 statements remains a ``Block``; a compound body with procedural statements such as
 ``IF``, ``DECLARE`` or loops is an ``UnsupportedStatement`` with its tokens, captured with

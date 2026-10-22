@@ -437,6 +437,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Whether a MySQL characteristic of CREATE FUNCTION or PROCEDURE starts here. */
+    private boolean isMySqlCreateRoutineCharacteristicAhead() {
+        return isMySqlRoutineCharacteristicAhead(1) || isWordSequenceAhead(1, "DETERMINISTIC")
+                || isWordSequenceAhead(1, "NOT", "DETERMINISTIC");
+    }
+
     /** Whether a MySQL characteristic of ALTER FUNCTION or PROCEDURE starts at the offset. */
     private boolean isMySqlRoutineCharacteristicAhead(int offset) {
         if (getToken(offset).kind == K_COMMENT) {
@@ -22835,12 +22841,14 @@ Statement Create():
     }
 }
 
+/** With a MySQL dialect, the characteristics are also parsed; the tokens still render the statement. */
 CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
 {
   CreateFunctionalStatement type = null;
   List<String> tokens = new LinkedList<String>();
   String statementType = null;
   MySqlDefiner definer = null;
+  List<RoutineCharacteristic> characteristics = new ArrayList<RoutineCharacteristic>();
 }
 {
   [ definer=MySqlRoutineDefiner() ]
@@ -22849,7 +22857,7 @@ CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
    |
    <K_PROCEDURE> { statementType = "PROCEDURE"; }
   )
-  tokens=captureFunctionBody()
+  tokens=captureFunctionBody(isMySqlDialect() ? characteristics : null)
   {
     if(statementType.equals("FUNCTION")) {
       type = new CreateFunction(isUsingOrReplace, tokens);
@@ -22857,6 +22865,7 @@ CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
     if(statementType.equals("PROCEDURE")) {
       type = new CreateProcedure(isUsingOrReplace, tokens);
     }
+    type.setFunctionDeclarationParts(tokens, characteristics);
     type.setDefiner(definer);
     return type;
   }
@@ -22902,7 +22911,7 @@ AlterRoutine AlterRoutine():
         LOOKAHEAD({ isMySqlRoutineCharacteristicAhead(1) })
         (
             LOOKAHEAD({ isMySqlRoutineCharacteristicAhead(1) })
-            characteristic=MySqlRoutineCharacteristic() { result.getCharacteristics().add(characteristic); }
+            characteristic=MySqlRoutineCharacteristic(false) { result.getCharacteristics().add(characteristic); }
         )+
         {
             requireDdlSyntax(result.getRoutineType() != AlterRoutine.RoutineType.ROUTINE
@@ -22980,7 +22989,8 @@ RoutineCharacteristic PostgreSqlRoutineCharacteristic():
     }
 }
 
-RoutineCharacteristic MySqlRoutineCharacteristic():
+/** MySQL routine characteristic; only CREATE accepts [NOT] DETERMINISTIC. */
+RoutineCharacteristic MySqlRoutineCharacteristic(boolean create):
 {
     RoutineCharacteristic.Kind kind;
     RoutineCharacteristic.SecurityClause clause = null;
@@ -22999,6 +23009,12 @@ RoutineCharacteristic MySqlRoutineCharacteristic():
         { kind = RoutineCharacteristic.Kind.CONTAINS_SQL; }
         |
         <K_NO> ContextualKeyword("SQL") { kind = RoutineCharacteristic.Kind.NO_SQL; }
+        |
+        LOOKAHEAD({ create && isWordSequenceAhead(1, "DETERMINISTIC") }) ContextualKeyword("DETERMINISTIC")
+        { kind = RoutineCharacteristic.Kind.DETERMINISTIC; }
+        |
+        LOOKAHEAD({ create && isWordSequenceAhead(1, "NOT", "DETERMINISTIC") })
+        <K_NOT> ContextualKeyword("DETERMINISTIC") { kind = RoutineCharacteristic.Kind.NOT_DETERMINISTIC; }
         |
         LOOKAHEAD({ isKeywordAhead("READS") }) ContextualKeyword("READS") ContextualKeyword("SQL") <K_DATA>
         { kind = RoutineCharacteristic.Kind.READS_SQL_DATA; }
@@ -23836,16 +23852,29 @@ List<String> captureRest() {
  * PostgreSQL AS string bodies can use ordinary, escape or dollar quotes.
  * The boundary tracker distinguishes simple statements, declaration sections,
  * compound bodies, and expression CASE from procedural END qualifiers.
+ * With a list, MySQL characteristics between the header and the body are also
+ * parsed into it; their tokens are captured as well.
  */
 
 JAVACODE
-List<String> captureFunctionBody() {
+List<String> captureFunctionBody(List<RoutineCharacteristic> characteristics) {
   List<String> tokens = new LinkedList<String>();
   Token tok;
   RoutineBodyBoundary boundary = new RoutineBodyBoundary();
   while(true) {
     tok = getToken(1);
     int l = tokens.size();
+    if (characteristics != null && boundary.isBeforeBody() && isMySqlCreateRoutineCharacteristicAhead()) {
+        characteristics.add(MySqlRoutineCharacteristic(true));
+        for (Token consumed = tok; ; consumed = consumed.next) {
+            tokens.add(consumed.image);
+            boundary.accept(consumed, consumed == token ? getToken(1) : consumed.next);
+            if (consumed == token) {
+                break;
+            }
+        }
+        continue;
+    }
     if (boundary.endsAt(tok)) {
       if (tok.kind == ST_SEMICOLON) {
         tokens.add(tok.image);
