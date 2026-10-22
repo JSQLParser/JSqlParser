@@ -2491,16 +2491,22 @@ PostgreSQL COMMENT targets
 ``TABLE``, ``COLUMN`` and ``VIEW`` forms:
 
 - ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``, ``MATERIALIZED VIEW``,
-  ``FOREIGN TABLE``, ``COLLATION`` and ``STATISTICS``
+  ``FOREIGN TABLE``, ``COLLATION``, ``STATISTICS``, ``CONVERSION`` and
+  ``TEXT SEARCH {CONFIGURATION | DICTIONARY | PARSER | TEMPLATE}``
 - ``ACCESS METHOD``, ``DATABASE``, ``EVENT TRIGGER``, ``EXTENSION``,
   ``FOREIGN DATA WRAPPER``, ``[PROCEDURAL] LANGUAGE``, ``PUBLICATION``, ``ROLE``,
   ``SERVER``, ``SUBSCRIPTION`` and ``TABLESPACE``
 - ``FUNCTION``, ``PROCEDURE``, ``ROUTINE`` and ``AGGREGATE`` signatures
 - ``CONSTRAINT``, ``TRIGGER``, ``POLICY`` and ``RULE`` with their owning table
 - ``CAST (source_type AS target_type)``
+- ``OPERATOR [schema.]op (left_type, right_type)``, where ``NONE`` marks the missing
+  operand of a unary operator
+- ``OPERATOR CLASS`` and ``OPERATOR FAMILY`` with ``USING access_method``
+- ``LARGE OBJECT oid`` and ``TRANSFORM FOR type_name LANGUAGE lang_name``
 
 These unambiguous target forms also parse without a dialect preset. Kind words such as
-``ROLE``, ``SERVER`` or ``RULE`` are not reserved and remain ordinary identifiers.
+``ROLE``, ``SERVER``, ``RULE``, ``OPERATOR`` or ``CONVERSION`` are not reserved and
+remain ordinary identifiers.
 Tagged dollar strings still require ``Dialect.POSTGRESQL`` or
 ``withDollarQuotedStringTags(true)``.
 
@@ -2527,6 +2533,24 @@ Only a constraint accepts ``ON DOMAIN app.d``, which sets ``isOnDomain()`` and s
 the domain as the owner instead. A ``CAST`` target exposes ``getSourceType()`` and
 ``getTargetType()``. ``NULL`` removes the comment and remains represented by a null
 ``Comment.getComment()``.
+
+``COMMENT ON OPERATOR app.-> (jsonb, NONE)`` reads the operator with the reference
+shared by exclusion constraints and ``ALTER EXTENSION``: ``getOperator()`` returns an
+``ExclusionOperator`` with ``getSchemaName()`` and the operator symbol in ``getName()``.
+``getLeftOperandType()`` and ``getRightOperandType()`` hold the operand types, and null
+stands for ``NONE``; at least one operand type is required. The lexer reads some
+PostgreSQL operators, such as ``<<=`` or ``-|-``, as several tokens. Parts that touch
+each other are joined into one operator, while whitespace or a comment separates two
+operators as in PostgreSQL. Exclusion constraints and ``ALTER EXTENSION`` accept the same
+operators. Operators that the lexer reads as part of an identifier, such as ``##``
+without ``Dialect.POSTGRESQL``, are not supported.
+
+``OPERATOR CLASS`` and ``OPERATOR FAMILY`` targets keep their name in ``getName()``
+and the index access method in ``getAccessMethod()``; ``Kind.isOwnedByAccessMethod()``
+identifies these kinds. ``LARGE OBJECT`` exposes ``getLargeObjectOid()``, which
+accepts an unsigned 32-bit integer. ``TRANSFORM`` exposes ``getTransformType()`` and
+``getLanguage()``. Each ``TEXT SEARCH`` object type has its own ``Kind``, for example
+``TEXT_SEARCH_DICTIONARY``.
 
 Table discovery visits tables, column owners, views, materialized views, foreign
 tables and the tables owning constraints, triggers, policies and rules. It does not

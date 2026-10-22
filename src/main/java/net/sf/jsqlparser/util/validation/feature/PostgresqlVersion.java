@@ -105,6 +105,12 @@ public enum PostgresqlVersion implements Version {
                     Feature.commentOnLanguage, Feature.commentOnServer,
                     Feature.commentOnEventTrigger, Feature.commentOnPublication,
                     Feature.commentOnSubscription,
+                    Feature.commentOnOperator, Feature.commentOnOperatorClass,
+                    Feature.commentOnOperatorFamily, Feature.commentOnConversion,
+                    Feature.commentOnLargeObject, Feature.commentOnTransform,
+                    Feature.commentOnTextSearchConfiguration,
+                    Feature.commentOnTextSearchDictionary, Feature.commentOnTextSearchParser,
+                    Feature.commentOnTextSearchTemplate,
 
                     // https://www.postgresql.org/docs/current/sql-createsequence.html
                     Feature.createSequence,

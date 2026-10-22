@@ -88,6 +88,26 @@ public class CommentValidator extends AbstractValidator<Comment> {
                 return Feature.commentOnPublication;
             case SUBSCRIPTION:
                 return Feature.commentOnSubscription;
+            case OPERATOR:
+                return Feature.commentOnOperator;
+            case OPERATOR_CLASS:
+                return Feature.commentOnOperatorClass;
+            case OPERATOR_FAMILY:
+                return Feature.commentOnOperatorFamily;
+            case CONVERSION:
+                return Feature.commentOnConversion;
+            case LARGE_OBJECT:
+                return Feature.commentOnLargeObject;
+            case TRANSFORM:
+                return Feature.commentOnTransform;
+            case TEXT_SEARCH_CONFIGURATION:
+                return Feature.commentOnTextSearchConfiguration;
+            case TEXT_SEARCH_DICTIONARY:
+                return Feature.commentOnTextSearchDictionary;
+            case TEXT_SEARCH_PARSER:
+                return Feature.commentOnTextSearchParser;
+            case TEXT_SEARCH_TEMPLATE:
+                return Feature.commentOnTextSearchTemplate;
             default:
                 throw new IllegalArgumentException("Unknown COMMENT target: " + kind);
         }
