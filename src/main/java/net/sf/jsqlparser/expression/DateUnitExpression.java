@@ -18,12 +18,16 @@ public class DateUnitExpression extends ASTNodeAccessImpl implements Expression 
 
     private final DateUnit type;
 
+    private final String text;
+
     public DateUnitExpression(DateUnit type) {
         this.type = Objects.requireNonNull(type);
+        this.text = type.toString();
     }
 
     public DateUnitExpression(String DateUnitStr) {
         this.type = Objects.requireNonNull(DateUnit.from(DateUnitStr));
+        this.text = DateUnitStr;
     }
 
     public DateUnit getType() {
@@ -38,7 +42,7 @@ public class DateUnitExpression extends ASTNodeAccessImpl implements Expression 
 
     @Override
     public String toString() {
-        return type.toString();
+        return text;
     }
 
     public enum DateUnit {
