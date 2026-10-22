@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.statement.Statement;
@@ -36,7 +37,7 @@ public class CreateSchema implements Statement {
     }
 
     /**
-     * Add a statement to the schema definition
+     * Add a schema element, for example a CREATE TABLE or GRANT statement, to the schema definition
      *
      * @param statement The statement to be added
      * @return true if the operation was successful
@@ -109,7 +110,8 @@ public class CreateSchema implements Statement {
     }
 
     /**
-     * The statements executed as part of the schema creation
+     * The schema elements created as part of the schema, in source order. Their names are kept as
+     * written; unqualified names refer to the new schema.
      *
      * @return the statements
      */
@@ -139,7 +141,32 @@ public class CreateSchema implements Statement {
         return this;
     }
 
+    @Override
     public String toString() {
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
+    }
+
+    /**
+     * Appends the schema definition, rendering each schema element with the given writer.
+     *
+     * @param builder the target
+     * @param elementWriter renders one schema element
+     * @return the target
+     */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Statement> elementWriter) {
+        builder.append(headerSql());
+        if (schemaPath != null && !schemaPath.isEmpty()) {
+            builder.append(" PATH ").append(String.join(", ", schemaPath));
+        }
+        for (Statement statement : statements) {
+            builder.append(' ');
+            elementWriter.accept(statement);
+        }
+        return builder;
+    }
+
+    private String headerSql() {
         String sql = "CREATE SCHEMA";
         if (hasIfNotExists) {
             sql += " IF NOT EXISTS";
