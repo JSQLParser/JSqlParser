@@ -2511,6 +2511,38 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * True when the item after a comma inside a T-SQL/Snowflake ADD list is
+     * another column definition or table constraint rather than the start of a
+     * new alter action, which the enclosing productions handle.
+     */
+    private boolean isAlterAddListItemAhead() {
+        switch (getToken(1).kind) {
+            case K_CONSTRAINT:
+            case K_CHECK:
+            case K_PRIMARY:
+            case K_UNIQUE:
+            case K_FOREIGN:
+                return true;
+            case K_ADD:
+            case K_ALTER:
+            case K_CHANGE:
+            case K_MODIFY:
+            case K_DROP:
+            case K_FORCE:
+            case K_NO:
+            case K_ENABLE:
+            case K_DISABLE:
+            case K_ALGORITHM:
+            case K_LOCK:
+            case K_CONVERT:
+            case K_PARTITION:
+            case K_ORDER:
+                return false;
+            default:
+                return true;        }
+    }
+
+    /**
      * True when the pending {@code ON} opens the ON CONFLICT clause of the enclosing
      * INSERT rather than another trailing join condition: after a join, the trailing
      * ON expressions of Issue #1302 and the INSERT clause claim the same ON token.
@@ -20802,6 +20834,24 @@ AlterExpression AlterExpressionAddAlterModify():
                 |
                 LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
                     { alterExp.addColDataType(alterExpressionColumnDataType); }
+                // T-SQL and Snowflake let one ADD list several columns and table
+                // constraints without repeating ADD.
+                (
+                    LOOKAHEAD(",", { alterExp.getOperation() == AlterOperation.ADD
+                            && (Dialect.SQLSERVER.name().equals(getAsString(Feature.dialect))
+                                || Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect)))
+                            && isAlterAddListItemAhead() })
+                    "," { alterExp.setBareAddList(true); }
+                    (
+                        LOOKAHEAD({ getToken(1).kind == K_CONSTRAINT || getToken(1).kind == K_CHECK
+                                || getToken(1).kind == K_PRIMARY || getToken(1).kind == K_UNIQUE
+                                || getToken(1).kind == K_FOREIGN })
+                        element=TableConstraint(false) { setAlterTableElement(alterExp, element); }
+                        |
+                        alterExpressionColumnDataType = AlterExpressionColumnDataType()
+                            { alterExp.addColDataType(alterExpressionColumnDataType); }
+                    )
+                )*
             )
         )
         |
