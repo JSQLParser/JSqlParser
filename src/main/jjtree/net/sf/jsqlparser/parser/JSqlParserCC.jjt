@@ -2236,8 +2236,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    private boolean isBulkCollectIntoAhead() {
+        return "BULK".equalsIgnoreCase(getToken(1).image)
+                && "COLLECT".equalsIgnoreCase(getToken(2).image)
+                && getToken(3).kind == K_INTO;
+    }
+
     private boolean isAliasAhead() {
-        if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
+        if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()
+                || isBulkCollectIntoAhead()) {
             return false;
         }
         Token t = getToken(1);
@@ -7175,6 +7182,7 @@ ReturningClause ReturningClause():
     List<SelectItem<?>> selectItems;
     Object dataItem;
     List<Object> dataItems = null;
+    boolean bulkCollect = false;
 }
 {
     ( keyword=<K_RETURNING> | keyword=<K_RETURN> )
@@ -7182,19 +7190,34 @@ ReturningClause ReturningClause():
     selectItems = SelectItemsList()
 
     [
+        LOOKAHEAD({ getToken(1).kind == K_INTO || isBulkCollectIntoAhead() })
+        [ LOOKAHEAD({ isBulkCollectIntoAhead() })
+            ContextualKeyword("BULK") ContextualKeyword("COLLECT") { bulkCollect = true; }
+        ]
         <K_INTO>
-        ( dataItem = Table() | dataItem = UserVariable() )
+        dataItem = ReturningIntoTarget()
         { dataItems = new ArrayList<Object>(); dataItems.add(dataItem); }
 
         (
             ","
-            ( dataItem = Table() | dataItem = UserVariable() ) { dataItems.add(dataItem); }
+            dataItem = ReturningIntoTarget() { dataItems.add(dataItem); }
         )*
     ]
 
     {
-        return new ReturningClause(keyword.image, selectItems, outputAliases, dataItems);
+        return new ReturningClause(keyword.image, selectItems, outputAliases, dataItems)
+                .setBulkCollect(bulkCollect);
     }
+}
+
+Object ReturningIntoTarget():
+{
+    Object target;
+}
+{
+    ( target=JdbcNamedParameter() | target=JdbcParameter()
+        | target=Table() | target=UserVariable() )
+    { return target; }
 }
 
 ReturningReferenceType ReturningReferenceKind():

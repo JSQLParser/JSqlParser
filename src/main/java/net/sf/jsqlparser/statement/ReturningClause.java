@@ -31,11 +31,12 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 
 public class ReturningClause extends ArrayList<SelectItem<?>> {
     /**
-     * List of output targets like Table or UserVariable
+     * List of output targets like Table, UserVariable, JdbcNamedParameter or JdbcParameter.
      */
     private final List<Object> dataItems;
     private final List<ReturningOutputAlias> outputAliases;
     private Keyword keyword;
+    private boolean bulkCollect;
 
     public ReturningClause(Keyword keyword, List<SelectItem<?>> selectItems,
             List<Object> dataItems) {
@@ -82,6 +83,15 @@ public class ReturningClause extends ArrayList<SelectItem<?>> {
         return dataItems;
     }
 
+    public boolean isBulkCollect() {
+        return bulkCollect;
+    }
+
+    public ReturningClause setBulkCollect(boolean bulkCollect) {
+        this.bulkCollect = bulkCollect;
+        return this;
+    }
+
     public List<ReturningOutputAlias> getOutputAliases() {
         return outputAliases;
     }
@@ -110,7 +120,7 @@ public class ReturningClause extends ArrayList<SelectItem<?>> {
         }
 
         if (dataItems != null && !dataItems.isEmpty()) {
-            builder.append(" INTO ");
+            builder.append(bulkCollect ? " BULK COLLECT INTO " : " INTO ");
             for (int i = 0; i < dataItems.size(); i++) {
                 if (i > 0) {
                     builder.append(" ,");

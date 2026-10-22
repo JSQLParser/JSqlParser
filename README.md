@@ -142,6 +142,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **ksqlDB windows** | JOIN `WITHIN`, window `GRACE PERIOD`, and `EMIT CHANGES`/`FINAL` |
 | **ClickHouse column selection** | `COLUMNS('regexp')` select items with chained `APPLY`, `EXCEPT`, and `REPLACE` transformers |
 | **DML** | `INSERT` · `UPDATE` · `UPSERT` · `MERGE` · `DELETE` · `TRUNCATE TABLE` |
+| **Oracle RETURNING** | Named output binds (`INTO :name`), JDBC output parameters (`INTO ?`), and `BULK COLLECT INTO` |
 | **DDL** | `CREATE …` · `ALTER …` · `DROP …` |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `OPTIMIZE` · `REPAIR TABLE` |
