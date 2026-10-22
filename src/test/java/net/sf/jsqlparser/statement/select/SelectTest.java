@@ -2414,6 +2414,20 @@ public class SelectTest {
     }
 
     @Test
+    public void testGroupByAllDistinctPostgreSql() throws JSQLParserException {
+        // PostgreSQL: GROUP BY [ ALL | DISTINCT ] grouping_element [, ...]
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT 1 GROUP BY DISTINCT GROUPING SETS ((1), (1))",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT 1 GROUP BY ALL GROUPING SETS ((1), (2))",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT a FROM t GROUP BY DISTINCT a",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+    }
+
+    @Test
     public void testIsUnknown() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS UNKNOWN";
         assertSqlCanBeParsedAndDeparsed(statement);

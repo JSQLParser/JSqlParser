@@ -11316,6 +11316,11 @@ GroupByElement GroupByColumnReferences():
 }
 {
     <K_GROUP> <K_BY>
+    // PostgreSQL: GROUP BY [ ALL | DISTINCT ] grouping_element [, ...]
+    [ LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+            && (getToken(1).kind == K_ALL || getToken(1).kind == K_DISTINCT) })
+        ( <K_ALL> { groupBy.setAll(true); } | <K_DISTINCT> { groupBy.setDistinct(true); } )
+    ]
     (
         LOOKAHEAD(2) (
             <K_GROUPING> <K_SETS>
