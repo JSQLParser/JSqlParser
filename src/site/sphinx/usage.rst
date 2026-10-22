@@ -1643,11 +1643,46 @@ backslashes:
   ``\0`` and ``\Z`` become their characters, and ``\%`` and ``\_`` keep their backslash.
 * ``POSTGRESQL_ESCAPE_STRING`` for ``E'...'`` with ``Dialect.POSTGRESQL``, including
   ``\x``, octal and ``\u`` escapes; octal and hexadecimal escapes are UTF-8 bytes.
+* ``POSTGRESQL_UNICODE_ESCAPE`` for ``U&'...'``, see
+  `PostgreSQL Unicode escape strings`_.
 * ``STANDARD`` otherwise, including dollar-quoted strings and constructed values;
   backslashes stay literal. Other dialects with backslash escapes keep this reading.
 
 ``setEscaping()`` selects the reading for a constructed value. Escaping is not
 part of ``equals()``, like the quote character.
+
+PostgreSQL Unicode escape strings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With ``Dialect.POSTGRESQL``, ``U&'...'`` and an optional ``UESCAPE 'c'`` clause form one
+``StringValue``. Its prefix is ``U&``, ``getValue()`` returns the body as written, and
+``toString()`` renders the literal with its clause. ``getUnicodeEscapeCharacter()`` returns
+the ``UESCAPE`` character, or ``null`` without the clause, when the escape character is a
+backslash. ``getNotExcapedValue()`` resolves the escapes as PostgreSQL does:
+
+* the escape character followed by four hexadecimal digits, or by ``+`` and six, is that
+  code point. A character above U+FFFF can also be written as a UTF-16 surrogate pair of
+  two escapes;
+* a doubled escape character and a doubled quote stand for themselves.
+
+.. code-block:: java
+
+    Comment comment = (Comment) CCJSqlParserUtil.parse(
+            "COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    comment.getComment().getNotExcapedValue(); // "data"
+    comment.toString(); // COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'
+
+* The parser rejects what PostgreSQL rejects:
+  an escape without its digits, code point 0 or one above U+10FFFF, an unpaired surrogate,
+  and an escape character that is a hexadecimal digit, ``+``, a quote, whitespace or not ASCII.
+  ``getNotExcapedValue()`` throws ``IllegalArgumentException`` for such a constructed value.
+* Without ``Dialect.POSTGRESQL``, ``U&'x'`` keeps its previous reading: the column ``U``,
+  the ``&`` operator and the string ``'x'``.
+* ``UESCAPE`` may follow the literal after spaces, tabs or newlines, but not after a comment
+  or a continuation line.
+* ``U&"..."`` quoted identifiers are not supported.
+* The ``UESCAPE`` character is not part of ``equals()``, like the escaping.
 
 Other dialect-specific syntax
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
