@@ -278,50 +278,37 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseExpression(String expressionStr, boolean allowPartialParse,
             Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         if (expressionStr == null || expressionStr.isEmpty()) {
             return null;
         }
 
-        Expression expression = null;
-        // first, try to parse fast and simple
+        // First require a complete simple parse, even when the caller allows a partial result.
         try {
-            CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(false);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            try {
-                expression = parser.Expression();
-                if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException(
-                            "could only parse partial expression " + expression.toString());
-                }
-            } catch (ParseException ex) {
-                throw new JSQLParserException(expressionStr, ex);
-            }
-        } catch (JSQLParserException ex1) {
-            // when fast simple parsing fails, try complex parsing but only if it has a chance to
-            // succeed
-            CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(true);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            try {
-                expression = parser.Expression();
-                if (!allowPartialParse
-                        && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException(
-                            "could only parse partial expression " + expression.toString());
-                }
-            } catch (JSQLParserException ex) {
-                throw ex;
-            } catch (ParseException ex) {
-                throw new JSQLParserException(ex);
-            }
+            return parseExpression(expressionStr, false, false, consumer);
+        } catch (JSQLParserException ex) {
+            return parseExpression(expressionStr, true, allowPartialParse, consumer);
         }
-        return expression;
+    }
+
+    private static Expression parseExpression(String expressionStr, boolean allowComplexParsing,
+            boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(allowComplexParsing);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
+
+        try {
+            Expression expression = parser.Expression();
+            if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                throw new JSQLParserException(
+                        "could only parse partial expression " + expression.toString());
+            }
+            return expression;
+        } catch (ParseException ex) {
+            throw new JSQLParserException(ex);
+        }
     }
 
     /**
@@ -356,50 +343,9 @@ public final class CCJSqlParserUtil {
         });
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseCondExpression(String conditionalExpressionStr,
             boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        if (conditionalExpressionStr == null || conditionalExpressionStr.isEmpty()) {
-            return null;
-        }
-
-        Expression expression = null;
-        // first, try to parse fast and simple
-        try {
-            CCJSqlParser parser =
-                    newParser(conditionalExpressionStr).withAllowComplexParsing(false);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            try {
-                expression = parser.Expression();
-                if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException(
-                            "could only parse partial expression " + expression.toString());
-                }
-            } catch (ParseException ex) {
-                throw new JSQLParserException(ex);
-            }
-        } catch (JSQLParserException ex1) {
-            CCJSqlParser parser =
-                    newParser(conditionalExpressionStr).withAllowComplexParsing(true);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            try {
-                expression = parser.Expression();
-                if (!allowPartialParse
-                        && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException(
-                            "could only parse partial expression " + expression.toString());
-                }
-            } catch (JSQLParserException ex) {
-                throw ex;
-            } catch (ParseException ex) {
-                throw new JSQLParserException(ex);
-            }
-        }
-        return expression;
+        return parseExpression(conditionalExpressionStr, allowPartialParse, consumer);
     }
 
     /**
