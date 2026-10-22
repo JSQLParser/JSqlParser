@@ -18750,6 +18750,9 @@ ColDataType ColDataType():
                 tk=<DATA_TYPE>
                 |
                 tk=<K_CHAR>
+                |
+                tk="*" { requireDdlSyntax("VECTOR".equalsIgnoreCase(colDataType.getDataType()),
+                        "Wildcard type arguments are only supported for VECTOR"); }
             )
             )
 		    {
