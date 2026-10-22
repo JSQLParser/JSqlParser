@@ -629,10 +629,16 @@ public class PlainSelect extends Select {
 
     private void appendSelectClauseTo(StringBuilder builder) {
         builder.append("SELECT ");
+        int afterSelect = builder.length();
         appendSelectHintsTo(builder);
         appendSelectQualifiersTo(builder);
         appendMySqlSelectModifiersTo(builder);
         builder.append(getStringList(selectItems));
+        // PostgreSQL permits SELECT with no target expressions: keep "SELECT
+        // FROM" instead of doubling the space.
+        if (builder.length() == afterSelect) {
+            builder.deleteCharAt(afterSelect - 1);
+        }
     }
 
     private void appendSelectHintsTo(StringBuilder builder) {

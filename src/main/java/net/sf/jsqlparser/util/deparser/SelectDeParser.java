@@ -379,7 +379,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
         plainSelect.appendMySqlSelectModifiersTo(builder);
 
+        int beforeItems = builder.length();
         deparseSelectItemsClause(plainSelect.getSelectItems());
+        // PostgreSQL permits SELECT with no target expressions: keep "SELECT
+        // FROM" instead of doubling the space.
+        if (builder.length() == beforeItems && builder.charAt(beforeItems - 1) == ' ') {
+            builder.deleteCharAt(beforeItems - 1);
+        }
 
         if (plainSelect.getIntoTables() != null) {
             builder.append(" INTO ");
