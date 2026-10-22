@@ -18008,6 +18008,7 @@ TableOption MySqlTableOption(): {
     TableOption.Kind kind = null;
     TableOption option;
     ColumnOption.Storage storage = null;
+    StringValue comment = null;
 } {
     (
         tk=<K_UNION> { name = tk.image; kind = TableOption.Kind.UNION;
@@ -18078,10 +18079,16 @@ TableOption MySqlTableOption(): {
             kind = TableOption.Kind.COMMENT;
         }
         [ "=" { useEquals = true; } ]
-        value=MySqlTableOptionValue()
+        // A string literal keeps its escaping; other values remain plain text
+        (
+            LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL }) tk=<S_CHAR_LITERAL>
+            { comment = stringValue(tk); }
+            | value=MySqlTableOptionValue()
+        )
     )
     {
         option = new TableOption(kind, name, value, useEquals);
+        if (comment != null) { option.setComment(comment); }
         if (unionTables != null) { option.setUnionTables(unionTables); }
         option.setTablespaceStorage(storage);
         return option;
@@ -20092,7 +20099,7 @@ void PartitionDefinitionOption(PartitionDefinition partitionDefinition):
         |
         <K_COMMENT> [ "=" { useEquals = true; } ] tk=<S_CHAR_LITERAL>
         {
-            partitionDefinition.setComment(tk.image);
+            partitionDefinition.setCommentValue(stringValue(tk));
             partitionDefinition.setCommentUseEquals(useEquals);
         }
         |
