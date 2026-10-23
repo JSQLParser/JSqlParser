@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -31,14 +32,24 @@ public class SQLiteTest {
     @ValueSource(strings = {"ABORT", "FAIL", "IGNORE", "REPLACE", "ROLLBACK"})
     void testInsertOrConflictAlgorithm(String algorithm) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "INSERT OR " + algorithm + " INTO t (a, b) VALUES (1, 2)", true);
+                "INSERT OR " + algorithm + " INTO t (a, b) VALUES (1, 2)", true,
+                parser -> parser.withDialect(Dialect.SQLITE));
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "insert or " + algorithm.toLowerCase(Locale.ROOT) + " into t select * from s", true);
+                "insert or " + algorithm.toLowerCase(Locale.ROOT) + " into t select * from s", true,
+                parser -> parser.withDialect(Dialect.SQLITE));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ABORT", "FAIL", "IGNORE", "ROLLBACK"})
+    void testInsertOrConflictAlgorithmNeedsSqliteDialect(String algorithm) {
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("INSERT OR " + algorithm + " INTO t VALUES (1)"));
     }
 
     @Test
     void testInsertOrUnknownAlgorithm() {
         assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parse("INSERT OR NOTHING INTO t VALUES (1)"));
+                () -> CCJSqlParserUtil.parse("INSERT OR NOTHING INTO t VALUES (1)",
+                        parser -> parser.withDialect(Dialect.SQLITE)));
     }
 }
