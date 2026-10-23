@@ -228,6 +228,33 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && TokenNesting.isTopLevelFrom(subscriptOpenings.peek().next, colon);
     }
 
+    /**
+     * Token nesting checks shared by the lookaheads above and below. A nested class keeps its
+     * branches out of CCJSqlParser.class, whose constant pool is close to what JaCoCo can still
+     * instrument.
+     */
+    private static final class TokenNesting {
+        private TokenNesting() {}
+
+        /**
+         * Whether the target is not nested in brackets, braces, parentheses or a CASE expression
+         * opened from the first token on.
+         */
+        static boolean isTopLevelFrom(Token first, Token target) {
+            int depth = 0;
+            for (Token t = first; t != null && t != target; t = t.next) {
+                if (t.kind == K_CASE || "(".equals(t.image) || "[".equals(t.image)
+                        || "{".equals(t.image)) {
+                    depth++;
+                } else if (t.kind == K_END || ")".equals(t.image) || "]".equals(t.image)
+                        || "}".equals(t.image)) {
+                    depth--;
+                }
+            }
+            return depth == 0;
+        }
+    }
+
     // first tokens of the enclosing column DEFAULT values: a COLLATE at their top level is the
     // column's own attribute, as in MySQL's column_attribute and PostgreSQL's ColQualList
     private final Deque<Token> columnDefaultStarts = new ArrayDeque<Token>();
