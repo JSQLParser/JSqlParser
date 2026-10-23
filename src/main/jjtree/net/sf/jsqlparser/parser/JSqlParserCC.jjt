@@ -3050,6 +3050,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && "EXPRESSION".equalsIgnoreCase(getToken(columnActionOffset + 1).image)) {
             return true;
         }
+        // VALIDATE CONSTRAINT starts no other ALTER TABLE action in any dialect.
+        if (first.kind == K_VALIDATE && getToken(2).kind == K_CONSTRAINT) { return true; }
         if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
                 || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
