@@ -2404,6 +2404,20 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return table == K_TABLE || table == K_TABLES;
     }
 
+    /**
+     * Whether NO_WRITE_TO_BINLOG or LOCAL modifies a MySQL partition operation. Followed by a
+     * comma, INTO or the end of the statement, the word remains a partition name.
+     */
+    private boolean isPartitionBinlogModifierAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_NO_WRITE_TO_BINLOG && kind != K_LOCAL) {
+            return false;
+        }
+        Token next = getToken(2);
+        return next.kind != EOF && next.kind != ST_SEMICOLON && next.kind != K_INTO
+                && !",".equals(next.image);
+    }
+
     /** Whether a PostgreSQL REINDEX statement starts here; REINDEX stays an identifier elsewhere. */
     private boolean isReindexAhead() {
         if (getToken(1).kind != K_REINDEX) {
@@ -20901,6 +20915,7 @@ void MySqlDropNamedConstraint(AlterExpression alterExp):
 AlterExpression AlterExpressionPartitionOp():
 {
     AlterExpressionPartition alterExp = new AlterExpressionPartition();
+    AlterOperation operation;
     Token tk;
     List<String> partitions = null;
     List<PartitionDefinition> partitionDefinition = null;
@@ -20909,15 +20924,29 @@ AlterExpression AlterExpressionPartitionOp():
 }
 {
     (
-        LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); }
+        LOOKAHEAD(2) (
+            <K_TRUNCATE> { operation = AlterOperation.TRUNCATE_PARTITION; }
+            | <K_ANALYZE> { operation = AlterOperation.ANALYZE_PARTITION; }
+            | <K_CHECK> { operation = AlterOperation.CHECK_PARTITION; }
+            | <K_OPTIMIZE> { operation = AlterOperation.OPTIMIZE_PARTITION; }
+            | <K_REBUILD> { operation = AlterOperation.REBUILD_PARTITION; }
+            | <K_REPAIR> { operation = AlterOperation.REPAIR_PARTITION; }
+        )
+        <K_PARTITION> { alterExp.setOperation(operation); }
+        [
+            LOOKAHEAD({ operation != AlterOperation.TRUNCATE_PARTITION
+                    && operation != AlterOperation.CHECK_PARTITION
+                    && isPartitionBinlogModifierAhead() })
+            PartitionBinlogModifier(alterExp)
+        ]
         partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
     |
-        LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> tk=<S_LONG> {
-            alterExp.setOperation(AlterOperation.COALESCE_PARTITION);
-            alterExp.setCoalescePartitionCount(Integer.valueOf(tk.image));
-        }
+        LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> { alterExp.setOperation(AlterOperation.COALESCE_PARTITION); }
+        [ PartitionBinlogModifier(alterExp) ]
+        tk=<S_LONG> { alterExp.setPartitionCount(Integer.valueOf(tk.image)); }
     |
         LOOKAHEAD(2) <K_REORGANIZE> <K_PARTITION>
+        [ LOOKAHEAD({ isPartitionBinlogModifierAhead() }) PartitionBinlogModifier(alterExp) ]
         partitions=PartitionNamesList() <K_INTO> partitionDefinition=PartitionDefinitions() {
             alterExp.setOperation(AlterOperation.REORGANIZE_PARTITION);
             alterExp.setPartitions(partitions);
@@ -20943,21 +20972,6 @@ AlterExpression AlterExpressionPartitionOp():
             alterExp.setExchangeTable(exchangeTable);
         }
     |
-        LOOKAHEAD(2) <K_ANALYZE> <K_PARTITION> { alterExp.setOperation(AlterOperation.ANALYZE_PARTITION); }
-        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
-    |
-        LOOKAHEAD(2) <K_CHECK> <K_PARTITION> { alterExp.setOperation(AlterOperation.CHECK_PARTITION); }
-        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
-    |
-        LOOKAHEAD(2) <K_OPTIMIZE> <K_PARTITION> { alterExp.setOperation(AlterOperation.OPTIMIZE_PARTITION); }
-        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
-    |
-        LOOKAHEAD(2) <K_REBUILD> <K_PARTITION> { alterExp.setOperation(AlterOperation.REBUILD_PARTITION); }
-        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
-    |
-        LOOKAHEAD(2) <K_REPAIR> <K_PARTITION> { alterExp.setOperation(AlterOperation.REPAIR_PARTITION); }
-        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
-    |
         LOOKAHEAD(2) <K_REMOVE> <K_PARTITIONING> { alterExp.setOperation(AlterOperation.REMOVE_PARTITIONING); }
     |
         LOOKAHEAD(2) partitioning=CreateTablePartitioning() {
@@ -20966,6 +20980,42 @@ AlterExpression AlterExpressionPartitionOp():
         }
     )
     { return alterExp; }
+}
+
+/**
+ * Parses MySQL ADD PARTITION [NO_WRITE_TO_BINLOG | LOCAL] {(definitions) | PARTITIONS n}
+ * after ADD.
+ */
+AlterExpressionPartition AddPartition():
+{
+    AlterExpressionPartition alterExp = new AlterExpressionPartition();
+    List<PartitionDefinition> partitionDefinitions;
+    Token tk;
+}
+{
+    <K_PARTITION> { alterExp.setOperation(AlterOperation.ADD_PARTITION); }
+    [ PartitionBinlogModifier(alterExp) ]
+    (
+        partitionDefinitions=PartitionDefinitions() {
+            alterExp.setPartitionDefinitions(partitionDefinitions);
+        }
+        |
+        <K_PARTITIONS> tk=<S_LONG> { alterExp.setPartitionCount(Integer.valueOf(tk.image)); }
+    )
+    { return alterExp; }
+}
+
+/** Parses MySQL's opt_no_write_to_binlog of a partition operation. */
+void PartitionBinlogModifier(AlterExpressionPartition alterExp):
+{
+    Token tk;
+}
+{
+    ( tk=<K_NO_WRITE_TO_BINLOG> | tk=<K_LOCAL> )
+    {
+        alterExp.setModifier(TableMaintenanceStatement.Modifier.valueOf(
+                tk.image.toUpperCase(Locale.ROOT)));
+    }
 }
 
 /**
@@ -20989,7 +21039,6 @@ AlterExpression AlterExpressionAddAlterModify():
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     List<IndexSpecOption> indexSpec = new ArrayList<IndexSpecOption>();
-    List<PartitionDefinition> partitionDefinition = null;
 }
 {
     (
@@ -21052,15 +21101,10 @@ AlterExpression AlterExpressionAddAlterModify():
           sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
         )
         |
-        LOOKAHEAD(3) (
-            <K_PARTITION> {
-                alterExp = new AlterExpressionPartition();
-                alterExp.setOperation(AlterOperation.ADD_PARTITION);
-            }
-            partitionDefinition=PartitionDefinitions() {
-                alterExp.setPartitionDefinitions(partitionDefinition);
-            }
-        )
+        LOOKAHEAD(<K_PARTITION> [ <K_NO_WRITE_TO_BINLOG> | <K_LOCAL> ]
+                ( "(" <K_PARTITION> | <K_PARTITIONS> <S_LONG> ),
+                { alterExp.getOperation() == AlterOperation.ADD })
+        alterExp=AddPartition()
         |
         LOOKAHEAD(3) (
             ( LOOKAHEAD(2)
