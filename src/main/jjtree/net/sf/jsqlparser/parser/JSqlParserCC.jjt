@@ -224,20 +224,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     private boolean isSliceColonAhead() {
         Token colon = getToken(1);
-        if (subscriptOpenings.isEmpty() || !":".equals(colon.image)) {
-            return false;
-        }
-        int depth = 0;
-        for (Token t = subscriptOpenings.peek().next; t != null && t != colon; t = t.next) {
-            if (t.kind == K_CASE || "(".equals(t.image) || "[".equals(t.image)
-                    || "{".equals(t.image)) {
-                depth++;
-            } else if (t.kind == K_END || ")".equals(t.image) || "]".equals(t.image)
-                    || "}".equals(t.image)) {
-                depth--;
-            }
-        }
-        return depth == 0;
+        return !subscriptOpenings.isEmpty() && ":".equals(colon.image)
+                && TokenNesting.isTopLevelFrom(subscriptOpenings.peek().next, colon);
+    }
+
+    // first tokens of the enclosing column DEFAULT values: a COLLATE at their top level is the
+    // column's own attribute, as in MySQL's column_attribute and PostgreSQL's ColQualList
+    private final Deque<Token> columnDefaultStarts = new ArrayDeque<Token>();
+
+    /** Whether the pending COLLATE follows an unparenthesized column DEFAULT value. */
+    private boolean isColumnCollateAhead() {
+        Token collate = getToken(1);
+        return !columnDefaultStarts.isEmpty() && collate.kind == K_COLLATE
+                && TokenNesting.isTopLevelFrom(columnDefaultStarts.peek(), collate);
     }
 
     private Expression createOutputArgument(Expression argument) throws ParseException {
@@ -13149,7 +13148,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     )
 
     [
-        LOOKAHEAD(2) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); }
+        LOOKAHEAD(2, { !isColumnCollateAhead() }) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); }
     ]
 
     [
@@ -16389,12 +16388,31 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_DEFAULT>) <K_DEFAULT> { option = ColumnOption.raw("DEFAULT"); }
         // Db2 permits an omitted default value. Keep these implicit defaults raw.
         [ LOOKAHEAD(2, { !(getToken(1).kind == K_NOT && getToken(2).kind == K_NULL) })
-            defaultExpression=Expression() { option = ColumnOption.defaultValue(defaultExpression); } ]
+            defaultExpression=ColumnDefaultValue() { option = ColumnOption.defaultValue(defaultExpression); } ]
         |
         parameter=ColumnDefinitionParameter()
         { option = ColumnOption.raw(parameter); }
     )
     { return option; }
+}
+
+/**
+ * An explicit column DEFAULT value. MySQL's DEFAULT literal and PostgreSQL's DEFAULT b_expr exclude
+ * COLLATE, so the value ends before a COLLATE at its top level, which is the column's own
+ * attribute. A COLLATE inside parentheses, function arguments or CASE stays in the expression.
+ */
+Expression ColumnDefaultValue():
+{
+    Expression expression;
+}
+{
+    { columnDefaultStarts.push(getToken(1)); }
+    try {
+        expression=Expression()
+    } finally {
+        columnDefaultStarts.pop();
+    }
+    { return expression; }
 }
 
 GeneratedColumnDefinition GeneratedColumnDefinition():

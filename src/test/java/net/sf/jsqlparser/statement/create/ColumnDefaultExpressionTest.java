@@ -9,27 +9,36 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.util.validation.ValidationTestAsserts.validateNotAllowed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
-import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterDomain;
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.domain.CreateDomain;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.ColumnOption;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -37,8 +46,11 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ColumnDefaultExpressionTest {
@@ -159,6 +171,94 @@ class ColumnDefaultExpressionTest {
             "ALTER TABLE t MODIFY (COLUMN a DROP DEFAULT, COLUMN b DROP DEFAULT)"})
     void neighboringAndLegacyColumnOptionsStillRoundTrip(String sql) throws JSQLParserException {
         assertRoundTrip(CCJSqlParserUtil.parse(sql));
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"CREATE TABLE t (c VARCHAR(30) ", "ALTER TABLE t ADD COLUMN c VARCHAR(30) ",
+                    "ALTER TABLE t MODIFY COLUMN c VARCHAR(30) ",
+                    "ALTER TABLE t CHANGE COLUMN old_c c VARCHAR(30) "})
+    void collateAfterDefaultIsAColumnAttribute(String prefix) throws JSQLParserException {
+        String sql = prefix + "NOT NULL DEFAULT 'N' COLLATE utf8mb4_unicode_ci COMMENT 'flag'"
+                + (prefix.startsWith("CREATE") ? ")" : "");
+        List<Consumer<CCJSqlParser>> configurations = Arrays.asList(parser -> {
+        }, parser -> parser.withDialect(Dialect.MYSQL));
+        for (Consumer<CCJSqlParser> configuration : configurations) {
+            Statement statement = assertSqlCanBeParsedAndDeparsed(sql, true, configuration);
+            ColumnDefinition column = firstColumn(statement);
+            assertThat(column.getColumnOptions()).extracting(ColumnOption::getKind)
+                    .containsExactly(ColumnOption.Kind.NULLABILITY, ColumnOption.Kind.DEFAULT,
+                            ColumnOption.Kind.COLLATE, ColumnOption.Kind.COMMENT);
+            assertInstanceOf(StringValue.class, defaultOption(column).getDefaultExpression());
+            assertEquals("utf8mb4_unicode_ci", column.getColumnOptions().get(2).getCollation());
+            assertThat(column.getColumnSpecs()).containsExactly("NOT", "NULL", "DEFAULT", "'N'",
+                    "COLLATE", "utf8mb4_unicode_ci", "COMMENT", "'flag'");
+            assertRoundTrip(statement);
+        }
+    }
+
+    static Stream<Arguments> defaultValuesBeforeCollate() {
+        return Stream.of(Arguments.of(Dialect.MYSQL, "_utf8mb4'N'", "utf8mb4_bin"),
+                Arguments.of(Dialect.MYSQL, "'N'", "'utf8mb4_bin'"),
+                Arguments.of(Dialect.MYSQL, "1", "utf8mb4_bin"),
+                Arguments.of(Dialect.MYSQL, "-1", "utf8mb4_bin"),
+                Arguments.of(Dialect.POSTGRESQL, "'a' || 'b'", "\"C\""),
+                Arguments.of(Dialect.POSTGRESQL, "lower('A' COLLATE \"C\")", "\"C\""),
+                Arguments.of(Dialect.POSTGRESQL, "CASE WHEN true THEN 'a' END", "\"C\""),
+                Arguments.of(Dialect.POSTGRESQL, "'x'::text", "\"C\""),
+                Arguments.of(Dialect.POSTGRESQL, "'x'", "pg_catalog.\"default\""));
+    }
+
+    @ParameterizedTest
+    @MethodSource("defaultValuesBeforeCollate")
+    void defaultValueEndsBeforeTopLevelCollate(Dialect dialect, String value, String collation)
+            throws JSQLParserException {
+        String definition = " VARCHAR(30) DEFAULT " + value + " COLLATE " + collation + " NOT NULL";
+        String alter = dialect == Dialect.MYSQL ? "ALTER TABLE t MODIFY COLUMN c"
+                : "ALTER TABLE t ADD COLUMN c";
+        for (String sql : Arrays.asList("CREATE TABLE t (c" + definition + ")",
+                alter + definition)) {
+            ColumnDefinition column = firstColumn(assertSqlCanBeParsedAndDeparsed(sql, true,
+                    parser -> parser.withDialect(dialect)));
+            assertThat(column.getColumnOptions()).extracting(ColumnOption::getKind)
+                    .containsExactly(ColumnOption.Kind.DEFAULT, ColumnOption.Kind.COLLATE,
+                            ColumnOption.Kind.NULLABILITY);
+            assertEquals(value, defaultOption(column).getDefaultExpression().toString());
+            assertEquals(collation, column.getColumnOptions().get(1).getCollation());
+        }
+    }
+
+    @Test
+    void parenthesizedCollateStaysInTheDefaultValue() throws JSQLParserException {
+        ColumnDefinition column = firstColumn(assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE t MODIFY COLUMN c VARCHAR(3) DEFAULT ('N' COLLATE utf8mb4_bin) NOT NULL",
+                true, parser -> parser.withDialect(Dialect.MYSQL)));
+        assertThat(column.getColumnOptions()).extracting(ColumnOption::getKind)
+                .containsExactly(ColumnOption.Kind.DEFAULT, ColumnOption.Kind.NULLABILITY);
+        Expression value = defaultOption(column).getDefaultExpression();
+        assertInstanceOf(ParenthesedExpressionList.class, value);
+        assertInstanceOf(CollateExpression.class, ((ParenthesedExpressionList<?>) value).get(0));
+    }
+
+    @Test
+    void setDefaultAndDomainDefaultsKeepTheExpressionCollate() throws JSQLParserException {
+        // PostgreSQL's SET DEFAULT takes an a_expr, which includes COLLATE. CREATE DOMAIN is
+        // unchanged.
+        Consumer<CCJSqlParser> postgres = parser -> parser.withDialect(Dialect.POSTGRESQL);
+        Alter table = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE t ALTER COLUMN c SET DEFAULT 'x' COLLATE \"C\"", true, postgres);
+        assertInstanceOf(CollateExpression.class, table.getAlterExpressions().get(0)
+                .getColumnDefaults().get(0).getDefaultExpression());
+        AlterRelation view = (AlterRelation) assertSqlCanBeParsedAndDeparsed(
+                "ALTER VIEW v ALTER COLUMN c SET DEFAULT 'x' COLLATE \"C\"", true, postgres);
+        assertInstanceOf(CollateExpression.class,
+                view.getActions().get(0).getDefaultExpression());
+        AlterDomain alterDomain = (AlterDomain) assertSqlCanBeParsedAndDeparsed(
+                "ALTER DOMAIN d SET DEFAULT 'x' COLLATE \"C\"", true, postgres);
+        assertInstanceOf(CollateExpression.class, alterDomain.getDefaultExpression());
+        CreateDomain createDomain = (CreateDomain) assertSqlCanBeParsedAndDeparsed(
+                "CREATE DOMAIN d AS text DEFAULT 'x' COLLATE \"C\"", true, postgres);
+        assertInstanceOf(CollateExpression.class, createDomain.getDefaultExpression());
     }
 
     @ParameterizedTest
