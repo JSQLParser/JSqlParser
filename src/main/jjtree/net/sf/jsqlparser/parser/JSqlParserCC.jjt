@@ -21032,13 +21032,14 @@ AlterExpression AlterExpressionAddAlterModify():
         constraint=PostgreSqlConstraintUsingIndex() { alterExp.setConstraint(constraint); }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
-                && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && ((Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                     || Dialect.MYSQL.name().equals(getAsString(Feature.dialect)))
                 && (getToken(1).kind == K_CONSTRAINT || getToken(1).kind == K_PRIMARY
                     || getToken(1).kind == K_UNIQUE || getToken(1).kind == K_FOREIGN
                     || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE
                     || getToken(1).kind == K_NOT
-                        && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) })
+                        && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)))
+                    || AlterConstraintLookahead.needsSharedTableConstraint(getToken(1), token_source)) })
         element=TableConstraint(false) { setAlterTableElement(alterExp, element); }
         |
         LOOKAHEAD({ isTableIndexAhead() }) element=TableIndexSpec(false) {
