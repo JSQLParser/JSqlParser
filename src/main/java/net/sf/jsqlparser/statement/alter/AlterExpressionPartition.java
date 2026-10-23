@@ -22,6 +22,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
@@ -35,7 +36,9 @@ import net.sf.jsqlparser.statement.create.table.ConstraintKind;
  * MySQL partition names and definitions remain available through the inherited
  * {@link #getPartitions()} and {@link #getPartitionDefinitions()} methods. This subtype adds
  * structured access to the complete {@code PARTITION BY} clause, the table used by
- * {@code EXCHANGE PARTITION}, and its validation mode. It also models PostgreSQL
+ * {@code EXCHANGE PARTITION}, and its validation mode, the partition count of
+ * {@code ADD PARTITION PARTITIONS n} and {@code COALESCE PARTITION n}, and the
+ * {@code NO_WRITE_TO_BINLOG}/{@code LOCAL} modifier. It also models PostgreSQL
  * {@code ATTACH/DETACH PARTITION} operations.
  */
 public class AlterExpressionPartition extends AlterExpression {
@@ -52,7 +55,8 @@ public class AlterExpressionPartition extends AlterExpression {
     private PartitionBound partitionBound;
     private DetachMode detachMode;
     private TablePartitioning partitioning;
-    private Integer coalescePartitionCount;
+    private Integer partitionCount;
+    private TableMaintenanceStatement.Modifier modifier;
     private Table exchangeTable;
     private ExchangeValidationMode exchangeValidationMode;
 
@@ -251,18 +255,38 @@ public class AlterExpressionPartition extends AlterExpression {
     }
 
     /**
-     * Returns the number of partitions added by a MySQL {@code COALESCE PARTITION} operation.
-     * Unlike the legacy primitive accessor, this is {@code null} when no count was supplied.
+     * Returns the number of partitions added by MySQL {@code ADD PARTITION PARTITIONS n} or removed
+     * by {@code COALESCE PARTITION n}, or {@code null} when no count was supplied. An
+     * {@code ADD PARTITION} with a count renders the count instead of partition definitions.
+     */
+    public Integer getPartitionCount() {
+        return partitionCount;
+    }
+
+    public void setPartitionCount(Integer partitionCount) {
+        this.partitionCount = partitionCount;
+    }
+
+    /**
+     * Returns the number of partitions removed by a MySQL {@code COALESCE PARTITION} operation.
+     * This is the same value as {@link #getPartitionCount()}. Unlike the legacy primitive accessor,
+     * this is {@code null} when no count was supplied.
      */
     public Integer getCoalescePartitionCount() {
-        return coalescePartitionCount;
+        return partitionCount;
     }
 
     public void setCoalescePartitionCount(Integer coalescePartitionCount) {
-        this.coalescePartitionCount = coalescePartitionCount;
-        if (coalescePartitionCount != null) {
-            super.setCoalescePartitionNumber(coalescePartitionCount);
-        }
+        setPartitionCount(coalescePartitionCount);
+    }
+
+    /** Returns the MySQL {@code NO_WRITE_TO_BINLOG} or {@code LOCAL} modifier, if any. */
+    public TableMaintenanceStatement.Modifier getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(TableMaintenanceStatement.Modifier modifier) {
+        this.modifier = modifier;
     }
 
     @Override
@@ -286,9 +310,13 @@ public class AlterExpressionPartition extends AlterExpression {
     }
 
     @Override
+    public int getCoalescePartitionNumber() {
+        return partitionCount != null ? partitionCount : 0;
+    }
+
+    @Override
     public void setCoalescePartitionNumber(int coalescePartitionNumber) {
-        super.setCoalescePartitionNumber(coalescePartitionNumber);
-        this.coalescePartitionCount = coalescePartitionNumber;
+        setPartitionCount(coalescePartitionNumber);
     }
 
     public Table getExchangeTable() {
@@ -384,6 +412,16 @@ public class AlterExpressionPartition extends AlterExpression {
         return this;
     }
 
+    public AlterExpressionPartition withPartitionCount(Integer partitionCount) {
+        setPartitionCount(partitionCount);
+        return this;
+    }
+
+    public AlterExpressionPartition withModifier(TableMaintenanceStatement.Modifier modifier) {
+        setModifier(modifier);
+        return this;
+    }
+
     public AlterExpressionPartition withExchangeTable(Table exchangeTable) {
         setExchangeTable(exchangeTable);
         return this;
@@ -449,12 +487,33 @@ public class AlterExpressionPartition extends AlterExpression {
     private void appendBody(StringBuilder b, Consumer<Expression> expressionPrinter) {
         switch (getOperation()) {
             case ADD_PARTITION:
-                b.append("ADD PARTITION ")
+                appendOperationKeywords(b);
+                if (partitionCount != null) {
+                    b.append(" PARTITIONS ").append(partitionCount);
+                } else {
+                    b.append(' ').append(
+                            PlainSelect.getStringList(getPartitionDefinitions(), true, true));
+                }
+                break;
+            case COALESCE_PARTITION:
+                appendOperationKeywords(b);
+                b.append(' ').append(getCoalescePartitionNumber());
+                break;
+            case REORGANIZE_PARTITION:
+                appendOperationKeywords(b);
+                b.append(' ').append(PlainSelect.getStringList(getPartitionNames()))
+                        .append(" INTO ")
                         .append(PlainSelect.getStringList(getPartitionDefinitions(), true, true));
                 break;
             case DROP_PARTITION:
-                b.append("DROP PARTITION ")
-                        .append(PlainSelect.getStringList(getPartitionNames()));
+            case TRUNCATE_PARTITION:
+            case ANALYZE_PARTITION:
+            case CHECK_PARTITION:
+            case OPTIMIZE_PARTITION:
+            case REBUILD_PARTITION:
+            case REPAIR_PARTITION:
+                appendOperationKeywords(b);
+                b.append(' ').append(PlainSelect.getStringList(getPartitionNames()));
                 break;
             case ATTACH_PARTITION:
                 b.append("ATTACH PARTITION ").append(partitionTable).append(' ');
@@ -491,6 +550,15 @@ public class AlterExpressionPartition extends AlterExpression {
             default:
                 toStringPartition(b);
                 break;
+        }
+    }
+
+    /** Appends {@code <operation> PARTITION} and the binlog modifier, if any. */
+    private void appendOperationKeywords(StringBuilder b) {
+        String operation = getOperation().name();
+        b.append(operation, 0, operation.length() - "_PARTITION".length()).append(" PARTITION");
+        if (modifier != null) {
+            b.append(' ').append(modifier);
         }
     }
 }
