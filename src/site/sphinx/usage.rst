@@ -935,6 +935,18 @@ Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
 COLLATE option. Consumers can map both directly without reconstructing tokens.
 StringValue comment bodies retain their SQL escape representation.
 
+A column DEFAULT value ends before a COLLATE at its top level, which becomes the
+column's COLLATE option: MySQL's DEFAULT literal and PostgreSQL's DEFAULT ``b_expr``
+do not include COLLATE. A COLLATE inside parentheses, function arguments or a CASE
+expression stays in the default expression. ``SET DEFAULT`` actions and CREATE
+DOMAIN keep an expression COLLATE.
+
+Migration: ``DEFAULT 'N' COLLATE utf8mb4_bin`` in a column definition previously
+produced one DEFAULT option holding a ``CollateExpression``. It now produces a
+DEFAULT option with ``'N'`` and a COLLATE option with ``getCollation()``;
+``getColumnSpecs()`` returns ``[DEFAULT, 'N', COLLATE, utf8mb4_bin]``. SQL output
+is unchanged.
+
 MySQL column attributes have their own kinds: ``SRID`` (``getSrid()``),
 ``COLUMN_FORMAT`` (``getColumnFormat()``: FIXED, DYNAMIC or DEFAULT), and
 ``ENGINE_ATTRIBUTE``/``SECONDARY_ENGINE_ATTRIBUTE`` (``getEngineAttribute()``
