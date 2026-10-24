@@ -3319,15 +3319,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    /**
-     * Whether ON names the table of a dropped index, trigger or rule. SQL Server DDL triggers
-     * name a scope instead: DROP TRIGGER t ON DATABASE or ON ALL SERVER.
-     */
-    private static boolean isDropOwnerTable(Drop drop, Table name) {
-        String text = name.getFullyQualifiedName();
-        boolean triggerScope = drop.getObjectType() == Drop.ObjectType.TRIGGER
-                && ("DATABASE".equalsIgnoreCase(text) || "ALL".equalsIgnoreCase(text));
-        return drop.getObjectType().hasOwnerTable() && !triggerScope;
+    /** Keeps DROP lookahead branches out of the generated parser's nearly full constant pool. */
+    private static final class DropLookahead {
+        private DropLookahead() {}
+
+        /** SQL Server DDL triggers name a scope rather than an owning table. */
+        static boolean isOwnerTable(Drop drop, Table name) {
+            String text = name.getFullyQualifiedName();
+            boolean triggerScope = drop.getObjectType() == Drop.ObjectType.TRIGGER
+                    && ("DATABASE".equalsIgnoreCase(text) || "ALL".equalsIgnoreCase(text));
+            return drop.getObjectType().hasOwnerTable() && !triggerScope;
+        }
+
+        static boolean isForceAhead(Drop drop, Token first, Token second, Token third) {
+            return drop.getObjectType() == Drop.ObjectType.SYNONYM && first.kind == K_FORCE
+                    || drop.getObjectType() == Drop.ObjectType.DATABASE
+                        && (first.kind == K_WITH && "(".equals(second.image) && third.kind == K_FORCE
+                            || "(".equals(first.image) && second.kind == K_FORCE);
+        }
     }
 
     /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
@@ -19920,6 +19929,8 @@ Drop Drop():
         |
         tk=<K_SCHEMA>
         |
+        [ <K_PUBLIC> { drop.setPublicSynonym(true); } ] tk=<K_SYNONYM>
+        |
         tk=<K_SEQUENCE>
         |
         tk=<K_TRIGGER>
@@ -19951,11 +19962,8 @@ Drop Drop():
 
     DropTargets(drop)
     [
-        // PostgreSQL DROP DATABASE name [ [ WITH ] ( FORCE ) ]
-        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.DATABASE
-                && (getToken(1).kind == K_WITH && "(".equals(getToken(2).image) && getToken(3).kind == K_FORCE
-                    || "(".equals(getToken(1).image) && getToken(2).kind == K_FORCE) })
-        [ <K_WITH> ] "(" <K_FORCE> ")" { drop.setForce(true); }
+        LOOKAHEAD({ DropLookahead.isForceAhead(drop, getToken(1), getToken(2), getToken(3)) })
+        ( <K_FORCE> | [ <K_WITH> ] "(" <K_FORCE> ")" ) { drop.setForce(true); }
     ]
     [
         // MySQL DROP [UNDO] TABLESPACE name [ ENGINE [=] engine_name ]
@@ -19979,7 +19987,7 @@ Drop Drop():
         |
         (
             <K_ON> name = DropObjectName() {
-                if (isDropOwnerTable(drop, name)) {
+                if (DropLookahead.isOwnerTable(drop, name)) {
                     requireNoDropOwnerTable(indexTable);
                     indexTable = name;
                     indexTablePosition = dropArgs.size();

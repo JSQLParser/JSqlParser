@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -66,6 +66,7 @@ public class Drop implements Statement {
     private boolean concurrently;
     private boolean undo;
     private boolean force;
+    private boolean publicSynonym;
     private String engine;
     private boolean engineUseEquals;
 
@@ -339,7 +340,7 @@ public class Drop implements Statement {
         return this;
     }
 
-    /** PostgreSQL DROP DATABASE ... WITH (FORCE). */
+    /** PostgreSQL DROP DATABASE ... WITH (FORCE), or Oracle DROP SYNONYM ... FORCE. */
     public boolean isForce() {
         return force;
     }
@@ -350,6 +351,20 @@ public class Drop implements Statement {
 
     public Drop withForce(boolean force) {
         setForce(force);
+        return this;
+    }
+
+    /** Whether the synonym belongs to the PUBLIC namespace. */
+    public boolean isPublicSynonym() {
+        return publicSynonym;
+    }
+
+    public void setPublicSynonym(boolean publicSynonym) {
+        this.publicSynonym = publicSynonym;
+    }
+
+    public Drop withPublicSynonym(boolean publicSynonym) {
+        setPublicSynonym(publicSynonym);
         return this;
     }
 
@@ -477,6 +492,9 @@ public class Drop implements Statement {
         if (undo) {
             builder.append("UNDO ");
         }
+        if (publicSynonym) {
+            builder.append("PUBLIC ");
+        }
         builder.append(type);
         if (concurrently) {
             builder.append(" CONCURRENTLY");
@@ -487,7 +505,7 @@ public class Drop implements Statement {
         builder.append(ifExists ? " IF EXISTS " : " ");
         appendTargets(builder, tablePrinter);
         if (force) {
-            builder.append(" WITH (FORCE)");
+            builder.append(objectType == ObjectType.SYNONYM ? " FORCE" : " WITH (FORCE)");
         }
         if (engine != null) {
             builder.append(engineUseEquals ? " ENGINE = " : " ENGINE ").append(engine);
