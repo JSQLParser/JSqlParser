@@ -11,6 +11,7 @@ package net.sf.jsqlparser.parser;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.statement.upsert.UpsertType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +49,7 @@ public abstract class AbstractJSqlParser<P> {
                                                         AdjacentStringLiterals.WHITESPACE,
                                                         Feature.allowDoubleQuotedStrings,
                                                         Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
-                                                                Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA;
+                                                                Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA, SQLITE;
 
         private final Set<Feature> lexerFeatures;
         private final AdjacentStringLiterals adjacentStringLiterals;
@@ -257,6 +258,30 @@ public abstract class AbstractJSqlParser<P> {
 
     public Integer getAsInteger(Feature f) {
         return getConfiguration().getAsInteger(f);
+    }
+
+    /**
+     * The INSERT OR conflict algorithms other than REPLACE are SQLite syntax.
+     */
+    protected UpsertType insertOrType(String algorithm) throws ParseException {
+        if ("REPLACE".equalsIgnoreCase(algorithm)) {
+            return UpsertType.INSERT_OR_REPLACE;
+        }
+        if (!Dialect.SQLITE.name().equals(getAsString(Feature.dialect))) {
+            throw new ParseException("INSERT OR " + algorithm + " needs Dialect.SQLITE");
+        }
+        switch (algorithm.toUpperCase()) {
+            case "IGNORE":
+                return UpsertType.INSERT_OR_IGNORE;
+            case "ROLLBACK":
+                return UpsertType.INSERT_OR_ROLLBACK;
+            case "ABORT":
+                return UpsertType.INSERT_OR_ABORT;
+            case "FAIL":
+                return UpsertType.INSERT_OR_FAIL;
+            default:
+                throw new ParseException("Expected ABORT, FAIL, IGNORE, REPLACE or ROLLBACK");
+        }
     }
 
     public String getAsString(Feature f) {

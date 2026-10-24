@@ -8099,6 +8099,7 @@ OutputClause OutputClause():
 Upsert Upsert():
 {
     Upsert upsert = new Upsert();
+    String algorithm;
     Table table = null;
     ExpressionList<Column> columns;
     List<UpdateSet> updateSets;
@@ -8115,7 +8116,10 @@ Upsert Upsert():
         <K_REPLACE> { upsert.setUpsertType(UpsertType.REPLACE); }
         |
         (
-            <K_INSERT> <K_OR> <K_REPLACE> { upsert.setUpsertType(UpsertType.INSERT_OR_REPLACE); }
+            <K_INSERT> <K_OR>
+            // ABORT and FAIL are not keywords of the parser
+            algorithm=RelObjectName()
+            { upsert.setUpsertType(insertOrType(algorithm)); }
         )
     )
     [ LOOKAHEAD(2) <K_INTO> { upsert.setUsingInto(true); } ]
