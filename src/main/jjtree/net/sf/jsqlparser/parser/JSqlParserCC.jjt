@@ -1868,17 +1868,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * JOIN ONLY t or FROM a, ONLY b, rather than a table or column named only.
      */
     private boolean isRelationOnlyAhead(Token prev) {
-        int next = getToken(2).kind;
-        boolean name = next == S_IDENTIFIER || next == S_QUOTED_IDENTIFIER || next == OPENING_BRACKET;
-        switch (prev.kind) {
-            case K_FROM: case K_JOIN: case K_UPDATE: case K_INTO: case K_USING:
-                return name || next >= MIN_NON_RESERVED_WORD && next <= MAX_NON_RESERVED_WORD;
-            case K_COMMA:
-                // a column definition continues with its type instead, as in (a INT, only INT)
-                return name;
-            default:
-                return false;
-        }
+        return RelationOptions.isOnlyAhead(prev, getToken(2).kind);
     }
 
     /**
@@ -3309,6 +3299,48 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                         key.getSpecOptions().remove(option);
                     }
                 }
+            }
+        }
+    }
+
+    /** Keeps relation-option branches out of the generated parser's nearly full constant pool. */
+    private static final class RelationOptions {
+        private RelationOptions() {}
+
+        static LockStatement.Target lockTarget(TableReference reference) {
+            LockStatement.Target target = new LockStatement.Target(reference.getTable());
+            target.setOnly(reference.isOnly());
+            target.setIncludeDescendants(reference.isIncludeDescendants());
+            target.setParenthesized(reference.isParenthesized());
+            return target;
+        }
+
+        static boolean isOnlyAhead(Token prev, int next) {
+            boolean name = next == S_IDENTIFIER || next == S_QUOTED_IDENTIFIER || next == OPENING_BRACKET;
+            switch (prev.kind) {
+                case K_FROM: case K_JOIN: case K_UPDATE: case K_INTO: case K_USING:
+                    return name || next >= MIN_NON_RESERVED_WORD && next <= MAX_NON_RESERVED_WORD;
+                case K_COMMA:
+                    // a column definition continues with its type, as in (a INT, only INT)
+                    return name;
+                default:
+                    return false;
+            }
+        }
+
+        static void apply(Truncate truncate, String log, String storage,
+                String identity, String behavior) {
+            if (log != null) {
+                truncate.setMaterializedViewLogOption(Truncate.MaterializedViewLogOption.valueOf(log));
+            }
+            if (storage != null) {
+                truncate.setStorageOption(Truncate.StorageOption.valueOf(storage));
+            }
+            if (identity != null) {
+                truncate.setIdentityOption(Truncate.IdentityOption.valueOf(identity));
+            }
+            if (behavior != null) {
+                truncate.setDropBehavior(CascadeBehavior.valueOf(behavior));
             }
         }
     }
@@ -5236,15 +5268,11 @@ LockStatement LockStatement(): {
 }
 
 LockStatement.Target LockTarget():
-{ TableReference reference; LockStatement.Target target; }
+{ TableReference reference; }
 {
     reference=RelationTarget()
     {
-        target = new LockStatement.Target(reference.getTable());
-        target.setOnly(reference.isOnly());
-        target.setIncludeDescendants(reference.isIncludeDescendants());
-        target.setParenthesized(reference.isParenthesized());
-        return target;
+        return RelationOptions.lockTarget(reference);
     }
 }
 
@@ -20023,18 +20051,38 @@ ReassignOwned ReassignOwned():
 }
 
 Truncate Truncate():
-{ Truncate truncate = new Truncate(); TableReference target; }
+{
+    Truncate truncate = new Truncate();
+    TableReference target;
+    String log = null, storage = null, identity = null, behavior = null;
+}
 {
     <K_TRUNCATE>
     [ LOOKAHEAD(2) <K_TABLE> { truncate.setTableToken(true); } ]
     target=RelationTarget() { truncate.getTargets().add(target); }
     ( LOOKAHEAD(2) "," target=RelationTarget() { truncate.getTargets().add(target); } )*
-    [ ( <K_RESTART> { truncate.setIdentityOption(Truncate.IdentityOption.RESTART); }
-        | ContextualKeyword("CONTINUE") { truncate.setIdentityOption(Truncate.IdentityOption.CONTINUE); } )
+    [
+        LOOKAHEAD({ isKeywordAhead("PRESERVE") || getToken(1).kind == K_PURGE })
+        ( ContextualKeyword("PRESERVE") { log = "PRESERVE"; }
+          | <K_PURGE> { log = "PURGE"; } )
+        <K_MATERIALIZED> <K_VIEW> <K_LOG>
+    ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_DROP || isKeywordAhead("REUSE") })
+        ( <K_DROP> { storage = "DROP"; }
+          [ <K_ALL> { storage = "DROP_ALL"; } ]
+          | ContextualKeyword("REUSE") { storage = "REUSE"; } )
+        <K_STORAGE>
+    ]
+    [ ( <K_RESTART> { identity = "RESTART"; }
+        | ContextualKeyword("CONTINUE") { identity = "CONTINUE"; } )
       <K_IDENTITY> ]
-    [ <K_CASCADE> { truncate.setDropBehavior(CascadeBehavior.CASCADE); }
-      | <K_RESTRICT> { truncate.setDropBehavior(CascadeBehavior.RESTRICT); } ]
-    { return truncate; }
+    [ <K_CASCADE> { behavior = "CASCADE"; }
+      | <K_RESTRICT> { behavior = "RESTRICT"; } ]
+    {
+        RelationOptions.apply(truncate, log, storage, identity, behavior);
+        return truncate;
+    }
 }
 
 /**
