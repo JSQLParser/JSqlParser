@@ -19822,14 +19822,23 @@ String AList():
     StringBuilder retval = new StringBuilder("(");
     Token tk = null;
     String name = null;
+    boolean needsSeparator = false;
 }
 {
      "("
 
      (
-       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<K_TRUE> | tk=<K_FALSE>) { retval.append(tk.image); }
-         | (name=RelObjectName()) { retval.append(name); })
-       [("," {retval.append(",");} | "=" {retval.append("=");})] )*
+       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<K_TRUE> | tk=<K_FALSE>) { name = tk.image; }
+         | name=RelObjectName() )
+       {
+           if (needsSeparator) {
+               retval.append(' ');
+           }
+           retval.append(name);
+           needsSeparator = true;
+       }
+       [("," { retval.append(','); needsSeparator = false; }
+         | "=" { retval.append('='); needsSeparator = false; })] )*
 
     ")"
     {
