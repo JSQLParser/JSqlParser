@@ -1030,6 +1030,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // the bitwise operators bind looser than + and -, as in PostgreSQL, MySQL and SQLite
             else if (op == S_HASH_OPERATOR || op == OP_LSHIFT
                   || op == OP_RSHIFT)                                         prec = 4;
+            // PostgreSQL distance operators share the left-associative tier below + and -.
+            else if (op == OP_COSINESIMILARITY)                               prec = 4;
             else if (op == OP_PIPE) {
                 // MySQL tiers bitwise: <<, >> above & above |. Other dialects
                 // (PostgreSQL, SQLite, ...) keep one left-associative level.
@@ -1045,6 +1047,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 else if ("&".equals(img)) {
                     prec = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 3 : 4;
                 }
+                else if ("<->".equals(img) || "<#>".equals(img))              prec = 4;
                 else break; // not an arithmetic operator
             }
 
@@ -1080,6 +1083,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == OP_PIPE)   { BitwiseOr        r = new BitwiseOr();        r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_LSHIFT) { BitwiseLeftShift r = new BitwiseLeftShift(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_RSHIFT) { BitwiseRightShift r = new BitwiseRightShift(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+            else if (op == OP_COSINESIMILARITY) { CosineSimilarity r = new CosineSimilarity(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else {
                 String img = t.image;
                 if      ("*".equals(img)) { Multiplication r = new Multiplication(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -1087,6 +1091,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 else if ("-".equals(img)) { Subtraction    r = new Subtraction();    r.setLeftExpression(left); r.setRightExpression(right); left = r; }
                 else if ("%".equals(img)) { Modulo         r = new Modulo();         r.setLeftExpression(left); r.setRightExpression(right); left = r; }
                 else if ("&".equals(img)) { BitwiseAnd     r = new BitwiseAnd();     r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+                else if ("<->".equals(img) || "<#>".equals(img)) { GeometryDistance r = new GeometryDistance(img); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             }
         }
         return left;
@@ -12215,9 +12220,6 @@ Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #
         | <OP_CONCAT> { result = new JsonOperator("||"); }
         | "-" { result = new JsonOperator("-"); }
         | "-#" { result = new JsonOperator("-#"); }
-        | "<->" { result = new GeometryDistance("<->"); }
-        | "<#>" { result = new GeometryDistance("<#>"); }
-        | <OP_COSINESIMILARITY> { result = new CosineSimilarity(); }
     )
 
     ( LOOKAHEAD({ isPriorOperatorAhead() }) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
