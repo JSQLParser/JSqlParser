@@ -2545,6 +2545,85 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Decides whether an ALTER TABLE ADD table constraint needs the table-constraint production
+     * shared with CREATE TABLE in dialects that otherwise keep the generic ALTER representation. A
+     * nested class keeps its branches out of CCJSqlParser.class, whose constant pool is close to
+     * what JaCoCo can still instrument.
+     */
+    private static final class AlterConstraintLookahead {
+        private AlterConstraintLookahead() {}
+
+        /**
+         * Whether the action starting at {@code first} is an unnamed CHECK, a FOREIGN KEY,
+         * EXCLUDE, or uses a constraint attribute (INITIALLY IMMEDIATE|DEFERRED, NOT VALID, or
+         * ENFORCED outside CHECK) before the end of the action.
+         */
+        static boolean needsSharedTableConstraint(Token first, CCJSqlParserTokenManager source) {
+            Token second = next(first, source);
+            Token body = first.kind == K_CONSTRAINT ? next(second, source) : first;
+            if (isSharedOnlyConstraint(first, second, body, source)) {
+                return true;
+            }
+            return (first.kind == K_CONSTRAINT || first.kind == K_PRIMARY
+                    || first.kind == K_UNIQUE)
+                    && hasConstraintAttribute(first, body.kind == K_CHECK, source);
+        }
+
+        /** An unnamed CHECK, a FOREIGN KEY or an EXCLUDE constraint. */
+        private static boolean isSharedOnlyConstraint(Token first, Token second, Token body,
+                CCJSqlParserTokenManager source) {
+            return first.kind == K_CHECK && second.kind == OPENING_BRACKET
+                    || first.kind == K_FOREIGN || isExcludeConstraint(body, source);
+        }
+
+        /** Whether a constraint attribute follows at the top level before the end of the action. */
+        private static boolean hasConstraintAttribute(Token first, boolean check,
+                CCJSqlParserTokenManager source) {
+            int depth = 0;
+            for (Token token = first; token.kind != EOF; token = next(token, source)) {
+                if (token.kind == OPENING_BRACKET) {
+                    depth++;
+                } else if (token.kind == CLOSING_BRACKET) {
+                    if (depth-- == 0) {
+                        return false;
+                    }
+                } else if (depth == 0) {
+                    if (token.kind == ST_SEMICOLON || token.kind == K_COMMA) {
+                        return false;
+                    }
+                    if (isConstraintAttribute(token, next(token, source), check)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static boolean isConstraintAttribute(Token token, Token next, boolean check) {
+            if ("INITIALLY".equalsIgnoreCase(token.image)) {
+                return "IMMEDIATE".equalsIgnoreCase(next.image)
+                        || "DEFERRED".equalsIgnoreCase(next.image);
+            }
+            return token.kind == K_NOT && "VALID".equalsIgnoreCase(next.image)
+                    || token.kind == K_ENFORCED && !check;
+        }
+
+        /** EXCLUDE starts an exclusion constraint only before USING, its elements or WHERE. */
+        private static boolean isExcludeConstraint(Token token, CCJSqlParserTokenManager source) {
+            int following = next(token, source).kind;
+            return token.kind == K_EXCLUDE && (following == K_USING
+                    || following == OPENING_BRACKET || following == K_WHERE);
+        }
+
+        private static Token next(Token token, CCJSqlParserTokenManager source) {
+            if (token.next == null) {
+                token.next = source.getNextToken();
+            }
+            return token.next;
+        }
+    }
+
+    /**
      * True when an IS after a condition opens a postfix test
      * (IS [NOT] TRUE/FALSE/UNKNOWN/NULL/JSON) rather than IS DISTINCT FROM or
      * another comparison form, which has a right-hand operand of its own.
@@ -3064,6 +3143,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && "EXPRESSION".equalsIgnoreCase(getToken(columnActionOffset + 1).image)) {
             return true;
         }
+        // VALIDATE CONSTRAINT starts no other ALTER TABLE action in any dialect.
+        if (first.kind == K_VALIDATE && getToken(2).kind == K_CONSTRAINT) { return true; }
         if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
                 || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
@@ -21081,13 +21162,14 @@ AlterExpression AlterExpressionAddAlterModify():
         constraint=PostgreSqlConstraintUsingIndex() { alterExp.setConstraint(constraint); }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
-                && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && ((Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                     || Dialect.MYSQL.name().equals(getAsString(Feature.dialect)))
                 && (getToken(1).kind == K_CONSTRAINT || getToken(1).kind == K_PRIMARY
                     || getToken(1).kind == K_UNIQUE || getToken(1).kind == K_FOREIGN
                     || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE
                     || getToken(1).kind == K_NOT
-                        && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) })
+                        && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)))
+                    || AlterConstraintLookahead.needsSharedTableConstraint(getToken(1), token_source)) })
         element=TableConstraint(false) { setAlterTableElement(alterExp, element); }
         |
         LOOKAHEAD({ isTableIndexAhead() }) element=TableIndexSpec(false) {
