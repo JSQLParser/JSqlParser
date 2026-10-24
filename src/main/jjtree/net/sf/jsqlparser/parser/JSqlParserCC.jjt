@@ -3139,11 +3139,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    private void requireSqliteSyntax(String syntax) throws ParseException {
-        requireDdlSyntax(Dialect.SQLITE.name().equals(getAsString(Feature.dialect)),
-                syntax + " needs Dialect.SQLITE");
-    }
-
     private void requireDdlSyntax(boolean valid, String message) throws ParseException {
         if (!valid) {
             throw new ParseException(message);
@@ -8104,6 +8099,7 @@ OutputClause OutputClause():
 Upsert Upsert():
 {
     Upsert upsert = new Upsert();
+    String algorithm;
     Table table = null;
     ExpressionList<Column> columns;
     List<UpdateSet> updateSets;
@@ -8121,29 +8117,9 @@ Upsert Upsert():
         |
         (
             <K_INSERT> <K_OR>
-            (
-                <K_REPLACE> { upsert.setUpsertType(UpsertType.INSERT_OR_REPLACE); }
-                |
-                // the other conflict resolution algorithms are SQLite syntax
-                <K_IGNORE> {
-                    requireSqliteSyntax("INSERT OR IGNORE");
-                    upsert.setUpsertType(UpsertType.INSERT_OR_IGNORE);
-                }
-                |
-                <K_ROLLBACK> {
-                    requireSqliteSyntax("INSERT OR ROLLBACK");
-                    upsert.setUpsertType(UpsertType.INSERT_OR_ROLLBACK);
-                }
-                |
-                // ABORT and FAIL are not keywords of the parser
-                tk=<S_IDENTIFIER> {
-                    requireSqliteSyntax("INSERT OR " + tk.image);
-                    requireDdlSyntax("ABORT".equalsIgnoreCase(tk.image) || "FAIL".equalsIgnoreCase(tk.image),
-                            "Expected ABORT, FAIL, IGNORE, REPLACE or ROLLBACK");
-                    upsert.setUpsertType("ABORT".equalsIgnoreCase(tk.image)
-                            ? UpsertType.INSERT_OR_ABORT : UpsertType.INSERT_OR_FAIL);
-                }
-            )
+            // ABORT and FAIL are not keywords of the parser
+            algorithm=RelObjectName()
+            { upsert.setUpsertType(insertOrType(algorithm)); }
         )
     )
     [ LOOKAHEAD(2) <K_INTO> { upsert.setUsingInto(true); } ]
