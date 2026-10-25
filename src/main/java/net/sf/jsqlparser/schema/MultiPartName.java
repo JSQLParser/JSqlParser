@@ -23,13 +23,34 @@ public interface MultiPartName {
      * @return the pure identifier without quotes
      */
     static String unquote(String quotedIdentifier) {
-        return quotedIdentifier != null
-                ? LEADING_TRAILING_QUOTES_PATTERN.matcher(quotedIdentifier).replaceAll("")
-                : null;
+        if (quotedIdentifier == null) {
+            return null;
+        }
+        // same result as LEADING_TRAILING_QUOTES_PATTERN.matcher(..).replaceAll(""), but linear:
+        // the regex retries its trailing alternative at every offset of a run of quotes
+        int start = 0;
+        int end = quotedIdentifier.length();
+        while (start < end && isLeadingQuote(quotedIdentifier.charAt(start))) {
+            start++;
+        }
+        while (end > start && isTrailingQuote(quotedIdentifier.charAt(end - 1))) {
+            end--;
+        }
+        return quotedIdentifier.substring(start, end);
     }
 
     static boolean isQuoted(String identifier) {
-        return identifier != null && LEADING_TRAILING_QUOTES_PATTERN.matcher(identifier).find();
+        return identifier != null && !identifier.isEmpty()
+                && (isLeadingQuote(identifier.charAt(0))
+                        || isTrailingQuote(identifier.charAt(identifier.length() - 1)));
+    }
+
+    private static boolean isLeadingQuote(char c) {
+        return c == '"' || c == '[' || c == '`';
+    }
+
+    private static boolean isTrailingQuote(char c) {
+        return c == '"' || c == ']' || c == '`';
     }
 
     String getFullyQualifiedName();
