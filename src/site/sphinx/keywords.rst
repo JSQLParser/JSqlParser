@@ -7,8 +7,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | **Keyword**               |
 +---------------------------+
-| ABSENT                    |
-+---------------------------+
 | ALL                       |
 +---------------------------+
 | AND                       |
@@ -37,8 +35,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | CROSS                     |
 +---------------------------+
-| CURRENT                   |
-+---------------------------+
 | DISTINCT                  |
 +---------------------------+
 | DISTINCTROW               |
@@ -48,10 +44,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 | EXCEPT                    |
 +---------------------------+
 | EXCLUDES                  |
-+---------------------------+
-| EXISTS                    |
-+---------------------------+
-| EXTEND                    |
 +---------------------------+
 | FALSE                     |
 +---------------------------+
@@ -80,8 +72,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 | IIF                       |
 +---------------------------+
 | ILIKE                     |
-+---------------------------+
-| IMPORT                    |
 +---------------------------+
 | IN                        |
 +---------------------------+
@@ -137,8 +127,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | PREFERRING                |
 +---------------------------+
-| PRIOR                     |
-+---------------------------+
 | PROCEDURE                 |
 +---------------------------+
 | PUBLIC                    |
@@ -149,8 +137,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | RIGHT                     |
 +---------------------------+
-| SAMPLE                    |
-+---------------------------+
 | SET                       |
 +---------------------------+
 | SOME                      |
@@ -159,11 +145,7 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | SQL_CALC_FOUND_ROWS       |
 +---------------------------+
-| SQL_NO_CACHE              |
-+---------------------------+
 | START                     |
-+---------------------------+
-| STATEMENT                 |
 +---------------------------+
 | STRAIGHT_JOIN             |
 +---------------------------+
@@ -177,13 +159,9 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | TRUE                      |
 +---------------------------+
-| UNBOUNDED                 |
-+---------------------------+
 | UNION                     |
 +---------------------------+
 | UNIQUE                    |
-+---------------------------+
-| UNKNOWN                   |
 +---------------------------+
 | UNPIVOT                   |
 +---------------------------+
@@ -202,8 +180,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 | WINDOW                    |
 +---------------------------+
 | WITH                      |
-+---------------------------+
-| XMLSERIALIZE              |
 +---------------------------+
 | XOR                       |
 +---------------------------+

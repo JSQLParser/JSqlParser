@@ -120,37 +120,6 @@ When adding a new keyword token to the Grammar:
     2) If the keyword must be reserved (e. |_| g. core SQL syntax like ``SELECT``, ``FROM``, ``WHERE``), add it to the ``Reserved SQL Keywords`` TOKEN block **after** the ``MAX_NON_RESERVED_WORD`` sentinel.
     3) Verify that existing tests pass and that the keyword can be used as a ``Schema``, ``Table``, ``Column``, ``Function`` or ``Alias`` name where expected.
 
-Review Lookahead Changes
-------------------------------
-
-Run the reusable lookahead report against the commit used as the review baseline:
-
-.. code-block:: shell
-
-    ./gradlew lookaheadAudit -PlookaheadBase=HEAD
-
-The default baseline is ``HEAD``, so this command also examines uncommitted grammar changes. CI uses the pull request base commit. Results are written to ``build/reports/lookahead/report.json``. The analyzer runs with the project's existing JDK and JavaCC dependencies; it does not require Python or modify sources.
-
-The report includes ``inventory.tsv`` and ``inventory.json`` for every explicit decision, plus ``report.json`` for changed contexts, dependency roots and stale evidence. Structural anchors ignore source line numbers and unrelated lookahead insertions. Identical anchors remain ambiguous and cannot reuse an individual evidence record. Triage is a review aid, not permission to remove a guard.
-
-Facts are cached by the complete grammar source and analyzer/generator identity under ``build/lookahead-cache``. A content hit in a separate JVM runs neither JJTree nor JavaCC parsing nor FIRST/FOLLOW iteration. External Java/resource/build fingerprints are rebound on every invocation, including cache hits. CI restores and saves this directory separately from Gradle's dependency cache. Invalid, truncated or incompatible cache files cause a rebuild. These are local build artifacts, not an authorization or a semantic proof.
-
-A changed grammar still runs JJTree and a complete JavaCC parse and semantic check. The analyzer then recomputes changed FIRST components, call-site FOLLOW equations and affected decision rows; unchanged inputs reuse their facts. Components restart from bottom when invalidated, so deletions and shrinking sets cannot retain old tokens. Actual calls and calls inside probes have separate roles: runtime FOLLOW uses actual calls, while probe facts and symbolic continuation dependencies include probe calls. The ``analysisBefore`` and ``analysisCurrent`` statistics show front-end runs, recomputation and reuse. Use ``-PlookaheadFull=true`` to bypass this custom cache and incremental reuse for a cold comparison; Gradle's ``--no-build-cache`` alone does not disable it.
-
-Full context evidence includes actual callers, their complete callee closures (including probes), and symbolic continuations beyond FOLLOW1. Caller prefixes and competing alternatives can restrict which inputs reach a callee, so changes in a caller's other branches can conservatively invalidate evidence too. Reuse independent of the whole grammar is limited to an intentionally narrow, effect-free grammar subset. Unknown Java, assignments, signatures, declarations, predicates, recovery, lexer actions, lexical states/transitions and custom runtime hooks retain whole-grammar fallback. JSqlParser's production grammar contains opaque Java, so an unrelated production edit can invalidate full context evidence even when its FIRST/FOLLOW rows are reused.
-
-``config/lookahead-evidence.tsv`` has four columns: key, fingerprint, reason and regression reference. A fifth column explicitly selects ``context`` (the default) or ``token-probe``. Existing four-column records keep their full context meaning. A token certificate is available only for one complete, positive, unnested single-token probe or token set with no Java side effects or predicate. It binds the token decision, complete lexer/options, generator/analyzer identity and external inputs. It can survive an unrelated production edit, but certifies only that local token restriction; it cannot stand in for AST, continuation, error handling or complete cleanup validation. Unknown scope names and unsupported token certificates fail analysis.
-
-Production Java/resources, Maven configuration under ``.mvn/``, Gradle configuration under ``gradle/``, root build files, wrappers, the dedicated cleanup regression and analyzer sources are watched. Full token definitions, including named inline regexes, are bound. Unrecognized watched symlinks fail analysis. Commit-derived version metadata is excluded. Evidence covers tracked static inputs and tested behavior, not every possible runtime configuration.
-
-The report writes current unambiguous fingerprints to ``binding-candidates.tsv``. Review the scope and rerun the referenced tests before updating a stale record. A production name is accepted only when it identifies one decision; otherwise use a unique structural anchor or disambiguate the case. Never copy a narrower fingerprint into a full-context record to silence invalidation.
-
-Complete one-token syntactic probes can be bounded as ``LOOKAHEAD(1, token)``. Keep the explicit restriction: deleting the probe can widen a called production's FIRST set, and nested lookaheads have separate generator rules. Non-nullable branches with disjoint FIRST sets can suggest default dispatch, but imperative JavaCC code still needs review. Retain state/dialect/interruption checks, verify complete consumption and AST behavior, and test malformed neighbors. This change bounds 57 complete token probes and removes one investigated redundant depth-three dispatch in ``DBMSDestination``; it does not remove every historical lookahead.
-
-Error locations can change when a rejected branch is entered directly. In ``DBMSDestination``, ``EXA AT conn TABLE`` remains invalid, but now reports the missing table name after consuming ``TABLE`` instead of falling through to the ``STATEMENT`` alternative. The dedicated regression checks this consumption boundary; exact diagnostic text is not promised unchanged.
-
-The report does not make historical debt a mandatory gate. ``-PlookaheadFailOnFindings=true`` opts into failure when contexts need review; generation or analysis errors always fail. Ordinary ``check`` runs cache, cold/incremental oracle, dependency, token-probe and parser regressions. Full applicable checks and paired project JMH measurements are still required before publishing a cleanup.
-
 
 Commit a Pull Request
 ---------------------------------

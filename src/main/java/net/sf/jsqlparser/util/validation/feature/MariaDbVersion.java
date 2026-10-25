@@ -82,6 +82,10 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/table-statements/
                     Feature.tableMaintenance,
 
+                    // https://mariadb.com/kb/en/account-management-sql-statements/
+                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.setDefaultRole, Feature.setPassword,
+
                     // https://mariadb.com/kb/en/call/
                     Feature.execute, Feature.executeCall,
 
@@ -120,15 +124,22 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/alter-database/
                     Feature.createDatabase, Feature.alterDatabase,
 
+                    // https://mariadb.com/kb/en/alter-function/
+                    // https://mariadb.com/kb/en/alter-procedure/
+                    Feature.alterFunction, Feature.alterProcedure,
+
                     // https://mariadb.com/kb/en/describe/
                     Feature.describe, // https://mariadb.com/kb/en/explain/
                     Feature.explain, // https://mariadb.com/kb/en/show/
                     Feature.show, // https://mariadb.com/kb/en/show-tables/
                     Feature.showTables, // https://mariadb.com/kb/en/show-columns/
                     Feature.showColumns, // https://mariadb.com/kb/en/show-index/
-                    Feature.showIndex, // https://mariadb.com/kb/en/use/
+                    Feature.showIndex, // https://mariadb.com/kb/en/show-table-status/
+                    Feature.showTableStatus, // https://mariadb.com/kb/en/show-create-table/
+                    Feature.showCreate, // https://mariadb.com/kb/en/use/
                     Feature.use, // https://mariadb.com/kb/en/grant/
-                    Feature.grant, // https://mariadb.com/kb/en/commit/
+                    Feature.grant, // https://mariadb.com/kb/en/revoke/
+                    Feature.revoke, // https://mariadb.com/kb/en/commit/
                     Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,

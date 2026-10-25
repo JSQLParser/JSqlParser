@@ -14,13 +14,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.schema.Table;
 
 /**
  * A shared CREATE/ALTER TABLE option with either opaque tokens or structured properties. Setting
  * non-null tokens discards all structured properties. A structured setter discards the tokens;
- * their contents are never parsed or restored by a later setter.
+ * their contents are never parsed or restored by a later setter. MySQL tablespace statements reuse
+ * this model for their options; {@link Kind#FILE_BLOCK_SIZE} occurs only there.
  */
 public class TableOption implements Serializable {
 
@@ -34,9 +36,10 @@ public class TableOption implements Serializable {
     private List<IndexOption> storageParameters;
     private ColumnOption.Storage tablespaceStorage;
     private OnCommitAction onCommitAction;
+    private StringValue comment;
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, ACCESS_METHOD, ON_COMMIT, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, ACCESS_METHOD, ON_COMMIT, FILE_BLOCK_SIZE, OTHER
     }
 
     /**
@@ -129,6 +132,39 @@ public class TableOption implements Serializable {
         name = "WITH";
     }
 
+    /**
+     * Returns the COMMENT string literal, or null for another kind, opaque tokens or a plain value
+     * set with {@link #setValue(String)}. {@link StringValue#getNotExcapedValue()} decodes it.
+     */
+    public StringValue getComment() {
+        return comment;
+    }
+
+    /**
+     * Replaces the current contents with a COMMENT string literal and keeps the equals spelling; an
+     * existing COMMENT also keeps its name. A null literal omits the value.
+     */
+    public void setComment(StringValue comment) {
+        String commentName = kind == Kind.COMMENT && name != null ? name : "COMMENT";
+        boolean equals = useEquals;
+        clearContents();
+        kind = Kind.COMMENT;
+        name = commentName;
+        useEquals = equals;
+        this.comment = comment;
+    }
+
+    public TableOption withComment(StringValue comment) {
+        setComment(comment);
+        return this;
+    }
+
+    public static TableOption comment(StringValue comment) {
+        TableOption option = new TableOption();
+        option.setComment(comment);
+        return option;
+    }
+
     public void appendTo(StringBuilder builder,
             java.util.function.Consumer<net.sf.jsqlparser.expression.Expression> expressionPrinter) {
         if (foreignTableOptions != null) {
@@ -136,6 +172,9 @@ public class TableOption implements Serializable {
         } else if (storageParameters != null) {
             builder.append(name).append(useEquals ? " = " : " ");
             IndexOption.appendListTo(builder, storageParameters, expressionPrinter);
+        } else if (comment != null) {
+            builder.append(name).append(useEquals ? " = " : " ");
+            expressionPrinter.accept(comment);
         } else {
             builder.append(toString());
         }
@@ -183,6 +222,11 @@ public class TableOption implements Serializable {
         if (kind != Kind.ON_COMMIT) {
             onCommitAction = null;
         }
+        if (kind != Kind.COMMENT && comment != null) {
+            // keep the literal's SQL text, as for other scalar values
+            value = comment.toString();
+            comment = null;
+        }
     }
 
     public String getName() {
@@ -204,9 +248,13 @@ public class TableOption implements Serializable {
         if (onCommitAction != null) {
             return onCommitAction.toString();
         }
+        if (comment != null) {
+            return comment.toString();
+        }
         return unionTables == null ? value : PlainSelect.getStringList(unionTables, true, true);
     }
 
+    /** Sets a plain value; it replaces a COMMENT literal without being parsed. */
     public void setValue(String value) {
         tokens = null;
         this.value = value;
@@ -214,6 +262,7 @@ public class TableOption implements Serializable {
         unionTables = null;
         storageParameters = null;
         onCommitAction = null;
+        comment = null;
     }
 
     /** Returns the mutable MERGE table sources, including an empty UNION list. */
@@ -296,6 +345,7 @@ public class TableOption implements Serializable {
         unionTables = null;
         storageParameters = null;
         onCommitAction = null;
+        comment = null;
     }
 
     public TableOption withKind(Kind kind) {

@@ -1,3 +1,0 @@
-# key<TAB>fingerprint<TAB>reason<TAB>regression test[<TAB>context|token-probe]
-ConnectionOrCloudConnectionDefinition	eb5720afb73b771120122d76c643490a1d23e8751f3d516026d96a2e807e0f2a	AT conn and AT CLOUD share the first token; retain the second-token decision.	LookaheadCleanupTest.preservesCloudAndOrdinaryConnections
-LockStatement	e95699a7c5c185663cd0606f88a5613ace1e51f6e2e0d61d2a18ac148b16426d	Bound the complete TABLE token probe to one token while preserving its restriction; this certificate does not cover the complete lock AST.	LookaheadTokenProbeTest and LookaheadCleanupTest.boundedTableKeywordKeepsLockTargetAndWait	token-probe

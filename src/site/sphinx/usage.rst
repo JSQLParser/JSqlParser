@@ -293,10 +293,11 @@ The legacy accessors remain and are derived from these properties:
   the argument declarations of the last routine, where the legacy
   single-signature form kept them. The map now also covers PROCEDURE, ROUTINE
   and AGGREGATE.
-* ``getParameters()`` is a snapshot that includes ON with the owner table and
-  the CASCADE or RESTRICT keyword. ``setParameters()`` replaces the clause with
-  raw tokens and clears both; ``addParameters()`` keeps them. Raw tokens are not
-  parsed: ``addParameters("CASCADE")`` leaves ``getBehavior()`` null.
+* ``getParameters()`` is a snapshot that includes ON with the owner table, the
+  MySQL ALGORITHM and LOCK clauses and the CASCADE or RESTRICT keyword, in
+  source order. ``setParameters()`` replaces the clause with raw tokens and
+  clears all three; ``addParameters()`` keeps them. Raw tokens are not parsed:
+  ``addParameters("CASCADE")`` leaves ``getBehavior()`` null.
 * ``setName()``, ``setNames()``, ``addNames()`` and ``setTypeToParameters()``
   first convert routine and account targets to the legacy names and single
   signature, so ``setName()`` on ``DROP FUNCTION f(int)`` still renders
@@ -328,7 +329,8 @@ setters do not parse SQL or infer a table.
 Table discovery and statement visitors traverse DROP TABLE/VIEW targets and
 explicit index owners, without reporting catalog-only object names as tables.
 The statement deparser delegates real tables to its configured select deparser.
-MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
+MySQL ALGORITHM and LOCK clauses retain their order and optional equals signs as
+typed nodes; see :ref:`Share MySQL index options`.
 
 MySQL named constraint drops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -467,6 +469,114 @@ Use ``TableOption.onCommit`` and ``TableOption.accessMethod`` to build them.
     table.getTableOption(TableOption.Kind.ON_COMMIT).orElseThrow()
             .setOnCommitAction(TableOption.OnCommitAction.PRESERVE_ROWS);
     // CREATE TEMP TABLE t (id INT) USING heap ON COMMIT PRESERVE ROWS
+
+Share MySQL index options
+-------------------------
+
+CREATE INDEX, the index and key definitions of CREATE TABLE, and ALTER TABLE
+``ADD`` or ``ALTER INDEX`` parse MySQL index options with one grammar rule into
+one model. ``IndexOptions.getSpecOptions()``, also available on ``Index`` and
+``KeyConstraint``, returns the options written after the key list as mutable,
+ordered ``IndexSpecOption`` nodes. ``getKind()`` selects the payload:
+
+* ``KEY_BLOCK_SIZE``, ``ENGINE_ATTRIBUTE`` and ``SECONDARY_ENGINE_ATTRIBUTE``:
+  ``getValue()`` and the optional ``=`` reported by ``isUseEquals()``
+* ``INDEX_TYPE`` (``USING BTREE``) and ``PARSER`` (``WITH PARSER ngram``):
+  ``getValue()``
+* ``COMMENT``: ``getComment()`` returns the literal as a ``StringValue`` that
+  records how the dialect escapes it, so ``getNotExcapedValue()`` returns the
+  stored text, for example ``it's`` for ``'it''s'`` or, with MySQL backslash
+  escapes, ``'it\'s'``. ``getValue()`` remains the literal's SQL text.
+* ``VISIBILITY``: ``getVisible()`` for VISIBLE or INVISIBLE
+* ``OTHER``: opaque tokens that CREATE TABLE and CREATE INDEX accept for other
+  dialects
+
+Values keep their SQL spelling, including the quotes of string literals. An
+index type written before the key list, as in ``KEY k USING BTREE (a)``,
+``PRIMARY KEY USING BTREE (id)`` or ``CREATE INDEX k USING HASH ON t (a)``,
+remains ``getUsing()``; ``CreateIndex.isIndexTypeBeforeOn()`` still distinguishes
+the two CREATE INDEX positions. After the key list it is an ``INDEX_TYPE`` option
+at its source position. PostgreSQL's INCLUDE, NULLS DISTINCT, storage parameters
+and tablespace keep their dedicated properties.
+
+CREATE INDEX keeps these options on ``getIndex()``. Its ALGORITHM and LOCK
+clauses are ``AlgorithmOrLockOption`` nodes in
+``CreateIndex.getAlgorithmOrLockOptions()``; DROP INDEX exposes the same type
+through ``Drop.getAlgorithmOrLockOptions()``. CREATE INDEX renders them after the
+index options, as MySQL requires.
+
+.. code-block:: java
+
+    CreateIndex create = (CreateIndex) CCJSqlParserUtil.parse(
+            "CREATE UNIQUE INDEX uk ON t (a) USING BTREE COMMENT 'x' ALGORITHM = INPLACE",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    List<IndexSpecOption> options = create.getIndex().getSpecOptions();
+    options.get(0).setValue("HASH");                    // INDEX_TYPE
+    options.add(IndexSpecOption.visibility(false));
+    create.getAlgorithmOrLockOptions().get(0).setValue("COPY");
+    // CREATE UNIQUE INDEX uk ON t (a) USING HASH COMMENT 'x' INVISIBLE ALGORITHM = COPY
+
+The kind of an option is fixed. Setters for a payload that the kind does not have,
+and ``setTokens`` on a typed option, throw ``IllegalStateException``; replace the
+node to change its kind. ``IndexSpecOption.raw`` copies its tokens and never
+parses them.
+
+The legacy accessors are derived from these nodes. ``getIndexSpec()`` returns an
+unmodifiable token snapshot of ``getSpecOptions()``, or null when the options are
+unset. ``CreateIndex.getTailParameters()`` returns the tokens of the index options
+followed by ALGORITHM and LOCK, and ``Drop.getParameters()`` includes ALGORITHM
+and LOCK at their source position. ``setIndexSpec`` and
+``CreateIndex.setTailParameters`` replace these clauses with one opaque option;
+``Drop.setParameters`` also clears ALGORITHM and LOCK.
+
+Migration: edits of the ``getIndexSpec()`` and ``getTailParameters()`` snapshots
+now throw ``UnsupportedOperationException``; edit the nodes or call the setters.
+ALTER TABLE key definitions report the same tokens as CREATE TABLE, for example
+``KEY_BLOCK_SIZE``, ``=`` and ``8`` instead of the single entry
+``KEY_BLOCK_SIZE = 8``. For a constructed statement without trailing clauses,
+``getTailParameters()`` returns an empty list instead of null. Typed option
+keywords are rendered in upper case.
+
+MySQL table and partition comments
+----------------------------------
+
+A table ``COMMENT`` in CREATE TABLE, CREATE TABLE … AS SELECT and ALTER TABLE is a
+``StringValue`` in ``TableOption.getComment()``. Partition and subpartition comments,
+including those of ALTER TABLE ADD and REORGANIZE PARTITION, are in
+``PartitionDefinition.getCommentValue()``. The literal records the escaping of the
+parser configuration, so ``getNotExcapedValue()`` returns the text MySQL stores.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT) COMMENT = 'it\\'s' "
+                    + "PARTITION BY HASH (id) (PARTITION p0 COMMENT 'a\\\\b')",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    TableOption option = table.getTableOption(TableOption.Kind.COMMENT).orElseThrow();
+    option.getComment().getNotExcapedValue(); // it's
+    option.getValue();                        // 'it\'s'
+    table.getPartitioning().getPartitionDefinitions().get(0)
+            .getCommentValue().getNotExcapedValue(); // a\b
+
+``getValue()``, ``getTokens()``, ``CreateTable.getTableOptionsStrings()``,
+``AlterExpressionTableOption.getCommentText()`` and ``PartitionDefinition.getComment()``
+still return the literal as written, and the SQL output is unchanged except that a
+string prefix such as ``n'…'`` is printed in upper case, as in other string literals.
+The table comment literal is rendered by the expression deparser and visited like a
+column COMMENT literal.
+
+``setComment``, ``withComment`` and the ``TableOption.comment`` factory replace the
+option's contents with the literal and select COMMENT. They keep the equals spelling,
+and an existing COMMENT also keeps its name; a null literal omits the value.
+``setValue`` stores a plain value and ``setTokens`` opaque tokens. Neither is parsed,
+so ``getComment()`` then returns null. Selecting another kind keeps the literal's SQL
+text as a plain value. A COMMENT value that is not a string literal also stays a plain
+value, for example a double-quoted string parsed without the MySQL dialect, where it
+is a quoted identifier.
+
+``PartitionDefinition.setComment(String)`` reads the SQL text of a literal with
+standard escaping; pass a ``StringValue`` with another escaping to
+``setCommentValue``.
 
 Inspect PostgreSQL schema statements
 ------------------------------------
@@ -824,6 +934,18 @@ expressions are not evaluated.
 Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
 COLLATE option. Consumers can map both directly without reconstructing tokens.
 StringValue comment bodies retain their SQL escape representation.
+
+A column DEFAULT value ends before a COLLATE at its top level, which becomes the
+column's COLLATE option: MySQL's DEFAULT literal and PostgreSQL's DEFAULT ``b_expr``
+do not include COLLATE. A COLLATE inside parentheses, function arguments or a CASE
+expression stays in the default expression. ``SET DEFAULT`` actions and CREATE
+DOMAIN keep an expression COLLATE.
+
+Migration: ``DEFAULT 'N' COLLATE utf8mb4_bin`` in a column definition previously
+produced one DEFAULT option holding a ``CollateExpression``. It now produces a
+DEFAULT option with ``'N'`` and a COLLATE option with ``getCollation()``;
+``getColumnSpecs()`` returns ``[DEFAULT, 'N', COLLATE, utf8mb4_bin]``. SQL output
+is unchanged.
 
 MySQL column attributes have their own kinds: ``SRID`` (``getSrid()``),
 ``COLUMN_FORMAT`` (``getColumnFormat()``: FIXED, DYNAMIC or DEFAULT), and
@@ -1574,11 +1696,46 @@ backslashes:
   ``\0`` and ``\Z`` become their characters, and ``\%`` and ``\_`` keep their backslash.
 * ``POSTGRESQL_ESCAPE_STRING`` for ``E'...'`` with ``Dialect.POSTGRESQL``, including
   ``\x``, octal and ``\u`` escapes; octal and hexadecimal escapes are UTF-8 bytes.
+* ``POSTGRESQL_UNICODE_ESCAPE`` for ``U&'...'``, see
+  `PostgreSQL Unicode escape strings`_.
 * ``STANDARD`` otherwise, including dollar-quoted strings and constructed values;
   backslashes stay literal. Other dialects with backslash escapes keep this reading.
 
 ``setEscaping()`` selects the reading for a constructed value. Escaping is not
 part of ``equals()``, like the quote character.
+
+PostgreSQL Unicode escape strings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With ``Dialect.POSTGRESQL``, ``U&'...'`` and an optional ``UESCAPE 'c'`` clause form one
+``StringValue``. Its prefix is ``U&``, ``getValue()`` returns the body as written, and
+``toString()`` renders the literal with its clause. ``getUnicodeEscapeCharacter()`` returns
+the ``UESCAPE`` character, or ``null`` without the clause, when the escape character is a
+backslash. ``getNotExcapedValue()`` resolves the escapes as PostgreSQL does:
+
+* the escape character followed by four hexadecimal digits, or by ``+`` and six, is that
+  code point. A character above U+FFFF can also be written as a UTF-16 surrogate pair of
+  two escapes;
+* a doubled escape character and a doubled quote stand for themselves.
+
+.. code-block:: java
+
+    Comment comment = (Comment) CCJSqlParserUtil.parse(
+            "COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    comment.getComment().getNotExcapedValue(); // "data"
+    comment.toString(); // COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'
+
+* The parser rejects what PostgreSQL rejects:
+  an escape without its digits, code point 0 or one above U+10FFFF, an unpaired surrogate,
+  and an escape character that is a hexadecimal digit, ``+``, a quote, whitespace or not ASCII.
+  ``getNotExcapedValue()`` throws ``IllegalArgumentException`` for such a constructed value.
+* Without ``Dialect.POSTGRESQL``, ``U&'x'`` keeps its previous reading: the column ``U``,
+  the ``&`` operator and the string ``'x'``.
+* ``UESCAPE`` may follow the literal after spaces, tabs or newlines, but not after a comment
+  or a continuation line.
+* ``U&"..."`` quoted identifiers are not supported.
+* The ``UESCAPE`` character is not part of ``equals()``, like the escaping.
 
 Other dialect-specific syntax
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1898,7 +2055,7 @@ character in ``getQuoteStr()`` and its text in ``getValue()``::
 ``PrivilegeTarget`` kinds, multiple role memberships and grantor information.
 ``getPrivileges()`` is a mutable string view of the typed privilege list.
 ``getRole()`` and ``getObjectName()`` expose the first role or named target for
-legacy callers; use ``getRoles()`` and ``getTarget()`` for the complete lists.
+legacy callers; use ``getRoleItems()`` and ``getTarget()`` for the complete lists.
 Names in ``PrivilegeTarget`` are multipart identifiers, not SQL clause text.
 Routine targets use ``RoutineReference`` data-type signatures, with null
 arguments for an omitted signature and an empty list for explicit ``()``.
@@ -1917,7 +2074,7 @@ role values, trigger conditions and invocation arguments. Declaring a trigger
 is classified as a schema change, not execution of its body.
 
 Capability validation covers these statement families, not every server-version
-or catalog-dependent restriction. EVENT TRIGGER is outside this support.
+or catalog-dependent restriction. Event triggers use separate statements, described below.
 Serialized role SQL can contain passwords; avoid logging real credentials.
 
 References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html>`_,
@@ -1926,6 +2083,113 @@ References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html
 `REVOKE <https://www.postgresql.org/docs/18/sql-revoke.html>`_,
 `ALTER DEFAULT PRIVILEGES <https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html>`_,
 `CREATE TRIGGER <https://www.postgresql.org/docs/18/sql-createtrigger.html>`_.
+
+MySQL privileges and accounts in GRANT and REVOKE
+-------------------------------------------------
+
+``Grant`` and ``Revoke`` also parse the MySQL forms, in every dialect:
+
+- **Privilege levels**: ``PrivilegeTarget.getWildcard()`` is ``DEFAULT_DATABASE`` for ``*``,
+  ``GLOBAL`` for ``*.*`` and ``DATABASE`` for ``db.*``, whose database is the single entry
+  of ``getNames()``. Named levels such as ``db.tbl`` keep a null wildcard. Only named
+  table targets are reported by table-name discovery.
+- **Privileges**: MySQL static privileges are ``Privilege.Kind`` constants, for example
+  ``CREATE_TEMPORARY_TABLES`` or ``REPLICATION_SLAVE``; ``getName()`` returns the SQL
+  spelling. Another identifier, such as ``BACKUP_ADMIN``, is a dynamic privilege of kind
+  ``DYNAMIC`` with ``getDynamicName()``.
+- **Grantees**: ``PrivilegeClause.getGranteeItems()`` returns ``Grantee`` values, which
+  MySQL and PostgreSQL share. ``ACCOUNT`` holds a ``UserAccount``: a MySQL ``user[@host]``,
+  read like the ``CREATE USER`` account names above, or a PostgreSQL role name without
+  host. The other kinds are
+  PostgreSQL ``GROUP name``, ``PUBLIC``, ``CURRENT_USER`` (MySQL also ``CURRENT_USER()``),
+  ``CURRENT_ROLE`` and ``SESSION_USER``. ``getGrantor()`` types ``GRANTED BY`` the same way.
+- **Role memberships**: ``getRoleItems()`` holds the granted roles as ``UserAccount``
+  values, so ``'reader'`` and ``'writer'@'%'`` keep their quoting and host. A membership
+  has no privileges and no target.
+- **MySQL clauses**: ``PROXY ON user`` is a ``PROXY`` privilege on an ``ACCOUNT`` target
+  (``PrivilegeTarget.getAccount()``). ``REVOKE ALL [PRIVILEGES], GRANT OPTION FROM ...``
+  has the privileges ``ALL`` and ``GRANT_OPTION`` and no target. ``Revoke`` records
+  ``IF EXISTS`` and ``IGNORE UNKNOWN USER``; ``Grant.getAsUser()`` and ``getWithRole()``
+  hold ``AS user [WITH ROLE ...]``; the role selection is a ``RoleSelection`` from
+  ``net.sf.jsqlparser.statement.create.user``.
+
+.. code-block:: java
+
+    Grant grant = (Grant) CCJSqlParserUtil.parse(
+        "GRANT SELECT, BACKUP_ADMIN ON db1.* TO 'app'@'%', CURRENT_USER");
+    grant.getTarget().getWildcard();                    // DATABASE
+    grant.getPrivilegeItems().get(1).getDynamicName();  // BACKUP_ADMIN
+    UserAccount app = grant.getClause().getGranteeItems().get(0).getAccount();
+    app.getHost().getValue();                           // %
+
+``Grant.getOptions()`` lists every ``WITH`` option, including PostgreSQL membership
+options such as ``WITH INHERIT TRUE, SET FALSE``. Privileges take only ``GRANT OPTION``;
+memberships take distinct ``ADMIN``, ``INHERIT`` and ``SET`` options.
+
+The string accessors are kept and derived from the typed state: ``getUsers()``,
+``getGrantees()`` and ``getRoles()`` are mutable string views that write through,
+``getOption()`` is the first option and ``getGrantedBy()`` renders the grantor.
+``getObjectName()`` returns a wildcard level as written, for example ``db1.*``, and
+``setObjectName()`` replaces it with a named target. Assigned text is converted with
+``Grantee.valueOf()``: special role names are recognized and other text is kept as the
+account name. Parsed memberships have no target; ``new Grant()`` still starts with an
+empty table target, and ``setRole()`` clears it.
+
+The MySQL and MariaDB validation capabilities now include ``revoke``.
+
+References: `GRANT <https://dev.mysql.com/doc/refman/8.4/en/grant.html>`_,
+`REVOKE <https://dev.mysql.com/doc/refman/8.4/en/revoke.html>`_,
+`Specifying Account Names <https://dev.mysql.com/doc/refman/8.4/en/account-names.html>`_.
+
+PostgreSQL event triggers, REINDEX, SECURITY LABEL and schema elements
+----------------------------------------------------------------------
+
+``CREATE EVENT TRIGGER`` parses to ``CreateEventTrigger``. ``getEvent()`` keeps the event
+name as written and ``getFilters()`` the ``WHEN … IN (…)`` conditions in source order. The
+invoked function reuses ``CreateTrigger.ExecuteKeyword`` and a ``Function`` without
+arguments. ``ALTER EVENT TRIGGER`` parses to ``AlterEventTrigger``; its states reuse
+``RelationAlterAction.EnableState``, and each non-null setter selects the ``STATE``,
+``OWNER`` or ``RENAME`` action. A MySQL event named ``trigger`` still parses to
+``CreateEvent`` or ``AlterEvent``.
+
+.. code-block:: java
+
+    CreateEventTrigger trigger = (CreateEventTrigger) CCJSqlParserUtil.parse(
+        "CREATE EVENT TRIGGER etg ON ddl_command_start "
+        + "WHEN TAG IN ('CREATE TABLE') EXECUTE FUNCTION abort_any_command()");
+    trigger.getEvent();                          // ddl_command_start
+    trigger.getFilters().get(0).getVariable();   // TAG
+    trigger.getFunction().getName();             // abort_any_command
+
+``REINDEX`` parses to ``Reindex``: a ``Target`` (INDEX, TABLE, SCHEMA, DATABASE or SYSTEM),
+the ``CONCURRENTLY`` keyword, the parenthesized ``CONCURRENTLY``, ``TABLESPACE`` and
+``VERBOSE`` options with their values as written, and the object name. Only DATABASE and
+SYSTEM may omit the name. ``getTable()`` returns the name only for ``REINDEX TABLE``, which
+table visitors report. ``REINDEX`` is a non-reserved keyword.
+
+``SECURITY LABEL`` parses to ``SecurityLabel`` with the provider as written and one target,
+told apart by ``getObjectType()``: a named object (``getObjectName()``), a qualified column
+(``getColumn()``), a FUNCTION, PROCEDURE, ROUTINE or AGGREGATE signature (``getRoutine()``)
+or a large object OID. A null label stands for ``IS NULL``. Table visitors report tables,
+views, materialized views, foreign tables and a column's table.
+
+``CREATE SCHEMA`` keeps its schema elements in ``getStatements()`` and renders them after the
+``AUTHORIZATION`` and ``PATH`` clauses. The element kinds are PostgreSQL's: ``CREATE TABLE``,
+``CREATE VIEW``, ``CREATE INDEX``, ``CREATE SEQUENCE``, ``CREATE TRIGGER`` and ``GRANT``;
+``CREATE SCHEMA IF NOT EXISTS`` cannot include them. Elements keep their names as written,
+and unqualified names refer to the new schema. The parser no longer copies the schema name
+into ``CREATE TABLE`` elements. Table visitors, validation and ``StatementDeParser`` traverse
+the elements.
+
+Validators report ``createEventTrigger``, ``alterEventTrigger``, ``reindex``,
+``reindexConcurrently`` (PostgreSQL 12) and ``securityLabel``. Feature analysis classifies
+these statements as schema changes; ``REINDEX`` also reads data.
+
+References: `CREATE EVENT TRIGGER <https://www.postgresql.org/docs/18/sql-createeventtrigger.html>`_,
+`ALTER EVENT TRIGGER <https://www.postgresql.org/docs/18/sql-altereventtrigger.html>`_,
+`REINDEX <https://www.postgresql.org/docs/18/sql-reindex.html>`_,
+`SECURITY LABEL <https://www.postgresql.org/docs/18/sql-security-label.html>`_,
+`CREATE SCHEMA <https://www.postgresql.org/docs/18/sql-createschema.html>`_.
 
 Migrating shared ALTER enums
 ----------------------------
@@ -2032,6 +2296,38 @@ can be built with ``new NotNullConstraint().withName("nn")
 .withColumn(new Column("id"))``. This is distinct from column definitions and
 ``ALTER COLUMN ... SET NOT NULL``; those retain their existing APIs.
 
+MySQL and PostgreSQL tablespaces
+--------------------------------
+
+``CREATE TABLESPACE`` parses to ``CreateTablespace`` and ``ALTER TABLESPACE`` to
+``AlterTablespace`` in every dialect; ``isUndo()`` records the MySQL ``UNDO`` keyword.
+A PostgreSQL definition exposes ``getOwner()``, ``getLocation()`` and the ``WITH``
+parameters as ``IndexOption`` values in ``getParameters()``. A MySQL definition exposes
+``getDataFile()`` and keeps its options in source order in ``getOptions()``. They reuse the
+``TableOption`` kinds ``ENGINE``, ``ENCRYPTION``, ``AUTOEXTEND_SIZE`` and
+``ENGINE_ATTRIBUTE``; CREATE also accepts ``FILE_BLOCK_SIZE``.
+
+.. code-block:: java
+
+    CreateTablespace create = (CreateTablespace) CCJSqlParserUtil.parse(
+        "CREATE TABLESPACE ts1 ADD DATAFILE 'ts1.ibd' FILE_BLOCK_SIZE = 8192 ENGINE = InnoDB");
+    create.getDataFile().getValue();                              // ts1.ibd
+    create.getOption(TableOption.Kind.ENGINE).get().getValue();   // InnoDB
+
+    AlterTablespace alter = (AlterTablespace) CCJSqlParserUtil.parse(
+        "ALTER TABLESPACE fast SET (random_page_cost = 1.1)");
+    alter.getAction();       // SET_PARAMETERS
+    alter.getParameters();   // [random_page_cost = 1.1]
+
+``getAction()`` is ``RENAME``, ``OWNER``, ``SET_PARAMETERS`` or ``RESET_PARAMETERS``,
+``SET_STATE`` for ``ALTER UNDO TABLESPACE … SET ACTIVE|INACTIVE``, or ``OPTIONS`` for MySQL
+options. Undo tablespaces accept only ``ENGINE``, ``CREATE UNDO TABLESPACE`` requires
+``ADD DATAFILE``, and ALTER rejects ``FILE_BLOCK_SIZE``. Other ``ALTER TABLESPACE`` forms,
+such as Oracle and NDB data file clauses, still parse as ``UnsupportedStatement``, and
+``ALTER TABLE ALL IN TABLESPACE`` remains ``AlterTablespaceMove``. Validators report the
+``createTablespace`` and ``alterTablespace`` features, which the MySQL and PostgreSQL
+capabilities enable; feature analysis reports ``MODIFIES_SCHEMA``.
+
 SQL Server identity inserts
 ---------------------------
 
@@ -2097,6 +2393,66 @@ References: MySQL `CREATE DATABASE <https://dev.mysql.com/doc/refman/8.4/en/crea
 PostgreSQL `CREATE DATABASE <https://www.postgresql.org/docs/18/sql-createdatabase.html>`_,
 `ALTER DATABASE <https://www.postgresql.org/docs/18/sql-alterdatabase.html>`_.
 
+Routine and trigger alterations
+-------------------------------
+
+PostgreSQL ``ALTER FUNCTION``, ``ALTER PROCEDURE`` and ``ALTER ROUTINE`` and MySQL
+``ALTER FUNCTION`` and ``ALTER PROCEDURE`` parse to ``AlterRoutine``. ``getRoutineType()``
+names the keyword and ``getRoutine()`` is a ``RoutineReference`` with the optional
+PostgreSQL argument types. ``getAction()`` is ``CHARACTERISTICS``, ``RENAME``, ``OWNER``,
+``SET_SCHEMA`` or ``DEPENDS_ON_EXTENSION`` (``isNoDependency()`` for ``NO DEPENDS``);
+payloads of the other actions are kept. ``getCharacteristics()`` is a mutable list of
+``RoutineCharacteristic`` in source order, shared by both dialects. Each ``Kind`` renders
+its own keywords, such as ``IMMUTABLE``, ``CALLED_ON_NULL_INPUT``, ``PARALLEL_SAFE``,
+``COST`` or MySQL's ``READS_SQL_DATA``. ``SECURITY_DEFINER`` and ``SECURITY_INVOKER`` keep
+the ``[EXTERNAL] SECURITY`` or ``SQL SECURITY`` spelling in ``getSecurityClause()``.
+``COST``, ``ROWS``, ``SUPPORT`` and ``COMMENT`` keep their value as SQL text in ``getValue()``.
+``getComment()`` returns the ``COMMENT`` literal as a ``StringValue`` read with the dialect's
+escaping, so ``getNotExcapedValue()`` is the text MySQL stores. ``SET`` and ``RESET`` reuse
+``ConfigurationParameterChange``:
+
+.. code-block:: java
+
+    AlterRoutine alter = (AlterRoutine) CCJSqlParserUtil.parse(
+        "ALTER FUNCTION f(int) IMMUTABLE SET search_path = public",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    alter.getRoutine().getArguments();                // [int]
+    alter.getCharacteristics().get(0).getKind();      // IMMUTABLE
+    alter.getCharacteristics().get(1).getParameterChange().getParameter(); // search_path
+
+The characteristics of one statement belong to one dialect, and MySQL's take no argument
+list. Other forms after ``ALTER FUNCTION`` or ``ALTER PROCEDURE``, such as Oracle's
+``COMPILE`` or SQL Server routine definitions without the SQL Server dialect, remain an
+``UnsupportedStatement``. PostgreSQL's ``ALTER TRIGGER name ON table RENAME TO`` and
+``[NO] DEPENDS ON EXTENSION`` parse to ``AlterTrigger``; table visitors report its table.
+Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
+``alterTrigger``; PostgreSQL enables all of them, MySQL and MariaDB the first two.
+
+``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
+``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
+triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,
+``CreateFunctionalStatement.getCharacteristics()`` lists the characteristics between the
+routine header and its body, such as ``COMMENT``, ``DETERMINISTIC``, ``READS SQL DATA`` or
+``SQL SECURITY INVOKER``, with the same ``RoutineCharacteristic`` kinds; ``DETERMINISTIC``
+and ``NOT_DETERMINISTIC`` occur only here. ``getFunctionDeclarationParts()`` still holds
+every token and renders the statement unchanged, so the list is read-only. Replacing the
+tokens with ``setFunctionDeclarationParts(parts)`` clears it, while
+``setFunctionDeclarationParts(parts, characteristics)`` sets both, and appending tokens
+keeps it. Without a MySQL dialect the list stays empty. MySQL ``CREATE TRIGGER`` accepts ``IF NOT EXISTS`` (``isIfNotExists()``)
+and keeps MariaDB's ``OR REPLACE``. A ``BEGIN ... END`` trigger body with only SQL
+statements remains a ``Block``; a compound body with procedural statements such as
+``IF``, ``DECLARE`` or loops is an ``UnsupportedStatement`` with its tokens, captured with
+the boundary of routine bodies. In both cases the semicolon after ``END`` separates the
+next statement.
+
+References: PostgreSQL `ALTER FUNCTION <https://www.postgresql.org/docs/18/sql-alterfunction.html>`_,
+`ALTER PROCEDURE <https://www.postgresql.org/docs/18/sql-alterprocedure.html>`_,
+`ALTER ROUTINE <https://www.postgresql.org/docs/18/sql-alterroutine.html>`_,
+`ALTER TRIGGER <https://www.postgresql.org/docs/18/sql-altertrigger.html>`_;
+MySQL `ALTER FUNCTION <https://dev.mysql.com/doc/refman/8.4/en/alter-function.html>`_,
+`ALTER PROCEDURE <https://dev.mysql.com/doc/refman/8.4/en/alter-procedure.html>`_,
+`CREATE TRIGGER <https://dev.mysql.com/doc/refman/8.4/en/create-trigger.html>`_.
+
 MySQL table maintenance statements
 ----------------------------------
 
@@ -2121,6 +2477,65 @@ Table visitors and metadata validation use the table list. Validators report the
 analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
 report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
 
+MySQL account management statements
+-----------------------------------
+
+``CREATE USER`` and ``ALTER USER`` share ``UserOptions`` (``getOptions()``) in MySQL's
+clause order: the ``DEFAULT ROLE`` roles, the ``REQUIRE`` options (``TlsOption``), the
+``WITH`` resource limits (``ResourceLimit``), the password and locking options
+(``PasswordLockOption``) in source order, and ``COMMENT`` or ``ATTRIBUTE``. Omitted
+clauses stay omitted. ``UserAuthentication`` adds ``ALTER USER``'s ``REPLACE 'current'``
+(``getCurrentCredential()``), ``RETAIN CURRENT PASSWORD`` and the
+``DISCARD_OLD_PASSWORD`` mode.
+
+.. code-block:: java
+
+    AlterUser alter = (AlterUser) CCJSqlParserUtil.parse(
+        "ALTER USER 'app'@'%' IDENTIFIED BY 'new' RETAIN CURRENT PASSWORD "
+            + "PASSWORD EXPIRE INTERVAL 90 DAY ACCOUNT LOCK");
+    alter.getAccounts().get(0).getAuthentication().isRetainCurrentPassword(); // true
+    alter.getOptions().getPasswordLockOptions(); // [PASSWORD EXPIRE INTERVAL 90 DAY, ACCOUNT LOCK]
+
+``ALTER USER USER() ...`` keeps ``USER()`` as the unquoted account name, as
+``DEFINER = CURRENT_USER`` does; ``isUserFunction()`` identifies it.
+``ALTER USER acct DEFAULT ROLE {NONE | ALL | role, ...}`` stores a ``RoleSelection`` in
+``getOptions().getDefaultRoles()``. PostgreSQL's ``ALTER USER``, an alias of ``ALTER ROLE``
+(``WITH LOGIN``, ``PASSWORD 'x'``, ``SET``, ``RENAME TO`` ...), still parses to
+``AlterRole``. MySQL syntax is recognized by ``IF EXISTS``, ``USER()``, quoted names,
+hosts, account lists, a missing action or a MySQL account clause.
+
+``RENAME USER`` parses to ``RenameUser`` with ordered ``from``/``to`` pairs. MySQL
+``CREATE ROLE [IF NOT EXISTS] role, ...`` with quoted names, hosts or several roles keeps
+them in ``CreateRole.getRoles()``, and ``getName()`` is null. A single unquoted name, which
+both databases accept, keeps the PostgreSQL ``getName()``; so does an unquoted ``r@h``, which
+the lexer reads as one identifier, unless the MySQL or MariaDB dialect is selected. Role names
+use the shared account spelling and are ``UserAccount`` values without authentication.
+
+``SET DEFAULT ROLE`` (MySQL's ``TO``, MariaDB's ``FOR``) and ``SET PASSWORD FOR`` parse to
+``SetDefaultRoleStatement`` and ``SetPasswordStatement`` in every dialect. ``SET ROLE`` and
+``SET PASSWORD`` without ``FOR`` share the variable assignment shape that PostgreSQL uses
+for ``SET ROLE name`` and ``SET ROLE NONE``, so they remain a ``SetStatement`` unless
+``Dialect.MYSQL`` or ``Dialect.MARIADB`` is selected. With these dialects every form parses
+to ``SetRoleStatement`` (``DEFAULT``, ``NONE``, ``ALL [EXCEPT ...]`` or a role list) or
+``SetPasswordStatement`` (``= password`` or ``TO RANDOM``, then ``REPLACE`` and
+``RETAIN CURRENT PASSWORD``). The MySQL-only ``SET ROLE ALL EXCEPT ...`` and role names
+with a quoted user or host, such as ``'r'@'%'``, parse to ``SetRoleStatement`` in every
+dialect.
+
+.. code-block:: java
+
+    SetRoleStatement setRole = (SetRoleStatement) CCJSqlParserUtil.parse(
+        "SET ROLE ALL EXCEPT 'admin'@'%'",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    setRole.getRoles().getKind();  // ALL_EXCEPT
+    setRole.getRoles().getRoles(); // ['admin'@'%']
+
+Validators report ``alterUser``, ``renameUser``, ``setRole``, ``setDefaultRole`` and
+``setPassword``; the MySQL and MariaDB capabilities enable them and ``createRole``.
+Feature analysis reports ``MODIFIES_SCHEMA``, or ``MODIFIES_SESSION`` for ``SET ROLE``.
+Multi-factor authentication clauses are not modeled. Serialized account SQL can contain
+passwords; avoid logging real credentials.
+
 Legacy MySQL GROUP BY ordering
 ==============================
 
@@ -2142,36 +2557,78 @@ replacing the expression list clears them. Validators report the separate
 PostgreSQL COMMENT targets
 =========================
 
-``COMMENT ON`` supports ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``,
-``MATERIALIZED VIEW``, ``FUNCTION`` and ``CONSTRAINT`` in addition to the existing
-``TABLE``, ``COLUMN`` and ``VIEW`` forms. These unambiguous target forms also parse
-without a dialect preset. Tagged dollar strings still require
-``Dialect.POSTGRESQL`` or ``withDollarQuotedStringTags(true)``.
+``COMMENT ON`` supports these PostgreSQL object kinds in addition to the existing
+``TABLE``, ``COLUMN`` and ``VIEW`` forms:
+
+- ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``, ``MATERIALIZED VIEW``,
+  ``FOREIGN TABLE``, ``COLLATION``, ``STATISTICS``, ``CONVERSION`` and
+  ``TEXT SEARCH {CONFIGURATION | DICTIONARY | PARSER | TEMPLATE}``
+- ``ACCESS METHOD``, ``DATABASE``, ``EVENT TRIGGER``, ``EXTENSION``,
+  ``FOREIGN DATA WRAPPER``, ``[PROCEDURAL] LANGUAGE``, ``PUBLICATION``, ``ROLE``,
+  ``SERVER``, ``SUBSCRIPTION`` and ``TABLESPACE``
+- ``FUNCTION``, ``PROCEDURE``, ``ROUTINE`` and ``AGGREGATE`` signatures
+- ``CONSTRAINT``, ``TRIGGER``, ``POLICY`` and ``RULE`` with their owning table
+- ``CAST (source_type AS target_type)``
+- ``OPERATOR [schema.]op (left_type, right_type)``, where ``NONE`` marks the missing
+  operand of a unary operator
+- ``OPERATOR CLASS`` and ``OPERATOR FAMILY`` with ``USING access_method``
+- ``LARGE OBJECT oid`` and ``TRANSFORM FOR type_name LANGUAGE lang_name``
+
+These unambiguous target forms also parse without a dialect preset. Kind words such as
+``ROLE``, ``SERVER``, ``RULE``, ``OPERATOR`` or ``CONVERSION`` are not reserved and
+remain ordinary identifiers.
+Tagged dollar strings still require ``Dialect.POSTGRESQL`` or
+``withDollarQuotedStringTags(true)``.
 
 The additional targets are exposed through ``Comment.getTarget()`` as a
 ``CommentTarget``. Its ``Kind`` identifies the object, and ``getName()`` preserves
 the individual identifier components. ``Table`` is used as the name container;
 an index or type name does not thereby represent a table dependency.
+``isProcedural()`` records ``PROCEDURAL LANGUAGE``.
 The original ``Comment.getTable()``, ``getColumn()`` and ``getView()`` accessors
 continue to describe their respective existing forms.
 
 ``COMMENT ON FUNCTION app.f(IN value integer) IS 'description'`` uses the shared
-``RoutineReference`` in ``getTarget().getRoutine()``. Argument mode, optional name
+``RoutineReference`` in ``getTarget().getRoutine()``; ``Kind.isRoutine()`` identifies
+these kinds and ``getName()`` is null. Argument mode, optional name
 and ``ColDataType`` are preserved. An omitted signature has null arguments;
-``f()`` has an empty argument list. The signature identifies a function and is not
-a function call.
+``f()`` has an empty argument list. The signature identifies a routine and is not
+a function call. An ``AGGREGATE`` requires a signature and also accepts ``(*)`` and
+ordered-set signatures such as ``(float8 ORDER BY integer)`` or ``(ORDER BY integer)``.
 
 For ``COMMENT ON CONSTRAINT ck ON app.t IS NULL``, ``getName()`` is the constraint
-name and ``getRelation()`` is its owning table. ``ON DOMAIN app.d`` sets
-``isOnDomain()`` and stores the domain as the owner instead. ``NULL`` removes the
-comment and remains represented by a null ``Comment.getComment()``.
+name and ``getRelation()`` is its owning table. ``TRIGGER``, ``POLICY`` and ``RULE``
+targets use the same fields; ``Kind.isOwnedByRelation()`` identifies these kinds.
+Only a constraint accepts ``ON DOMAIN app.d``, which sets ``isOnDomain()`` and stores
+the domain as the owner instead. A ``CAST`` target exposes ``getSourceType()`` and
+``getTargetType()``. ``NULL`` removes the comment and remains represented by a null
+``Comment.getComment()``.
 
-Table discovery visits tables, column owners, views, materialized views and
-table-owned constraints. It does not infer an index's table or treat domains,
-sequences, types or functions as tables. Statement visitors visit comment
-literals, and custom SQL deparsers can replace the explicit relation or literal.
-Feature analysis reports a schema modification. Validation exposes a separate
-``commentOn...`` capability for each additional target kind.
+``COMMENT ON OPERATOR app.-> (jsonb, NONE)`` reads the operator with the reference
+shared by exclusion constraints and ``ALTER EXTENSION``: ``getOperator()`` returns an
+``ExclusionOperator`` with ``getSchemaName()`` and the operator symbol in ``getName()``.
+``getLeftOperandType()`` and ``getRightOperandType()`` hold the operand types, and null
+stands for ``NONE``; at least one operand type is required. The lexer reads some
+PostgreSQL operators, such as ``<<=`` or ``-|-``, as several tokens. Parts that touch
+each other are joined into one operator, while whitespace or a comment separates two
+operators as in PostgreSQL. Exclusion constraints and ``ALTER EXTENSION`` accept the same
+operators. Operators that the lexer reads as part of an identifier, such as ``##``
+without ``Dialect.POSTGRESQL``, are not supported.
+
+``OPERATOR CLASS`` and ``OPERATOR FAMILY`` targets keep their name in ``getName()``
+and the index access method in ``getAccessMethod()``; ``Kind.isOwnedByAccessMethod()``
+identifies these kinds. ``LARGE OBJECT`` exposes ``getLargeObjectOid()``, which
+accepts an unsigned 32-bit integer. ``TRANSFORM`` exposes ``getTransformType()`` and
+``getLanguage()``. Each ``TEXT SEARCH`` object type has its own ``Kind``, for example
+``TEXT_SEARCH_DICTIONARY``.
+
+Table discovery visits tables, column owners, views, materialized views, foreign
+tables and the tables owning constraints, triggers, policies and rules. It does not
+infer an index's table or treat domains, sequences, types, routines or other catalog
+objects as tables. Statement visitors visit comment literals, and custom SQL deparsers
+can replace the explicit relation or literal. Feature analysis reports a schema
+modification. Validation exposes a separate ``commentOn...`` capability for each
+additional target kind.
 
 Current date/time expression metadata
 =====================================
@@ -2268,3 +2725,47 @@ The validator checks the new statement and mode capabilities. PostgreSQL
 ``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
 This support does not include MySQL transaction completion ``[NO] RELEASE``,
 PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED``, or XA commands.
+
+MySQL SHOW statements
+=====================
+
+The MySQL statements that read table, column and object definitions parse to typed
+statements in every dialect:
+
+* ``SHOW [EXTENDED] [FULL] {COLUMNS | FIELDS} {FROM | IN} t [{FROM | IN} db]
+  [LIKE 'p' | WHERE expr]`` extends ``ShowColumnsStatement``. ``getTable()`` returns the
+  ``Table``; ``getTableName()`` and ``setTableName(String)`` remain and are derived from it.
+  ``isExtended()``, ``isFull()`` and ``isFieldsKeyword()`` record the modifiers and the
+  ``FIELDS`` spelling, ``getTableSelectionMode()`` and ``getDbSelectionMode()`` the
+  ``FROM``/``IN`` spelling, and ``getDbName()``, ``getLikeExpression()`` and
+  ``getWhereCondition()`` the optional clauses.
+* ``SHOW TABLE STATUS [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
+  ``ShowTableStatusStatement``, with the same accessors as ``ShowTablesStatement``.
+* ``SHOW CREATE`` parses to ``ShowCreateStatement``. ``getObjectType()`` is ``TABLE``,
+  ``VIEW``, ``PROCEDURE``, ``FUNCTION``, ``TRIGGER``, ``EVENT``, ``DATABASE`` or ``USER``.
+  The first six name the object with ``getName()``, a ``Table``. ``DATABASE`` uses
+  ``getDatabaseName()``, ``isSchemaKeyword()`` and ``isIfNotExists()``. ``USER`` uses
+  ``getAccount()``, a ``UserAccount`` without authentication; ``isCurrentUser()`` and
+  ``isCurrentUserParentheses()`` describe ``CURRENT_USER`` and ``CURRENT_USER()``.
+
+.. code-block:: java
+
+    ShowColumnsStatement columns = (ShowColumnsStatement) CCJSqlParserUtil.parse(
+        "SHOW FULL COLUMNS FROM orders FROM shop LIKE 'c%'");
+    columns.getTableName();   // orders
+    columns.getDbName();      // shop
+
+    ShowCreateStatement create = (ShowCreateStatement) CCJSqlParserUtil.parse(
+        "SHOW CREATE USER 'app'@'%'");
+    create.getAccount().getHost().getNotExcapedValue();   // %
+
+A typed statement is used only when it covers the whole statement. Other dialects'
+``SHOW`` forms, such as ``SHOW COLUMNS IN SCHEMA s`` or ``SHOW CREATE TABLE t FORMAT f``,
+remain ``UnsupportedStatement``.
+
+Table visitors report the table of ``SHOW COLUMNS`` (qualified by the ``FROM db`` clause)
+and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now
+``SHOW COLUMNS`` raised ``UnsupportedOperationException``. ``SHOW TABLE STATUS`` names no
+table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
+features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
+``RETURNS_RESULT_SET``.

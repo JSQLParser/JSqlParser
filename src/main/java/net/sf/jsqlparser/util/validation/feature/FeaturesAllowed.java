@@ -107,11 +107,12 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createForeignDataWrapper, Feature.createServer, Feature.createUserMapping,
             Feature.createAccessMethod, Feature.createAccessMethodTable,
+            Feature.createTablespace,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
             Feature.createTableIfNotExists, Feature.createTableRowMovement,
             Feature.createTableFromSelect,
-            Feature.createTrigger,
+            Feature.createTrigger, Feature.createEventTrigger,
             Feature.createView).unmodifyable();
     /**
      * all "ALTER" {@link Feature}'s
@@ -120,6 +121,8 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterTextSearchConfiguration,
                     Feature.alterCollation,
+                    Feature.alterTablespace,
+                    Feature.alterEventTrigger,
                     Feature.alterView, Feature.alterIndex, Feature.alterSchema,
                     Feature.alterForeignDataWrapper, Feature.alterServer, Feature.alterUserMapping)
                     .unmodifyable();

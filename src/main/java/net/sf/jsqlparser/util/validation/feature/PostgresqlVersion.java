@@ -95,10 +95,27 @@ public enum PostgresqlVersion implements Version {
                     Feature.commentOnDomain, Feature.commentOnType,
                     Feature.commentOnMaterializedView,
                     Feature.commentOnFunction, Feature.commentOnConstraint,
+                    Feature.commentOnTrigger, Feature.commentOnPolicy, Feature.commentOnRule,
+                    Feature.commentOnProcedure, Feature.commentOnRoutine,
+                    Feature.commentOnAggregate, Feature.commentOnCast,
+                    Feature.commentOnCollation, Feature.commentOnForeignTable,
+                    Feature.commentOnStatistics, Feature.commentOnDatabase, Feature.commentOnRole,
+                    Feature.commentOnTablespace, Feature.commentOnAccessMethod,
+                    Feature.commentOnExtension, Feature.commentOnForeignDataWrapper,
+                    Feature.commentOnLanguage, Feature.commentOnServer,
+                    Feature.commentOnEventTrigger, Feature.commentOnPublication,
+                    Feature.commentOnSubscription,
+                    Feature.commentOnOperator, Feature.commentOnOperatorClass,
+                    Feature.commentOnOperatorFamily, Feature.commentOnConversion,
+                    Feature.commentOnLargeObject, Feature.commentOnTransform,
+                    Feature.commentOnTextSearchConfiguration,
+                    Feature.commentOnTextSearchDictionary, Feature.commentOnTextSearchParser,
+                    Feature.commentOnTextSearchTemplate,
 
                     // https://www.postgresql.org/docs/current/sql-createsequence.html
                     Feature.createSequence,
                     Feature.createAccessMethod,
+                    Feature.createTablespace, Feature.alterTablespace,
                     Feature.createForeignDataWrapper, Feature.alterForeignDataWrapper,
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
                     Feature.alterUserMapping,
@@ -123,6 +140,13 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-createdatabase.html
                     // https://www.postgresql.org/docs/current/sql-alterdatabase.html
                     Feature.createDatabase, Feature.alterDatabase,
+
+                    // https://www.postgresql.org/docs/current/sql-alterfunction.html
+                    // https://www.postgresql.org/docs/current/sql-alterprocedure.html
+                    // https://www.postgresql.org/docs/current/sql-alterroutine.html
+                    // https://www.postgresql.org/docs/current/sql-altertrigger.html
+                    Feature.alterFunction, Feature.alterProcedure, Feature.alterRoutine,
+                    Feature.alterTrigger,
 
                     // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
                     Feature.refreshMaterializedView,
@@ -160,7 +184,10 @@ public enum PostgresqlVersion implements Version {
                     Feature.explain, // https://www.postgresql.org/docs/current/sql-grant.html
                     Feature.grant,
                     Feature.revoke, Feature.createRole, Feature.alterRole,
-                    Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-set.html
+                    Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-createeventtrigger.html
+                    Feature.createEventTrigger, Feature.alterEventTrigger, // https://www.postgresql.org/docs/current/sql-reindex.html
+                    Feature.reindex, // https://www.postgresql.org/docs/current/sql-security-label.html
+                    Feature.securityLabel, // https://www.postgresql.org/docs/current/sql-set.html
                     Feature.set, Feature.setAssignmentTo, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
@@ -168,6 +195,7 @@ public enum PostgresqlVersion implements Version {
                             V10.copy().getFeatures()), V12("12",
                                     V11.copy()
                                             .add(Feature.createAccessMethodTable,
+                                                    Feature.reindexConcurrently,
                                                     Feature.transactionChain)
                                             .getFeatures()), V13(
                                                     "13",

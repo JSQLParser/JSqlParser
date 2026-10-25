@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
@@ -55,8 +58,11 @@ import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -69,6 +75,8 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -89,6 +97,8 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -99,7 +109,9 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -389,6 +401,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateSchema createSchema, S context) {
+        createSchema.getStatements().forEach(element -> element.accept(this, context));
         return null;
     }
 
@@ -399,6 +412,31 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetPasswordStatement setPassword, S context) {
         return null;
     }
 
@@ -425,6 +463,32 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         if (createTrigger.getBody() != null) {
             createTrigger.getBody().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateEventTrigger statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Reindex statement, S context) {
+        if (statement.getTable() != null) {
+            statement.getTable().accept(fromItemVisitor, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SecurityLabel statement, S context) {
+        statement.visitRelations(table -> table.accept(fromItemVisitor, context));
+        expressionVisitor.visitExpression(statement.getLabel(), context);
         return null;
     }
 
@@ -570,6 +634,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(ShowTablesStatement showTables, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowTableStatusStatement showTableStatus, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowCreateStatement showCreate, S context) {
         return null;
     }
 
@@ -944,6 +1018,18 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(CreateTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
     public <S> T visit(AlterPolicy statement, S context) {
         fromItemVisitor.visitFromItem(statement.getTable(), context);
         if (statement.getNewName() == null) {
@@ -1018,6 +1104,18 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(CreateCollation statement, S context) {
         statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterRoutine statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTrigger statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
         return null;
     }
 

@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.IndexSpecOption;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
@@ -94,6 +95,49 @@ public class AlterTest {
         List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
         assertEquals("mycolumn", colDataTypes.get(0).getColumnName());
         assertEquals("varchar (255)", colDataTypes.get(0).getColDataType().toString());
+    }
+
+    @Test
+    public void testAlterTableAddColumnListTSql() throws JSQLParserException {
+        // T-SQL and Snowflake let one ADD list several columns without repeating ADD
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD a int, b varchar(10) NOT NULL, c int",
+                parser -> parser.withDialect(Dialect.SQLSERVER));
+        assertEquals(1, alter.getAlterExpressions().size());
+        AlterExpression alterExp = alter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
+        assertEquals(3, colDataTypes.size());
+        assertEquals("a", colDataTypes.get(0).getColumnName());
+        assertEquals("b", colDataTypes.get(1).getColumnName());
+        assertEquals("varchar (10)", colDataTypes.get(1).getColDataType().toString());
+        assertEquals("c", colDataTypes.get(2).getColumnName());
+        assertDeparse(alter, "ALTER TABLE t ADD a int, b varchar (10) NOT NULL, c int");
+    }
+
+    @Test
+    public void testAlterTableAddColumnListWithConstraintTSql() throws JSQLParserException {
+        // T-SQL mixes column definitions and table constraints in one ADD list
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD a int, CONSTRAINT ck CHECK (a > 0)",
+                parser -> parser.withDialect(Dialect.SQLSERVER));
+        assertEquals(1, alter.getAlterExpressions().size());
+        AlterExpression alterExp = alter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals(1, alterExp.getColDataTypeList().size());
+        assertNotNull(alterExp.getConstraint());
+    }
+
+    @Test
+    public void testAlterTableAddColumnListSnowflake() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t ADD COLUMN a int, b int",
+                parser -> parser.withDialect(Dialect.SNOWFLAKE));
+        assertEquals(1, alter.getAlterExpressions().size());
+        List<ColumnDataType> colDataTypes =
+                alter.getAlterExpressions().get(0).getColDataTypeList();
+        assertEquals(2, colDataTypes.size());
+        assertDeparse(alter, "ALTER TABLE t ADD COLUMN a int, b int");
     }
 
     @Test
@@ -2072,13 +2116,14 @@ public class AlterTest {
         assertEquals("col1", columnNames.get(0));
         assertEquals("col2", columnNames.get(1));
 
-        List<String> indexSpec = index.getIndexSpec();
-        assertNotNull(indexSpec);
-        assertEquals(4, indexSpec.size());
-        assertEquals("KEY_BLOCK_SIZE = 8", indexSpec.get(0));
-        assertEquals("WITH PARSER ngram", indexSpec.get(1));
-        assertEquals("COMMENT 'fulltext'", indexSpec.get(2));
-        assertEquals("INVISIBLE", indexSpec.get(3));
+        List<IndexSpecOption> options = index.getSpecOptions();
+        assertEquals(4, options.size());
+        assertEquals("KEY_BLOCK_SIZE = 8", options.get(0).toString());
+        assertEquals("WITH PARSER ngram", options.get(1).toString());
+        assertEquals("COMMENT 'fulltext'", options.get(2).toString());
+        assertEquals("INVISIBLE", options.get(3).toString());
+        assertEquals(List.of("KEY_BLOCK_SIZE", "=", "8", "WITH", "PARSER", "ngram", "COMMENT",
+                "'fulltext'", "INVISIBLE"), index.getIndexSpec());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
@@ -2134,13 +2179,14 @@ public class AlterTest {
         assertEquals("idx_lastname", index.getName());
         assertEquals("last_name", index.getColumnsNames().get(0));
 
-        List<String> indexSpec = index.getIndexSpec();
-        assertNotNull(indexSpec);
-        assertEquals(4, indexSpec.size());
-        assertEquals("USING BTREE", indexSpec.get(0));
-        assertEquals("KEY_BLOCK_SIZE = 16", indexSpec.get(1));
-        assertEquals("COMMENT 'Performance tuning'", indexSpec.get(2));
-        assertEquals("VISIBLE", indexSpec.get(3));
+        List<IndexSpecOption> options = index.getSpecOptions();
+        assertEquals(4, options.size());
+        assertEquals("USING BTREE", options.get(0).toString());
+        assertEquals("KEY_BLOCK_SIZE = 16", options.get(1).toString());
+        assertEquals("COMMENT 'Performance tuning'", options.get(2).toString());
+        assertEquals("VISIBLE", options.get(3).toString());
+        assertEquals(List.of("USING", "BTREE", "KEY_BLOCK_SIZE", "=", "16", "COMMENT",
+                "'Performance tuning'", "VISIBLE"), index.getIndexSpec());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }

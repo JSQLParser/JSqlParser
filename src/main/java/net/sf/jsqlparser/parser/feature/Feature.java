@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -40,6 +41,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -48,6 +50,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
@@ -61,6 +64,7 @@ import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -452,6 +456,19 @@ public enum Feature {
      */
     alterIndex,
 
+    /**
+     * MySQL and PostgreSQL "CREATE TABLESPACE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.tablespace.CreateTablespace
+     */
+    createTablespace,
+    /**
+     * MySQL and PostgreSQL "ALTER TABLESPACE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTablespace
+     */
+    alterTablespace,
+
 
     /**
      * SQL "ANALYZE" statement is allowed
@@ -621,6 +638,26 @@ public enum Feature {
      */
     createTrigger,
     /**
+     * PostgreSQL "CREATE EVENT TRIGGER" and "ALTER EVENT TRIGGER" statements are allowed
+     *
+     * @see CreateEventTrigger
+     * @see AlterEventTrigger
+     */
+    createEventTrigger, alterEventTrigger,
+    /**
+     * PostgreSQL "REINDEX" statement is allowed; "REINDEX … CONCURRENTLY" additionally requires
+     * {@link #reindexConcurrently}
+     *
+     * @see Reindex
+     */
+    reindex, reindexConcurrently,
+    /**
+     * PostgreSQL "SECURITY LABEL" statement is allowed
+     *
+     * @see SecurityLabel
+     */
+    securityLabel,
+    /**
      * SQL "COMMIT" statement is allowed
      *
      * @see Commit
@@ -660,6 +697,33 @@ public enum Feature {
     /** Additional structured catalog targets of COMMENT ON. */
     commentOnIndex, commentOnSchema, commentOnSequence, commentOnDomain, commentOnType, commentOnMaterializedView, commentOnFunction, commentOnConstraint,
 
+    /** COMMENT ON TRIGGER, POLICY or RULE within a table. */
+    commentOnTrigger, commentOnPolicy, commentOnRule,
+
+    /** COMMENT ON PROCEDURE, ROUTINE, AGGREGATE or CAST. */
+    commentOnProcedure, commentOnRoutine, commentOnAggregate, commentOnCast,
+
+    /** COMMENT ON COLLATION, FOREIGN TABLE or STATISTICS. */
+    commentOnCollation, commentOnForeignTable, commentOnStatistics,
+
+    /** COMMENT ON DATABASE, ROLE or TABLESPACE. */
+    commentOnDatabase, commentOnRole, commentOnTablespace,
+
+    /** COMMENT ON ACCESS METHOD, EXTENSION, FOREIGN DATA WRAPPER, LANGUAGE or SERVER. */
+    commentOnAccessMethod, commentOnExtension, commentOnForeignDataWrapper, commentOnLanguage, commentOnServer,
+
+    /** COMMENT ON EVENT TRIGGER, PUBLICATION or SUBSCRIPTION. */
+    commentOnEventTrigger, commentOnPublication, commentOnSubscription,
+
+    /** COMMENT ON OPERATOR, OPERATOR CLASS or OPERATOR FAMILY. */
+    commentOnOperator, commentOnOperatorClass, commentOnOperatorFamily,
+
+    /** COMMENT ON CONVERSION, LARGE OBJECT or TRANSFORM. */
+    commentOnConversion, commentOnLargeObject, commentOnTransform,
+
+    /** COMMENT ON TEXT SEARCH CONFIGURATION, DICTIONARY, PARSER or TEMPLATE. */
+    commentOnTextSearchConfiguration, commentOnTextSearchDictionary, commentOnTextSearchParser, commentOnTextSearchTemplate,
+
     /**
      * SQL "DESCRIBE" statement is allowed
      *
@@ -697,6 +761,18 @@ public enum Feature {
      */
     showIndex,
     /**
+     * MySQL/MariaDB "SHOW TABLE STATUS" statement is allowed
+     *
+     * @see ShowTableStatusStatement
+     */
+    showTableStatus,
+    /**
+     * MySQL/MariaDB "SHOW CREATE" statement is allowed
+     *
+     * @see ShowCreateStatement
+     */
+    showCreate,
+    /**
      * @see UseStatement
      */
     use,
@@ -706,6 +782,17 @@ public enum Feature {
      * @see Grant
      */
     grant, revoke, createRole, alterRole, alterDefaultPrivileges,
+    /**
+     * MySQL/MariaDB account management: "ALTER USER", "RENAME USER", "SET ROLE", "SET DEFAULT ROLE"
+     * and "SET PASSWORD"
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterUser
+     * @see net.sf.jsqlparser.statement.alter.RenameUser
+     * @see net.sf.jsqlparser.statement.SetRoleStatement
+     * @see net.sf.jsqlparser.statement.SetDefaultRoleStatement
+     * @see net.sf.jsqlparser.statement.SetPasswordStatement
+     */
+    alterUser, renameUser, setRole, setDefaultRole, setPassword,
     /**
      * @see Function
      */
@@ -724,6 +811,18 @@ public enum Feature {
     functionalStatement,
 
     alterFunction, alterProcedure, createOrAlterRoutine,
+    /**
+     * PostgreSQL "ALTER ROUTINE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterRoutine
+     */
+    alterRoutine,
+    /**
+     * PostgreSQL "ALTER TRIGGER" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTrigger
+     */
+    alterTrigger,
     /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *

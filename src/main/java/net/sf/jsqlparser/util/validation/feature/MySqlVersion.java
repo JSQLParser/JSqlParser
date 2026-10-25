@@ -78,6 +78,10 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
                     Feature.tableMaintenance,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
+                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.setDefaultRole, Feature.setPassword,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
@@ -93,9 +97,17 @@ public enum MySqlVersion implements Version {
                     Feature.alterTable, // https://dev.mysql.com/doc/refman/8.0/en/alter-view.html
                     Feature.alterView,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/create-tablespace.html
+                    Feature.createTablespace, // https://dev.mysql.com/doc/refman/8.0/en/alter-tablespace.html
+                    Feature.alterTablespace,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-database.html
                     Feature.createDatabase, Feature.alterDatabase,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-function.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-procedure.html
+                    Feature.alterFunction, Feature.alterProcedure,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
                     Feature.createSchema, // https://dev.mysql.com/doc/refman/8.0/en/create-view.html
@@ -115,8 +127,11 @@ public enum MySqlVersion implements Version {
                     Feature.show, // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
                     Feature.showTables, // https://dev.mysql.com/doc/refman/8.0/en/show-columns.html
                     Feature.showColumns, // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
-                    Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
-                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/use.html
+                    Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/show-table-status.html
+                    Feature.showTableStatus, // https://dev.mysql.com/doc/refman/8.0/en/show-create-table.html
+                    Feature.showCreate, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
+                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/revoke.html
+                    Feature.revoke, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
                     Feature.transactionChain, Feature.transactionConsistentSnapshot, //

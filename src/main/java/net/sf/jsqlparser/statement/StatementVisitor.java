@@ -23,11 +23,14 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
@@ -53,8 +56,11 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -67,6 +73,8 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -84,8 +92,12 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -214,6 +226,46 @@ public interface StatementVisitor<T> {
         this.visit(createUser, null);
     }
 
+    default <S> T visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    default void visit(AlterUser alterUser) {
+        this.visit(alterUser, null);
+    }
+
+    default <S> T visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    default void visit(RenameUser renameUser) {
+        this.visit(renameUser, null);
+    }
+
+    default <S> T visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    default void visit(SetRoleStatement setRole) {
+        this.visit(setRole, null);
+    }
+
+    default <S> T visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    default void visit(SetDefaultRoleStatement setDefaultRole) {
+        this.visit(setDefaultRole, null);
+    }
+
+    default <S> T visit(SetPasswordStatement setPassword, S context) {
+        return null;
+    }
+
+    default void visit(SetPasswordStatement setPassword) {
+        this.visit(setPassword, null);
+    }
+
     <S> T visit(CreateEvent createEvent, S context);
 
     default void visit(CreateEvent createEvent) {
@@ -230,6 +282,38 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateTrigger createTrigger) {
         this.visit(createTrigger, null);
+    }
+
+    default <S> T visit(CreateEventTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateEventTrigger statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterEventTrigger statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(Reindex statement, S context) {
+        return null;
+    }
+
+    default void visit(Reindex statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(SecurityLabel statement, S context) {
+        return null;
+    }
+
+    default void visit(SecurityLabel statement) {
+        this.visit(statement, null);
     }
 
     <S> T visit(CreateView createView, S context);
@@ -318,6 +402,22 @@ public interface StatementVisitor<T> {
 
     default void visit(ShowTablesStatement showTables) {
         this.visit(showTables, null);
+    }
+
+    default <S> T visit(ShowTableStatusStatement showTableStatus, S context) {
+        return null;
+    }
+
+    default void visit(ShowTableStatusStatement showTableStatus) {
+        this.visit(showTableStatus, null);
+    }
+
+    default <S> T visit(ShowCreateStatement showCreate, S context) {
+        return null;
+    }
+
+    default void visit(ShowCreateStatement showCreate) {
+        this.visit(showCreate, null);
     }
 
     <S> T visit(Merge merge, S context);
@@ -749,6 +849,22 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+    default <S> T visit(CreateTablespace statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTablespace statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTablespace statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTablespace statement) {
+        visit(statement, null);
+    }
+
     default <S> T visit(AlterPolicy statement, S context) {
         return null;
     }
@@ -882,6 +998,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterCollation statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterRoutine statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterRoutine statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTrigger statement) {
         visit(statement, null);
     }
 }

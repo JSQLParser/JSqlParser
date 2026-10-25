@@ -33,6 +33,8 @@ public class GroupByElement implements Serializable {
     private List<ExpressionList<Expression>> groupingSets = new ArrayList<>();
     // postgres rollup is an ExpressionList
     private boolean mysqlWithRollup = false;
+    private boolean all = false;
+    private boolean distinct = false;
 
     public boolean isUsingBrackets() {
         return groupByExpressions.isUsingBrackets();
@@ -115,6 +117,12 @@ public class GroupByElement implements Serializable {
     public void appendTo(StringBuilder builder, Consumer<ExpressionList<?>> listRenderer,
             Consumer<Expression> expressionRenderer) {
         builder.append("GROUP BY ");
+        if (all) {
+            builder.append("ALL ");
+        }
+        if (distinct) {
+            builder.append("DISTINCT ");
+        }
         if (groupByExpressions != null) {
             if (hasGroupBySortDirections()) {
                 appendOrderedExpressions(builder, expressionRenderer);
@@ -198,6 +206,24 @@ public class GroupByElement implements Serializable {
 
     public GroupByElement setMysqlWithRollup(boolean mysqlWithRollup) {
         this.mysqlWithRollup = mysqlWithRollup;
+        return this;
+    }
+
+    public boolean isAll() {
+        return all;
+    }
+
+    public GroupByElement setAll(boolean all) {
+        this.all = all;
+        return this;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public GroupByElement setDistinct(boolean distinct) {
+        this.distinct = distinct;
         return this;
     }
 }

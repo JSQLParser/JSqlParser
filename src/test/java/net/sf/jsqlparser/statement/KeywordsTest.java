@@ -9,10 +9,18 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.ConnectByPriorOperator;
+import net.sf.jsqlparser.expression.JsonAggregateOnNullType;
+import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.WindowElement;
+import net.sf.jsqlparser.expression.WindowOffset;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -21,16 +29,29 @@ import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.MySqlSelectModifier;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SampleClause;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -337,5 +358,200 @@ public class KeywordsTest {
     public void testClickHouseClausesAfterTable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable PREWHERE b = 1 WHERE c = 2", true);
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable SETTINGS max_threads = 8", true);
+    }
+
+    // MySQL 8.4 and PostgreSQL 18 accept these keywords as unquoted column and table names.
+    public static Stream<Arguments> serverKeywordNames() {
+        return Stream.of("absent", "any", "between", "current", "exclude", "force", "full",
+                "grouping", "if", "import", "offset", "only", "prior", "returning", "set", "some",
+                "sql_no_cache", "unbounded", "unknown", "value", "values", "xmlserialize")
+                .flatMap(keyword -> Stream.of(Arguments.of(keyword, null),
+                        Arguments.of(keyword, Dialect.MYSQL),
+                        Arguments.of(keyword, Dialect.POSTGRESQL)));
+    }
+
+    private static Statement assertRoundTrip(String sql, Dialect dialect)
+            throws JSQLParserException {
+        Consumer<CCJSqlParser> consumer = parser -> {
+            if (dialect != null) {
+                parser.withDialect(dialect);
+            }
+        };
+        Statement statement = assertSqlCanBeParsedAndDeparsed(sql, true, consumer);
+        assertEquals(statement.toString(),
+                CCJSqlParserUtil.parse(statement.toString(), consumer).toString());
+        return statement;
+    }
+
+    @ParameterizedTest(name = "{0} ({1})")
+    @MethodSource("serverKeywordNames")
+    void testServerKeywordAsColumnAndTableName(String keyword, Dialect dialect)
+            throws JSQLParserException {
+        CreateTable createTable = (CreateTable) assertRoundTrip(
+                "CREATE TABLE mytable (id INT, " + keyword + " INT)", dialect);
+        assertEquals(keyword, createTable.getColumnDefinitions().get(1).getColumnName());
+
+        Alter alter = (Alter) assertRoundTrip(
+                "ALTER TABLE mytable ADD COLUMN " + keyword + " INT", dialect);
+        assertEquals(keyword,
+                alter.getAlterExpressions().get(0).getColDataTypeList().get(0).getColumnName());
+
+        // A keyword table name made CREATE TABLE fall back to an UnsupportedStatement
+        CreateTable namedTable = (CreateTable) assertRoundTrip(
+                "CREATE TABLE " + keyword + " (a INT)", dialect);
+        assertEquals(keyword, namedTable.getTable().getName());
+
+        assertRoundTrip("SELECT " + keyword + ", t." + keyword + " AS " + keyword
+                + " FROM mytable t WHERE " + keyword + " = 1 ORDER BY " + keyword, dialect);
+        assertRoundTrip("SELECT a FROM " + keyword + " WHERE a = 1", dialect);
+        assertRoundTrip("UPDATE mytable SET " + keyword + " = 1", dialect);
+        assertRoundTrip("INSERT INTO mytable (" + keyword + ") VALUES (1)", dialect);
+    }
+
+    @Test
+    void testTableAndColumnKeepTheirOptionalClauses() throws JSQLParserException {
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE IF NOT EXISTS if (a INT)", true);
+        assertTrue(createTable.isIfNotExists());
+        assertEquals("if", createTable.getTable().getName());
+
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE IF EXISTS value ADD COLUMN IF NOT EXISTS set INT", true);
+        assertTrue(alter.isUseTableIfExists());
+        assertEquals("value", alter.getTable().getName());
+        assertEquals("set",
+                alter.getAlterExpressions().get(0).getColDataTypeList().get(0).getColumnName());
+    }
+
+    @Test
+    void testJoinAndIndexHintKeywordsStayClauses() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM a FULL JOIN b ON a.id = b.id", true);
+        assertNull(((Table) select.getFromItem()).getAlias());
+        assertTrue(select.getJoins().get(0).isFull());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM a full FULL OUTER JOIN b ON full.id = b.id", true);
+        assertEquals("full", select.getFromItem().getAlias().getName());
+        Join join = select.getJoins().get(0);
+        assertTrue(join.isFull() && join.isOuter());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM mytable FORCE INDEX (idx) WHERE a = 1", true,
+                parser -> parser.withDialect(Dialect.MYSQL));
+        Table table = (Table) select.getFromItem();
+        assertNull(table.getAlias());
+        assertNotNull(table.getIndexHint());
+    }
+
+    @Test
+    void testReturningAndAbsentStayClauses() throws JSQLParserException {
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(
+                "DELETE FROM mytable RETURNING id", true);
+        assertNull(delete.getTable().getAlias());
+        assertNotNull(delete.getReturningClause());
+
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO mytable SELECT a FROM other RETURNING id", true);
+        assertNull(((PlainSelect) insert.getSelect()).getFromItem().getAlias());
+        assertNotNull(insert.getReturningClause());
+
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_ARRAY(a ABSENT ON NULL RETURNING JSON) FROM mytable", true);
+        JsonFunction function = (JsonFunction) select.getSelectItem(0).getExpression();
+        assertEquals(1, function.getExpressions().size());
+        assertEquals(JsonAggregateOnNullType.ABSENT, function.getOnNullType());
+        assertEquals("JSON", function.getReturningType().getDataType());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed("SELECT JSON_ARRAY(RETURNING JSON)",
+                true);
+        function = (JsonFunction) select.getSelectItem(0).getExpression();
+        assertTrue(function.getExpressions().isEmpty());
+        assertEquals("JSON", function.getReturningType().getDataType());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(ABSENT ON NULL)",
+                true);
+        function = (JsonFunction) select.getSelectItem(0).getExpression();
+        assertTrue(function.getKeyValuePairs().isEmpty());
+        assertEquals(JsonAggregateOnNullType.ABSENT, function.getOnNullType());
+    }
+
+    @Test
+    void testModifierAndOperatorKeywordsStayKeywords() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT SQL_NO_CACHE a FROM mytable", true);
+        assertTrue(select.getMySqlSelectModifiers().contains(MySqlSelectModifier.SQL_NO_CACHE));
+        assertEquals("a", ((Column) select.getSelectItem(0).getExpression()).getColumnName());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT PRIOR ename FROM emp CONNECT BY PRIOR empno = mgr", true);
+        assertInstanceOf(ConnectByPriorOperator.class, select.getSelectItem(0).getExpression());
+        EqualsTo connect = (EqualsTo) select.getOracleHierarchical().getConnectExpression();
+        assertEquals(SupportsOldOracleJoinSyntax.ORACLE_PRIOR_START,
+                connect.getOraclePriorPosition());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUM(a) OVER (ORDER BY b ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"
+                        + " FROM mytable",
+                true);
+        WindowElement frame =
+                ((AnalyticExpression) select.getSelectItem(0).getExpression()).getWindowElement();
+        assertEquals(WindowOffset.Type.PRECEDING, frame.getRange().getStart().getType());
+        assertNull(frame.getRange().getStart().getExpression());
+        assertEquals(WindowOffset.Type.CURRENT, frame.getRange().getEnd().getType());
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT XMLSERIALIZE(CONTENT x AS VARCHAR(100)) FROM mytable WHERE a IS NOT UNKNOWN",
+                true);
+        assertInstanceOf(XMLSerializeExpr.class, select.getSelectItem(0).getExpression());
+        assertInstanceOf(IsUnknownExpression.class, select.getWhere());
+    }
+
+    @Test
+    void testPostgreSqlOnlyStaysKeyword() throws JSQLParserException {
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE ONLY public.mytable ADD COLUMN a INT", true);
+        assertTrue(alter.isUseOnly());
+        assertEquals("public.mytable", alter.getTable().getFullyQualifiedName());
+
+        PlainSelect select =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed("SELECT * FROM ONLY mytable", true);
+        assertTrue(select.isUsingOnly());
+
+        CreateIndex createIndex = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX idx ON ONLY mytable (a)", true);
+        assertTrue(createIndex.isOnly());
+
+        // Still unsupported forms must not be read as a table named only
+        for (String sql : new String[] {"DELETE FROM ONLY mytable",
+                "SELECT * FROM a JOIN ONLY b ON a.id = b.id", "SELECT * FROM a, ONLY b",
+                "UPDATE a SET x = 1 FROM ONLY b"}) {
+            assertFalse(readsTableNamedOnly(sql), sql);
+        }
+    }
+
+    private static boolean readsTableNamedOnly(String sql) {
+        try {
+            return new TablesNamesFinder<>().getTables(CCJSqlParserUtil.parse(sql)).stream()
+                    .anyMatch("only"::equalsIgnoreCase);
+        } catch (JSQLParserException exception) {
+            return false;
+        }
+    }
+
+    @Test
+    void testExcludeColumnAndPathType() throws JSQLParserException {
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE mytable (exclude INT, p path, EXCLUDE USING gist (p WITH &&))", true,
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals("exclude", createTable.getColumnDefinitions().get(0).getColumnName());
+        assertEquals("path",
+                createTable.getColumnDefinitions().get(1).getColDataType().getDataType());
+        assertEquals(1, createTable.getTableElements(ExcludeConstraint.class).size());
+
+        // PATH still introduces the path of a JSON_TABLE column without a type
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (a PATH '$.a', b INT PATH '$.b')) jt",
+                true);
     }
 }

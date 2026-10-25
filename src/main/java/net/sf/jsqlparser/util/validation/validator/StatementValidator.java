@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -28,6 +29,8 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -69,6 +72,9 @@ import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
+import net.sf.jsqlparser.statement.SetPasswordStatement;
+import net.sf.jsqlparser.statement.SetRoleStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -80,8 +86,11 @@ import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -97,6 +106,8 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -114,9 +125,13 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -165,6 +180,52 @@ public class StatementValidator extends AbstractValidator<Statement>
         if (createTrigger.getBody() != null) {
             createTrigger.getBody().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateEventTrigger statement, S context) {
+        // the filter values are tags and the function is declared, not called
+        validateFeature(Feature.createEventTrigger);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEventTrigger statement, S context) {
+        validateFeature(Feature.alterEventTrigger);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Reindex statement, S context) {
+        validateFeature(Feature.reindex);
+        if (statement.isConcurrently() || statement.getOptions().stream()
+                .anyMatch(option -> option.getName() == Reindex.Option.Name.CONCURRENTLY)) {
+            validateFeature(Feature.reindexConcurrently);
+        }
+        if (statement.getName() != null) {
+            validateName(reindexedObject(statement.getTarget()),
+                    statement.getName().getFullyQualifiedName());
+        }
+        return null;
+    }
+
+    private static NamedObject reindexedObject(Reindex.Target target) {
+        switch (target) {
+            case INDEX:
+                return NamedObject.index;
+            case TABLE:
+                return NamedObject.table;
+            case SCHEMA:
+                return NamedObject.schema;
+            default:
+                return NamedObject.database;
+        }
+    }
+
+    @Override
+    public <S> Void visit(SecurityLabel statement, S context) {
+        validateFeature(Feature.securityLabel);
         return null;
     }
 
@@ -392,6 +453,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
+        getValidator(ShowTableStatusStatementValidator.class).validate(showTableStatus);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ShowCreateStatement showCreate, S context) {
+        getValidator(ShowCreateStatementValidator.class).validate(showCreate);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Block block, S context) {
         validateFeature(Feature.block);
         block.getStatements().accept(this, context);
@@ -460,6 +533,37 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterUser alterUser, S context) {
+        validateFeature(Feature.alterUser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(RenameUser renameUser, S context) {
+        validateFeature(Feature.renameUser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetRoleStatement setRole, S context) {
+        validateFeature(Feature.setRole);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        validateFeature(Feature.setDefaultRole);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetPasswordStatement setPassword, S context) {
+        validateFeature(Feature.setPassword);
+        validateOptionalExpression(setPassword.getPassword());
         return null;
     }
 
@@ -796,6 +900,16 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(showTables, null);
     }
 
+    @Override
+    public void visit(ShowTableStatusStatement showTableStatus) {
+        visit(showTableStatus, null);
+    }
+
+    @Override
+    public void visit(ShowCreateStatement showCreate) {
+        visit(showCreate, null);
+    }
+
     public void visit(Block block) {
         visit(block, null);
     }
@@ -826,6 +940,26 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateUser createUser) {
         visit(createUser, null);
+    }
+
+    public void visit(AlterUser alterUser) {
+        visit(alterUser, null);
+    }
+
+    public void visit(RenameUser renameUser) {
+        visit(renameUser, null);
+    }
+
+    public void visit(SetRoleStatement setRole) {
+        visit(setRole, null);
+    }
+
+    public void visit(SetDefaultRoleStatement setDefaultRole) {
+        visit(setDefaultRole, null);
+    }
+
+    public void visit(SetPasswordStatement setPassword) {
+        visit(setPassword, null);
     }
 
     public void visit(CreateEvent createEvent) {
@@ -1209,6 +1343,29 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(AlterRoutine statement, S context) {
+        switch (statement.getRoutineType()) {
+            case PROCEDURE:
+                validateFeature(Feature.alterProcedure);
+                break;
+            case ROUTINE:
+                validateFeature(Feature.alterRoutine);
+                break;
+            default:
+                validateFeature(Feature.alterFunction);
+        }
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTrigger statement, S context) {
+        validateFeature(Feature.alterTrigger);
+        validateOptionalFromItem(statement.getTable());
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterRelation statement, S context) {
         boolean index = statement.getObjectType() == AlterRelation.ObjectType.INDEX;
         validateFeature(index ? Feature.alterIndex : Feature.alterView);
@@ -1219,6 +1376,20 @@ public class StatementValidator extends AbstractValidator<Statement>
             action.visitExpressions(this::validateOptionalExpression);
             action.visitTables(this::validateOptionalFromItem);
         });
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTablespace statement, S context) {
+        validateFeature(Feature.createTablespace);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTablespace statement, S context) {
+        validateFeature(Feature.alterTablespace);
+        statement.visitExpressions(this::validateOptionalExpression);
         return null;
     }
 

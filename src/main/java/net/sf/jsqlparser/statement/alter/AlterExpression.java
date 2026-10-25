@@ -90,6 +90,9 @@ public class AlterExpression implements Serializable {
 
     private boolean useBrackets = false;
 
+    // T-SQL/Snowflake ADD lists items comma-separated, without brackets.
+    private boolean bareAddList = false;
+
     private boolean useIfNotExists = false;
 
     private String partitionType;
@@ -135,6 +138,14 @@ public class AlterExpression implements Serializable {
 
     public void useBrackets(boolean useBrackets) {
         this.useBrackets = useBrackets;
+    }
+
+    public boolean isBareAddList() {
+        return bareAddList;
+    }
+
+    public void setBareAddList(boolean bareAddList) {
+        this.bareAddList = bareAddList;
     }
 
     public void hasColumn(boolean hasColumn) {
@@ -1332,8 +1343,7 @@ public class AlterExpression implements Serializable {
             }
         } else {
             b.append("ADD CONSTRAINT ").append(getConstraintType()).append(" ")
-                    .append(getConstraintSymbol())
-                    .append(" ");
+                    .append(getConstraintSymbol());
             if (constraint instanceof KeyConstraint) {
                 b.append(" ")
                         .append(PlainSelect.getStringList(
@@ -1547,9 +1557,9 @@ public class AlterExpression implements Serializable {
                 b.append(partitions.get(0)).append(" WITH TABLE ")
                         .append(exchangePartitionTableName);
                 if (exchangePartitionWithValidation) {
-                    b.append(" WITH VALIDATION ");
+                    b.append(" WITH VALIDATION");
                 } else if (exchangePartitionWithoutValidation) {
-                    b.append(" WITHOUT VALIDATION ");
+                    b.append(" WITHOUT VALIDATION");
                 }
                 break;
             case ANALYZE_PARTITION:
@@ -1603,18 +1613,20 @@ public class AlterExpression implements Serializable {
             "PMD.ExcessiveMethodLength"})
     private void toStringGeneral(StringBuilder b, Consumer<ColumnDataType> columnPrinter) {
         if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
-            b.append("COMMENT =").append(" ");
+            b.append("COMMENT =");
         } else if (operation == AlterOperation.ENABLE_ROW_LEVEL_SECURITY) {
-            b.append("ENABLE ROW LEVEL SECURITY").append(" ");
+            b.append("ENABLE ROW LEVEL SECURITY");
         } else if (operation == AlterOperation.DISABLE_ROW_LEVEL_SECURITY) {
-            b.append("DISABLE ROW LEVEL SECURITY").append(" ");
+            b.append("DISABLE ROW LEVEL SECURITY");
         } else if (operation == AlterOperation.FORCE_ROW_LEVEL_SECURITY) {
-            b.append("FORCE ROW LEVEL SECURITY").append(" ");
+            b.append("FORCE ROW LEVEL SECURITY");
         } else if (operation == AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY) {
-            b.append("NO FORCE ROW LEVEL SECURITY").append(" ");
+            b.append("NO FORCE ROW LEVEL SECURITY");
         } else {
-            b.append(operation).append(" ");
+            b.append(operation);
         }
+        int keywordEnd = b.length();
+        b.append(' ');
         if (commentText != null) {
             if (columnName != null) {
                 b.append(columnName).append(" COMMENT ");
@@ -1637,7 +1649,7 @@ public class AlterExpression implements Serializable {
                     b.append(optionalSpecifier).append(" ");
                 }
                 b.append(columnOldName).append(" ");
-            } else if (colDataTypeList.size() > 1) {
+            } else if (colDataTypeList.size() > 1 && !bareAddList) {
                 b.append("(");
             } else {
                 if (hasColumn) {
@@ -1652,7 +1664,7 @@ public class AlterExpression implements Serializable {
                 }
             }
             if (useBrackets && colDataTypeList.size() == 1) {
-                b.append(" ( ");
+                b.append('(');
             }
             for (int i = 0; i < colDataTypeList.size(); i++) {
                 if (i > 0) {
@@ -1661,10 +1673,15 @@ public class AlterExpression implements Serializable {
                 columnPrinter.accept(colDataTypeList.get(i));
             }
             if (useBrackets && colDataTypeList.size() == 1) {
-                b.append(" ) ");
+                b.append(')');
             }
-            if (colDataTypeList.size() > 1) {
+            if (colDataTypeList.size() > 1 && !bareAddList) {
                 b.append(")");
+            }
+            if (constraint != null && bareAddList) {
+                // T-SQL/Snowflake ADD lists may append a table constraint after
+                // the column definitions.
+                b.append(", ").append(constraint);
             }
         } else if (getColumnSetNotNullList() != null) {
             b.append("COLUMN ");
@@ -1685,6 +1702,10 @@ public class AlterExpression implements Serializable {
             b.append(constraint);
         } else if (index != null) {
             b.append(index);
+        }
+        if (b.length() == keywordEnd + 1) {
+            // a keyword without payload, such as FORCE, ends without a separator
+            b.setLength(keywordEnd);
         }
 
         if (getConstraints() != null && !getConstraints().isEmpty()) {
@@ -2199,7 +2220,7 @@ public class AlterExpression implements Serializable {
 
         @Override
         public String toString() {
-            return columnName + " SET " + (visible ? " VISIBLE" : " INVISIBLE");
+            return columnName + " SET " + (visible ? "VISIBLE" : "INVISIBLE");
         }
     }
 

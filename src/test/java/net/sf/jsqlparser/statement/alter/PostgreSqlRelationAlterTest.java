@@ -229,6 +229,23 @@ class PostgreSqlRelationAlterTest {
         assertEquals(2, CCJSqlParserUtil.parseStatements(statement + "; SELECT 1").size());
     }
 
+    @Test
+    void validateConstraintIsStructuredWithoutThePostgreSqlDialect() throws JSQLParserException {
+        for (Dialect dialect : new Dialect[] {null, Dialect.ANSI_SQL, Dialect.MYSQL}) {
+            Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                    "ALTER TABLE t ADD CHECK (c > 0) NOT VALID, VALIDATE CONSTRAINT ck", true,
+                    p -> {
+                        if (dialect != null) {
+                            p.withDialect(dialect);
+                        }
+                    });
+            RelationAlterAction validate = assertInstanceOf(RelationAlterAction.class,
+                    alter.getAlterExpressions().get(1));
+            assertEquals(RelationAlterAction.Kind.VALIDATE_CONSTRAINT, validate.getKind());
+            assertEquals("ck", validate.getConstraintName());
+        }
+    }
+
     private static Statement parse(String sql) throws JSQLParserException {
         return CCJSqlParserUtil.parse(sql, p -> p.withDialect(Dialect.POSTGRESQL));
     }

@@ -24,13 +24,14 @@ import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.RoutineReference;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.index.AlgorithmOrLockOption;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Drop implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -56,6 +57,8 @@ public class Drop implements Statement {
     private List<String> parameters;
     private Table table;
     private int tablePosition;
+    private final List<AlgorithmOrLockOption> algorithmOrLockOptions = new ArrayList<>();
+    private Integer algorithmOrLockPosition;
     private CascadeBehavior behavior;
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
@@ -63,6 +66,7 @@ public class Drop implements Statement {
     private boolean concurrently;
     private boolean undo;
     private boolean force;
+    private boolean publicSynonym;
     private String engine;
     private boolean engineUseEquals;
 
@@ -242,19 +246,16 @@ public class Drop implements Statement {
     }
 
     /**
-     * Returns the legacy tokens after the targets. With a structured ON table or CASCADE/RESTRICT
-     * behavior, this is a snapshot that includes them; edit {@link #setTable} or
-     * {@link #setBehavior} instead.
+     * Returns the legacy tokens after the targets. With a structured ON table, ALGORITHM or LOCK
+     * clauses or CASCADE/RESTRICT behavior, this is a snapshot that includes them in source order;
+     * edit {@link #setTable}, {@link #getAlgorithmOrLockOptions()} or {@link #setBehavior} instead.
      */
     public List<String> getParameters() {
-        if (table == null && behavior == null) {
+        if (table == null && algorithmOrLockOptions.isEmpty() && behavior == null) {
             return parameters;
         }
-        List<String> tokens = parameters == null ? new ArrayList<>() : new ArrayList<>(parameters);
-        if (table != null) {
-            tokens.add(tablePosition, "ON");
-            tokens.add(tablePosition + 1, table.toString());
-        }
+        List<String> tokens = new ArrayList<>();
+        appendParameters(tokens::add, table -> tokens.add(table.toString()));
         if (behavior != null) {
             tokens.add(behavior.name());
         }
@@ -299,13 +300,15 @@ public class Drop implements Statement {
     }
 
     /**
-     * Replaces all legacy parameters and clears the structured ON table and CASCADE/RESTRICT
-     * behavior.
+     * Replaces all legacy parameters and clears the structured ON table, the ALGORITHM and LOCK
+     * clauses and the CASCADE/RESTRICT behavior.
      */
     public void setParameters(List<String> list) {
         parameters = list;
         table = null;
         tablePosition = 0;
+        algorithmOrLockOptions.clear();
+        algorithmOrLockPosition = null;
         behavior = null;
     }
 
@@ -337,7 +340,7 @@ public class Drop implements Statement {
         return this;
     }
 
-    /** PostgreSQL DROP DATABASE ... WITH (FORCE). */
+    /** PostgreSQL DROP DATABASE ... WITH (FORCE), or Oracle DROP SYNONYM ... FORCE. */
     public boolean isForce() {
         return force;
     }
@@ -348,6 +351,20 @@ public class Drop implements Statement {
 
     public Drop withForce(boolean force) {
         setForce(force);
+        return this;
+    }
+
+    /** Whether the synonym belongs to the PUBLIC namespace. */
+    public boolean isPublicSynonym() {
+        return publicSynonym;
+    }
+
+    public void setPublicSynonym(boolean publicSynonym) {
+        this.publicSynonym = publicSynonym;
+    }
+
+    public Drop withPublicSynonym(boolean publicSynonym) {
+        setPublicSynonym(publicSynonym);
         return this;
     }
 
@@ -475,6 +492,9 @@ public class Drop implements Statement {
         if (undo) {
             builder.append("UNDO ");
         }
+        if (publicSynonym) {
+            builder.append("PUBLIC ");
+        }
         builder.append(type);
         if (concurrently) {
             builder.append(" CONCURRENTLY");
@@ -485,12 +505,15 @@ public class Drop implements Statement {
         builder.append(ifExists ? " IF EXISTS " : " ");
         appendTargets(builder, tablePrinter);
         if (force) {
-            builder.append(" WITH (FORCE)");
+            builder.append(objectType == ObjectType.SYNONYM ? " FORCE" : " WITH (FORCE)");
         }
         if (engine != null) {
             builder.append(engineUseEquals ? " ENGINE = " : " ENGINE ").append(engine);
         }
-        appendParameters(builder, tablePrinter);
+        appendParameters(token -> builder.append(' ').append(token), table -> {
+            builder.append(' ');
+            tablePrinter.accept(table);
+        });
         if (behavior != null) {
             builder.append(' ').append(behavior);
         }
@@ -526,15 +549,21 @@ public class Drop implements Statement {
         }
     }
 
-    private void appendParameters(StringBuilder builder, Consumer<Table> tablePrinter) {
+    /** Emits the parameter tokens with ON and the ALGORITHM/LOCK clauses at their positions. */
+    private void appendParameters(Consumer<String> tokens, Consumer<Table> onTable) {
         int size = parameters == null ? 0 : parameters.size();
+        int optionPosition = algorithmOrLockPosition == null ? size
+                : Math.min(algorithmOrLockPosition, size);
         for (int i = 0; i <= size; i++) {
             if (table != null && i == tablePosition) {
-                builder.append(" ON ");
-                tablePrinter.accept(table);
+                tokens.accept("ON");
+                onTable.accept(table);
+            }
+            if (i == optionPosition) {
+                algorithmOrLockOptions.forEach(option -> option.getTokens().forEach(tokens));
             }
             if (i < size) {
-                builder.append(' ').append(parameters.get(i));
+                tokens.accept(parameters.get(i));
             }
         }
     }
@@ -594,6 +623,48 @@ public class Drop implements Statement {
             this.parameters = new ArrayList<>();
         }
         this.parameters.addAll(parameters);
+        return this;
+    }
+
+    /**
+     * Returns the mutable MySQL ALGORITHM and LOCK clauses of DROP INDEX in source order. They
+     * follow the parameter tokens unless positioned with
+     * {@link #setAlgorithmOrLockOptions(List, int)}.
+     */
+    public List<AlgorithmOrLockOption> getAlgorithmOrLockOptions() {
+        return algorithmOrLockOptions;
+    }
+
+    /** Copies the list membership and places the clauses after all parameter tokens. */
+    public void setAlgorithmOrLockOptions(List<AlgorithmOrLockOption> options) {
+        setAlgorithmOrLockOptions(options, -1);
+    }
+
+    /**
+     * Copies the list membership and places the clauses before the parameter token at
+     * {@code parameterPosition}; -1 places them after all parameter tokens.
+     */
+    public void setAlgorithmOrLockOptions(List<AlgorithmOrLockOption> options,
+            int parameterPosition) {
+        int size = parameters == null ? 0 : parameters.size();
+        if (parameterPosition < -1 || parameterPosition > size) {
+            throw new IllegalArgumentException(
+                    "Invalid ALGORITHM/LOCK position: " + parameterPosition);
+        }
+        algorithmOrLockOptions.clear();
+        if (options != null) {
+            algorithmOrLockOptions.addAll(options);
+        }
+        algorithmOrLockPosition = parameterPosition < 0 ? null : parameterPosition;
+    }
+
+    public Drop withAlgorithmOrLockOptions(List<AlgorithmOrLockOption> options) {
+        setAlgorithmOrLockOptions(options);
+        return this;
+    }
+
+    public Drop addAlgorithmOrLockOptions(AlgorithmOrLockOption... options) {
+        Collections.addAll(algorithmOrLockOptions, options);
         return this;
     }
 }

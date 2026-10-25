@@ -9,22 +9,23 @@
  */
 package net.sf.jsqlparser.statement.grant;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.user.RoleSelection;
 
 public class Grant implements Statement {
     private PrivilegeClause clause = new PrivilegeClause();
-    private GrantOption option;
+    private final List<GrantOption> options = new ArrayList<>();
+    private Grantee asUser;
+    private RoleSelection withRole;
 
     public PrivilegeClause getClause() {
         return clause;
@@ -34,12 +35,46 @@ public class Grant implements Statement {
         this.clause = clause;
     }
 
-    public GrantOption getOption() {
-        return option;
+    /**
+     * The {@code WITH} options as a mutable list: {@code GRANT OPTION}, {@code ADMIN OPTION} or
+     * PostgreSQL membership options such as {@code INHERIT TRUE, SET FALSE}.
+     */
+    public List<GrantOption> getOptions() {
+        return options;
     }
 
+    public void setOptions(Collection<? extends GrantOption> options) {
+        List<GrantOption> copy = options == null ? new ArrayList<>() : new ArrayList<>(options);
+        this.options.clear();
+        this.options.addAll(copy);
+    }
+
+    /** The first {@code WITH} option, or null; see {@link #getOptions()}. */
+    public GrantOption getOption() {
+        return options.isEmpty() ? null : options.get(0);
+    }
+
+    /** Replaces all {@code WITH} options with the given option, or removes them for null. */
     public void setOption(GrantOption option) {
-        this.option = option;
+        setOptions(option == null ? null : Collections.singletonList(option));
+    }
+
+    /** The MySQL {@code AS user} account, or null when omitted. */
+    public Grantee getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(Grantee asUser) {
+        this.asUser = asUser;
+    }
+
+    /** The MySQL {@code WITH ROLE} selection of the {@code AS user} clause, or null. */
+    public RoleSelection getWithRole() {
+        return withRole;
+    }
+
+    public void setWithRole(RoleSelection withRole) {
+        this.withRole = withRole;
     }
 
     public List<Privilege> getPrivilegeItems() {
@@ -50,6 +85,7 @@ public class Grant implements Statement {
         clause.setPrivileges(privileges);
     }
 
+    /** The target, or null for a role membership. */
     public PrivilegeTarget getTarget() {
         return clause.getTarget();
     }
@@ -67,14 +103,16 @@ public class Grant implements Statement {
     }
 
     public String getRole() {
-        return clause.getRoles().isEmpty() ? null : clause.getRoles().get(0);
+        return clause.getRoleItems().isEmpty() ? null : clause.getRoles().get(0);
     }
 
+    /** Makes this a membership of the given role, which has neither privileges nor a target. */
     public void setRole(String role) {
         clause.setRoles(new ArrayList<>());
         if (role != null) {
             clause.getRoles().add(role);
             clause.setPrivileges(null);
+            clause.setTarget(null);
         }
     }
 
@@ -83,32 +121,7 @@ public class Grant implements Statement {
         if (clause.getPrivileges() == null) {
             return null;
         }
-        return new AbstractList<String>() {
-            @Override
-            public int size() {
-                return clause.getPrivileges().size();
-            }
-
-            @Override
-            public String get(int index) {
-                return clause.getPrivileges().get(index).toString();
-            }
-
-            @Override
-            public String set(int index, String value) {
-                return clause.getPrivileges().set(index, new Privilege(value)).toString();
-            }
-
-            @Override
-            public void add(int index, String value) {
-                clause.getPrivileges().add(index, new Privilege(value));
-            }
-
-            @Override
-            public String remove(int index) {
-                return clause.getPrivileges().remove(index).toString();
-            }
-        };
+        return new StringListView<>(() -> clause.getPrivileges(), Privilege::new);
     }
 
     public void setPrivileges(List<String> privileges) {
@@ -122,12 +135,22 @@ public class Grant implements Statement {
         clause.setPrivileges(items);
     }
 
+    /**
+     * The first named target as dotted text. MySQL wildcard levels keep their wildcard, for example
+     * {@code db.*} or {@code *.*}.
+     */
     public String getObjectName() {
-        if (clause.getTarget().getNames().isEmpty()
-                || clause.getTarget().getNames().get(0).isEmpty()) {
+        PrivilegeTarget target = clause.getTarget();
+        if (target == null) {
             return null;
         }
-        List<String> parts = clause.getTarget().getNames().get(0);
+        if (target.getWildcard() != null) {
+            return target.getTargetText();
+        }
+        if (target.getNames().isEmpty() || target.getNames().get(0).isEmpty()) {
+            return null;
+        }
+        List<String> parts = target.getNames().get(0);
         return parts.stream().map(part -> part == null ? "" : part)
                 .collect(Collectors.joining("."));
     }
@@ -136,14 +159,19 @@ public class Grant implements Statement {
         setObjectName(Collections.singletonList(objectName));
     }
 
+    /** Names the first target, replacing a MySQL wildcard level. */
     public void setObjectName(List<String> objectName) {
         List<String> parts = new ArrayList<>(objectName);
         getObjectNameParts().clear();
         getObjectNameParts().addAll(parts);
+        clause.getTarget().setWildcard(null);
     }
 
     /** Mutable parts of the first named target, retained for compatibility. */
     public List<String> getObjectNameParts() {
+        if (clause.getTarget() == null) {
+            clause.setTarget(new PrivilegeTarget());
+        }
         if (clause.getTarget().getNames().isEmpty()) {
             clause.getTarget().getNames().add(new ArrayList<>());
         }
@@ -161,11 +189,18 @@ public class Grant implements Statement {
     public void appendTo(StringBuilder sql, Consumer<Expression> visitor) {
         sql.append("GRANT ");
         clause.appendTo(sql, false, visitor);
-        if (option != null) {
-            sql.append(" WITH ").append(option);
+        if (!options.isEmpty()) {
+            sql.append(" WITH ").append(
+                    options.stream().map(Object::toString).collect(Collectors.joining(", ")));
         }
-        if (clause.getGrantedBy() != null) {
-            sql.append(" GRANTED BY ").append(clause.getGrantedBy());
+        if (asUser != null) {
+            sql.append(" AS ").append(asUser);
+            if (withRole != null) {
+                sql.append(" WITH ROLE ").append(withRole);
+            }
+        }
+        if (clause.getGrantor() != null) {
+            sql.append(" GRANTED BY ").append(clause.getGrantor());
         }
     }
 
@@ -222,14 +257,17 @@ public class Grant implements Statement {
     }
 
     public Grant addUsers(String... users) {
-        List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, users);
-        return this.withUsers(collection);
+        return addUsers(Arrays.asList(users));
     }
 
     public Grant addUsers(Collection<String> users) {
-        List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
-        collection.addAll(users);
-        return this.withUsers(collection);
+        List<String> additions = new ArrayList<>(users);
+        if (clause.getGranteeItems() == null) {
+            clause.setGranteeItems(new ArrayList<>());
+        }
+        for (String user : additions) {
+            clause.getGranteeItems().add(Grantee.valueOf(user));
+        }
+        return this;
     }
 }

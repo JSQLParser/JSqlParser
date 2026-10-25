@@ -23,11 +23,21 @@ public class Truncate implements Statement {
         RESTART, CONTINUE
     }
 
+    public enum StorageOption {
+        DROP, DROP_ALL, REUSE
+    }
+
+    public enum MaterializedViewLogOption {
+        PRESERVE, PURGE
+    }
+
     private boolean tableToken;
     private boolean only;
     private final List<TableReference> targets = new ArrayList<>();
     private IdentityOption identityOption;
     private CascadeBehavior dropBehavior;
+    private StorageOption storageOption;
+    private MaterializedViewLogOption materializedViewLogOption;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -107,6 +117,32 @@ public class Truncate implements Statement {
         identityOption = option;
     }
 
+    public StorageOption getStorageOption() {
+        return storageOption;
+    }
+
+    public void setStorageOption(StorageOption storageOption) {
+        this.storageOption = storageOption;
+    }
+
+    public Truncate withStorageOption(StorageOption storageOption) {
+        setStorageOption(storageOption);
+        return this;
+    }
+
+    public MaterializedViewLogOption getMaterializedViewLogOption() {
+        return materializedViewLogOption;
+    }
+
+    public void setMaterializedViewLogOption(MaterializedViewLogOption option) {
+        materializedViewLogOption = option;
+    }
+
+    public Truncate withMaterializedViewLogOption(MaterializedViewLogOption option) {
+        setMaterializedViewLogOption(option);
+        return this;
+    }
+
     public CascadeBehavior getDropBehavior() {
         return dropBehavior;
     }
@@ -150,6 +186,13 @@ public class Truncate implements Statement {
                 builder.append(", ");
             }
             targets.get(i).appendTo(builder);
+        }
+        if (materializedViewLogOption != null) {
+            builder.append(' ').append(materializedViewLogOption).append(" MATERIALIZED VIEW LOG");
+        }
+        if (storageOption != null) {
+            builder.append(' ').append(storageOption == StorageOption.DROP_ALL ? "DROP ALL"
+                    : storageOption.name()).append(" STORAGE");
         }
         if (identityOption != null) {
             builder.append(' ').append(identityOption).append(" IDENTITY");

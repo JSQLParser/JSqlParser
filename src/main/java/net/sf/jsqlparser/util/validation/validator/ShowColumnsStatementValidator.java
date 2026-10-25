@@ -20,6 +20,11 @@ public class ShowColumnsStatementValidator extends AbstractValidator<ShowColumns
 
     @Override
     public void validate(ShowColumnsStatement show) {
-        validateFeatureAndName(Feature.showColumns, NamedObject.table, show.getTableName());
+        String tableName = show.getTableName();
+        if (show.getDbName() != null && show.getTable() != null) {
+            // MySQL: the trailing FROM db names the database of the table
+            tableName = show.getDbName() + "." + show.getTable().getName();
+        }
+        validateFeatureAndName(Feature.showColumns, NamedObject.table, tableName);
     }
 }

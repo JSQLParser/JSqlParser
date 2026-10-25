@@ -39,6 +39,16 @@ final class RoutineBodyBoundary {
     private boolean handlerAction;
     private boolean statementStart = true;
 
+    /**
+     * Tracks a compound statement without a routine header, such as a MySQL trigger body. Its
+     * tokens belong to the body from the start, as after a routine's parameter list.
+     */
+    static RoutineBodyBoundary forCompoundStatement() {
+        RoutineBodyBoundary boundary = new RoutineBodyBoundary();
+        boundary.hasParameters = true;
+        return boundary;
+    }
+
     boolean endsAt(Token token) throws ParseException {
         if (token.kind == EOF) {
             if (!blocks.isEmpty()) {
@@ -48,6 +58,15 @@ final class RoutineBodyBoundary {
         }
         return token.kind == ST_SEMICOLON && parentheses == 0 && blocks.isEmpty()
                 && !declarations && (hasParameters || quotedBody || completed);
+    }
+
+    /**
+     * Whether the routine header, including a return type, is complete and the body has not
+     * started, which is where MySQL routine characteristics appear.
+     */
+    boolean isBeforeBody() {
+        return hasParameters && parentheses == 0 && !bodyStarted && !returnTypeName
+                && !declarations && !quotedBody && !completed;
     }
 
     boolean startsQuotedBody(Token token, Token next) {
@@ -218,7 +237,10 @@ final class RoutineBodyBoundary {
         }
         if (!bodyStarted) {
             // SET may also be a PostgreSQL header option; AS remains recognizable above.
-            if (!isSimpleStatementStart(kind)) {
+            // CHARACTER SET and CHAR SET belong to a MySQL return type.
+            boolean characterSet =
+                    kind == K_SET && (previousKind == K_CHARACTER || previousKind == K_CHAR);
+            if (!isSimpleStatementStart(kind) || characterSet) {
                 return;
             }
             bodyStarted = true;

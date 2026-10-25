@@ -715,6 +715,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         builder.append(stringValue.getQuoteStr()).append(stringValue.getValue())
                 .append(stringValue.getQuoteStr());
+        if (stringValue.getUnicodeEscapeCharacter() != null) {
+            builder.append(" UESCAPE '").append(stringValue.getUnicodeEscapeCharacter())
+                    .append('\'');
+        }
 
         return builder;
     }

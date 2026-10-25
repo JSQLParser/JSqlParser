@@ -2389,6 +2389,45 @@ public class SelectTest {
     }
 
     @Test
+    public void testBooleanTestAfterPredicate() throws JSQLParserException {
+        // SQL:2016 6.39: a boolean test applies to any boolean primary, so an
+        // IS TRUE/FALSE test chains onto a comparison or predicate result
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a > 0 IS TRUE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IN (1, 2) IS FALSE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IS NULL IS NOT TRUE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a IS TRUE IS FALSE");
+    }
+
+    @Test
+    public void testSelectWithoutTargetListPostgreSql() throws JSQLParserException {
+        // PostgreSQL permits SELECT with no target expressions
+        Statement stmt = CCJSqlParserUtil.parse(
+                "SELECT FROM t", parser -> parser.withDialect(Dialect.POSTGRESQL));
+        PlainSelect select = (PlainSelect) ((Select) stmt).getSelectBody();
+        assertTrue(select.getSelectItems().isEmpty());
+        assertDeparse(select, "SELECT FROM t");
+
+        // the reported case: empty target list inside a derived table
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT count(*) FROM (SELECT FROM (VALUES (1, 'a'), (2, 'b')) AS t(id, label)) AS q",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+    }
+
+    @Test
+    public void testGroupByAllDistinctPostgreSql() throws JSQLParserException {
+        // PostgreSQL: GROUP BY [ ALL | DISTINCT ] grouping_element [, ...]
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT 1 GROUP BY DISTINCT GROUPING SETS ((1), (1))",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT 1 GROUP BY ALL GROUPING SETS ((1), (2))",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT a FROM t GROUP BY DISTINCT a",
+                false, parser -> parser.withDialect(Dialect.POSTGRESQL));
+    }
+
+    @Test
     public void testIsUnknown() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS UNKNOWN";
         assertSqlCanBeParsedAndDeparsed(statement);

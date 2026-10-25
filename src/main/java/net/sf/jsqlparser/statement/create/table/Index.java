@@ -183,6 +183,11 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
         return this;
     }
 
+    public Index withSpecOptions(List<IndexSpecOption> value) {
+        setSpecOptions(value);
+        return this;
+    }
+
     public Index withClustering(IndexOptions.Clustering value) {
         setClustering(value);
         return this;
@@ -211,16 +216,16 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
     }
 
     public void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter) {
-        appendDeclarationTo(sql);
-        appendColumnsAndSpecTo(sql, expressionPrinter);
+        int start = sql.length();
+        appendDeclarationTo(sql, start);
+        appendColumnsAndSpecTo(sql, start, expressionPrinter);
         appendIndexOptionsTo(sql, expressionPrinter);
         if (tailParameters != null && !tailParameters.isEmpty()) {
             sql.append(' ').append(PlainSelect.getStringList(tailParameters, false, false));
         }
     }
 
-    private void appendDeclarationTo(StringBuilder sql) {
-        int start = sql.length();
+    private void appendDeclarationTo(StringBuilder sql, int start) {
         if (type != null) {
             sql.append(type);
         }
@@ -237,24 +242,27 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
         sql.append(nullsDistinctClause()).append(clusteringClause());
     }
 
-    /** Separates {@code word} from earlier declaration words, without a leading space. */
+    /** Separates {@code word} from earlier index words, without a leading space. */
     private static void appendWord(StringBuilder sql, int start, String word) {
-        if (sql.length() > start) {
-            sql.append(' ');
-        }
+        appendSeparator(sql, start);
         sql.append(word);
     }
 
-    private void appendColumnsAndSpecTo(StringBuilder sql,
-            Consumer<Expression> expressionPrinter) {
-        String spec = PlainSelect.getStringList(getIndexSpec(), false, false);
-        boolean hasColumns = columns != null && !columns.isEmpty();
-        if (hasColumns) {
+    private static void appendSeparator(StringBuilder sql, int start) {
+        if (sql.length() > start) {
             sql.append(' ');
+        }
+    }
+
+    private void appendColumnsAndSpecTo(StringBuilder sql, int start,
+            Consumer<Expression> expressionPrinter) {
+        if (columns != null && !columns.isEmpty()) {
+            appendSeparator(sql, start);
             appendColumnsTo(sql, expressionPrinter);
         }
+        String spec = PlainSelect.getStringList(getIndexSpec(), false, false);
         if (!spec.isEmpty()) {
-            sql.append(hasColumns ? " " : "  ").append(spec);
+            appendWord(sql, start, spec);
         }
     }
 }

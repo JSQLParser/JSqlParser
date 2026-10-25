@@ -101,6 +101,9 @@ import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
+import net.sf.jsqlparser.statement.SetPasswordStatement;
+import net.sf.jsqlparser.statement.SetRoleStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
@@ -112,6 +115,8 @@ import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterDomain;
 import net.sf.jsqlparser.statement.alter.AlterExtension;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
@@ -122,12 +127,16 @@ import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterType;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -154,7 +163,9 @@ import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.type.CreateType;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
@@ -213,6 +224,8 @@ import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
 import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.role.ReassignOwned;
@@ -245,7 +258,9 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -1735,7 +1750,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateSchema createSchema, S context) {
-        throwUnsupported(createSchema);
+        createSchema.getStatements().forEach(element -> element.accept(this, context));
         return null;
     }
 
@@ -1763,6 +1778,33 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateUser createUser) {
         StatementVisitor.super.visit(createUser);
+    }
+
+    // Account and role names are not tables.
+
+    @Override
+    public <S> Void visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetPasswordStatement setPassword, S context) {
+        return null;
     }
 
     @Override
@@ -1806,6 +1848,31 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateTrigger createTrigger) {
         StatementVisitor.super.visit(createTrigger);
+    }
+
+    @Override
+    public <S> Void visit(CreateEventTrigger statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Reindex statement, S context) {
+        if (statement.getTable() != null) {
+            visit(statement.getTable(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SecurityLabel statement, S context) {
+        statement.visitRelations(table -> visit(table, context));
+        return null;
     }
 
     @Override
@@ -1906,7 +1973,14 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
-        throwUnsupported(showColumnsStatement);
+        Table table = showColumnsStatement.getTable();
+        if (table != null && showColumnsStatement.getDbName() != null) {
+            // MySQL: the trailing FROM db names the database of the table
+            table = new Table(showColumnsStatement.getDbName(), table.getName());
+        }
+        if (table != null) {
+            visit(table, context);
+        }
         return null;
     }
 
@@ -2362,6 +2436,32 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(ShowTablesStatement showTables) {
         StatementVisitor.super.visit(showTables);
+    }
+
+    @Override
+    public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
+        // reads the status of the tables of a database, but names no table
+        return null;
+    }
+
+    @Override
+    public void visit(ShowTableStatusStatement showTableStatus) {
+        StatementVisitor.super.visit(showTableStatus);
+    }
+
+    @Override
+    public <S> Void visit(ShowCreateStatement showCreate, S context) {
+        ShowCreateStatement.ObjectType type = showCreate.getObjectType();
+        if ((type == ShowCreateStatement.ObjectType.TABLE
+                || type == ShowCreateStatement.ObjectType.VIEW) && showCreate.getName() != null) {
+            visit(showCreate.getName(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(ShowCreateStatement showCreate) {
+        StatementVisitor.super.visit(showCreate);
     }
 
     @Override
@@ -3075,6 +3175,18 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterPolicy statement, S context) {
         visit(statement.getTable(), context);
         statement.getOptions().visitExpressions(expression -> expression.accept(this, context));
@@ -3172,6 +3284,18 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterCollation statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRoutine statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTrigger statement, S context) {
+        visit(statement.getTable(), context);
         return null;
     }
 }
