@@ -75,13 +75,13 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         // Build a list of matched columns
-        String columnsListCommaSeperated = "";
+        StringBuilder columnsListCommaSeperated = new StringBuilder();
         Iterator<Column> iterator = this._matchColumns.iterator();
         while (iterator.hasNext()) {
             Column col = iterator.next();
-            columnsListCommaSeperated += col.getFullyQualifiedName();
+            columnsListCommaSeperated.append(col.getFullyQualifiedName());
             if (iterator.hasNext()) {
-                columnsListCommaSeperated += ",";
+                columnsListCommaSeperated.append(",");
             }
         }
 
