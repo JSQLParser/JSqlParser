@@ -5016,7 +5016,7 @@ Execute OracleImplicitCall():
     name=ColumnIdentifier() { call.setName(name.getNames()); call.setExecType(Execute.ExecType.IMPLICIT);
       requireDdlSyntax(!Arrays.asList("RAISE", "RETURN", "GOTO", "EXIT", "CONTINUE", "LOOP", "WHILE", "FOR")
           .contains(call.getName().toUpperCase(java.util.Locale.ROOT)), "Unsupported PL/SQL control statement"); }
-    [ LOOKAHEAD("(") arguments=ExpressionList() { call.setExprList(arguments); } ]
+    [ LOOKAHEAD(1, "(") arguments=ExpressionList() { call.setExprList(arguments); } ]
     { return call; }
 }
 
@@ -5267,7 +5267,7 @@ LockStatement LockStatement(): {
 } {
     <K_LOCK>
     { statement.setUseTableKeyword(false); }
-    [ LOOKAHEAD(<K_TABLE>) <K_TABLE> { statement.setUseTableKeyword(true); } ]
+    [ LOOKAHEAD(1, <K_TABLE>) <K_TABLE> { statement.setUseTableKeyword(true); } ]
     target=LockTarget() { statement.getTargets().add(target); }
     ( "," target=LockTarget() { statement.getTargets().add(target); } )*
     [ <K_IN> mode=TableLockMode() <K_MODE> { statement.setLockMode(mode); } ]
@@ -5489,7 +5489,6 @@ DBMSDestination DBMSDestination() #DBMSDestination: {
     connectionDefinition = ConnectionDefinition() { dbmsDestination.setConnectionDefinition(connectionDefinition); }
 
     (
-          LOOKAHEAD(3)
           <K_TABLE> table = Table() { dbmsDestination.setTable(table); }
           [ LOOKAHEAD(2) columns = ParenthesedColumnList() { dbmsDestination.setColumns(columns); } ]
           [ LOOKAHEAD(2) dbmsTableDestinationOptions = DBMSTableDestinationOptionList() { dbmsDestination.setDBMSTableDestinationOptions(dbmsTableDestinationOptions); } ]
@@ -8714,9 +8713,9 @@ Select Select() #Select:
             [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { select.setInterpolate(interpolateElements); } ]
             [ LOOKAHEAD(2, { !(select instanceof Values) }) optionClause = OptionClause() { select.setOption(optionClause); } ]
 
-            [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
-            [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
-            [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
+            [ LOOKAHEAD(1, <K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
+            [ LOOKAHEAD(1, <K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
+            [ LOOKAHEAD(1, <K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
             [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
         )
     )
@@ -8765,8 +8764,8 @@ PlainSelect FromFirstSelect() #FromFirstSelect:
     [ LOOKAHEAD(2) qualify=Qualify() { plainSelect.setQualify(qualify); } ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements=OrderByElements()
         { plainSelect.setOrderByElements(orderByElements); } ]
-    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() { plainSelect.setLimit(limit); } ]
-    [ LOOKAHEAD(<K_OFFSET>) offset=Offset() { plainSelect.setOffset(offset); } ]
+    [ LOOKAHEAD(1, <K_LIMIT>) limit=LimitWithOffset() { plainSelect.setLimit(limit); } ]
+    [ LOOKAHEAD(1, <K_OFFSET>) offset=Offset() { plainSelect.setOffset(offset); } ]
     {
         linkAST(plainSelect, jjtThis);
         return plainSelect;
@@ -9170,8 +9169,8 @@ TableStatement TableStatement():
     table = Table()
     { tableStatement.setTable(table); }
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { tableStatement.setOrderByElements(orderByElements); } ]
-    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { tableStatement.setLimit(limit);} ]
-    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { tableStatement.setOffset(offset);} ]
+    [ LOOKAHEAD(1, <K_LIMIT>) limit = LimitWithOffset() { tableStatement.setLimit(limit);} ]
+    [ LOOKAHEAD(1, <K_OFFSET>) offset = Offset() { tableStatement.setOffset(offset);} ]
     { return tableStatement; }
     /* Support operationList */
 }
@@ -9505,7 +9504,7 @@ PlainSelect PlainSelect() #PlainSelect:
         selectItems=SelectItemsList()
     )
 
-    [ LOOKAHEAD(<K_INTO>)
+    [ LOOKAHEAD(1, <K_INTO>)
         (
             LOOKAHEAD({ isMySqlSelectIntoAhead() })
             mySqlSelectIntoClause = MySqlSelectIntoClause(MySqlSelectIntoClause.Position.BEFORE_FROM)
@@ -9567,8 +9566,8 @@ PlainSelect PlainSelect() #PlainSelect:
     // optionally attach ClickHouse's `LIMIT ... BY ...`. Checking BY right after the limit
     // expression avoids a numeric LOOKAHEAD, which cannot see past a long parenthesized
     // subquery and would wrongly commit to LIMIT BY (issue #2359).
-    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset()
-        [ LOOKAHEAD(<K_BY>) <K_BY> expressionList = ExpressionList() { limit.setByExpressions(expressionList); } ]
+    [ LOOKAHEAD(1, <K_LIMIT>) limit = LimitWithOffset()
+        [ LOOKAHEAD(1, <K_BY>) <K_BY> expressionList = ExpressionList() { limit.setByExpressions(expressionList); } ]
         {
             if (limit.getByExpressions() != null) {
                 plainSelect.setLimitBy(limit);
@@ -9576,13 +9575,13 @@ PlainSelect PlainSelect() #PlainSelect:
                 plainSelect.setLimit(limit);
             }
         } ]
-    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
+    [ LOOKAHEAD(1, <K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_PROCEDURE> <K_ANALYSE>)
         mySqlProcedureAnalyse = MySqlProcedureAnalyse()
         { plainSelect.setMySqlProcedureAnalyse(mySqlProcedureAnalyse); }
     ]
-    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
+    [ LOOKAHEAD(1, <K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
     [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setIsolation(withIsolation); } ]
     [ LOOKAHEAD(2)
         <K_FOR>
@@ -9599,7 +9598,7 @@ PlainSelect PlainSelect() #PlainSelect:
             ( LOOKAHEAD(2) "," updateTable = Table() { updateTables.add(updateTable); } )*
             { plainSelect.setForUpdateTables(updateTables); }
         ]
-        [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
+        [ LOOKAHEAD(1, <K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
         [ LOOKAHEAD(2) (<K_NOWAIT> { plainSelect.setNoWait(true); }
                | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
         [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements()
@@ -9617,7 +9616,7 @@ PlainSelect PlainSelect() #PlainSelect:
         { plainSelect.setMySqlSelectIntoClause(mySqlSelectIntoClause); }
     ]
     [ LOOKAHEAD(2) <K_SETTINGS> settings = UpdateSets() { plainSelect.setSettings(settings); } ]
-    [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
+    [ LOOKAHEAD(1, <K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
     [ LOOKAHEAD(3) <K_INTO> <K_TEMP> intoTempTable = Table() { plainSelect.setIntoTempTable(intoTempTable);} ]
     [ LOOKAHEAD(3)<K_WITH> <K_NO> <K_LOG> { plainSelect.setUseWithNoLog(true); } ]
     {
@@ -9690,10 +9689,10 @@ Select SetOperationList(Select select) #SetOperationList: {
 
     [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
     [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { list.setInterpolate(interpolateElements); } ]
-    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { list.setLimit(limit);    } ]
-    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);    } ]
+    [ LOOKAHEAD(1, <K_LIMIT>) limit = LimitWithOffset() { list.setLimit(limit);    } ]
+    [ LOOKAHEAD(1, <K_OFFSET>) offset = Offset() { list.setOffset(offset);    } ]
     [ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { list.setLimit(limit);    } ]
-    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);    } ]
+    [ LOOKAHEAD(1, <K_FETCH>) fetch = Fetch() { list.setFetch(fetch);    } ]
     [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setIsolation(withIsolation);    } ]
 
     {
@@ -10173,7 +10172,7 @@ ColumnsTransformer ColumnsTransformer():
         | <K_RENAME>
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.RENAME); }
           (
-              LOOKAHEAD("(") "(" replaceItems = SelectItemsList() ")"
+              LOOKAHEAD(1, "(") "(" replaceItems = SelectItemsList() ")"
               |
               item = SelectItem()
               {
@@ -10646,21 +10645,21 @@ void MySqlSelectIntoOutfileTail(MySqlSelectIntoClause intoClause):
           (token=<S_IDENTIFIER> | token=<K_BINARY>)
           { intoClause.setCharacterSet(token.image); }
           (
-                LOOKAHEAD((<K_FIELDS> | <K_COLUMNS>))
+                LOOKAHEAD(1, (<K_FIELDS> | <K_COLUMNS>))
                 MySqlSelectIntoFieldsClause(intoClause)
-                [ LOOKAHEAD(<K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
+                [ LOOKAHEAD(1, <K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
               |
-                LOOKAHEAD(<K_LINES>)
+                LOOKAHEAD(1, <K_LINES>)
                 MySqlSelectIntoLinesClause(intoClause)
               |
                 { }
           )
         |
-          LOOKAHEAD((<K_FIELDS> | <K_COLUMNS>))
+          LOOKAHEAD(1, (<K_FIELDS> | <K_COLUMNS>))
           MySqlSelectIntoFieldsClause(intoClause)
-          [ LOOKAHEAD(<K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
+          [ LOOKAHEAD(1, <K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
         |
-          LOOKAHEAD(<K_LINES>)
+          LOOKAHEAD(1, <K_LINES>)
           MySqlSelectIntoLinesClause(intoClause)
         |
           { }
@@ -10681,7 +10680,7 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
           <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
           { intoClause.setFieldsTerminatedBy(stringValue(token)); }
           (
-                LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
+                LOOKAHEAD(1, (<K_OPTIONALLY> | <K_ENCLOSED>))
                 [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
                 <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
                 { intoClause.setFieldsEnclosedBy(stringValue(token)); }
@@ -10697,7 +10696,7 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
                 { }
           )
         |
-          LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
+          LOOKAHEAD(1, (<K_OPTIONALLY> | <K_ENCLOSED>))
           [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
           <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
           { intoClause.setFieldsEnclosedBy(stringValue(token)); }
@@ -11667,7 +11666,7 @@ OrderByElement OrderByElement():
 }
 {
     columnReference = Expression()
-    [ LOOKAHEAD(<K_COLLATE>) <K_COLLATE> (collateToken=<S_CHAR_LITERAL> | collateToken=<S_QUOTED_IDENTIFIER>) { columnReference = new CollateExpression(columnReference, collateToken.image); } ]
+    [ LOOKAHEAD(1, <K_COLLATE>) <K_COLLATE> (collateToken=<S_CHAR_LITERAL> | collateToken=<S_QUOTED_IDENTIFIER>) { columnReference = new CollateExpression(columnReference, collateToken.image); } ]
     [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [ LOOKAHEAD(2) <K_NULLS>
         [ LOOKAHEAD(2) (
@@ -11766,9 +11765,9 @@ OptionHint OptionHint():
     name = OptionHintName() { optionHint.setName(name); }
     [
         (
-            LOOKAHEAD("=") "=" value = Expression() { optionHint.setValue(value); optionHint.setUseEquals(true); }
+            LOOKAHEAD(1, "=") "=" value = Expression() { optionHint.setValue(value); optionHint.setUseEquals(true); }
             |
-            LOOKAHEAD("(") "(" parameter = OptionHintParameter() { optionHint.addParameter(parameter); }
+            LOOKAHEAD(1, "(") "(" parameter = OptionHintParameter() { optionHint.addParameter(parameter); }
             ( "," parameter = OptionHintParameter() { optionHint.addParameter(parameter); } )*
             ")"
             |
@@ -12617,7 +12616,7 @@ Expression IsJsonExpression(Expression leftExpression):
     [ LOOKAHEAD(2) ( <K_WITH> { result.setUniqueKeys(IsJsonExpression.UniqueKeys.WITH); }
         | <K_WITHOUT> { result.setUniqueKeys(IsJsonExpression.UniqueKeys.WITHOUT); } )
         <K_UNIQUE> { result.setUseKeysKeyword(false); }
-        [ LOOKAHEAD(<K_KEYS>) <K_KEYS> { result.setUseKeysKeyword(true); } ] ]
+        [ LOOKAHEAD(1, <K_KEYS>) <K_KEYS> { result.setUseKeysKeyword(true); } ] ]
     { result.setLeftExpression(leftExpression); return result; }
 }
 
@@ -13304,7 +13303,7 @@ Expression PrimaryExpression() #PrimaryExpression:
                 { retval = new FunctionAllColumns(unwrapParenthesedFunction(retval)); } ]
 
             // Share field and method navigation with the other primary expressions.
-            ( LOOKAHEAD(".") nxt=NavigationStep(retval) { retval = nxt; } )*
+            ( LOOKAHEAD(1, ".") nxt=NavigationStep(retval) { retval = nxt; } )*
         )
     )
 
@@ -15050,7 +15049,7 @@ ExpressionList ExecuteArguments(): {
 }
 {
     (
-        LOOKAHEAD("(") arguments=ExpressionList()
+        LOOKAHEAD(1, "(") arguments=ExpressionList()
         |
         argument=ExecuteArgument() { arguments.add(argument); }
         ( LOOKAHEAD(2) "," argument=ExecuteArgument() { arguments.add(argument); } )*
@@ -16204,7 +16203,7 @@ String PostgreSqlStorageParameterName():
 { String name; String part; }
 {
     name=RelObjectName()
-    ( LOOKAHEAD(".") "." part=RelObjectNameExt() { name += "." + part; } )*
+    ( LOOKAHEAD(1, ".") "." part=RelObjectNameExt() { name += "." + part; } )*
     { return name; }
 }
 
@@ -16474,15 +16473,15 @@ ColumnOption ColumnDefinitionOption(): {
         |
         LOOKAHEAD(<K_NOT> <K_NULL>) <K_NOT> <K_NULL> { option = ColumnOption.nullability(false); }
         |
-        LOOKAHEAD(<K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
+        LOOKAHEAD(1, <K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
         |
-        LOOKAHEAD(<K_VISIBLE>) <K_VISIBLE> { option = ColumnOption.visibility(true); }
+        LOOKAHEAD(1, <K_VISIBLE>) <K_VISIBLE> { option = ColumnOption.visibility(true); }
         |
-        LOOKAHEAD(<K_INVISIBLE>) <K_INVISIBLE> { option = ColumnOption.visibility(false); }
+        LOOKAHEAD(1, <K_INVISIBLE>) <K_INVISIBLE> { option = ColumnOption.visibility(false); }
         |
-        LOOKAHEAD(<K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
+        LOOKAHEAD(1, <K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
         |
-        LOOKAHEAD(<K_STORAGE>) <K_STORAGE> ( tk=<K_EXTENDED> | tk=<K_DEFAULT> | tk=<S_IDENTIFIER> )
+        LOOKAHEAD(1, <K_STORAGE>) <K_STORAGE> ( tk=<K_EXTENDED> | tk=<K_DEFAULT> | tk=<S_IDENTIFIER> )
         { option = ColumnOption.storage(accessEnum(ColumnOption.Storage.class, tk.image)); }
         |
         LOOKAHEAD({ isKeywordAhead("COMPRESSION") }) ContextualKeyword("COMPRESSION") compression=RelObjectName()
@@ -16508,12 +16507,12 @@ ColumnOption ColumnDefinitionOption(): {
             option.setUseEquals(useEquals);
         }
         |
-        LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
+        LOOKAHEAD(1, <K_COLLATE>) <K_COLLATE>
         ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
           | collationNames=RelObjectNames() { collation = String.join(".", collationNames.getNames()); } )
         { option = ColumnOption.collate(collation); }
         |
-        LOOKAHEAD(<K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
+        LOOKAHEAD(1, <K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
         { option = ColumnOption.comment(stringValue(tk)); }
         |
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
@@ -16546,7 +16545,7 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_DEFAULT> <K_ON> <K_NULL>) <K_DEFAULT> <K_ON> <K_NULL>
         { option = ColumnOption.raw("DEFAULT", "ON", "NULL"); }
         |
-        LOOKAHEAD(<K_DEFAULT>) <K_DEFAULT> { option = ColumnOption.raw("DEFAULT"); }
+        LOOKAHEAD(1, <K_DEFAULT>) <K_DEFAULT> { option = ColumnOption.raw("DEFAULT"); }
         // Db2 permits an omitted default value. Keep these implicit defaults raw.
         [ LOOKAHEAD(2, { !(getToken(1).kind == K_NOT && getToken(2).kind == K_NULL) })
             defaultExpression=ColumnDefaultValue() { option = ColumnOption.defaultValue(defaultExpression); } ]
@@ -18303,7 +18302,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                     tk.image.toUpperCase(Locale.ROOT))); } ]
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
         (
-            LOOKAHEAD(<K_EXECUTE>) execute=Execute() {
+            LOOKAHEAD(1, <K_EXECUTE>) execute=Execute() {
                 requireDdlSyntax(createTable.isUseAsKeyword() && createTable.getDuplicateHandling() == null,
                         "CREATE TABLE EXECUTE requires AS and cannot use duplicate handling");
                 createTable.setExecute(execute);
@@ -18381,7 +18380,7 @@ ForeignDataOption ForeignDataOption():
 }
 {
     (
-        LOOKAHEAD(<K_DROP>) <K_DROP> name=RelObjectName()
+        LOOKAHEAD(1, <K_DROP>) <K_DROP> name=RelObjectName()
         { option = new ForeignDataOption(name, null); option.setAction(ForeignDataOption.Action.DROP); }
         |
         [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
@@ -18396,7 +18395,7 @@ TableElement CreateTableElement(boolean typed):
 { TableElement element; }
 {
     (
-        LOOKAHEAD(<K_LIKE>) element=LikeClause()
+        LOOKAHEAD(1, <K_LIKE>) element=LikeClause()
         | LOOKAHEAD(3) element=CreateTableConstraint()
         | element=CreateTableColumnDefinition(typed)
     )
@@ -18856,7 +18855,7 @@ String LargeObjectTypeName():
     Token object;
 }
 {
-    [ LOOKAHEAD(<S_IDENTIFIER>) national=<S_IDENTIFIER> ]
+    [ LOOKAHEAD(1, <S_IDENTIFIER>) national=<S_IDENTIFIER> ]
     ( type=<K_CHARACTER> | type=<K_CHAR> | type=<K_BINARY> | type=<DATA_TYPE> )
     large=<S_IDENTIFIER> object=<S_IDENTIFIER>
     { return (national == null ? "" : national.image + " ")
@@ -19037,7 +19036,7 @@ ColDataType ColDataType():
     ( LOOKAHEAD(1) typeModifier=MySqlTypeModifier()
         { colDataType.addTypeModifier(typeModifier); } )*
     (
-        LOOKAHEAD(<K_ARRAY_LITERAL>) <K_ARRAY_LITERAL> { tk = null; }
+        LOOKAHEAD(1, <K_ARRAY_LITERAL>) <K_ARRAY_LITERAL> { tk = null; }
         [ LOOKAHEAD(2) "[" tk=<S_LONG> "]" ] {
             array.add(tk == null ? null : Integer.valueOf(tk.image));
             colDataType.setArrayData(array);
@@ -19677,7 +19676,7 @@ void AlterExpressionUsingIndex(AlterExpression alterExp):
     <K_USING> { alterExp.addParameters("USING"); }
     [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
     (
-        LOOKAHEAD(2, <K_TABLESPACE>) <K_TABLESPACE> sk4=RelObjectName()
+        LOOKAHEAD(1, <K_TABLESPACE>) <K_TABLESPACE> sk4=RelObjectName()
         { alterExp.addParameters("TABLESPACE"); alterExp.addParameters(sk4); }
         |
         sk4=RelObjectName() { alterExp.addParameters(sk4); }
@@ -21731,7 +21730,7 @@ Statement Alter():
                 |
                 LOOKAHEAD(AlterTrigger() ( <ST_SEMICOLON> | <EOF> )) statement = AlterTrigger()
                 |
-                LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
+                LOOKAHEAD(1, <K_POLICY>) statement = AlterPolicy()
                 |
                 LOOKAHEAD({ isMySqlAlterUserAhead() }) statement = AlterUser()
                 |
@@ -21747,11 +21746,11 @@ Statement Alter():
                 // Other dialects keep unmodelled ALTER DATABASE forms as unsupported statements.
                 LOOKAHEAD(AlterDatabase()) statement = AlterDatabase()
                 |
-                LOOKAHEAD(<K_SCHEMA>) statement = AlterSchema()
+                LOOKAHEAD(1, <K_SCHEMA>) statement = AlterSchema()
                 |
-                LOOKAHEAD(<K_TYPE>) statement = AlterType()
+                LOOKAHEAD(1, <K_TYPE>) statement = AlterType()
                 |
-                LOOKAHEAD(<K_DOMAIN>) statement = AlterDomain()
+                LOOKAHEAD(1, <K_DOMAIN>) statement = AlterDomain()
                 |
                 LOOKAHEAD({ isKeywordAhead("EXTENSION") }) statement = AlterExtension()
                 |
@@ -22111,7 +22110,7 @@ RelationAlterAction PostgreSqlRelationAction():
                       action.setStatistics(statistics);
                   } )
                 |
-                LOOKAHEAD("(") options=PostgreSqlIndexOptions() {
+                LOOKAHEAD(1, "(") options=PostgreSqlIndexOptions() {
                     for (IndexOption option : options) {
                         requireDdlSyntax(option.getValue() != null && option.isUseEquals(),
                                 "Column attributes require a value and an equals sign");
@@ -23526,9 +23525,9 @@ Statement Create():
         |
         LOOKAHEAD({ isPostgreSqlTriggerAhead() }) statement = PostgreSqlTrigger(isUsingOrReplace)
         |
-        LOOKAHEAD(<K_TYPE>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE TYPE"); } statement = CreateType()
+        LOOKAHEAD(1, <K_TYPE>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE TYPE"); } statement = CreateType()
         |
-        LOOKAHEAD(<K_DOMAIN>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE DOMAIN"); } statement = CreateDomain()
+        LOOKAHEAD(1, <K_DOMAIN>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE DOMAIN"); } statement = CreateDomain()
         |
         LOOKAHEAD({ isKeywordAhead("EXTENSION")
                 && "REPOSITORY".equalsIgnoreCase(getToken(2).image) })
@@ -25286,7 +25285,7 @@ CreateRule CreateRule(boolean orReplace):
     (
         <K_NOTHING> { statement.setNothing(true); }
         | LOOKAHEAD(Select()) action=Select() { statement.getActions().add(action); }
-        | LOOKAHEAD("(") "(" { statement.setUseParentheses(true); }
+        | LOOKAHEAD(1, "(") "(" { statement.setUseParentheses(true); }
           [ LOOKAHEAD({ getToken(1).kind != ST_SEMICOLON && !")".equals(getToken(1).image) })
             action=PostgreSqlRuleAction() { statement.getActions().add(action); } ]
           ( <ST_SEMICOLON>
