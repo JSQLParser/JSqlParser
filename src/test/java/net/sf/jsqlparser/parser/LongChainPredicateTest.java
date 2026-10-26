@@ -11,7 +11,10 @@ package net.sf.jsqlparser.parser;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
 
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
@@ -99,5 +102,19 @@ public class LongChainPredicateTest {
         // the column(+) exclusion must survive the memoized walk
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT * FROM a, b WHERE " + chain(8, "x(+)") + " = b.x");
+    }
+
+    @Test
+    void veryLongChainsParseInLinearTime() {
+        // the memoizing walk used to fetch each part with getToken(i), which rescans the
+        // token list from the start, so one walk over a 10000-part chain took many seconds
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            assertTrue(
+                    firstExpression("SELECT " + chain(10000, "col") + " FROM t") instanceof Column);
+            assertTrue(firstExpression(
+                    "SELECT " + chain(10000, "*") + " FROM t") instanceof AllTableColumns);
+            assertTrue(firstExpression(
+                    "SELECT " + chain(10000, "f(1)") + " FROM t") instanceof Function);
+        });
     }
 }

@@ -425,11 +425,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         Token token = getToken(offset);
         switch (token.kind) {
             case K_SET:
-                int nameEnd = offset + 2;
-                while (".".equals(getToken(nameEnd).image)) {
-                    nameEnd += 2;
+                Token assignment = getToken(offset + 2);
+                while (".".equals(assignment.image)) {
+                    assignment = nextWithItemToken(nextWithItemToken(assignment));
                 }
-                Token assignment = getToken(nameEnd);
                 return assignment.kind == K_TO || "=".equals(assignment.image)
                         || assignment.kind == K_FROM;
             case K_RESET:
@@ -521,15 +520,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         boolean statementStart = true;
         boolean statements = false;
         int caseDepth = 0;
-        for (int i = 2; ; i++) {
-            Token token = getToken(i);
+        for (Token token = getToken(2); ; token = nextWithItemToken(token)) {
             if (token.kind == EOF) {
                 return false;
             } else if (token.kind == ST_SEMICOLON) {
                 statementStart = true;
             } else if (statementStart) {
                 if (token.kind == K_END) {
-                    int next = getToken(i + 1).kind;
+                    int next = nextWithItemToken(token).kind;
                     return statements && (next == ST_SEMICOLON || next == EOF);
                 }
                 switch (token.kind) {
@@ -676,8 +674,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         try {
             int depth = 0;
             Token prev = null;
-            for (int i = 2; ; i++) {
-                Token t = getToken(i);
+            for (Token t = getToken(2); ; t = nextWithItemToken(t)) {
                 if (t == null || t.kind == EOF) {
                     return false;
                 }
@@ -841,8 +838,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // CHAIN_CACHE_THRESHOLD delimiter/part pairs (only in the non-filling pass).
     private int isFunctionAheadWalk(boolean fill) {
       try {
-        int i = 1;
-        Token t = getToken(i);
+        Token t = getToken(1);
 
         // JDBC escape function: {fn ...} — must check for FN keyword
         if (t.image.equals("{")) {
@@ -851,8 +847,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         // Optional APPROXIMATE keyword
         if (t.kind == K_APPROXIMATE) {
-            i++;
-            t = getToken(i);
+            t = getToken(2);
         }
 
         // Exclude tokens that have their own dedicated branches
@@ -867,32 +862,31 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || t.kind == CLOSING_BRACKET || t.kind == EOF || "[".equals(t.image)) {
             return 0;
         }
-        i++;
-
-        // Walk through dotted name chain
+        // Walk through dotted name chain, following the token chain directly;
+        // repeated getToken(i) calls rescan from the start each time
         int delimiters = 0;
         List<Token> chainParts = fill ? new ArrayList<Token>() : null;
+        t = nextWithItemToken(t);
         while (true) {
-            t = getToken(i);
             if (t.image.equals(".") || t.image.equals("..")
                     || t.image.equals("...") || t.image.equals(":")) {
                 if (!fill && ++delimiters > CHAIN_CACHE_THRESHOLD) {
                     return LONG_CHAIN;
                 }
+                Token part = nextWithItemToken(t);  // skip delimiter
                 if (fill) {
-                    chainParts.add(getToken(i + 1));
+                    chainParts.add(part);
                 }
-                i++;  // skip delimiter
-                i++;  // skip next name part
+                t = nextWithItemToken(part);  // skip next name part
             } else {
                 break;
             }
         }
 
         // Must be followed by (, and not by the Oracle join syntax column(+)
-        boolean result = getToken(i).kind == OPENING_BRACKET
-                && !(getToken(i + 1).image.equals("+")
-                        && getToken(i + 2).kind == CLOSING_BRACKET);
+        boolean result = t.kind == OPENING_BRACKET
+                && !(nextWithItemToken(t).image.equals("+")
+                        && nextWithItemToken(nextWithItemToken(t)).kind == CLOSING_BRACKET);
 
         // Each eligible chain part would walk the same remaining suffix and
         // obtain the same answer, so memoize them all in one pass.
@@ -1492,32 +1486,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // Returns 1 for true, 0 for false, or LONG_CHAIN when the walk exceeded
     // CHAIN_CACHE_THRESHOLD delimiter/part pairs (only in the non-filling pass).
     private int isAllTableColumnsWalk(boolean fill) {
-        int i = 1;
-        Token t = getToken(i);
+        Token last = getToken(1);
 
         // Must start with a name-like token
-        if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
-                || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
-                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+        if (last.kind == S_LONG || last.kind == S_DOUBLE || last.kind == S_HEX
+                || last.kind == S_CHAR_LITERAL || last.kind == OPENING_BRACKET
+                || last.kind == CLOSING_BRACKET || last.kind == EOF) {
             return 0;
         }
-        i++;
 
-        // Walk through dotted name chain
+        // Walk through dotted name chain, following the token chain directly;
+        // repeated getToken(i) calls rescan from the start each time
         int delimiters = 0;
         List<Token> chainParts = fill ? new ArrayList<Token>() : null;
         while (true) {
-            t = getToken(i);
+            Token t = nextWithItemToken(last);
             if (t.image.equals(".") || t.image.equals("..")
                     || t.image.equals("...")) {
                 if (!fill && ++delimiters > CHAIN_CACHE_THRESHOLD) {
                     return LONG_CHAIN;
                 }
+                last = nextWithItemToken(t);  // skip delimiter, take next part (could be "*")
                 if (fill) {
-                    chainParts.add(getToken(i + 1));
+                    chainParts.add(last);
                 }
-                i++;  // skip delimiter
-                i++;  // skip next part (could be "*")
             } else {
                 break;
             }
@@ -1525,8 +1517,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         // It's AllTableColumns if the chain ended on "*"
         // i.e., the last name part we skipped over was "*"
-        // Back up: the last token consumed was at (i-1)
-        boolean result = getToken(i - 1).image.equals("*");
+        boolean result = last.image.equals("*");
 
         // Each chain part that would pass the name-like guard walks the same
         // remaining suffix and obtains the same answer.
@@ -2721,9 +2712,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return false;
         }
         int depth = 1;
-        int i = 4;
         while (depth > 0) {
-            t = getToken(i++);
+            t = nextWithItemToken(t);
             if (t == null || t.kind == EOF) {
                 return false;
             }
@@ -2733,7 +2723,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 depth--;
             }
         }
-        t = getToken(i);
+        t = nextWithItemToken(t);
         if (t.kind == K_DO) {
             return true;
         }
@@ -2742,8 +2732,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         // the index predicate ends where the conflict action's DO begins
         depth = 0;
-        for (i++; ; i++) {
-            t = getToken(i);
+        while (true) {
+            t = nextWithItemToken(t);
             if (t == null || t.kind == EOF) {
                 return false;
             }
@@ -2874,11 +2864,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * user@host, which the lexer reads as one identifier, counts only when merged is set.
      */
     private boolean isMySqlAccountHostAhead(int offset, boolean merged) {
-        Token name = getToken(offset);
+        return isMySqlAccountHost(getToken(offset), merged);
+    }
+
+    private boolean isMySqlAccountHost(Token name, boolean merged) {
         if (name.kind == S_IDENTIFIER && name.image.indexOf('@') > 0) {
             return merged || name.image.endsWith("@");
         }
-        Token next = getToken(offset + 1);
+        Token next = nextWithItemToken(name);
         return next.kind == K_AT_SIGN
                 || next.kind == S_AT_IDENTIFIER && !next.image.startsWith("@@");
     }
@@ -2901,9 +2894,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (isMySqlDialect()) { return true; }
         if (next.kind == K_ALL) { return getToken(4).kind == K_EXCEPT; }
         // role [@ host] [, role [@ host]] ...
-        for (int i = 3; ; i += 2) {
-            if (isMySqlAccountHostAhead(i, false)) { return true; }
-            if (!",".equals(getToken(i + 1).image)) { return false; }
+        for (Token role = next; ; role = nextWithItemToken(nextWithItemToken(role))) {
+            if (isMySqlAccountHost(role, false)) { return true; }
+            if (!",".equals(nextWithItemToken(role).image)) { return false; }
         }
     }
 
@@ -2937,8 +2930,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     private boolean isObjectPrivilegeAhead() {
         int depth = 0;
-        for (int i = 1; ; i++) {
-            Token token = getToken(i);
+        for (Token token = getToken(1); ; token = nextWithItemToken(token)) {
             if (token.kind == EOF || ";".equals(token.image)) { return false; }
             if ("(".equals(token.image)) { depth++; }
             else if (")".equals(token.image)) { depth--; }
@@ -2983,10 +2975,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     private boolean isPostgreSqlTriggerAhead() {
         if (getToken(1).kind == K_CONSTRAINT) { return true; }
         if (getToken(1).kind != K_TRIGGER) { return false; }
-        for (int i = 2; ; i++) {
-            Token token = getToken(i);
+        for (Token token = getToken(2); ; token = nextWithItemToken(token)) {
             if (token.kind == EOF || ";".equals(token.image) || token.kind == K_BEGIN) { return false; }
-            if (token.kind == K_EXECUTE && (getToken(i + 1).kind == K_FUNCTION || getToken(i + 1).kind == K_PROCEDURE)) { return true; }
+            if (token.kind == K_EXECUTE && (nextWithItemToken(token).kind == K_FUNCTION || nextWithItemToken(token).kind == K_PROCEDURE)) { return true; }
             // DuckDB 2.0 uses the standard header with a statement body instead of EXECUTE
             if ("REFERENCING".equalsIgnoreCase(token.image) || token.kind == K_STATEMENT) { return true; }
         }
@@ -3404,8 +3395,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected boolean isNamedExprListAhead() {
         int depth = 0;
-        for (int i = 1; ; i++) {
-            Token t = getToken(i);
+        for (Token t = getToken(1); ; t = nextWithItemToken(t)) {
             if (t.kind == EOF) {
                 return false;
             }
