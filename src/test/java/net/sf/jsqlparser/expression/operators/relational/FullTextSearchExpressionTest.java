@@ -9,7 +9,15 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -34,5 +42,19 @@ public class FullTextSearchExpressionTest {
                 + "match (name) against (?)\n" + "and c.deleted = 0\n" + "order by\n"
                 + "full_text desc",
                 true);
+    }
+
+    @Test
+    public void testToStringIsLinearInMatchColumns() {
+        List<Column> columns = new ArrayList<>();
+        for (int i = 0; i < 200_000; i++) {
+            columns.add(new Column("c" + i));
+        }
+        FullTextSearch fullTextSearch = new FullTextSearch()
+                .withMatchColumns(new ExpressionList<>(columns))
+                .withAgainstValue(new StringValue("x"));
+
+        String sql = assertTimeoutPreemptively(Duration.ofSeconds(2), fullTextSearch::toString);
+        assertThat(sql).startsWith("MATCH (c0,c1,").endsWith(",c199999) AGAINST ('x')");
     }
 }
