@@ -3427,8 +3427,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    /** Creates a string literal that remembers how this configuration lexed its backslashes. */
-    private StringValue stringValue(Token token) {
+    /**
+     * Creates a string literal that remembers how this configuration lexed its backslashes. A
+     * PostgreSQL escape string with a Unicode escape that the server rejects is rejected as well.
+     */
+    private StringValue stringValue(Token token) throws ParseException {
         StringValue value = new StringValue(token.image);
         // a U&'...' string brings its own escaping
         if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")
@@ -3440,6 +3443,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (Dialect.POSTGRESQL.name().equals(dialect)) {
             if (backslashes || "E".equalsIgnoreCase(value.getPrefix())) {
                 value.setEscaping(StringValue.Escaping.POSTGRESQL_ESCAPE_STRING);
+                try {
+                    value.getNotExcapedValue();
+                } catch (IllegalArgumentException e) {
+                    throw new ParseException("Invalid escape string " + token.image + ": "
+                            + e.getMessage());
+                }
             }
         } else if (backslashes && (dialect == null || isMySqlDialect())) {
             value.setEscaping(StringValue.Escaping.MYSQL_BACKSLASH);
