@@ -131,9 +131,13 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
                 builder.append("(");
             }
 
-            int size = list.size();
-            for (int i = 0; i < size; i++) {
-                builder.append(list.get(i)).append(i < size - 1 ? comma : "");
+            boolean first = true;
+            for (Object element : list) {
+                if (!first) {
+                    builder.append(comma);
+                }
+                builder.append(element);
+                first = false;
             }
 
             if (useBrackets) {
