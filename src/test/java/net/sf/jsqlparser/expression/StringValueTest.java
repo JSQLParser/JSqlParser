@@ -148,6 +148,34 @@ public class StringValueTest {
     }
 
     @Test
+    void testPostgresEscapeStringUnicodeEscapes() throws JSQLParserException {
+        String[][] cases = {
+                {"E'\\U0010FFFF'", new String(Character.toChars(0x10FFFF))},
+                // a surrogate pair as two escapes, in either form
+                {"E'\\uD83D\\uDE00'", "\uD83D\uDE00"},
+                {"E'\\ud83d\\U0000de00'", "\uD83D\uDE00"},
+                {"E'\\x41\\uD83D\\uDE00\\101'", "A\uD83D\uDE00A"}};
+        for (String[] c : cases) {
+            assertEquals(c[1], literal(c[0], Dialect.POSTGRESQL).getNotExcapedValue(), c[0]);
+        }
+
+        // the escapes PostgreSQL rejects: too few digits, invalid code points and a surrogate
+        // not written as a pair
+        for (String sql : new String[] {"E'\\u00e'", "E'\\U0001F60'", "E'\\u0000'",
+                "E'\\U00000000'", "E'\\U00110000'", "E'\\U7FFFFFFF'", "E'\\UFFFFFFFF'",
+                "E'\\uD800'", "E'\\uD800x'", "E'\\uD800\\u0041'", "E'\\uD800\\x41'",
+                "E'\\uD800'''", "E'\\uDE00'", "E'\\uD800\\uD800\\uDE00'"}) {
+            assertThrows(IllegalArgumentException.class, () -> new StringValue(sql)
+                    .withEscaping(StringValue.Escaping.POSTGRESQL_ESCAPE_STRING)
+                    .getNotExcapedValue(), sql);
+            assertThrows(JSQLParserException.class, () -> literal(sql, Dialect.POSTGRESQL), sql);
+        }
+        // only the escapes of PostgreSQL strings are checked
+        assertEquals("\\uD800", literal("'\\uD800'", Dialect.POSTGRESQL).getNotExcapedValue());
+        assertEquals("\\uD800", literal("E'\\uD800'", null).getNotExcapedValue());
+    }
+
+    @Test
     void testPostgresUnicodeEscapeStrings() throws JSQLParserException {
         StringValue value = literal("U&'\\0041BC \\00e9'", Dialect.POSTGRESQL);
         assertEquals(StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE, value.getEscaping());

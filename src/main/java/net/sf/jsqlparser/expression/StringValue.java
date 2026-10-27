@@ -234,7 +234,8 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
      * returned unchanged.
      *
      * @throws IllegalArgumentException if a {@link Escaping#POSTGRESQL_UNICODE_ESCAPE} value has an
-     *         escape that PostgreSQL rejects; the parser rejects such literals
+     *         escape that PostgreSQL rejects, or a {@link Escaping#POSTGRESQL_ESCAPE_STRING} value
+     *         has a Unicode escape that PostgreSQL rejects; the parser rejects such literals
      */
     public String getNotExcapedValue() {
         if (quoteStr != null && quoteStr.startsWith("$")) {
@@ -317,14 +318,14 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
                 result.append('\t');
                 return index + 1;
             case 'x':
-                return appendNumber(result, text, index + 1, 16, 1, 2, c, true);
+                return appendByte(result, text, index + 1, 16, 1, 2, c);
             case 'u':
-                return appendNumber(result, text, index + 1, 16, 4, 4, c, false);
+                return appendCodePoint(result, text, index, 4);
             case 'U':
-                return appendNumber(result, text, index + 1, 16, 8, 8, c, false);
+                return appendCodePoint(result, text, index, 8);
             default:
                 if (c >= '0' && c <= '7') {
-                    return appendNumber(result, text, index, 8, 1, 3, c, true);
+                    return appendByte(result, text, index, 8, 1, 3, c);
                 }
                 result.append(c);
                 return index + 1;
@@ -332,11 +333,11 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
-     * Appends the byte or code point spelled by {@code min} to {@code max} digits at {@code start},
-     * or {@code fallback} when fewer digits follow, and returns the next index.
+     * Appends the byte spelled by {@code min} to {@code max} digits at {@code start}, or
+     * {@code fallback} when fewer digits follow, and returns the next index.
      */
-    private static int appendNumber(Unescaped result, String text, int start, int radix,
-            int min, int max, char fallback, boolean isByte) {
+    private static int appendByte(Unescaped result, String text, int start, int radix, int min,
+            int max, char fallback) {
         int end = start;
         while (end < text.length() && end - start < max
                 && Character.digit(text.charAt(end), radix) >= 0) {
@@ -346,12 +347,28 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
             result.append(fallback);
             return start;
         }
-        int number = Integer.parseInt(text.substring(start, end), radix);
-        if (isByte) {
-            result.appendByte(number);
-        } else {
-            result.appendCodePoint(number);
+        result.appendByte(Integer.parseInt(text.substring(start, end), radix));
+        return end;
+    }
+
+    /**
+     * Appends the code point spelled by exactly {@code digits} hexadecimal digits after the escape
+     * letter at {@code index} and returns the next index. As in a Unicode escape string, the code
+     * point must be valid and a UTF-16 surrogate pair must be written as two consecutive escapes.
+     */
+    private static int appendCodePoint(Unescaped result, String text, int index, int digits) {
+        int start = index + 1;
+        int end = start + digits;
+        long codePoint = parseHex(text, start, end);
+        if (codePoint < 0) {
+            throw new IllegalArgumentException("invalid Unicode escape at position " + (index - 1)
+                    + ": Unicode escapes must be \\u followed by 4 or \\U by 8 hexadecimal digits");
         }
+        if (codePoint == 0 || codePoint > Character.MAX_CODE_POINT) {
+            throw new IllegalArgumentException(
+                    "invalid Unicode escape value at position " + (index - 1));
+        }
+        result.appendCodePoint((int) codePoint, index - 1);
         return end;
     }
 
@@ -393,7 +410,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         boolean plus = position + 1 < text.length() && text.charAt(position + 1) == '+';
         int start = plus ? position + 2 : position + 1;
         int end = start + (plus ? 6 : 4);
-        int codePoint = parseHex(text, start, end);
+        long codePoint = parseHex(text, start, end);
         if (codePoint < 0) {
             throw new IllegalArgumentException("invalid Unicode escape at position " + position
                     + ": Unicode escapes must be " + escape + "XXXX or " + escape + "+XXXXXX");
@@ -402,7 +419,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
             throw new IllegalArgumentException(
                     "invalid Unicode escape value at position " + position);
         }
-        result.appendCodePoint(codePoint, position);
+        result.appendCodePoint((int) codePoint, position);
         return end;
     }
 
@@ -416,11 +433,11 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     }
 
     /** Returns the ASCII hexadecimal number spelled by text[start, end), or -1. */
-    private static int parseHex(String text, int start, int end) {
+    private static long parseHex(String text, int start, int end) {
         if (end > text.length()) {
             return -1;
         }
-        int number = 0;
+        long number = 0;
         for (int i = start; i < end; i++) {
             char c = text.charAt(i);
             if (!isHexDigit(c)) {
@@ -431,26 +448,50 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         return number;
     }
 
-    /** Collects unescaped characters; consecutive escaped bytes are decoded as UTF-8. */
+    /**
+     * Collects unescaped characters; consecutive escaped bytes are decoded as UTF-8. A UTF-16
+     * surrogate pair must be written as two consecutive Unicode escapes, as PostgreSQL requires.
+     */
     private static final class Unescaped {
         private final StringBuilder chars;
         private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        private char highSurrogate;
+        private int highSurrogatePosition;
 
         Unescaped(int capacity) {
             chars = new StringBuilder(capacity);
         }
 
         void append(char c) {
+            requireNoPendingSurrogate();
             flushBytes();
             chars.append(c);
         }
 
-        void appendCodePoint(int codePoint) {
+        /** Appends the code point of the Unicode escape at {@code position}. */
+        void appendCodePoint(int codePoint, int position) {
             flushBytes();
-            chars.appendCodePoint(codePoint);
+            if (codePoint >= Character.MIN_LOW_SURROGATE
+                    && codePoint <= Character.MAX_LOW_SURROGATE) {
+                if (highSurrogate == 0) {
+                    throw invalidSurrogatePair(position);
+                }
+                chars.appendCodePoint(Character.toCodePoint(highSurrogate, (char) codePoint));
+                highSurrogate = 0;
+                return;
+            }
+            requireNoPendingSurrogate();
+            if (codePoint >= Character.MIN_HIGH_SURROGATE
+                    && codePoint <= Character.MAX_HIGH_SURROGATE) {
+                highSurrogate = (char) codePoint;
+                highSurrogatePosition = position;
+            } else {
+                chars.appendCodePoint(codePoint);
+            }
         }
 
         void appendByte(int value) {
+            requireNoPendingSurrogate();
             bytes.write(value);
         }
 
@@ -461,8 +502,15 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
             }
         }
 
+        private void requireNoPendingSurrogate() {
+            if (highSurrogate != 0) {
+                throw invalidSurrogatePair(highSurrogatePosition);
+            }
+        }
+
         @Override
         public String toString() {
+            requireNoPendingSurrogate();
             flushBytes();
             return chars.toString();
         }
