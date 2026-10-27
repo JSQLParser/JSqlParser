@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,15 +71,16 @@ public abstract class ConnectExpressionsVisitor<T>
         }
 
         if (itemsExpr.size() > 1) {
+            Iterator<SelectItem<? extends Expression>> it = itemsExpr.iterator();
             BinaryExpression binExpr = createBinaryExpression();
-            binExpr.setLeftExpression(itemsExpr.get(0).getExpression());
-            for (int i = 1; i < itemsExpr.size() - 1; i++) {
-                binExpr.setRightExpression(itemsExpr.get(i).getExpression());
+            binExpr.setLeftExpression(it.next().getExpression());
+            binExpr.setRightExpression(it.next().getExpression());
+            while (it.hasNext()) {
                 BinaryExpression binExpr2 = createBinaryExpression();
                 binExpr2.setLeftExpression(binExpr);
+                binExpr2.setRightExpression(it.next().getExpression());
                 binExpr = binExpr2;
             }
-            binExpr.setRightExpression(itemsExpr.get(itemsExpr.size() - 1).getExpression());
 
             SelectItem<Expression> sei = new SelectItem<>();
             sei.setExpression(binExpr);

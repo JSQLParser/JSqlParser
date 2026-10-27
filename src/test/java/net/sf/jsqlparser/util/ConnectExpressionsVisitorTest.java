@@ -18,8 +18,10 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 public class ConnectExpressionsVisitorTest {
 
@@ -53,5 +55,29 @@ public class ConnectExpressionsVisitorTest {
         select.accept(instance, null);
 
         assertEquals("SELECT a + b + c AS testexpr FROM test", select.toString());
+    }
+
+    @Test
+    public void testVisit_PlainSelect_manyItemsIsLinear() throws JSQLParserException {
+        int itemCount = 200000;
+        StringBuilder sql = new StringBuilder("select ");
+        for (int i = 0; i < itemCount; i++) {
+            if (i > 0) {
+                sql.append(',');
+            }
+            sql.append('c').append(i);
+        }
+        sql.append(" from test");
+        Select select = (Select) parserManager.parse(new StringReader(sql.toString()));
+        ConnectExpressionsVisitor<Void> instance = new ConnectExpressionsVisitor<>() {
+            @Override
+            protected BinaryExpression createBinaryExpression() {
+                return new Concat();
+            }
+        };
+        // itemsExpr is a LinkedList; connecting the items used to index it by position (get(i)),
+        // which is O(n^2) in the number of select items.
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> select.accept(instance, null));
+        assertEquals(1, select.getPlainSelect().getSelectItems().size());
     }
 }
