@@ -1315,7 +1315,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 String img = t2.image;
                 if (img.length() == 1) {
                     char c = img.charAt(0);
-                    if (c == '=' || c == '>' || c == '<' || c == '+' || c == '-' ||
+                    // CASE -x WHEN ... has a signed switch value, CASE - x subtracts from a column
+                    if (c == '+' || c == '-') return isWhenAheadOfCaseOperand(t2);
+                    if (c == '=' || c == '>' || c == '<' ||
                         c == '*' || c == ',' || c == '.' || c == ';') return false;
                 }
             }
@@ -1324,6 +1326,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         } catch (TokenMgrException e) {
             return false;
         }
+    }
+
+    /**
+     * Whether a WHEN of this CASE follows the given token, outside of brackets and nested CASE
+     * expressions, before anything that ends the expression.
+     */
+    private boolean isWhenAheadOfCaseOperand(Token t) {
+        int depth = 0;
+        for (t = nextWithItemToken(t); !interrupted && t.kind != EOF; t = nextWithItemToken(t)) {
+            if (t.kind == OPENING_BRACKET || t.kind == K_CASE) {
+                depth++;
+            } else if (depth > 0) {
+                if (t.kind == CLOSING_BRACKET || t.kind == K_END) {
+                    depth--;
+                }
+            } else if (t.kind == K_WHEN) {
+                return true;
+            } else if (t.kind == CLOSING_BRACKET || t.kind == K_END || t.kind == K_THEN
+                    || t.kind == K_ELSE || t.kind == K_FROM || t.kind == K_WHERE
+                    || ",".equals(t.image) || ";".equals(t.image)) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
