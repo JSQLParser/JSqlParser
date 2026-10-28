@@ -99,6 +99,23 @@ class MySqlAccountNameTest {
         assertEquals(sql, CCJSqlParserUtil.parse(sql, MYSQL).toString());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP USER IF EXISTS CURRENT_USER()",
+            "RENAME USER CURRENT_USER() TO app2", "SET PASSWORD FOR CURRENT_USER() = 'x'",
+            "GRANT 'reader' TO CURRENT_USER()"})
+    void userListsTakeCurrentUserWithParentheses(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true, MYSQL);
+        assertEquals(sql, CCJSqlParserUtil.parse(sql, MYSQL).toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CREATE ROLE CURRENT_USER()", "DROP ROLE CURRENT_USER()",
+            "SET ROLE CURRENT_USER()", "SET DEFAULT ROLE ALL TO CURRENT_USER()",
+            "GRANT CURRENT_USER() TO app", "ALTER USER app DEFAULT ROLE CURRENT_USER()"})
+    void roleListsRejectCurrentUserWithParentheses(String sql) {
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql, MYSQL));
+    }
+
     @org.junit.jupiter.api.Test
     void definerCurrentUserIsUnchanged() throws JSQLParserException {
         CreateView view = assertInstanceOf(CreateView.class, assertSqlCanBeParsedAndDeparsed(

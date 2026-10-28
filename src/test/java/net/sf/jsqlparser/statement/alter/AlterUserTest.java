@@ -93,6 +93,31 @@ class AlterUserTest {
     }
 
     @Test
+    void namesTheCurrentUserWithParentheses() throws JSQLParserException {
+        AlterUser alterUser = parse("ALTER USER CURRENT_USER() IDENTIFIED BY 'x' "
+                + "RETAIN CURRENT PASSWORD");
+        UserAccount account = alterUser.getAccounts().get(0);
+
+        assertEquals("CURRENT_USER", account.getUser().getValue());
+        assertTrue(account.isCurrentUserParentheses());
+        assertFalse(alterUser.isUserFunction());
+        assertFalse(parse("ALTER USER CURRENT_USER IDENTIFIED BY 'x'").getAccounts().get(0)
+                .isCurrentUserParentheses());
+        assertEquals("CURRENT_USER()", new UserAccount()
+                .withUser(new StringValue("CURRENT_USER").setQuoteStr(""))
+                .withCurrentUserParentheses(true).toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER USER 'CURRENT_USER'() IDENTIFIED BY 'x'",
+            "ALTER USER app() IDENTIFIED BY 'x'",
+            "ALTER USER CURRENT_USER()@localhost ACCOUNT LOCK"})
+    void takesParenthesesOnlyAfterAnUnquotedCurrentUser(String sql) {
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(Dialect.MYSQL)));
+    }
+
+    @Test
     void altersTheCurrentUserWithUserFunction() throws JSQLParserException {
         AlterUser alterUser = parse("ALTER USER USER() IDENTIFIED BY 'x'");
 

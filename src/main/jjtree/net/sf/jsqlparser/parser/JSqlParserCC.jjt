@@ -2751,6 +2751,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (!condition) { throw new ParseException(message); }
     }
 
+    /** MySQL role lists name roles with role_ident, which does not take CURRENT_USER(). */
+    private static List<UserAccount> requireRoleNames(List<UserAccount> roles) throws ParseException {
+        for (UserAccount role : roles) {
+            requireAccessSyntax(!role.isCurrentUserParentheses(), "A role list does not take CURRENT_USER()");
+        }
+        return roles;
+    }
+
     private static <E extends Enum<E>> E accessEnum(Class<E> type, String value) throws ParseException {
         try { return Enum.valueOf(type, value.toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException ex) { throw new ParseException("Invalid " + type.getSimpleName() + ": " + value); }
@@ -2830,14 +2838,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     /**
      * Whether ALTER USER uses MySQL account syntax rather than the PostgreSQL alias of ALTER ROLE,
-     * which names one unquoted role followed by an action: IF EXISTS, USER(), a quoted name, a
-     * host, an account list, no action at all, or a MySQL account clause.
+     * which names one unquoted role followed by an action: IF EXISTS, USER(), CURRENT_USER(), a
+     * quoted name, a host, an account list, no action at all, or a MySQL account clause.
      */
     private boolean isMySqlAlterUserAhead() {
         if (getToken(1).kind != K_USER) { return false; }
         Token name = getToken(2);
         if (name.kind == K_IF || name.kind == S_CHAR_LITERAL
-                || name.kind == K_USER && "(".equals(getToken(3).image)
+                || (name.kind == K_USER || "CURRENT_USER".equalsIgnoreCase(name.image))
+                    && "(".equals(getToken(3).image)
                 || isMySqlAccountHostAhead(2, false)) {
             return true;
         }
@@ -16734,6 +16743,11 @@ UserAccount MySqlAccountName():
         |
         part=MySqlAccountNamePart() { account.setUser(part); }
         [
+            // CURRENT_USER() names the current user like CURRENT_USER; a quoted part has quotes in its image
+            LOOKAHEAD({ "CURRENT_USER".equalsIgnoreCase(getToken(0).image)
+                    && "(".equals(getToken(1).image) && ")".equals(getToken(2).image) })
+            "(" ")" { account.setCurrentUserParentheses(true); }
+            |
             <K_AT_SIGN> part=MySqlAccountNamePart() { account.setHost(part); }
             |
             // a quoted user followed by an unquoted @host
@@ -16777,11 +16791,11 @@ RoleSelection MySqlRoleSelection(boolean setRole):
         { selection = new RoleSelection(RoleSelection.Kind.ALL); }
         [
             LOOKAHEAD({ getToken(1).kind == K_EXCEPT }) <K_EXCEPT> roles=MySqlAccountNameList()
-            { selection.setKind(RoleSelection.Kind.ALL_EXCEPT); selection.setRoles(roles); }
+            { selection.setKind(RoleSelection.Kind.ALL_EXCEPT); selection.setRoles(requireRoleNames(roles)); }
         ]
         |
         roles=MySqlAccountNameList()
-        { selection = new RoleSelection(RoleSelection.Kind.ROLES).withRoles(roles); }
+        { selection = new RoleSelection(RoleSelection.Kind.ROLES).withRoles(requireRoleNames(roles)); }
     )
     {
         requireAccessSyntax(setRole || selection.getKind() != RoleSelection.Kind.DEFAULT
@@ -16791,10 +16805,14 @@ RoleSelection MySqlRoleSelection(boolean setRole):
     }
 }
 
+/**
+ * IDENTIFIED BY or IDENTIFIED WITH. The plugin may be quoted like an account name part, and the
+ * hash after AS may be a hexadecimal literal, as SHOW CREATE USER prints both.
+ */
 UserAuthentication MySqlUserAuthentication():
 {
     UserAuthentication authentication = new UserAuthentication();
-    String plugin = null;
+    StringValue plugin = null;
     Token credential = null;
 }
 {
@@ -16812,9 +16830,9 @@ UserAuthentication MySqlUserAuthentication():
             }
         )
         |
-        <K_WITH> plugin=RelObjectName() {
+        <K_WITH> plugin=MySqlAccountNamePart() {
             authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN);
-            authentication.setPlugin(plugin);
+            authentication.setPluginName(plugin);
         }
         [
             <K_BY>
@@ -16830,10 +16848,13 @@ UserAuthentication MySqlUserAuthentication():
                 }
             )
             |
-            <K_AS> credential=<S_CHAR_LITERAL> {
-                authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING);
-                authentication.setCredential(stringValue(credential));
-            }
+            <K_AS> { authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING); }
+            (
+                credential=<S_CHAR_LITERAL> { authentication.setCredential(stringValue(credential)); }
+                |
+                credential=<S_HEX>
+                { authentication.setCredentialValue(new HexValue(credential.image)); }
+            )
         ]
     )
     { return authentication; }
@@ -17141,7 +17162,7 @@ CreateRole MySqlCreateRole():
 {
     ContextualKeyword("ROLE")
     [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { role.setIfNotExists(true); } ]
-    roles=MySqlAccountNameList() { role.setRoles(roles); }
+    roles=MySqlAccountNameList() { role.setRoles(requireRoleNames(roles)); }
     { return role; }
 }
 
@@ -17180,7 +17201,8 @@ SetDefaultRoleStatement SetDefaultRoleStatement():
     { statement.setRoles(roles); }
     [
         ( <K_TO> | <K_FOR> { statement.setForKeyword(true); } )
-        accounts=MySqlAccountNameList() { statement.setAccounts(accounts); }
+        // MySQL reads these accounts as a role list
+        accounts=MySqlAccountNameList() { statement.setAccounts(requireRoleNames(accounts)); }
     ]
     { return statement; }
 }
@@ -19916,6 +19938,11 @@ void DropTargets(Drop drop):
         LOOKAHEAD({ drop.getObjectType().hasAccountTargets() })
         account=MySqlAccountName() { drop.addAccounts(account); }
         ( "," account=MySqlAccountName() { drop.addAccounts(account); } )*
+        {
+            if (drop.getObjectType() == Drop.ObjectType.ROLE) {
+                requireRoleNames(drop.getAccounts());
+            }
+        }
         |
         name=DropObjectName() { drop.addNames(name); }
         ( "," name=DropObjectName() { drop.addNames(name); } )*
@@ -23058,7 +23085,7 @@ PrivilegeClause AccessClause(boolean revoke, boolean defaults):
         ( "," privilege=AccessPrivilege() { clause.getPrivileges().add(privilege); } )*
         <K_ON> target=AccessTarget(defaults) { clause.setTarget(target); }
         |
-        roles=MySqlAccountNameList() { clause.setRoleItems(roles); clause.setTarget(null); }
+        roles=MySqlAccountNameList() { clause.setRoleItems(requireRoleNames(roles)); clause.setTarget(null); }
     )
     ( <K_TO> { requireAccessSyntax(!revoke, "REVOKE requires FROM"); } | <K_FROM> { requireAccessSyntax(revoke, "GRANT requires TO"); } )
     grantees=AccessGrantees() { clause.setGranteeItems(grantees); return clause; }
