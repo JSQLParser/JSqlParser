@@ -15,9 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
@@ -25,6 +31,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class UnsupportedStatementTest {
     @Test
@@ -194,6 +202,39 @@ public class UnsupportedStatementTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "set isolation to dirty read;", true, parser -> parser.withUnsupportedStatements());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CREATE LANGUAGE plperl",
+            "CREATE OR REPLACE TRUSTED PROCEDURAL LANGUAGE plsample HANDLER plsample_call_handler",
+            "CREATE OPERATOR CLASS gist__int_ops DEFAULT FOR TYPE _int4 USING gist AS OPERATOR 3 &&",
+            "CREATE OPERATOR FAMILY myfam USING btree",
+            "CREATE DEFAULT CONVERSION myconv FOR 'LATIN1' TO 'UTF8' FROM latin1_to_utf8",
+            "CREATE TRANSFORM FOR hstore LANGUAGE plpython3u (FROM SQL WITH FUNCTION "
+                    + "hstore_to_plpython(internal), TO SQL WITH FUNCTION plpython_to_hstore(internal))",
+            "CREATE OR REPLACE AGGREGATE myavg(float8) (SFUNC = float8_accum, STYPE = float8[])"})
+    void unknownCreateFallsBackToUnsupportedStatement(String sql) throws JSQLParserException {
+        for (Consumer<CCJSqlParser> dialect : Arrays.<Consumer<CCJSqlParser>>asList(parser -> {
+        }, parser -> parser.withDialect(Dialect.POSTGRESQL))) {
+            Statement statement = CCJSqlParserUtil.parse(sql, dialect);
+
+            assertInstanceOf(UnsupportedStatement.class, statement);
+            // the captured tokens render with single spaces; OR REPLACE is kept
+            assertEquals(sql.replaceAll("\\s+", ""), statement.toString().replaceAll("\\s+", ""));
+        }
+    }
+
+    @Test
+    void unknownCreateDoesNotStopAScript() throws JSQLParserException {
+        Statements statements = CCJSqlParserUtil.parseStatements(
+                "CREATE TABLE a (x int); CREATE LANGUAGE plperl; CREATE INDEX i ON a (x);",
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+
+        assertEquals(3, statements.size());
+        assertInstanceOf(CreateTable.class, statements.get(0));
+        assertInstanceOf(UnsupportedStatement.class, statements.get(1));
+        assertInstanceOf(CreateIndex.class, statements.get(2));
     }
 
     @Test

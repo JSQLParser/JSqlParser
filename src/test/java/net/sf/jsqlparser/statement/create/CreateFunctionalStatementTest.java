@@ -12,13 +12,13 @@ package net.sf.jsqlparser.statement.create;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.MySqlDefiner;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.Statements;
@@ -154,8 +154,9 @@ public class CreateFunctionalStatementTest {
         assertThat(CCJSqlParserUtil.parse("CREATE FUNCTION f() RETURNS int AS 'SELECT 1'"))
                 .isInstanceOf(CreateFunction.class)
                 .extracting(statement -> ((CreateFunction) statement).getDefiner()).isNull();
-        assertThatThrownBy(() -> CCJSqlParserUtil.parse("CREATE DEFINER = x EVENT e "
-                + "ON SCHEDULE EVERY 1 DAY DO SELECT 1")).isInstanceOf(JSQLParserException.class);
+        // DEFINER is not modelled for EVENT, so the statement falls back like other unknown forms
+        assertThat(CCJSqlParserUtil.parse("CREATE DEFINER = x EVENT e "
+                + "ON SCHEDULE EVERY 1 DAY DO SELECT 1")).isInstanceOf(UnsupportedStatement.class);
     }
 
     @Test

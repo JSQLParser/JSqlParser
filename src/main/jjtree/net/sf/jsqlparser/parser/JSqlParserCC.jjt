@@ -2836,6 +2836,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             "SUBJECT").contains(token.image.toUpperCase(Locale.ROOT));
     }
 
+    /** An unsupported CREATE statement that keeps OR REPLACE, which Create() has already read. */
+    private static UnsupportedStatement unsupportedCreate(boolean orReplace, List<String> rest) {
+        List<String> declarations = new ArrayList<String>();
+        if (orReplace) {
+            declarations.add("OR");
+            declarations.add("REPLACE");
+        }
+        declarations.addAll(rest);
+        return new UnsupportedStatement("CREATE", declarations);
+    }
+
+    /**
+     * Whether a CREATE statement names none of TABLE, INDEX, VIEW and POLICY before it ends. Every
+     * remaining CREATE form needs one of them, and CREATE TABLE and CREATE INDEX accept any leading
+     * words as modifiers, so such a statement would fail there instead of reaching the fallback.
+     */
+    private boolean isUnknownCreateAhead() {
+        for (int i = 1; ; i++) {
+            int kind = getToken(i).kind;
+            if (kind == EOF || kind == ST_SEMICOLON) { return true; }
+            if (kind == K_TABLE || kind == K_INDEX || kind == K_VIEW || kind == K_POLICY) { return false; }
+        }
+    }
+
     /**
      * Whether ALTER USER uses MySQL account syntax rather than the PostgreSQL alias of ALTER ROLE,
      * which names one unquoted role followed by an action: IF EXISTS, USER(), CURRENT_USER(), a
@@ -23605,6 +23629,9 @@ Statement Create():
         |
         statement = CreateSynonym(isUsingOrReplace)
         |
+        LOOKAHEAD({ isUnknownCreateAhead() }) captureRest = captureRest()
+        { statement = unsupportedCreate(isUsingOrReplace, captureRest); }
+        |
         LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
         |
         LOOKAHEAD(2) statement = CreateView(isUsingOrReplace)
@@ -23618,9 +23645,7 @@ Statement Create():
         statement = CreateIndex()
         |
         captureRest = captureRest()
-        {
-            statement = new UnsupportedStatement("CREATE", captureRest);
-        }
+        { statement = unsupportedCreate(isUsingOrReplace, captureRest); }
     )
     {
         return statement;
