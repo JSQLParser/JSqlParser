@@ -10,12 +10,16 @@
 package net.sf.jsqlparser.statement.create.user;
 
 import java.io.Serializable;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.StringValue;
 
 /**
  * Structured authentication clause of a MySQL user account. {@code ALTER USER} adds
  * {@code REPLACE 'current'} and {@code RETAIN CURRENT PASSWORD} to a password assignment, and
- * {@code DISCARD OLD PASSWORD} as a mode of its own.
+ * {@code DISCARD OLD PASSWORD} as a mode of its own. The plugin name keeps its quote character, as
+ * in {@code IDENTIFIED WITH 'caching_sha2_password'}, and the hash of {@code AS} may be a
+ * hexadecimal literal, as SHOW CREATE USER prints it.
  */
 public class UserAuthentication implements Serializable {
 
@@ -30,8 +34,8 @@ public class UserAuthentication implements Serializable {
     }
 
     private Mode mode;
-    private String plugin;
-    private StringValue credential;
+    private StringValue pluginName;
+    private Expression credential;
     private StringValue currentCredential;
     private boolean retainCurrentPassword;
 
@@ -43,19 +47,49 @@ public class UserAuthentication implements Serializable {
         this.mode = mode;
     }
 
+    /** The plugin name without its quotes, or null without {@code IDENTIFIED WITH}. */
     public String getPlugin() {
-        return plugin;
+        return pluginName == null ? null : pluginName.getValue();
     }
 
+    /** Sets an unquoted plugin name. */
     public void setPlugin(String plugin) {
-        this.plugin = plugin;
+        this.pluginName =
+                plugin == null ? null : new StringValue().withValue(plugin).setQuoteStr("");
     }
 
+    /** The plugin name with its quote character, which is empty for an unquoted name. */
+    public StringValue getPluginName() {
+        return pluginName;
+    }
+
+    public void setPluginName(StringValue pluginName) {
+        this.pluginName = pluginName;
+    }
+
+    /**
+     * The password or hash as a string literal, or null when there is none or the hash of
+     * {@code AS} is a hexadecimal literal; {@link #getCredentialValue()} returns either.
+     */
     public StringValue getCredential() {
-        return credential;
+        return credential instanceof StringValue ? (StringValue) credential : null;
     }
 
     public void setCredential(StringValue credential) {
+        this.credential = credential;
+    }
+
+    /** The password or hash as written: a {@link StringValue}, or a {@link HexValue} after AS. */
+    public Expression getCredentialValue() {
+        return credential;
+    }
+
+    public void setCredentialValue(Expression credential) {
+        if (credential != null && !(credential instanceof StringValue)
+                && !(credential instanceof HexValue)) {
+            throw new IllegalArgumentException(
+                    "A credential is a string or hexadecimal literal: " + credential);
+        }
         this.credential = credential;
     }
 
@@ -96,13 +130,13 @@ public class UserAuthentication implements Serializable {
             case BY_RANDOM_PASSWORD:
                 return "IDENTIFIED BY RANDOM PASSWORD";
             case WITH_PLUGIN:
-                return "IDENTIFIED WITH " + plugin;
+                return "IDENTIFIED WITH " + pluginName;
             case WITH_PLUGIN_BY_PASSWORD:
-                return "IDENTIFIED WITH " + plugin + " BY " + credential;
+                return "IDENTIFIED WITH " + pluginName + " BY " + credential;
             case WITH_PLUGIN_BY_RANDOM_PASSWORD:
-                return "IDENTIFIED WITH " + plugin + " BY RANDOM PASSWORD";
+                return "IDENTIFIED WITH " + pluginName + " BY RANDOM PASSWORD";
             case WITH_PLUGIN_AS_STRING:
-                return "IDENTIFIED WITH " + plugin + " AS " + credential;
+                return "IDENTIFIED WITH " + pluginName + " AS " + credential;
             case DISCARD_OLD_PASSWORD:
                 return "DISCARD OLD PASSWORD";
             default:
@@ -120,8 +154,18 @@ public class UserAuthentication implements Serializable {
         return this;
     }
 
+    public UserAuthentication withPluginName(StringValue pluginName) {
+        setPluginName(pluginName);
+        return this;
+    }
+
     public UserAuthentication withCredential(StringValue credential) {
         setCredential(credential);
+        return this;
+    }
+
+    public UserAuthentication withCredentialValue(Expression credential) {
+        setCredentialValue(credential);
         return this;
     }
 

@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.HexValue;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -98,6 +100,71 @@ class CreateUserTest {
         assertEquals("secret", pluginAuthentication.getCredential().getValue());
         assertEquals(UserAuthentication.Mode.BY_RANDOM_PASSWORD,
                 createUser.getAccounts().get(1).getAuthentication().getMode());
+    }
+
+    @Test
+    void parsesQuotedPluginAndHashAsShowCreateUserPrintsThem() throws JSQLParserException {
+        String sql = "CREATE USER `app`@`%` IDENTIFIED WITH 'caching_sha2_password' "
+                + "AS '$A$005$hash' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK";
+        UserAuthentication authentication =
+                roundTrip(CreateUser.class, sql, Dialect.MYSQL).getAccounts().get(0)
+                        .getAuthentication();
+
+        assertEquals(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING, authentication.getMode());
+        assertEquals("caching_sha2_password", authentication.getPlugin());
+        assertEquals("'", authentication.getPluginName().getQuoteStr());
+        assertEquals("$A$005$hash", authentication.getCredential().getValue());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    void parsesHexadecimalHash() throws JSQLParserException {
+        String sql = "CREATE USER 'app'@'%' IDENTIFIED WITH 'caching_sha2_password' "
+                + "AS 0x244124303035240A";
+        UserAuthentication authentication =
+                roundTrip(CreateUser.class, sql, Dialect.MYSQL).getAccounts().get(0)
+                        .getAuthentication();
+
+        assertInstanceOf(HexValue.class, authentication.getCredentialValue());
+        assertNull(authentication.getCredential());
+        assertEquals("0x244124303035240A", authentication.getCredentialValue().toString());
+        roundTrip(CreateUser.class, "CREATE USER app IDENTIFIED WITH mysql_native_password "
+                + "AS X'2A3132'", Dialect.MYSQL);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"`caching_sha2_password`", "\"caching_sha2_password\"",
+            "caching_sha2_password"})
+    void keepsThePluginQuoteSeparately(String plugin) throws JSQLParserException {
+        UserAuthentication authentication = roundTrip(CreateUser.class,
+                "CREATE USER app IDENTIFIED WITH " + plugin, Dialect.MYSQL).getAccounts().get(0)
+                .getAuthentication();
+
+        assertEquals("caching_sha2_password", authentication.getPlugin());
+        assertEquals(plugin, authentication.getPluginName().toString());
+    }
+
+    @Test
+    void buildsPluginAuthenticationWithHash() {
+        UserAuthentication authentication = new UserAuthentication()
+                .withMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING)
+                .withPluginName(new StringValue("'caching_sha2_password'"))
+                .withCredentialValue(new HexValue("0x2A"));
+
+        assertEquals("IDENTIFIED WITH 'caching_sha2_password' AS 0x2A", authentication.toString());
+        assertThrows(IllegalArgumentException.class,
+                () -> authentication.setCredentialValue(new LongValue(1)));
+        authentication.setPlugin("mysql_native_password");
+        assertEquals("IDENTIFIED WITH mysql_native_password AS 0x2A", authentication.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CREATE USER app IDENTIFIED BY 0x2A",
+            "CREATE USER app IDENTIFIED WITH caching_sha2_password BY 0x2A"})
+    void acceptsHexadecimalOnlyAfterAs(String sql) {
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(Dialect.MYSQL)));
     }
 
     @Test
