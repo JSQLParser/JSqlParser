@@ -17,7 +17,6 @@ import net.sf.jsqlparser.statement.alter.AlterExpressionPartition;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPrimaryKey;
 import net.sf.jsqlparser.statement.alter.RelationAlterAction;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import java.util.Iterator;
 import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 
 public class AlterDeParser extends AbstractDeParser<Alter> {
@@ -35,12 +34,13 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
     @Override
     public void deParse(Alter alter) {
         alter.appendTargetTo(builder);
-        for (Iterator<AlterExpression> iterator = alter.getAlterExpressions().iterator(); iterator
-                .hasNext();) {
-            deParseAction(iterator.next());
-            if (iterator.hasNext()) {
-                builder.append(", ");
+        boolean first = true;
+        for (AlterExpression action : alter.getAlterExpressions()) {
+            if (!first) {
+                builder.append(Alter.separatorBefore(action));
             }
+            deParseAction(action);
+            first = false;
         }
     }
 

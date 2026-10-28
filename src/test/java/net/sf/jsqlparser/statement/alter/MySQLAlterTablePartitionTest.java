@@ -19,9 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement.Modifier;
@@ -29,6 +32,7 @@ import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /** MySQL 8.4 {@code ALTER TABLE} partition syntax verified against the MySQL manual. */
@@ -261,6 +265,77 @@ public class MySQLAlterTablePartitionTest {
         assertEquals("LIST", expression.getPartitionType());
         assertEquals(List.of("region", "tier"), expression.getPartitionColumns());
         assertEquals(partitioning.getPartitionDefinitions(), expression.getPartitionDefinitions());
+    }
+
+    @ParameterizedTest
+    @MethodSource("partitionOptionsAfterActions")
+    public void testPartitionOptionsEndTheActionListWithoutComma(String sql,
+            List<AlterOperation> operations) throws JSQLParserException {
+        // with the MySQL dialect and without a dialect
+        for (Consumer<CCJSqlParser> mode : List.<Consumer<CCJSqlParser>>of(
+                parser -> parser.withDialect(Dialect.MYSQL), parser -> {
+                })) {
+            Alter alter =
+                    assertInstanceOf(Alter.class, assertSqlCanBeParsedAndDeparsed(sql, true, mode));
+
+            assertEquals(operations, alter.getAlterExpressions().stream()
+                    .map(AlterExpression::getOperation).collect(Collectors.toList()));
+        }
+    }
+
+    static Stream<Arguments> partitionOptionsAfterActions() {
+        return Stream.of(
+                Arguments.of("ALTER TABLE t1 ADD COLUMN d INT PARTITION BY HASH (id) PARTITIONS 4",
+                        List.of(AlterOperation.ADD, AlterOperation.PARTITION_BY)),
+                Arguments.of("ALTER TABLE t1 ENGINE = InnoDB REMOVE PARTITIONING",
+                        List.of(AlterOperation.ENGINE, AlterOperation.REMOVE_PARTITIONING)),
+                Arguments.of("ALTER TABLE t1 ENGINE = InnoDB PARTITION BY KEY (id) PARTITIONS 2",
+                        List.of(AlterOperation.ENGINE, AlterOperation.PARTITION_BY)),
+                Arguments.of("ALTER TABLE t1 ALGORITHM = INPLACE, ADD COLUMN x INT NOT NULL "
+                        + "DEFAULT 0 PARTITION BY KEY (id) PARTITIONS 2",
+                        List.of(AlterOperation.ALGORITHM, AlterOperation.ADD,
+                                AlterOperation.PARTITION_BY)),
+                Arguments.of("ALTER TABLE t1 MODIFY COLUMN d BIGINT REMOVE PARTITIONING",
+                        List.of(AlterOperation.MODIFY, AlterOperation.REMOVE_PARTITIONING)),
+                Arguments.of(
+                        "ALTER TABLE t1 CHANGE COLUMN d e INT AFTER id PARTITION BY RANGE (id) "
+                                + "(PARTITION p0 VALUES LESS THAN (10), "
+                                + "PARTITION p1 VALUES LESS THAN MAXVALUE)",
+                        List.of(AlterOperation.CHANGE, AlterOperation.PARTITION_BY)),
+                Arguments.of("ALTER TABLE t1 ADD INDEX i (a) PARTITION BY HASH (id)",
+                        List.of(AlterOperation.ADD, AlterOperation.PARTITION_BY)),
+                Arguments.of("ALTER TABLE t1 DROP COLUMN c REMOVE PARTITIONING",
+                        List.of(AlterOperation.DROP, AlterOperation.REMOVE_PARTITIONING)));
+    }
+
+    @Test
+    public void testColumnDefinitionStopsBeforePartitionOptions() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t1 ADD COLUMN d INT PARTITION BY HASH (id) PARTITIONS 4",
+                parser -> parser.withDialect(Dialect.MYSQL));
+
+        AlterExpression add = alter.getAlterExpressions().get(0);
+        assertEquals("d INT", add.getColDataTypeList().get(0).toString());
+        assertTrue(add.getColDataTypeList().get(0).getColumnOptions().isEmpty());
+        AlterExpressionPartition partitionBy =
+                assertInstanceOf(AlterExpressionPartition.class,
+                        alter.getAlterExpressions().get(1));
+        assertEquals(TablePartitioning.Type.HASH, partitionBy.getPartitioning().getType());
+        assertEquals(4L, partitionBy.getPartitioning().getPartitions());
+    }
+
+    @Test
+    public void testPartitionOptionsAreNotPrecededByComma() throws JSQLParserException {
+        // MySQL rejects a comma before PARTITION BY; the rendering drops it
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE t1 ADD COLUMN d INT, PARTITION BY HASH (id)");
+        assertEquals("ALTER TABLE t1 ADD COLUMN d INT PARTITION BY HASH (id)", alter.toString());
+        assertSqlCanBeParsedAndDeparsed(alter.toString(), true);
+        assertEquals(" ", Alter.separatorBefore(alter.getAlterExpressions().get(1)));
+        assertEquals(", ", Alter.separatorBefore(alter.getAlterExpressions().get(0)));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(
+                "ALTER TABLE t1 PARTITION BY HASH (id) REMOVE PARTITIONING",
+                parser -> parser.withDialect(Dialect.MYSQL)));
     }
 
     @Test

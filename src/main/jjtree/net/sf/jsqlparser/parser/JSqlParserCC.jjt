@@ -2515,6 +2515,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || isKeywordAhead("MAX_ROWS") || isKeywordAhead("MIN_ROWS");
     }
 
+    /**
+     * PARTITION BY or REMOVE PARTITIONING: the MySQL partition options that may end the ALTER TABLE
+     * action list without a comma. A column definition does not take them as column options.
+     */
+    private boolean isTrailingPartitionOptionAhead() {
+        return getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY
+                || getToken(1).kind == K_REMOVE && getToken(2).kind == K_PARTITIONING;
+    }
+
     private boolean isMySqlTableOptionAction(AlterExpression action) {
         return action instanceof AlterExpressionTableOption
                 && ((AlterExpressionTableOption) action).getStructuredTableOption() != null
@@ -20177,7 +20186,8 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
       useSetData=TypeChangePrefix() { withType = true; } ]
     ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING)
-            && getToken(1).kind != K_FIRST && !isKeywordAhead("AFTER") })
+            && getToken(1).kind != K_FIRST && !isKeywordAhead("AFTER")
+            && !isTrailingPartitionOptionAhead() })
         option = ColumnDefinitionOption() {
         columnOptions.add(option);
     } )*
@@ -22218,6 +22228,16 @@ Alter AlterTable(boolean foreign):
           { requireDdlSyntax(isMySqlTableOptionAction(alterExp), "Expected a comma before table options"); }
           alterExp=AlterSharedTableOption() { alter.addAlterExpression(alterExp); }
     )*
+
+    // MySQL partition_options end the action list without a comma
+    [
+        LOOKAHEAD({ isTrailingPartitionOptionAhead() })
+        {
+            requireDdlSyntax(!Alter.isTrailingPartitionOption(alterExp),
+                    "PARTITION BY and REMOVE PARTITIONING cannot follow each other");
+        }
+        alterExp=AlterExpressionPartitionOp() { alter.addAlterExpression(alterExp); }
+    ]
 
     {
         for (AlterExpression action : alter.getAlterExpressions()) {

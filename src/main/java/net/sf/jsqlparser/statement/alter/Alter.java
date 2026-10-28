@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,19 +116,32 @@ public class Alter implements Statement {
         StringBuilder b = new StringBuilder();
         appendTargetTo(b);
 
-        Iterator<AlterExpression> altIter = alterExpressions.iterator();
-
-        while (altIter.hasNext()) {
-            b.append(altIter.next().toString());
-
-            // Need to append whitespace after each ADD or DROP statement
-            // but not the last one
-            if (altIter.hasNext()) {
-                b.append(", ");
+        for (int i = 0; i < alterExpressions.size(); i++) {
+            AlterExpression action = alterExpressions.get(i);
+            if (i > 0) {
+                b.append(separatorBefore(action));
             }
+            b.append(action);
         }
 
         return b.toString();
+    }
+
+    /**
+     * Whether the action is MySQL's PARTITION BY or REMOVE PARTITIONING, which may end the action
+     * list without a comma.
+     */
+    public static boolean isTrailingPartitionOption(AlterExpression action) {
+        return action != null && (action.getOperation() == AlterOperation.PARTITION_BY
+                || action.getOperation() == AlterOperation.REMOVE_PARTITIONING);
+    }
+
+    /**
+     * The separator written before an action that follows another: a comma, or a space before
+     * PARTITION BY and REMOVE PARTITIONING, which MySQL does not accept after a comma.
+     */
+    public static String separatorBefore(AlterExpression action) {
+        return isTrailingPartitionOption(action) ? " " : ", ";
     }
 
     public Alter withTable(Table table) {
