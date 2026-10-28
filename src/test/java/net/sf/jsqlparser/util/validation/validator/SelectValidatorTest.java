@@ -44,6 +44,22 @@ public class SelectValidatorTest extends ValidationTestAsserts {
         validateNotSupported(sql, 1, 1, DatabaseType.POSTGRESQL, Feature.mysqlSelectModifiers);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT a INTO OUTFILE '/tmp/a.txt' FROM t",
+            "SELECT a FROM t INTO OUTFILE '/tmp/a.txt'",
+            "SELECT a FROM t INTO DUMPFILE '/tmp/a.bin'",
+            "SELECT a FROM t WHERE a IN (SELECT b FROM u INTO OUTFILE '/tmp/b.txt')",
+            "SELECT * FROM t INTO TEMP x"})
+    public void testValidationSelectIntoNotAllowed(String sql) {
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT, Feature.selectInto);
+    }
+
+    @Test
+    public void testValidationMySqlSelectIntoOutfile() {
+        String sql = "SELECT a FROM t INTO OUTFILE '/tmp/a.txt'";
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
+    }
+
     @Test
     public void testValidationSelectDistinct() throws JSQLParserException {
         String sql = "SELECT DISTINCT a, b FROM tab";

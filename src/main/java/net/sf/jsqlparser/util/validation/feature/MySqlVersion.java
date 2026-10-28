@@ -28,7 +28,8 @@ public enum MySqlVersion implements Version {
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter, // expressions
                     Feature.exprLike, // https://dev.mysql.com/doc/refman/8.0/en/select.html
-                    Feature.select,
+                    Feature.select, // https://dev.mysql.com/doc/refman/8.0/en/select-into.html
+                    Feature.selectInto,
                     Feature.selectGroupBy, Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
                     Feature.orderBy,

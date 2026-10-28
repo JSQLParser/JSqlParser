@@ -28,7 +28,8 @@ public enum MariaDbVersion implements Version {
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter, // expressions
                     Feature.exprLike, // https://mariadb.com/kb/en/select/
-                    Feature.select,
+                    Feature.select, // https://mariadb.com/kb/en/selectinto/
+                    Feature.selectInto,
                     Feature.selectGroupBy, Feature.function,
                     Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
