@@ -123,7 +123,17 @@ public enum OracleVersion implements Version {
                     Feature.createTrigger, // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-SCHEMA.html
                     Feature.createSchema,
 
-                    Feature.commit,
+                    Feature.commit, Feature.rollback, Feature.savepoint,
+
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/LOCK-TABLE.html
+                    Feature.lock,
+
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-SESSION.html
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-SYSTEM.html
+                    Feature.alterSession, Feature.alterSystem,
+
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/PURGE.html
+                    Feature.purge,
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/COMMENT.html
                     Feature.comment, Feature.commentOnTable, Feature.commentOnColumn,
