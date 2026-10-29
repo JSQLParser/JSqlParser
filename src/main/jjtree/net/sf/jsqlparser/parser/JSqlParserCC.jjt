@@ -13198,21 +13198,29 @@ Expression PrimaryExpression() #PrimaryExpression:
     Token token = null;
     Token sign = null;
     Token innerSign;
-    List<Token> innerSigns = new ArrayList<Token>();
+    List<Token> innerSigns = null;
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
     ExpressionList list;
 
-    final List<Map.Entry<Expression, String>> jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
+    List<Map.Entry<Expression, String>> jsonIdents = null;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
     [
         ( sign="+" | sign="-" | sign="~" )
         // DuckDB's chained signs, e.g. - -1 or +-+1
-        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
+        (
+            LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" )
+            {
+                if (innerSigns == null) {
+                    innerSigns = new ArrayList<Token>();
+                }
+                innerSigns.add(innerSign);
+            }
+        )*
     ]
     (
         <K_NULL> { retval = new NullValue(); }
@@ -13411,6 +13419,9 @@ Expression PrimaryExpression() #PrimaryExpression:
                 expression=SimpleExpression()
             )
             {
+                if (jsonIdents == null) {
+                    jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
+                }
                 jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
             }
         )+
@@ -13430,8 +13441,10 @@ Expression PrimaryExpression() #PrimaryExpression:
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
         }
-        for (int i = innerSigns.size() - 1; i >= 0; i--) {
-            retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+        if (innerSigns != null) {
+            for (int i = innerSigns.size() - 1; i >= 0; i--) {
+                retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+            }
         }
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
