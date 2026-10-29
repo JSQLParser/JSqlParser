@@ -11,17 +11,27 @@ package net.sf.jsqlparser.statement.create.event;
 
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.MySqlDefiner;
 import net.sf.jsqlparser.statement.Statement;
 
 /** Common structured properties of MySQL {@code CREATE EVENT} and {@code ALTER EVENT}. */
 public abstract class EventStatement implements Statement {
 
+    private MySqlDefiner definer;
     private Table event;
     private EventSchedule schedule;
     private Boolean onCompletionPreserve;
     private EventStatus status;
     private StringValue comment;
     private Statement body;
+
+    public MySqlDefiner getDefiner() {
+        return definer;
+    }
+
+    public void setDefiner(MySqlDefiner definer) {
+        this.definer = definer;
+    }
 
     public Table getEvent() {
         return event;
@@ -73,6 +83,14 @@ public abstract class EventStatement implements Statement {
 
     public void setBody(Statement body) {
         this.body = body;
+    }
+
+    /** Appends the optional DEFINER clause, followed by EVENT, after CREATE or ALTER. */
+    protected void appendDefinerAndEvent(StringBuilder builder) {
+        if (definer != null) {
+            builder.append("DEFINER = ").append(definer).append(' ');
+        }
+        builder.append("EVENT ");
     }
 
     protected void appendScheduleAndCompletion(StringBuilder builder) {

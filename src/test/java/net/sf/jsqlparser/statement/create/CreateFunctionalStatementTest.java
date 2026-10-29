@@ -18,10 +18,10 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.MySqlDefiner;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
@@ -154,9 +154,8 @@ public class CreateFunctionalStatementTest {
         assertThat(CCJSqlParserUtil.parse("CREATE FUNCTION f() RETURNS int AS 'SELECT 1'"))
                 .isInstanceOf(CreateFunction.class)
                 .extracting(statement -> ((CreateFunction) statement).getDefiner()).isNull();
-        // DEFINER is not modelled for EVENT, so the statement falls back like other unknown forms
         assertThat(CCJSqlParserUtil.parse("CREATE DEFINER = x EVENT e "
-                + "ON SCHEDULE EVERY 1 DAY DO SELECT 1")).isInstanceOf(UnsupportedStatement.class);
+                + "ON SCHEDULE EVERY 1 DAY DO SELECT 1")).isInstanceOf(CreateEvent.class);
     }
 
     @Test

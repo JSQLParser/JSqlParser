@@ -32,7 +32,9 @@ public class AlterEvent extends EventStatement {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("ALTER EVENT ").append(getEvent());
+        StringBuilder builder = new StringBuilder("ALTER ");
+        appendDefinerAndEvent(builder);
+        builder.append(getEvent());
         appendScheduleAndCompletion(builder);
         if (renameTo != null) {
             builder.append(" RENAME TO ").append(renameTo);

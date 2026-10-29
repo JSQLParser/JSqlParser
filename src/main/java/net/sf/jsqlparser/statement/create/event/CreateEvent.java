@@ -31,7 +31,8 @@ public class CreateEvent extends EventStatement {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("CREATE EVENT ");
+        StringBuilder builder = new StringBuilder("CREATE ");
+        appendDefinerAndEvent(builder);
         if (ifNotExists) {
             builder.append("IF NOT EXISTS ");
         }

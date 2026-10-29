@@ -17330,7 +17330,13 @@ EventStatus MySqlEventStatus():
         <K_ENABLE> { status = EventStatus.ENABLE; }
         |
         <K_DISABLE> { status = EventStatus.DISABLE; }
-        [ LOOKAHEAD(2) <K_ON> <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; } ]
+        [ LOOKAHEAD({ getToken(1).kind == K_ON && (getToken(2).kind == K_SLAVE
+                || "REPLICA".equalsIgnoreCase(getToken(2).image)) })
+          <K_ON> (
+              <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; }
+              |
+              ContextualKeyword("REPLICA") { status = EventStatus.DISABLE_ON_REPLICA; }
+          ) ]
     )
     { return status; }
 }
@@ -17344,8 +17350,11 @@ CreateEvent CreateEvent():
     EventStatus status = null;
     Token comment = null;
     Statement body = null;
+    MySqlDefiner definer = null;
 }
 {
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") })
+      definer=MySqlRoutineDefiner() { createEvent.setDefiner(definer); } ]
     <K_EVENT>
     [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createEvent.setIfNotExists(true); } ]
     event=Table() { createEvent.setEvent(event); }
@@ -17358,7 +17367,7 @@ CreateEvent CreateEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
         createEvent.setComment(stringValue(comment));
     } ]
-    <K_DO> body=SingleStatement() { createEvent.setBody(body); }
+    <K_DO> body=MySqlTriggerBody() { createEvent.setBody(body); }
     { return createEvent; }
 }
 
@@ -17372,8 +17381,11 @@ AlterEvent AlterEvent():
     EventStatus status = null;
     Token comment = null;
     Statement body = null;
+    MySqlDefiner definer = null;
 }
 {
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") })
+      definer=MySqlRoutineDefiner() { alterEvent.setDefiner(definer); } ]
     <K_EVENT> event=Table() { alterEvent.setEvent(event); }
     [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_SCHEDULE })
       schedule=MySqlEventSchedule() { alterEvent.setSchedule(schedule); } ]
@@ -17387,7 +17399,7 @@ AlterEvent AlterEvent():
         alterEvent.setComment(stringValue(comment));
     } ]
     [ LOOKAHEAD({ getToken(1).kind == K_DO })
-      <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
+      <K_DO> body=MySqlTriggerBody() { alterEvent.setBody(body); } ]
     { return alterEvent; }
 }
 
@@ -17472,9 +17484,9 @@ CreateTrigger.Order MySqlTriggerOrder():
 }
 
 /**
- * MySQL trigger statement. BEGIN ... END with SQL statements only remains a Block. Other compound
- * statements, such as those with IF or DECLARE, keep their tokens like routine bodies and use the
- * same boundary tracking. The semicolon after END is left to separate statements.
+ * MySQL trigger or event statement. BEGIN ... END with SQL statements only remains a Block. Other
+ * compound statements, such as those with IF or DECLARE, keep their tokens like routine bodies and
+ * use the same boundary tracking. The semicolon after END is left to separate statements.
  */
 Statement MySqlTriggerBody():
 {
@@ -21824,6 +21836,8 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isPostgreSqlEventTriggerAhead(true) }) statement = AlterEventTrigger()
                 |
+                LOOKAHEAD([ MySqlRoutineDefiner() ] <K_EVENT>,
+                        { getToken(1).kind == K_EVENT || isKeywordAhead("DEFINER") })
                 statement = AlterEvent()
                 |
                 LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
@@ -23625,6 +23639,8 @@ Statement Create():
         { requireDdlSyntax(!isUsingOrReplace, "CREATE EVENT TRIGGER does not support OR REPLACE"); }
         statement = CreateEventTrigger()
         |
+        LOOKAHEAD([ MySqlRoutineDefiner() ] <K_EVENT>,
+                { getToken(1).kind == K_EVENT || isKeywordAhead("DEFINER") })
         statement = CreateEvent()
         |
         LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = CreateView(isUsingOrReplace)
