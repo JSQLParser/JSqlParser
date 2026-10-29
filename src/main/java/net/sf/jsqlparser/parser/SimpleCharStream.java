@@ -48,6 +48,9 @@ public class SimpleCharStream {
     protected boolean trackLineColumn = true;
     protected int totalCharsRead = 0;
     protected int absoluteTokenBegin = 0;
+    // line, column and absolute position of each match begun since the last forgetMatchBegins()
+    private int[] matchBegins = new int[24];
+    private int matchBeginCount = 0;
     int bufsize;
     int available;
     int tokenBegin;
@@ -105,6 +108,33 @@ public class SimpleCharStream {
 
     public final int getAbsoluteTokenBegin() {
         return absoluteTokenBegin;
+    }
+
+    /**
+     * The absolute position of the match that began at the given line and column since the last
+     * {@link #forgetMatchBegins()}, or 0 when none did. Lets a comment, which no token action sees,
+     * take its position from where its match began.
+     */
+    public final int getAbsoluteBegin(int line, int column) {
+        for (int i = 0; i < matchBeginCount; i += 3) {
+            if (matchBegins[i] == line && matchBegins[i + 1] == column) {
+                return matchBegins[i + 2];
+            }
+        }
+        return 0;
+    }
+
+    public final void forgetMatchBegins() {
+        matchBeginCount = 0;
+    }
+
+    private void recordMatchBegin() {
+        if (matchBeginCount + 3 > matchBegins.length) {
+            matchBegins = java.util.Arrays.copyOf(matchBegins, matchBegins.length * 2);
+        }
+        matchBegins[matchBeginCount++] = getBeginLine();
+        matchBegins[matchBeginCount++] = getBeginColumn();
+        matchBegins[matchBeginCount++] = absoluteTokenBegin;
     }
 
     protected void ExpandBuff(boolean wrapAround) {
@@ -200,6 +230,7 @@ public class SimpleCharStream {
         tokenBegin = bufpos;
 
         absoluteTokenBegin = totalCharsRead;
+        recordMatchBegin();
 
         if (c == '#' && featureConfiguration != null
                 && featureConfiguration.getAsBoolean(Feature.allowHashLineComments)) {
@@ -441,6 +472,7 @@ public class SimpleCharStream {
      * Reinitialise.
      */
     public void ReInit(Provider dstream, int startline, int startcolumn, int buffersize) {
+        matchBeginCount = 0;
         inputStream = dstream;
         line = startline;
         column = startcolumn - 1;

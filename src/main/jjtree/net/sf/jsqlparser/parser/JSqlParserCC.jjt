@@ -293,24 +293,87 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     private void linkAST(ASTNodeAccess access, Node node, Expression leftExpression) {
         linkAST(access, node);
-        if (leftExpression instanceof ASTNodeAccess) {
-            Node leftNode = ((ASTNodeAccess) leftExpression).getASTNode();
-            if (leftNode != null && leftNode.jjtGetFirstToken() != null) {
-                node.jjtSetFirstToken(leftNode.jjtGetFirstToken());
+        node.jjtSetFirstToken(firstToken(leftExpression, node.jjtGetFirstToken()));
+    }
+
+    /**
+     * Links an object no production opens a node for to a {@link RangeNode} spanning its tokens
+     * from {@code first} to the last one consumed.
+     */
+    private void linkAST(ASTNodeAccess access, Token first) {
+        linkAST(access, first, getToken(0));
+    }
+
+    private void linkAST(ASTNodeAccess access, Token first, Token last) {
+        linkAST(access, new RangeNode(first, last, null));
+    }
+
+    private static Token firstToken(ASTNodeAccess operand, Token fallback) {
+        Node node = operand == null ? null : operand.getASTNode();
+        return node != null && node.jjtGetFirstToken() != null ? node.jjtGetFirstToken() : fallback;
+    }
+
+    /** Links a list the grammar assembles itself to the range from its first element to its last. */
+    private <T extends ExpressionList<?>> T linkElements(T list) {
+        if (list != null && !list.isEmpty() && list.getASTNode() == null) {
+            Node first = list.get(0).getASTNode();
+            Node last = list.get(list.size() - 1).getASTNode();
+            if (first != null && last != null) {
+                linkAST(list, first.jjtGetFirstToken(), last.jjtGetLastToken());
             }
+        }
+        return list;
+    }
+
+    /** Links an object built from the single token just consumed, such as a name, to that token. */
+    private <T extends ASTNodeAccess> T linkToLastToken(T access) {
+        linkAST(access, getToken(0), getToken(0));
+        return access;
+    }
+
+    private <T extends ASTNodeAccess> T linked(T access, Token first) {
+        linkAST(access, first);
+        return access;
+    }
+
+    /**
+     * Widens an object's range to text it has taken in beyond its node, from {@code first} or to
+     * {@code last} where given. A tree node keeps its own range, and the object moves to a
+     * {@link RangeNode} over the wider one.
+     */
+    private void widen(Object access, Token first, Token last) {
+        Node node = access instanceof ASTNodeAccess ? ((ASTNodeAccess) access).getASTNode() : null;
+        if (node == null) {
+            return;
+        }
+        Token from = first != null ? first : node.jjtGetFirstToken();
+        Token to = last != null ? last : node.jjtGetLastToken();
+        if (node instanceof RangeNode) {
+            node.jjtSetFirstToken(from);
+            node.jjtSetLastToken(to);
+        } else {
+            linkAST((ASTNodeAccess) access, new RangeNode(from, to, node));
         }
     }
 
     /**
-     * Links an expression the operator loop builds, which no production opens a node for, to a node
-     * spanning its tokens from {@code first} to the last one consumed. The node is left out of the
-     * tree, so the operands' nodes keep their place in it.
+     * The last token of the qualifier in a dotted name running from {@code first} to {@code name},
+     * which is the token two before {@code name}. Null when the name has no qualifier.
      */
-    private void linkAST(ASTNodeAccess access, Token first) {
-        Node node = new Node(this, JJTEXPRESSION);
-        node.jjtSetFirstToken(first);
-        node.jjtSetLastToken(getToken(0));
-        linkAST(access, node);
+    private static Token qualifierLast(Token first, Token name) {
+        for (Token token = first; token != null && token != name; token = token.next) {
+            if (token.next != null && token.next.next == name) {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    /** Like {@link #linkAST(ASTNodeAccess, Token)}, for an object a production may already have linked. */
+    private void linkASTIfMissing(ASTNodeAccess access, Token first) {
+        if (access != null && access.getASTNode() == null) {
+            linkAST(access, first);
+        }
     }
 
     public Node getASTRoot() {
@@ -947,7 +1010,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * Handles OR (prec=2), XOR (prec=3 under MySQL, else 2), AND/&& (prec=4).
      * Safe to use now that no syntactic production LOOKAHEADs scan through expressions.
      */
-    protected Expression prattExpressionRest(Expression left, int minPrec) throws ParseException {
+    protected Expression prattExpressionRest(Expression left, Token first, int minPrec) throws ParseException {
         while (!interrupted) {
             Token t = getToken(1);
             int op = t.kind;
@@ -970,7 +1033,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 Expression thenExpression;
                 ternaryThenBranchDepth++;
                 try {
-                    thenExpression = prattExpressionRest(Condition(), 2);
+                    Token thenFirst = getToken(1);
+                    thenExpression = prattExpressionRest(Condition(), thenFirst, 2);
                 } finally {
                     ternaryThenBranchDepth--;
                 }
@@ -978,13 +1042,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     throw new ParseException("Expected ':' closing the ternary conditional operator");
                 }
                 jj_consume_token(getToken(1).kind, getToken(1).image);
-                Expression elseExpression = prattExpressionRest(Condition(), 2);
+                Token elseFirst = getToken(1);
+                Expression elseExpression = prattExpressionRest(Condition(), elseFirst, 2);
                 left = new TernaryExpression(left, thenExpression, elseExpression);
+                linkAST(left, first);
                 continue;
             }
             jj_consume_token(op, getToken(1).image);
             // +1 makes OR/AND/XOR left-associative
-            Expression right = prattExpressionRest(Condition(), prec + 1);
+            Token rightFirst = getToken(1);
+            Expression right = prattExpressionRest(Condition(), rightFirst, prec + 1);
             if (op == K_AND) {
                 left = new AndExpression(left, right);
             } else if (op == OP_DOUBLEAND) {
@@ -995,6 +1062,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             } else {
                 left = new OrExpression(left, right);
             }
+            linkAST(left, first);
         }
         return left;
     }
@@ -1073,6 +1141,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             jj_consume_token(op, getToken(1).image);
             Token rightFirst = getToken(1);
             Expression right = prattArithRest(PrimaryExpression(), rightFirst, prec + 1);
+            // a JSON access chain extends the JsonExpression it started, which already has a node
+            boolean extended = jsonAccess && left instanceof JsonExpression;
 
             if (jsonAccess) {
                 JsonExpression access = left instanceof JsonExpression
@@ -1102,7 +1172,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 else if ("&".equals(img)) { BitwiseAnd     r = new BitwiseAnd();     r.setLeftExpression(left); r.setRightExpression(right); left = r; }
                 else if ("<->".equals(img) || "<#>".equals(img)) { GeometryDistance r = new GeometryDistance(img); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             }
-            linkAST(left, first);
+            if (extended) {
+                widen(left, first, getToken(0));
+            } else {
+                linkAST(left, first);
+            }
         }
         return left;
     }
@@ -3481,6 +3555,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     private StringValue stringValue(Token token) throws ParseException {
         StringValue value = new StringValue(token.image);
+        linkAST(value, token, token);
         // a U&'...' string brings its own escaping
         if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")
                 || value.getEscaping() == StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE) {
@@ -3706,6 +3781,15 @@ TOKEN_MGR_DECLS : {
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
 		t.absoluteEnd = t.absoluteBegin + t.image.length();
+        // comments come through no token action, so they take their position from where their match began
+        if (input_stream instanceof SimpleCharStream) {
+            SimpleCharStream stream = (SimpleCharStream) input_stream;
+            for (Token comment = t.specialToken; comment != null; comment = comment.specialToken) {
+                comment.absoluteBegin = stream.getAbsoluteBegin(comment.beginLine, comment.beginColumn);
+                comment.absoluteEnd = comment.absoluteBegin + comment.image.length();
+            }
+            stream.forgetMatchBegins();
+        }
         // Track the lexical region independently of parser lookahead: nested SELECT
         // disambiguation can fetch PATTERN tokens before its production is entered.
         if (rowPatternContext == null && t.kind == S_IDENTIFIER
@@ -4780,16 +4864,17 @@ Statement Statement() #Statement:
     Statement stm = null;
     Statement stm2 = null;
     Expression condition;
+    Token ifFirst = null;
 }
 {
     (
          try {
             (
-                 <K_IF> condition=Condition()
-                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                 <K_IF> { ifFirst = getToken(0); } condition=Condition()
+                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); linkAST(ifElseStatement, ifFirst); }
                  [ LOOKAHEAD(2)
                      [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2); widen(ifElseStatement, null, getToken(0)); }
                  ]
 
                  [
@@ -4834,6 +4919,7 @@ Statement SingleStatement() :
 {
     Statement stm = null;
     List<WithItem<?>> with = null;
+    Token first = getToken(1);
 }
 {
         (
@@ -4855,7 +4941,7 @@ Statement SingleStatement() :
            LOOKAHEAD(3) (
                 [ LOOKAHEAD(2) with=WithList() ]
                 (
-                    stm = SelectWithWithItems( with )
+                    stm = SelectWithWithItems( with ) { if (with != null) { widen(stm, first, null); } }
                     |
                     stm = InsertWithWithItems( with )
                     |
@@ -5002,7 +5088,12 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
         )
-        { return stm; }
+        {
+            if (stm instanceof ASTNodeAccess) {
+                linkASTIfMissing((ASTNodeAccess) stm, first);
+            }
+            return stm;
+        }
 }
 
 OracleBlock OracleBlock():
@@ -5110,7 +5201,7 @@ Block Block() #Block : {
 }
 {
     block = BeginEndBlock()
-    [LOOKAHEAD(2) <ST_SEMICOLON> { block.setSemicolonAfterEnd(true); } ]
+    [LOOKAHEAD(2) <ST_SEMICOLON> { block.setSemicolonAfterEnd(true); widen(block, null, getToken(0)); } ]
     {
         return block;
     }
@@ -5122,6 +5213,7 @@ Block BeginEndBlock(): {
     List<Statement> list = new ArrayList<Statement>();
     Statement stm;
     Block block = new Block();
+    Token first = getToken(1);
 }
 {
     <K_BEGIN>
@@ -5151,6 +5243,7 @@ Block BeginEndBlock(): {
 
     <K_END>
     {
+        linkAST(block, first);
         return block;
     }
 }
@@ -5160,6 +5253,7 @@ Statements Statements() #Statements: {
     IfElseStatement ifElseStatement = null;
     Statement stm = null;
     Statement stm2 = null;
+    Token ifFirst = null;
     Expression condition;
 }
 {
@@ -5187,11 +5281,11 @@ Statements Statements() #Statements: {
 
              try {
                 (
-                     <K_IF> condition=Condition()
-                     ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                     <K_IF> { ifFirst = getToken(0); } condition=Condition()
+                     ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); linkAST(ifElseStatement, ifFirst); }
                      [ LOOKAHEAD(2)
                          [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                         <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                         <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2); widen(ifElseStatement, null, getToken(0)); }
                      ]
 
                      { requireStatementBoundary(); stmts.add( ifElseStatement ); }
@@ -5239,11 +5333,11 @@ Statements Statements() #Statements: {
             }
             try {
                 (
-                    <K_IF> condition=Condition()
-                    ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                    <K_IF> { ifFirst = getToken(0); } condition=Condition()
+                    ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); linkAST(ifElseStatement, ifFirst); }
                     [ LOOKAHEAD(2)
                         [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                        <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                        <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2); widen(ifElseStatement, null, getToken(0)); }
                     ]
 
                     { requireStatementBoundary(); stmts.add( ifElseStatement ); }
@@ -5299,7 +5393,9 @@ UnsupportedStatement captureStatementTokens(Token statementStart) {
             break;
         }
     }
-    return new UnsupportedStatement(tokenImages);
+    UnsupportedStatement statement = new UnsupportedStatement(tokenImages);
+    linkAST(statement, statementStart.next, statementEnd);
+    return statement;
 }
 
 JAVACODE
@@ -6379,7 +6475,7 @@ SetStatement SetAssignments(): {
     (
         ","
         ( LOOKAHEAD(3) SetAssignment(set)
-          | exp=Expression() { set.getExpressions(set.getCount() - 1).add(exp); } )
+          | exp=Expression() { set.getExpressions(set.getCount() - 1).add(exp); widen(set.getExpressions(set.getCount() - 1), null, getToken(0)); } )
     )*
     { return set; }
 }
@@ -6411,7 +6507,7 @@ void SetAssignment(SetStatement set):
                 && (name instanceof UserVariable || "Time Zone".equals(name))) {
             throw new ParseException("SET TO requires a configuration parameter name");
         }
-        set.add(name, new ExpressionList<Expression>(expression), operator);
+        set.add(name, linkElements(new ExpressionList<Expression>(expression)), operator);
     }
     )
     {
@@ -6432,7 +6528,7 @@ Expression SetAssignmentValue():
 }
 {
     ( LOOKAHEAD({ getToken(1).kind == K_ON && getToken(0).kind == K_TO })
-      value=<K_ON> { expression = new Column(value.image); }
+      value=<K_ON> { expression = linkToLastToken(new Column(value.image)); }
       | expression=Expression() )
     { return expression; }
 }
@@ -6449,8 +6545,8 @@ void SetCharacterSet(SetStatement set):
       | <S_IDENTIFIER> { name = "CHARSET"; } )
     ( value=<S_CHAR_LITERAL> { expression = stringValue(value); }
       | (value=<S_IDENTIFIER> | value=<S_QUOTED_IDENTIFIER> | value=<K_DEFAULT>)
-        { expression = new Column(value.image); } )
-    { set.add(name, new ExpressionList<Expression>(expression), false); }
+        { expression = linkToLastToken(new Column(value.image)); } )
+    { set.add(name, linkElements(new ExpressionList<Expression>(expression)), false); }
 }
 
 SetStatement SqlServerSetOnOffOptions(): {
@@ -6667,7 +6763,7 @@ PrepareStatement PrepareStatement() #PrepareStatement:
 ColDataType PrepareParameterType():
 { ColDataType type; Token token; }
 {
-    ( token=<K_UNKNOWN> { type = new ColDataType(token.image); }
+    ( token=<K_UNKNOWN> { type = linkToLastToken(new ColDataType(token.image)); }
       | type=ColDataType() )
     { return type; }
 }
@@ -7003,6 +7099,7 @@ ExplainStatement Explain():
     List<ExplainStatement.Option> options;
     ExplainStatement es;
     boolean parenthesized = false;
+    Token statementFirst;
 }
 {
     ( tk=<K_EXPLAIN> | tk = <K_SUMMARIZE> )
@@ -7012,10 +7109,11 @@ ExplainStatement Explain():
                 LOOKAHEAD(2) "(" options = PostgresqlExplainOptions() ")" { parenthesized = true; }
                 | options = ExplainStatementOptions()
             )
+            { statementFirst = getToken(1); }
             (
                 [ LOOKAHEAD(2) with=WithList() ]
                 (
-                    statement = SelectWithWithItems( with )
+                    statement = SelectWithWithItems( with ) { if (with != null) { widen(statement, statementFirst, null); } }
                     | statement = InsertWithWithItems( with )
                     | statement = UpdateWithWithItems( with )
                     | statement = DeleteWithWithItems( with )
@@ -7023,6 +7121,9 @@ ExplainStatement Explain():
                 )
             )
             {
+                if (statement instanceof ASTNodeAccess) {
+                    linkASTIfMissing((ASTNodeAccess) statement, statementFirst);
+                }
                 es = new ExplainStatement(tk.image, statement, options);
                 es.setParenthesizedOptions(parenthesized);
             }
@@ -7349,7 +7450,7 @@ ShowCreateStatement ShowCreate(): {
         <K_USER> { statement.setObjectType(ShowCreateStatement.ObjectType.USER); }
         (
             LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) currentUser = RelObjectName()
-            { account.setUser(new StringValue(currentUser).setQuoteStr("")); }
+            { account.setUser(linkToLastToken(new StringValue(currentUser).setQuoteStr(""))); }
             [ LOOKAHEAD(2) "(" ")" { statement.setCurrentUserParentheses(true); } ]
             |
             account = MySqlAccountName()
@@ -7432,12 +7533,15 @@ ShowTablesStatement ShowTables(): {
 
 Values Values(): {
     ExpressionList expressions;
+    Token first = getToken(1);
 } {
     ( <K_VALUES> | <K_VALUE> )
     expressions = ExpressionList()
 
     {
-        return new Values(expressions);
+        Values values = new Values(expressions);
+        linkAST(values, first);
+        return values;
     }
 }
 
@@ -7643,7 +7747,12 @@ List<UpdateSet> UpdateSets():
     (
         (
             tableColumn=Column() "=" valueExpression=Expression()
-            { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
+            {
+                updateSet = new UpdateSet(tableColumn, valueExpression);
+                linkElements(updateSet.getColumns());
+                linkElements(updateSet.getValues());
+                updateSets.add(updateSet);
+            }
         )
         |
         (
@@ -7651,7 +7760,7 @@ List<UpdateSet> UpdateSets():
             columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
             "="
             (
-                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
+                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
                 |
                 values = ParenthesedExpressionList() { updateSet.setValues(values); }
             )
@@ -7661,14 +7770,19 @@ List<UpdateSet> UpdateSets():
     (
         LOOKAHEAD(2) "," (
             tableColumn=Column() "=" valueExpression=Expression()
-            { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
+            {
+                updateSet = new UpdateSet(tableColumn, valueExpression);
+                linkElements(updateSet.getColumns());
+                linkElements(updateSet.getValues());
+                updateSets.add(updateSet);
+            }
             |
             (
                 { updateSet = new UpdateSet(); updateSets.add(updateSet); }
                 columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
                 "="
                 (
-                    LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
+                    LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
                     |
                     values = ParenthesedExpressionList() { updateSet.setValues(values); }
                 )
@@ -7768,11 +7882,13 @@ InsertBulk.Option InsertBulkOption():
             option.getOrderByElements().add(order);
         }
         [ (direction=<K_ASC> | direction=<K_DESC>) { order.setAsc(direction.kind == K_ASC); order.setAscDescPresent(true); } ]
+        { linkAST(order, firstToken(column, getToken(0))); }
         ( "," column=Column() {
             order = new OrderByElement().withExpression(column);
             option.getOrderByElements().add(order);
           }
           [ (direction=<K_ASC> | direction=<K_DESC>) { order.setAsc(direction.kind == K_ASC); order.setAscDescPresent(true); } ]
+          { linkAST(order, firstToken(column, getToken(0))); }
         )* ")"
         |
         LOOKAHEAD({ isKeywordAhead("ROWS_PER_BATCH") }) AccessKeyword("ROWS_PER_BATCH") "=" value=<S_LONG>
@@ -8354,17 +8470,22 @@ MergeInsert MergeInsertClause(Expression predicate) : {
     ExpressionList<Column> columns;
     ExpressionList expList;
     Expression condition;
+    Token open;
 }
 {
     <K_INSERT>
-    [ "(" columns = ColumnList() ")"
+    [ open="(" columns = ColumnList() ")"
         {
-            mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
+            ParenthesedExpressionList<Column> insertColumns = new ParenthesedExpressionList<Column>(columns);
+            linkAST(insertColumns, open);
+            mi.setColumns(insertColumns);
         }
     ]
-    <K_VALUES> "(" expList = SimpleExpressionList() ")"
+    <K_VALUES> open="(" expList = SimpleExpressionList() ")"
     {
-        mi.setValues( new ParenthesedExpressionList(expList) );
+        ParenthesedExpressionList insertValues = new ParenthesedExpressionList(expList);
+        linkAST(insertValues, open);
+        mi.setValues(insertValues);
     }
 
     [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
@@ -8450,12 +8571,14 @@ Column Column() #Column :
     ObjectNames data = null;
     ArrayConstructor arrayConstructor = null;
     Token tk = null;
+    Token first = getToken(1);
+    Token name;
 }
 {
-    data = ColumnIdentifier()
+    data = ColumnIdentifier() { name = getToken(0); }
     [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
-    [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
+    [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); name = getToken(0); } ]
 
     [ LOOKAHEAD(2) arrayConstructor = Subscript() ]
     {
@@ -8463,6 +8586,10 @@ Column Column() #Column :
         if (tk != null) { col.withCommentText(tk.image); }
         if (arrayConstructor!=null) {
             col.setArrayConstructor(arrayConstructor);
+        }
+        Token qualifierLast = qualifierLast(first, name);
+        if (col.getTable() != null && qualifierLast != null) {
+            linkAST(col.getTable(), first, qualifierLast);
         }
         linkAST(col,jjtThis);
         return col;
@@ -9487,6 +9614,7 @@ PlainSelect PlainSelect() #PlainSelect:
     PreferringClause preferringClause = null;
     ExpressionList expressionList = null;
     boolean partitionByBrackets = false;
+    Token partitionFirst = null;
     List<Table> intoTables = null;
     MySqlSelectIntoClause mySqlSelectIntoClause = null;
     MySqlProcedureAnalyse mySqlProcedureAnalyse = null;
@@ -9591,7 +9719,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
-        [LOOKAHEAD(2) <K_PARTITION> <K_BY>
+        [LOOKAHEAD(2) partitionFirst=<K_PARTITION> <K_BY>
             (
                 LOOKAHEAD(2) expressionList=ComplexExpressionList()
                 |
@@ -9599,6 +9727,7 @@ PlainSelect PlainSelect() #PlainSelect:
             )
             {
                 preferringClause.setPartitionExpressionList(expressionList, partitionByBrackets);
+                linkAST(preferringClause.getPartitionBy(), partitionFirst);
             }
         ]
     ]
@@ -9628,7 +9757,7 @@ PlainSelect PlainSelect() #PlainSelect:
     // expression avoids a numeric LOOKAHEAD, which cannot see past a long parenthesized
     // subquery and would wrongly commit to LIMIT BY (issue #2359).
     [ LOOKAHEAD(1, <K_LIMIT>) limit = LimitWithOffset()
-        [ LOOKAHEAD(1, <K_BY>) <K_BY> expressionList = ExpressionList() { limit.setByExpressions(expressionList); } ]
+        [ LOOKAHEAD(1, <K_BY>) <K_BY> expressionList = ExpressionList() { limit.setByExpressions(expressionList); widen(limit, null, getToken(0)); } ]
         {
             if (limit.getByExpressions() != null) {
                 plainSelect.setLimitBy(limit);
@@ -9889,6 +10018,7 @@ Expression WithItemExpression():
 {
     LambdaExpression lambdaExpression;
     Expression expr;
+    Token open;
 }
 {
     (
@@ -9902,8 +10032,8 @@ Expression WithItemExpression():
         |
         // whole lambda wrapped in parentheses, e.g. (x -> x * 2)
         LOOKAHEAD( "(" ( RelObjectName() | ParenthesedColumnList() ) "->" )
-        "(" lambdaExpression = LambdaExpression() ")"
-        { expr = new ParenthesedExpressionList<Expression>(lambdaExpression); }
+        open="(" lambdaExpression = LambdaExpression() ")"
+        { expr = new ParenthesedExpressionList<Expression>(lambdaExpression); linkAST(expr, open); }
         |
         expr = Expression()
     )
@@ -9927,6 +10057,7 @@ WithSearchClause WithSearchClause() #WithSearchClause:
     <K_SET>
     sequenceColumnName = RelObjectName()
     {
+        linkElements(searchColumns);
         return new WithSearchClause(
                 "BREADTH".equalsIgnoreCase(orderingToken.image)
                         ? WithSearchClause.SearchOrder.BREADTH
@@ -9944,8 +10075,9 @@ WithCycleClause WithCycleClause() #WithCycleClause:
 }
 {
     <K_CYCLE>
-    name=RelObjectName() { columns.add(createColumn(name)); }
-    ( "," name=RelObjectName() { columns.add(createColumn(name)); } )*
+    name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); }
+    ( "," name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); } )*
+    { linkElements(columns); }
     <K_SET> name=RelObjectName() { cycle.setMarkColumnName(name); }
     [ <K_TO> value=Expression() { cycle.setMarkValue(value); }
       <K_DEFAULT> value=Expression() { cycle.setMarkDefault(value); } ]
@@ -10110,14 +10242,16 @@ Expression SelectItemExpression() #ColumnsExpression(transformers != null):
     Expression expression;
     ColumnsTransformer transformer;
     List<ColumnsTransformer> transformers = null;
+    Token first;
 }
 {
     // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
     // @todo: parse a proper SEQUENCE instead of a COLUMN
+    { first = getToken(1); }
     (
-        LOOKAHEAD({ isPriorOperatorAhead() }) expression = ConnectByPriorOperator()
+        LOOKAHEAD({ isPriorOperatorAhead() }) expression = ConnectByPriorOperator() { linkASTIfMissing(expression, first); }
         |
-        ( expression = Condition() { expression = prattExpressionRest(expression, 2); } )
+        ( expression = Condition() { expression = prattExpressionRest(expression, first, 2); } )
     )
     (
         LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
@@ -10168,6 +10302,7 @@ ColumnsTransformer ColumnsTransformer():
     ColumnsTransformer transformer;
     Token tk;
     boolean strict;
+    Token first = getToken(1);
 }
 {
     (
@@ -10204,7 +10339,7 @@ ColumnsTransformer ColumnsTransformer():
               |
               column = Column()
               {
-                  exceptColumns = new ParenthesedExpressionList<Column>(column);
+                  exceptColumns = linkElements(new ParenthesedExpressionList<Column>(column));
                   transformer.setParenthesized(false);
               }
           )
@@ -10245,7 +10380,7 @@ ColumnsTransformer ColumnsTransformer():
           )
           { transformer.setRenameItems(replaceItems); }
     )
-    { return transformer; }
+    { linkAST(transformer, first); return transformer; }
 }
 
 /**
@@ -10421,11 +10556,16 @@ SelectItem<Function> FunctionItem():
 {
     Alias alias = null;
     Function function;
+    Token first = getToken(1);
 }
 {
     function=Function()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
-    { return new SelectItem<Function>(function, alias); }
+    {
+        SelectItem<Function> item = new SelectItem<Function>(function, alias);
+        linkAST(item, first);
+        return item;
+    }
 }
 
 ExpressionList<Column> PivotForColumns():
@@ -10437,7 +10577,7 @@ ExpressionList<Column> PivotForColumns():
     (
         columns = ParenthesedColumnList()
         |
-        column = Column() { columns = new ExpressionList<Column>(column); }
+        column = Column() { columns = linkElements(new ExpressionList<Column>(column)); }
     )
     { return columns; }
 }
@@ -10510,11 +10650,16 @@ SelectItem<ExpressionList<?>> ExpressionListItem():
 {
     ExpressionList expressionList;
     Alias alias = null;
+    Token first = getToken(1);
 }
 {
     expressionList=ParenthesedExpressionList()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
-    { return new SelectItem<ExpressionList<?>>(expressionList, alias); }
+    {
+        SelectItem<ExpressionList<?>> item = new SelectItem<ExpressionList<?>>(expressionList, alias);
+        linkAST(item, first);
+        return item;
+    }
 }
 
 List<SelectItem<ExpressionList<?>>> PivotMultiInItems():
@@ -10649,7 +10794,7 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
           // Same shape as IntoClause() above: a PlainSelect can be followed by "," (subselect in
           // an expression list), so the repetition needs two tokens to decide.
           ( LOOKAHEAD(2) "," variable=MySqlIntoVariable() { variables.add(variable); } )*
-          { intoClause.setType(MySqlSelectIntoClause.Type.VARIABLES); intoClause.setVariables(variables); }
+          { intoClause.setType(MySqlSelectIntoClause.Type.VARIABLES); intoClause.setVariables(linkElements(variables)); }
     )
     {
         return intoClause;
@@ -10676,6 +10821,7 @@ MySqlProcedureAnalyse MySqlProcedureAnalyse():
     MySqlProcedureAnalyse procedureAnalyse = new MySqlProcedureAnalyse();
     Token maxElements = null;
     Token maxMemory = null;
+    Token first = getToken(1);
 }
 {
     <K_PROCEDURE> <K_ANALYSE> "("
@@ -10687,10 +10833,13 @@ MySqlProcedureAnalyse MySqlProcedureAnalyse():
     {
         if (maxElements != null) {
             procedureAnalyse.setMaxElements(new LongValue(maxElements.image));
+            linkAST(procedureAnalyse.getMaxElements(), maxElements, maxElements);
         }
         if (maxMemory != null) {
             procedureAnalyse.setMaxMemory(new LongValue(maxMemory.image));
+            linkAST(procedureAnalyse.getMaxMemory(), maxMemory, maxMemory);
         }
+        linkAST(procedureAnalyse, first);
         return procedureAnalyse;
     }
 }
@@ -11096,13 +11245,16 @@ RowPattern RowPatternSequence(int depth):
 {
     List<RowPattern> patterns = new ArrayList<RowPattern>();
     RowPattern pattern;
+    Token first = getToken(1);
 }
 {
     ( LOOKAHEAD({ isRowPatternPrimaryAhead() }) pattern=RowPatternFactor(depth) { patterns.add(pattern); } )*
     {
         if (patterns.isEmpty()) { return new RowPattern.Empty(); }
-        return patterns.size() == 1 ? patterns.get(0)
-            : new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+        if (patterns.size() == 1) { return patterns.get(0); }
+        RowPattern result = new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+        linkAST(result, first);
+        return result;
     }
 }
 
@@ -11111,6 +11263,7 @@ RowPattern RowPatternFactor(int depth) #RowPatternFactor:
     RowPattern pattern;
     String name;
     List<RowPattern> permutations = new ArrayList<RowPattern>();
+    Token first = getToken(1);
 }
 {
     (
@@ -11131,6 +11284,7 @@ RowPattern RowPatternFactor(int depth) #RowPatternFactor:
                 && (pattern instanceof RowPattern.Permute || pattern instanceof RowPattern.Exclusion)) {
             throw new ParseException("BigQuery does not support PERMUTE or row pattern exclusion");
         }
+        linkAST(pattern, first);
     }
     [ LOOKAHEAD({ !(pattern instanceof RowPattern.Anchor)
             && ("?".equals(getToken(1).image) || "*".equals(getToken(1).image)
@@ -11169,13 +11323,14 @@ Expression RowPatternBound():
 {
     Token value;
     Expression result;
+    Token first = getToken(1);
 }
 {
     ( value=<S_LONG> { result = new LongValue(value.image); }
       | "?" { result = new JdbcParameter(++jdbcParameterIndex, false, "?"); }
       | result=UserVariable()
     )
-    { return result; }
+    { linkASTIfMissing(result, first); return result; }
 }
 
 List<Join> JoinsList():
@@ -11431,6 +11586,7 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
 {
     OracleHierarchicalExpression result = new OracleHierarchicalExpression();
     Expression expr;
+    Token first = getToken(1);
 }
 {
     (
@@ -11452,6 +11608,7 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
         )
     )
     {
+        linkAST(result, first);
         return result;
     }
 }
@@ -11508,12 +11665,14 @@ Expression Plus():
 Expression PriorTo():
 {
     Expression left, right, result;
+    Token first = getToken(1);
+    Token open;
 }
 {
     (
         LOOKAHEAD(3) left=PreferenceTermTerminal()
         |
-        "(" left=PreferenceTerm() ")" { left = new ParenthesedExpressionList(left); }
+        open="(" left=PreferenceTerm() ")" { left = new ParenthesedExpressionList(left); linkAST(left, open); }
     )
     { result = left; }
 
@@ -11522,10 +11681,11 @@ Expression PriorTo():
         (
             LOOKAHEAD(3) right=PreferenceTermTerminal()
             |
-            "(" right=PreferenceTerm() ")" { left = new ParenthesedExpressionList(right); }
+            open="(" right=PreferenceTerm() ")" { left = new ParenthesedExpressionList(right); linkAST(left, open); }
         )
         {
             result = new PriorTo(left, right);
+            linkAST(result, first);
             left = result;
         }
     )*
@@ -11676,7 +11836,7 @@ ExpressionList<Expression> GroupingSet():
     (
         LOOKAHEAD(2) list = ParenthesedExpressionList()
         |
-        expression = SimpleExpression() { list = new ExpressionList<Expression>(expression); }
+        expression = SimpleExpression() { list = linkElements(new ExpressionList<Expression>(expression)); }
     )
     {
         return list;
@@ -11724,6 +11884,7 @@ OrderByElement OrderByElement():
     Expression columnReference = null;
     Token collateToken = null;
     WithFill withFill = null;
+    Token first = getToken(1);
 }
 {
     columnReference = Expression()
@@ -11741,6 +11902,7 @@ OrderByElement OrderByElement():
     [ LOOKAHEAD(2) <K_WITH> <K_ROLLUP> { orderByElement.setMysqlWithRollup(true); } ]
     {
         orderByElement.setExpression(columnReference);
+        linkAST(orderByElement, first);
         return orderByElement;
     }
 }
@@ -12102,6 +12264,7 @@ OracleHint getOracleHint() {
     if (OracleHint.isHintMatch(tok.image)) {
       hint = new OracleHint();
       hint.setComment(tok.image);
+      linkAST(hint, tok, tok);
     }
   }
   return hint;
@@ -12135,10 +12298,12 @@ First First():
 Expression Expression() #Expression :
 {
     Expression expression = null;
+    Token first;
 }
 {
+    { first = getToken(1); }
     expression=Condition()
-    { expression = prattExpressionRest(expression, 2); }
+    { expression = prattExpressionRest(expression, first, 2); }
     {
         linkAST(expression,jjtThis);
         return expression;
@@ -12149,15 +12314,16 @@ Expression XorExpression():
 {
     Expression result;
     Expression right;
+    Token first = getToken(1);
 }
 {
     result=AndChain()
     (
         LOOKAHEAD(2)
         (
-            <K_OR>  right=AndChain() { result = new OrExpression(result, right); }
+            <K_OR>  right=AndChain() { result = new OrExpression(result, right); linkAST(result, first); }
             |
-            <K_XOR> right=AndChain() { result = new XorExpression(result, right); }
+            <K_XOR> right=AndChain() { result = new XorExpression(result, right); linkAST(result, first); }
         )
     )*
     { return result; }
@@ -12168,6 +12334,7 @@ Expression AndChain():
 {
     Expression result;
     Expression right;
+    Token first = getToken(1);
 }
 {
     result=Condition()
@@ -12176,11 +12343,13 @@ Expression AndChain():
         (
             <K_AND> right=Condition() {{
                 AndExpression a = new AndExpression(result, right); result = a;
+                linkAST(result, first);
             }}
             |
             <OP_DOUBLEAND> right=Condition() {{
                 AndExpression a = new AndExpression(result, right);
                 a.setUseOperator(true); result = a;
+                linkAST(result, first);
             }}
         )
     )*
@@ -12193,13 +12362,16 @@ Expression Condition():
     Expression left;
     // Leading NOT / ! prefixes, leftmost token wraps outermost (issue #1170).
     final Deque<Boolean> exclamationMarks = new ArrayDeque<Boolean>();
+    final Deque<Token> notTokens = new ArrayDeque<Token>();
     int oraclePrior = EqualsTo.NO_ORACLE_PRIOR;
     int oracleJoin = EqualsTo.NO_ORACLE_JOIN;
+    Token prior = null;
 }
 {
     (
         LOOKAHEAD({ getToken(1).kind == K_NOT || "!".equals(getToken(1).image) })
         ( <K_NOT> { exclamationMarks.addFirst(Boolean.FALSE); } | "!" { exclamationMarks.addFirst(Boolean.TRUE); } )
+        { notTokens.addFirst(getToken(0)); }
     )*
     (
         LOOKAHEAD(<K_EXISTS> JdbcNamedParameter() ":", {
@@ -12215,7 +12387,7 @@ Expression Condition():
           // lookahead simulation (this path runs for every plain condition)
           LOOKAHEAD({ !interrupted })
           // A choice rather than [...], so that enclosing syntactic lookaheads honour the guard
-          ( LOOKAHEAD({ isPriorOperatorAhead() }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } | {} )
+          ( LOOKAHEAD({ isPriorOperatorAhead() }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; prior = getToken(0); } | {} )
           left=SimpleExpression() { result = left; }
 
           // Consume Oracle (+) once, before dispatching
@@ -12225,7 +12397,7 @@ Expression Condition():
               {
                   oracleJoin = EqualsTo.ORACLE_JOIN_RIGHT;
                   if (left instanceof Column) {
-                      ((Column) left).setOldOracleJoinSyntax(oracleJoin);
+                      ((Column) left).setOldOracleJoinSyntax(oracleJoin); widen(left, null, getToken(0));
                   }
               }
           ]
@@ -12268,9 +12440,11 @@ Expression Condition():
         if (oraclePrior == EqualsTo.ORACLE_PRIOR_START
                 && result instanceof SupportsOldOracleJoinSyntax) {
             ((SupportsOldOracleJoinSyntax) result).setOraclePriorPosition(oraclePrior);
+            widen(result, prior, null);
         }
         while (!exclamationMarks.isEmpty()) {
             result = new NotExpression(result, exclamationMarks.pollFirst());
+            linkAST(result, notTokens.pollFirst());
         }
         return result;
     }
@@ -12345,6 +12519,7 @@ Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #
 Expression OverlapsCondition(Expression leftExpression):
 {
     ExpressionList right;
+    Token operator = getToken(1);
 }
 {
     <K_OVERLAPS>
@@ -12354,9 +12529,11 @@ Expression OverlapsCondition(Expression leftExpression):
         if (leftExpression instanceof ExpressionList) {
             left = (ExpressionList) leftExpression;
         } else {
-            left = new ExpressionList(leftExpression);
+            left = linkElements(new ExpressionList(leftExpression));
         }
-        return new OverlapsCondition(left, right);
+        OverlapsCondition result = new OverlapsCondition(left, right);
+        linkAST(result, firstToken(leftExpression, operator));
+        return result;
     }
 }
 
@@ -12474,6 +12651,7 @@ Expression ExcludesExpression(Expression leftExpression) #ExcludesExpression :
 Expression Between(Expression leftExpression) :
 {
     Between result = new Between();
+    Token operator = getToken(1);
     Expression betweenExpressionStart = null;
     Expression betweenExpressionEnd = null;
 }
@@ -12500,7 +12678,7 @@ Expression Between(Expression leftExpression) :
                 "(" "+" ")"
                 {
                     if (betweenExpressionStart instanceof Column) {
-                        ((Column) betweenExpressionStart).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT);
+                        ((Column) betweenExpressionStart).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); widen(betweenExpressionStart, null, getToken(0));
                     }
                 }
             ]
@@ -12520,7 +12698,7 @@ Expression Between(Expression leftExpression) :
                 "(" "+" ")"
                 {
                     if (betweenExpressionEnd instanceof Column) {
-                        ((Column) betweenExpressionEnd).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT);
+                        ((Column) betweenExpressionEnd).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); widen(betweenExpressionEnd, null, getToken(0));
                     }
                 }
             ]
@@ -12530,6 +12708,7 @@ Expression Between(Expression leftExpression) :
         result.setLeftExpression(leftExpression);
         result.setBetweenExpressionStart(betweenExpressionStart);
         result.setBetweenExpressionEnd(betweenExpressionEnd);
+        linkAST(result, firstToken(leftExpression, operator));
         return result;
     }
 }
@@ -12570,7 +12749,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         "(" "+" ")"
         {
             if (rightExpression instanceof Column) {
-                ((Column) rightExpression).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT);
+                ((Column) rightExpression).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); widen(rightExpression, null, getToken(0));
             }
         }
     ]
@@ -12603,7 +12782,7 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
         "(" "+" ")"
         {
             if (rightExpression instanceof Column) {
-                ((Column) rightExpression).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT);
+                ((Column) rightExpression).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); widen(rightExpression, null, getToken(0));
             }
         }
     ]
@@ -12635,6 +12814,7 @@ Expression IsDistinctExpression(Expression leftExpression) #IsDistinctExpression
 Expression IsNullExpression(Expression leftExpression):
 {
     IsNullExpression result = new IsNullExpression();
+    Token operator = getToken(1);
 }
 {
     (
@@ -12644,6 +12824,7 @@ Expression IsNullExpression(Expression leftExpression):
     )
     {
         result.setLeftExpression(leftExpression);
+        linkAST(result, firstToken(leftExpression, operator));
         return result;
     }
 }
@@ -12651,6 +12832,7 @@ Expression IsNullExpression(Expression leftExpression):
 Expression IsBooleanExpression(Expression leftExpression):
 {
     IsBooleanExpression result = new IsBooleanExpression();
+    Token operator = getToken(1);
 }
 {
         (
@@ -12659,6 +12841,7 @@ Expression IsBooleanExpression(Expression leftExpression):
 
     {
         result.setLeftExpression(leftExpression);
+        linkAST(result, firstToken(leftExpression, operator));
         return result;
     }
 }
@@ -12684,6 +12867,7 @@ Expression IsJsonExpression(Expression leftExpression):
 Expression IsUnknownExpression(Expression leftExpression):
 {
     IsUnknownExpression result = new IsUnknownExpression();
+    Token operator = getToken(1);
 }
 {
         (
@@ -12692,6 +12876,7 @@ Expression IsUnknownExpression(Expression leftExpression):
 
     {
         result.setLeftExpression(leftExpression);
+        linkAST(result, firstToken(leftExpression, operator));
         return result;
     }
 }
@@ -12700,11 +12885,13 @@ Expression ExistsExpression():
 {
     ExistsExpression result = new ExistsExpression();
     Expression rightExpression = null;
+    Token first = getToken(1);
 }
 {
     <K_EXISTS> rightExpression=SimpleExpression()
     {
         result.setRightExpression(rightExpression);
+        linkAST(result, first);
         return result;
     }
 }
@@ -12713,17 +12900,21 @@ Expression MemberOfExpression(Expression leftExpression):
 {
     MemberOfExpression result;
     Expression rightExpression = null;
+    Token operator = getToken(1);
 }
 {
     <K_MEMBER> <K_OF> rightExpression=Expression()
     {
-        return new MemberOfExpression(leftExpression, rightExpression );
+        result = new MemberOfExpression(leftExpression, rightExpression);
+        linkAST(result, firstToken(leftExpression, operator));
+        return result;
     }
 }
 
 ExpressionList ExpressionList() #ExpressionList:
 {
     ExpressionList expressionList;
+    Token first = getToken(1);
 }
 {
     (
@@ -12751,19 +12942,16 @@ ExpressionList ExpressionList() #ExpressionList:
         if ( expressionList.size() == 1 && expressionList.get(0) instanceof ExpressionList ) {
             ExpressionList subList = (ExpressionList) expressionList.get(0);
             if (expressionList instanceof ParenthesedExpressionList) {
-                if (subList instanceof ParenthesedExpressionList) {
-                    return expressionList;
-                } else {
-                    return new ParenthesedExpressionList(subList);
+                if (!(subList instanceof ParenthesedExpressionList)) {
+                    expressionList = new ParenthesedExpressionList(subList);
                 }
+            } else if (subList instanceof ParenthesedExpressionList) {
+                expressionList = new ParenthesedExpressionList(subList);
             } else {
-                if (subList instanceof ParenthesedExpressionList) {
-                    return new ParenthesedExpressionList(subList);
-                } else {
-                    return subList;
-                }
+                expressionList = subList;
             }
         }
+        linkAST(expressionList, first);
         return expressionList;
     }
 }
@@ -12771,6 +12959,7 @@ ExpressionList ExpressionList() #ExpressionList:
 ParenthesedExpressionList ParenthesedExpressionList():
 {
     ExpressionList expressions=new ExpressionList();
+    Token first = getToken(1);
 }
 {
     "("
@@ -12781,7 +12970,9 @@ ParenthesedExpressionList ParenthesedExpressionList():
     )?
     ")"
     {
-        return new ParenthesedExpressionList(expressions);
+        ParenthesedExpressionList result = new ParenthesedExpressionList(expressions);
+        linkAST(result, first);
+        return result;
     }
 }
 
@@ -12790,6 +12981,7 @@ ExpressionList SimpleExpressionList():
     ExpressionList<Column> columns;
     ExpressionList expressions = new ExpressionList();
     Expression expr;
+    Token first = getToken(1);
 }
 {
     expr=SimpleExpression() { expressions.add(expr); }
@@ -12805,6 +12997,7 @@ ExpressionList SimpleExpressionList():
         }
     )*
     {
+        linkAST(expressions, first);
         return expressions;
     }
 }
@@ -12814,11 +13007,13 @@ ExpressionList<Column> ColumnList():
 {
     ExpressionList<Column> expressions = new ExpressionList<Column>();
     Column expr;
+    Token first = getToken(1);
 }
 {
     expr=Column() { expressions.add(expr); }
     ( LOOKAHEAD(2) "," expr=Column() { expressions.add(expr); } )*
     {
+        linkAST(expressions, first);
         return expressions;
     }
 }
@@ -12826,11 +13021,14 @@ ExpressionList<Column> ColumnList():
 ParenthesedExpressionList<Column> ParenthesedColumnList():
 {
     ExpressionList<Column> expressions;
+    Token first = getToken(1);
 }
 {
     "(" expressions = ColumnList() ")"
     {
-        return new ParenthesedExpressionList<Column>(expressions);
+        ParenthesedExpressionList<Column> result = new ParenthesedExpressionList<Column>(expressions);
+        linkAST(result, first);
+        return result;
     }
 }
 
@@ -12839,6 +13037,7 @@ ExpressionList ComplexExpressionList():
     ExpressionList<Column> columns;
     ExpressionList expressions = new ExpressionList();
     Expression expr;
+    Token first = getToken(1);
 }
 {
     (
@@ -12866,6 +13065,7 @@ ExpressionList ComplexExpressionList():
     )*
 
     {
+        linkAST(expressions, first);
         return expressions;
     }
 }
@@ -12940,6 +13140,7 @@ Expression AnyComparisonExpression() :
 {
     AnyType anyType;
     Select select;
+    Token first = getToken(1);
 }
 {
     (
@@ -12951,7 +13152,9 @@ Expression AnyComparisonExpression() :
     )
     select = ParenthesedSelect()
     {
-      return new AnyComparisonExpression(anyType, select);
+      AnyComparisonExpression result = new AnyComparisonExpression(anyType, select);
+      linkAST(result, first);
+      return result;
     }
 }
 
@@ -12979,6 +13182,7 @@ Expression SimpleExpression():
             assignment.setVariable(user);
             assignment.setOperation(operation.image);
             assignment.setExpression(retval);
+            linkAST(assignment, firstToken(user, first));
             return assignment;
         } else
             return retval;
@@ -12993,7 +13197,9 @@ StringValue CharacterSetIntroducedString():
 {
     introducer=<S_IDENTIFIER> literal=<S_CHAR_LITERAL>
     {
-        return stringValue(literal).withPrefix(introducer.image);
+        StringValue result = stringValue(literal).withPrefix(introducer.image);
+        linkAST(result, introducer, literal);
+        return result;
     }
 }
 
@@ -13076,10 +13282,12 @@ ArrayExpression ArraySubscript(Expression obj): {
     }
     "]"
     {
-        return slice == null
+        ArrayExpression result = slice == null
                 ? new ArrayExpression(obj, idxExpr, null, null)
                 : new ArrayExpression(obj, null, slice.getStartExpression(),
                         slice.getEndExpression()).withStepExpression(slice.getStepExpression());
+        linkAST(result, firstToken(obj, opening));
+        return result;
     }
 }
 
@@ -13090,6 +13298,7 @@ ArrayExpression ArraySubscript(Expression obj): {
 RangeExpression SliceTail(Expression start): {
     Expression stop = null;
     Expression step = null;
+    Token colon = getToken(1);
 } {
     ":"
     [
@@ -13100,7 +13309,11 @@ RangeExpression SliceTail(Expression start): {
     [
         ":" [ LOOKAHEAD({ !isSliceDelimiter(getToken(1)) }) step = Expression() ]
     ]
-    { return new RangeExpression(start, stop).withStepExpression(step); }
+    {
+        RangeExpression result = new RangeExpression(start, stop).withStepExpression(step);
+        linkAST(result, firstToken(start, colon));
+        return result;
+    }
 }
 
 /** A subscript of a column, such as {@code col[1]}, {@code col[1, 2]} or {@code col[1:3]}. */
@@ -13120,7 +13333,11 @@ ArrayConstructor Subscript() : {
         subscriptOpenings.pop();
     }
     "]"
-    { return new ArrayConstructor(expList, false); }
+    {
+        ArrayConstructor result = new ArrayConstructor(linkElements(expList), false);
+        linkAST(result, opening);
+        return result;
+    }
 }
 
 Expression SubscriptElement():
@@ -13150,9 +13367,11 @@ Expression ArrayIndexExpression() :
     (
         LOOKAHEAD(2) token = <K_OFFSET> "(" expr = SimpleExpression() ")"
         {
-            return new Function()
+            Function offset = new Function()
                     .withName(token.image)
-                    .withParameters(new ExpressionList<Expression>(expr));
+                    .withParameters(linkElements(new ExpressionList<Expression>(expr)));
+            linkAST(offset, token);
+            return offset;
         }
         |
         expr = SimpleExpression() { return expr; }
@@ -13184,6 +13403,7 @@ StringValue CharacterLiteral():
 {
     Token literal;
     StringValue value;
+    Token first = getToken(1);
 }
 {
     literal=<S_CHAR_LITERAL> { value = stringValue(literal); }
@@ -13191,7 +13411,7 @@ StringValue CharacterLiteral():
         literal=<S_CHAR_LITERAL>
         { value.setValue(value.getValue() + stringValue(literal).getValue()); }
     )*
-    { return value; }
+    { linkAST(value, first); return value; }
 }
 
 Expression PrimaryExpression() #PrimaryExpression:
@@ -13210,6 +13430,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean not = false;
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
+    Token coreFirst = null;
     ExpressionList list;
 
     final List<Map.Entry<Expression, String>> jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
@@ -13221,6 +13442,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         // DuckDB's chained signs, e.g. - -1 or +-+1
         ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
     ]
+    { coreFirst = getToken(1); }
     (
         <K_NULL> { retval = new NullValue(); }
 
@@ -13312,13 +13534,13 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
             [
                 LOOKAHEAD( "(" "+" ")" ("," | ")") )
-                "(" "+" ")" { ((Column) retval).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); }
+                "(" "+" ")" { ((Column) retval).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); widen(retval, null, getToken(0)); }
             ]
 
         | LOOKAHEAD({ !interrupted && (getToken(1).kind == K_TRUE || getToken(1).kind == K_FALSE) })
           (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
-        | retval=CharacterLiteral() { linkAST(retval,jjtThis); }
+        | retval=CharacterLiteral()
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
@@ -13366,24 +13588,25 @@ Expression PrimaryExpression() #PrimaryExpression:
                 { retval = new FunctionAllColumns(unwrapParenthesedFunction(retval)); } ]
 
             // Share field and method navigation with the other primary expressions.
-            ( LOOKAHEAD(1, ".") nxt=NavigationStep(retval) { retval = nxt; } )*
+            ( LOOKAHEAD(1, ".") { linkASTIfMissing(retval, coreFirst); } nxt=NavigationStep(retval) { retval = nxt; linkASTIfMissing(retval, coreFirst); } )*
         )
     )
+    { linkASTIfMissing(retval, coreFirst); }
 
     [
-        LOOKAHEAD(2, { !isColumnCollateAhead() }) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); }
+        LOOKAHEAD(2, { !isColumnCollateAhead() }) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); linkAST(retval, coreFirst); }
     ]
 
     [
-        LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval)
+        LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval) { linkASTIfMissing(retval, coreFirst); }
     ]
 
-    [ LOOKAHEAD(2) retval = ArrayExpression(retval) ]
+    [ LOOKAHEAD(2) retval = ArrayExpression(retval) { linkASTIfMissing(retval, coreFirst); } ]
 
     // navigation chains, e.g. Redshift SUPER col[0].field[1].sub: field accesses
     // and subscripts may alternate freely after the primary expression
     (
-        LOOKAHEAD(2) nxt = NavigationStep(retval) { retval = nxt; }
+        LOOKAHEAD(2) nxt = NavigationStep(retval) { retval = nxt; linkASTIfMissing(retval, coreFirst); }
     )*
 
     (  LOOKAHEAD(2) "::" type=ColDataType() {
@@ -13392,6 +13615,7 @@ Expression PrimaryExpression() #PrimaryExpression:
             castExpr.setLeftExpression(retval);
             castExpr.setColDataType(type);
             retval=castExpr;
+            linkAST(retval, coreFirst);
         }
     )*
 
@@ -13421,7 +13645,7 @@ Expression PrimaryExpression() #PrimaryExpression:
                 jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
             }
         )+
-        retval = JsonExpression(retval, jsonIdents)
+        retval = JsonExpression(retval, jsonIdents) { linkASTIfMissing(retval, coreFirst); }
     ]
 
     ( LOOKAHEAD(2) <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
@@ -13436,12 +13660,17 @@ Expression PrimaryExpression() #PrimaryExpression:
         if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
+            // the field behind this getter is an ExpressionList
+            linkElements((ExpressionList<?>) timezoneExpr.getTimezoneExpressions());
+            linkAST(retval, coreFirst);
         }
         for (int i = innerSigns.size() - 1; i >= 0; i--) {
             retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+            linkAST(retval, innerSigns.get(i));
         }
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
+            linkAST(retval, sign);
         }
         if (not) {
             retval = new NotExpression(retval, exclamationMarkNot);
@@ -13549,7 +13778,9 @@ UserVariable UserVariable() : {
 {
     tk = <S_AT_IDENTIFIER> varName=IdentifierChain2(tk.image)
     {
-        return new UserVariable(varName);
+        UserVariable result = new UserVariable(varName);
+        linkAST(result, tk);
+        return result;
     }
 }
 
@@ -13585,11 +13816,14 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
 RangeExpression RangeExpression(Expression startExpression):
 {
     Expression endExpression;
+    Token colon = getToken(1);
 }
 {
     ":" endExpression = Expression()
     {
-        return new RangeExpression(startExpression, endExpression);
+        RangeExpression result = new RangeExpression(startExpression, endExpression);
+        linkAST(result, firstToken(startExpression, colon));
+        return result;
     }
 }
 
@@ -13614,6 +13848,7 @@ ListComprehension ListComprehension() : {
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
     ExpressionList<Expression> expList = new ExpressionList<Expression>();
     Expression exp;
+    Token first = getToken(1);
 } {
     "["
     [
@@ -13621,7 +13856,14 @@ ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
         ( "," exp=ArrayElement() { expList.add(exp); } )*
     ]
     "]"
-    { return new ArrayConstructor(expList, arrayKeyword); }
+    {
+        ArrayConstructor result = new ArrayConstructor(linkElements(expList), arrayKeyword);
+        // after ARRAY, the caller links the constructor from that keyword
+        if (!arrayKeyword) {
+            linkAST(result, first);
+        }
+        return result;
+    }
 }
 
 Expression ArrayElement():
@@ -14477,6 +14719,8 @@ JsonAggregateFunction JsonAggregateFunction() : {
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
     boolean partitionByBrackets = false;
+    Token partitionFirst = null;
+    Token partitionLast = null;
 }
 {
     (
@@ -14562,14 +14806,18 @@ JsonAggregateFunction JsonAggregateFunction() : {
         [   LOOKAHEAD(2)
             <K_OVER> {result.setAnalyticType(AnalyticType.OVER);}
             "("
-            [<K_PARTITION> <K_BY>
+            [partitionFirst=<K_PARTITION> <K_BY>
                 (LOOKAHEAD(3) expressionList=ComplexExpressionList()
                 | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                { partitionLast = getToken(0); }
             ]
             [olist=OrderByElements() ]
             [windowElement = WindowElement() ]
             {
                 result.setPartitionExpressionList(expressionList, partitionByBrackets);
+                if (partitionFirst != null) {
+                    linkAST(result.getPartitionExpressionList(), partitionFirst, partitionLast);
+                }
                 result.setOrderByElements(olist);
                 result.setWindowElement(windowElement);
             }
@@ -14696,6 +14944,7 @@ KeepExpression KeepExpression() : {
     KeepExpression keep = new KeepExpression();
     Token token;
     List<OrderByElement> list;
+    Token first = getToken(1);
 }
 {
     <K_KEEP> "(" token = <S_IDENTIFIER> (<K_FIRST> { keep.setFirst(true); } | <K_LAST> { keep.setFirst(false); })
@@ -14704,6 +14953,7 @@ KeepExpression KeepExpression() : {
     {
         keep.setName(token.image);
         keep.setOrderByElements(list);
+        linkAST(keep, first);
         return keep;
     }
 }
@@ -14712,6 +14962,8 @@ KeepExpression KeepExpression() : {
 void windowFun(AnalyticExpression retval):{
      ExpressionList expressionList = null;
      boolean partitionByBrackets = false;
+     Token partitionFirst = null;
+     Token partitionLast = null;
      String windowName = null;
      WindowDefinition winDef;
 } {
@@ -14734,11 +14986,18 @@ void windowFun(AnalyticExpression retval):{
 
         [
             LOOKAHEAD(2) <K_OVER> "("
-            [   <K_PARTITION> <K_BY>
+            [   partitionFirst=<K_PARTITION> <K_BY>
                     (LOOKAHEAD(3) expressionList=ComplexExpressionList()
                     | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                    { partitionLast = getToken(0); }
             ]
-            ")" { winDef.setPartitionExpressionList(expressionList, partitionByBrackets); retval.setType(AnalyticType.WITHIN_GROUP_OVER); }
+            ")" {
+                winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+                if (partitionFirst != null) {
+                    linkAST(winDef.getPartitionBy(), partitionFirst, partitionLast);
+                }
+                retval.setType(AnalyticType.WITHIN_GROUP_OVER);
+            }
         ]
     )
 }
@@ -14748,6 +15007,8 @@ WindowDefinition windowDefinition() : {
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
     boolean partitionByBrackets = false;
+    Token partitionFirst = null;
+    Token partitionLast = null;
     WindowDefinition winDef = new WindowDefinition();
     String baseWindowName;
 } {
@@ -14760,14 +15021,18 @@ WindowDefinition windowDefinition() : {
         |
         {}
     )
-    [<K_PARTITION> <K_BY>
+    [partitionFirst=<K_PARTITION> <K_BY>
         (LOOKAHEAD(3) expressionList=ComplexExpressionList()
         | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+        { partitionLast = getToken(0); }
     ]
     [olist=OrderByElements() ]
     [windowElement = WindowElement() ]
     {
         winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+        if (partitionFirst != null) {
+            linkAST(winDef.getPartitionBy(), partitionFirst, partitionLast);
+        }
         winDef.setOrderByElements(olist);
         winDef.setWindowElement(windowElement);
     }
@@ -14932,6 +15197,7 @@ CastExpression ImplicitCast() #ImplicitCast:
 
     int precision = -1;
     int scale = -1;
+    Token first = getToken(1);
 }
 {
     colDataType = DataType()
@@ -14944,6 +15210,8 @@ CastExpression ImplicitCast() #ImplicitCast:
     )
     {
         CastExpression castExpression = new CastExpression(colDataType, tk2.image);
+        linkAST(castExpression.getLeftExpression(), tk2, tk2);
+        linkAST(castExpression, first);
         return castExpression;
     }
 }
@@ -15047,6 +15315,7 @@ WhenClause WhenThenSearchCondition():
     WhenClause whenThen = new WhenClause();
     Expression whenExp;
     Expression thenExp;
+    Token first = getToken(1);
 }
 {
     <K_WHEN> whenExp=Expression()
@@ -15059,6 +15328,7 @@ WhenClause WhenThenSearchCondition():
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);
+       linkAST(whenThen, first);
        return whenThen;
     }
 }
@@ -15117,7 +15387,7 @@ ExpressionList ExecuteArguments(): {
         argument=ExecuteArgument() { arguments.add(argument); }
         ( LOOKAHEAD(2) "," argument=ExecuteArgument() { arguments.add(argument); } )*
     )
-    { return arguments; }
+    { return linkElements(arguments); }
 }
 
 Expression ExecuteArgument(): {
@@ -15172,7 +15442,7 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     (
         columns = ParenthesedColumnList()
         |
-        s = RelObjectName() { columns = new ExpressionList<Column>(createColumn(s)); }
+        s = RelObjectName() { columns = linkElements(new ExpressionList<Column>(linkToLastToken(createColumn(s)))); }
     )
 
     "->"
@@ -15247,11 +15517,12 @@ Function SpecialStringFunctionWithNamedParameters() :
     NamedExpressionList namedExpressionList = null;
     ExpressionList expressionList = null;
     List<OrderByElement> orderByList;
+    Token open;
 }
 {
         funcName = <K_STRING_FUNCTION_NAME>
 
-        "("
+        open="("
         (
             LOOKAHEAD( { isNamedExprListAhead() } ) namedExpressionList = NamedExpressionListExprFirst()
             |
@@ -15260,10 +15531,13 @@ Function SpecialStringFunctionWithNamedParameters() :
         ")"
 
     {
-        return new Function()
+        if (namedExpressionList != null) {
+            linkAST(namedExpressionList, open);
+        }
+        return linked(new Function()
             .withName(funcName.image)
             .withNamedParameters(namedExpressionList)
-            .withParameters(expressionList);
+            .withParameters(expressionList), funcName);
     }
 }
 
@@ -15325,7 +15599,7 @@ Function InternalFunction(boolean escaped):
             LOOKAHEAD({ !isUnparenthesizedSelectAhead() }) expressionList = FunctionArgumentList(retval)
 
             |
-            LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = new ExpressionList(expr); }
+            LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = linkElements(new ExpressionList(expr)); }
         )
     ]
 
@@ -15462,7 +15736,7 @@ ExpressionList<Expression> XmlForestArguments():
 {
     expression=XmlForestArgument() { arguments.add(expression); }
     ( "," expression=XmlForestArgument() { arguments.add(expression); } )*
-    { return arguments; }
+    { return linkElements(arguments); }
 }
 
 Expression XmlForestArgument():
@@ -15528,13 +15802,14 @@ XMLSerializeExpr XMLSerializeExpr(): {
 JsonTableFunction.JsonTablePassingClause JsonTablePassingClause() : {
     Expression valueExpression;
     String parameterName;
+    Token first = getToken(1);
 }
 {
     valueExpression = Expression()
     <K_AS>
     parameterName = RelObjectName()
     {
-        return new JsonTableFunction.JsonTablePassingClause(valueExpression, parameterName);
+        return linked(new JsonTableFunction.JsonTablePassingClause(valueExpression, parameterName), first);
     }
 }
 
@@ -15568,6 +15843,7 @@ JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause(boolean beforePa
     JsonTableFunction.JsonTableWrapperClause wrapperClause =
             new JsonTableFunction.JsonTableWrapperClause(beforePathExpr);
     Token token;
+    Token first = getToken(1);
 }
 {
     (
@@ -15597,13 +15873,14 @@ JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause(boolean beforePa
     [ <K_ARRAY_LITERAL> { wrapperClause.setArray(true); } ]
     JsonKeyword("WRAPPER")
     {
-        return wrapperClause;
+        return linked(wrapperClause, first);
     }
 }
 
 JsonTableFunction.JsonTableQuotesClause JsonTableQuotesClause() : {
     JsonTableFunction.JsonTableQuotesClause quotesClause =
             new JsonTableFunction.JsonTableQuotesClause();
+    Token first = getToken(1);
 }
 {
     (
@@ -15616,7 +15893,7 @@ JsonTableFunction.JsonTableQuotesClause JsonTableQuotesClause() : {
         <K_ON> JsonKeyword("SCALAR") <K_STRING> { quotesClause.setOnScalarString(true); }
     ]
     {
-        return quotesClause;
+        return linked(quotesClause, first);
     }
 }
 
@@ -15635,6 +15912,7 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
     String encoding;
     String collation;
     Token collationLiteral;
+    Token first = getToken(1);
 }
 {
     (
@@ -15735,7 +16013,7 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
         )
     )
     {
-        return columnDefinition;
+        return linked(columnDefinition, first);
     }
 }
 
@@ -15743,6 +16021,7 @@ JsonTableFunction.JsonTableColumnsClause JsonTableColumnsClause() : {
     JsonTableFunction.JsonTableColumnsClause columnsClause =
             new JsonTableFunction.JsonTableColumnsClause();
     JsonTableFunction.JsonTableColumnDefinition columnDefinition;
+    Token first = getToken(1);
 }
 {
     <K_COLUMNS> "("
@@ -15759,7 +16038,7 @@ JsonTableFunction.JsonTableColumnsClause JsonTableColumnsClause() : {
     ]
     ")"
     {
-        return columnsClause;
+        return linked(columnsClause, first);
     }
 }
 
@@ -15768,6 +16047,7 @@ JsonTableFunction.JsonTablePlanTerm JsonTablePlanTerm() : {
     String value;
     Expression expression;
     JsonTableFunction.JsonTablePlanExpression nestedPlanExpression;
+    Token first = getToken(1);
 }
 {
     (
@@ -15789,7 +16069,7 @@ JsonTableFunction.JsonTablePlanTerm JsonTablePlanTerm() : {
         }
     )
     {
-        return term;
+        return linked(term, first);
     }
 }
 
@@ -15798,6 +16078,7 @@ JsonTableFunction.JsonTablePlanExpression JsonTablePlanExpression() : {
             new JsonTableFunction.JsonTablePlanExpression();
     JsonTableFunction.JsonTablePlanTerm term;
     Token operator = null;
+    Token first = getToken(1);
 }
 {
     term = JsonTablePlanTerm() { planExpression.addTerm(term); }
@@ -15826,7 +16107,7 @@ JsonTableFunction.JsonTablePlanExpression JsonTablePlanExpression() : {
         term = JsonTablePlanTerm() { planExpression.addTerm(term); }
     )*
     {
-        return planExpression;
+        return linked(planExpression, first);
     }
 }
 
@@ -15834,13 +16115,14 @@ JsonTableFunction.JsonTablePlanClause JsonTablePlanClause() : {
     JsonTableFunction.JsonTablePlanClause planClause =
             new JsonTableFunction.JsonTablePlanClause();
     JsonTableFunction.JsonTablePlanExpression planExpression;
+    Token first = getToken(1);
 }
 {
     <K_PLAN>
     [ <K_DEFAULT> { planClause.setDefaultPlan(true); } ]
     "(" planExpression = JsonTablePlanExpression() ")" { planClause.setPlanExpression(planExpression); }
     {
-        return planClause;
+        return linked(planClause, first);
     }
 }
 
@@ -15848,6 +16130,7 @@ JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause(boolean beforeCo
     JsonTableFunction.JsonTableOnErrorClause onErrorClause =
             new JsonTableFunction.JsonTableOnErrorClause(beforeColumns);
     Token token;
+    Token first = getToken(1);
 }
 {
     (
@@ -15863,7 +16146,7 @@ JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause(boolean beforeCo
     )
     <K_ON> <K_ERROR>
     {
-        return onErrorClause;
+        return linked(onErrorClause, first);
     }
 }
 
@@ -15871,6 +16154,7 @@ JsonTableFunction.JsonTableOnEmptyClause JsonTableOnEmptyClause() : {
     JsonTableFunction.JsonTableOnEmptyClause onEmptyClause =
             new JsonTableFunction.JsonTableOnEmptyClause();
     Token token;
+    Token first = getToken(1);
 }
 {
     (
@@ -15886,12 +16170,13 @@ JsonTableFunction.JsonTableOnEmptyClause JsonTableOnEmptyClause() : {
     )
     <K_ON> <K_EMPTY>
     {
-        return onEmptyClause;
+        return linked(onEmptyClause, first);
     }
 }
 
 JsonTableFunction.JsonTableParsingTypeClause JsonTableParsingTypeClause() : {
     JsonTableFunction.JsonTableParsingTypeClause parsingType = new JsonTableFunction.JsonTableParsingTypeClause();
+    Token first = getToken(1);
 }
 {
     <K_TYPE>
@@ -15904,7 +16189,7 @@ JsonTableFunction.JsonTableParsingTypeClause JsonTableParsingTypeClause() : {
     )
     <CLOSING_BRACKET>
     {
-        return parsingType;
+        return linked(parsingType, first);
     }
 }
 
@@ -15930,7 +16215,7 @@ JsonTableFunction JsonTableBody() : {
         ","
         jsonPath = Expression() {
             function.setJsonPathExpression(jsonPath);
-            function.setParameters(new ExpressionList(jsonInput, jsonPath));
+            function.setParameters(linkElements(new ExpressionList(jsonInput, jsonPath)));
         }
         [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
     ]
@@ -15959,12 +16244,13 @@ XmlTableFunction.XmlTablePassingClause XmlTablePassingClause() : {
     XmlTableFunction.XmlTablePassingClause passingClause = new XmlTableFunction.XmlTablePassingClause();
     Expression valueExpression;
     String name = null;
+    Token first = getToken(1);
 }
 {
     valueExpression = Expression() { passingClause.setValueExpression(valueExpression); }
     [ <K_AS> name = RelObjectName() { passingClause.setName(name); } ]
     {
-        return passingClause;
+        return linked(passingClause, first);
     }
 }
 
@@ -15973,6 +16259,7 @@ XmlTableFunction.XmlTableColumnDefinition XmlTableColumnDefinition() : {
     String columnName;
     ColDataType dataType;
     Expression expression;
+    Token first = getToken(1);
 }
 {
     columnName = RelObjectName() { columnDefinition.setColumnName(columnName); }
@@ -15984,7 +16271,7 @@ XmlTableFunction.XmlTableColumnDefinition XmlTableColumnDefinition() : {
         [ <K_DEFAULT> expression = Expression() { columnDefinition.setDefaultExpression(expression); } ]
     )
     {
-        return columnDefinition;
+        return linked(columnDefinition, first);
     }
 }
 
@@ -16026,6 +16313,7 @@ TableFunction TableFunction():
     Function function = null;
     ParenthesedExpressionList<Function> rowsFromFunctions = null;
     Token withClause = null;
+    Token keyword;
 }
 {
     [ prefix = <K_LATERAL> ]
@@ -16036,15 +16324,15 @@ TableFunction TableFunction():
             getToken(1).kind == S_IDENTIFIER
                 && getToken(1).image.equalsIgnoreCase("JSON_TABLE")
         })
-        JsonKeyword("JSON_TABLE")
-        function = JsonTableBody()
+        JsonKeyword("JSON_TABLE") { keyword = getToken(0); }
+        function = JsonTableBody() { linkAST(function, keyword); }
         |
         LOOKAHEAD({
             getToken(1).kind == S_IDENTIFIER
                 && getToken(1).image.equalsIgnoreCase("XMLTABLE")
         })
-        <S_IDENTIFIER>
-        function = XmlTableBody()
+        keyword=<S_IDENTIFIER>
+        function = XmlTableBody() { linkAST(function, keyword); }
         |
         function=Function()
     )
@@ -16074,6 +16362,7 @@ ParenthesedExpressionList<Function> RowsFromFunctionList():
 {
     ParenthesedExpressionList<Function> functions = new ParenthesedExpressionList<Function>();
     Function function;
+    Token first = getToken(1);
 }
 {
     "("
@@ -16084,6 +16373,7 @@ ParenthesedExpressionList<Function> RowsFromFunctionList():
         )*
     ")"
     {
+        linkAST(functions, first);
         return functions;
     }
 }
@@ -16754,6 +17044,7 @@ StringValue MySqlAccountNamePart():
                     ? new StringValue().withValue(name.substring(1, name.length() - 1))
                             .setQuoteStr(name.substring(0, 1))
                     : new StringValue().withValue(name).setQuoteStr("");
+            linkToLastToken(value);
         }
     )
     { return value; }
@@ -17419,7 +17710,7 @@ void MySqlDefiner(MySqlDefiner definer):
     ContextualKeyword("DEFINER") "="
     (
         LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) name=RelObjectName()
-        { definer.setUser(new StringValue(name).setQuoteStr("")); }
+        { definer.setUser(linkToLastToken(new StringValue(name).setQuoteStr(""))); }
         [ "(" ")" { definer.setCurrentUserParentheses(true); } ]
         |
         account=MySqlAccountName() { definer.setUser(account.getUser()); definer.setHost(account.getHost()); }
@@ -17498,13 +17789,14 @@ Statement MySqlTriggerBody():
 {
     Statement body;
     List<String> tokens;
+    Token first = getToken(1);
 }
 {
     (
         LOOKAHEAD({ isStatementBlockAhead() }) body=BeginEndBlock()
         |
         LOOKAHEAD({ isMySqlCompoundStatementAhead() }) tokens=captureCompoundStatement()
-        { body = new UnsupportedStatement(tokens); }
+        { body = linked(new UnsupportedStatement(tokens), first); }
         |
         body=SingleStatement()
     )
@@ -18208,7 +18500,7 @@ TableElement TableConstraint(boolean createContext):
 NotNullConstraint PostgreSqlNotNullConstraint():
 { NotNullConstraint constraint = new NotNullConstraint(); String name; boolean noInherit; }
 {
-    <K_NOT> <K_NULL> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
+    <K_NOT> <K_NULL> name=RelObjectName() { constraint.setColumn(linkToLastToken(createColumn(name))); }
     noInherit=PostgreSqlNoInheritClause() { constraint.setNoInherit(noInherit); }
     { return constraint; }
 }
@@ -18279,6 +18571,7 @@ KeyElement PostgreSqlExcludeElement():
 CreateTable CreateTable(boolean isUsingOrReplace):
 {
     CreateTable createTable = new CreateTable();
+    Token ofFirst;
     Table table = null;
     List<TableElement> tableElements = new ArrayList<TableElement>();
     TableElement element;
@@ -18325,9 +18618,10 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         [ LOOKAHEAD(2) tableColumn=TimeTravelAfterAlias() { likeTable.setTimeTravel(tableColumn); } ]
         { createTable.setCloneTable(likeTable); likeTable = null; }
     ]
-    [ <K_OF> typeName=RelObjectNames() {
+    [ <K_OF> { ofFirst = getToken(1); } typeName=RelObjectNames() {
         ofType = new ColDataType();
         ofType.setDataType(typeName.getNames());
+        linkAST(ofType, ofFirst);
         createTable.setOfType(ofType);
     } ]
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
@@ -18812,11 +19106,11 @@ AlterExpressionOrderBy MySqlAlterOrderBy():
 }
 
 OrderByElement MySqlAlterOrderColumn():
-{ OrderByElement element = new OrderByElement(); String name; Token order; }
+{ OrderByElement element = new OrderByElement(); String name; Token order; Token first = getToken(1); }
 {
-    name=RelObjectName() { element.setExpression(createColumn(name)); }
+    name=RelObjectName() { element.setExpression(linkToLastToken(createColumn(name))); }
     [ LOOKAHEAD(2) ( order=<K_ASC> | order=<K_DESC> ) { element.setAsc(order.kind == K_ASC); element.setAscDescPresent(true); } ]
-    { return element; }
+    { linkAST(element, first); return element; }
 }
 
 String MySqlTableOptionValue(): {
@@ -18871,12 +19165,13 @@ ColDataType DataType():
     String precision = null;
     Integer scale = null;
     String scaleText;
+    Token first = getToken(1);
 }
 {
     (
         LOOKAHEAD(2) tk=<K_TEXT_LITERAL> {
             type = tk.image;
-            return ColDataType.fromTypeParameters(type, precision, scale);
+            return linked(ColDataType.fromTypeParameters(type, precision, scale), first);
         }
         |
 		LOOKAHEAD(2) tk=<K_ARRAY_LITERAL> (
@@ -18918,7 +19213,7 @@ ColDataType DataType():
     )
 
     {
-        return colDataType;
+        return linked(colDataType, first);
     }
 }
 
@@ -18973,6 +19268,7 @@ ColDataType ColDataType():
     Token varying = null;
     ColDataType.TypeModifier typeModifier = null;
     XmlTypeModifier xmlTypeModifier = null;
+    Token first = getToken(1);
 }
 {
     (
@@ -19151,6 +19447,7 @@ ColDataType ColDataType():
         if (zonePrecision != null) {
             colDataType.setPrecision(zonePrecision);
         }
+        linkAST(colDataType, first);
         return colDataType;
     }
 }
@@ -19433,7 +19730,7 @@ ExpressionList<Column> ColumnWithCommentList():
          ( "," img=Column() { expressions.add(img); } )*
     ")"
     {
-        return expressions;
+        return linkElements(expressions);
     }
 }
 
@@ -20939,7 +21236,7 @@ DefaultConstraint DefaultConstraintSpec():
 {
     [ <K_CONSTRAINT> name=RelObjectName() { constraint.setName(name); } ]
     <K_DEFAULT> expression=Expression() { constraint.setExpression(expression); }
-    <K_FOR> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
+    <K_FOR> name=RelObjectName() { constraint.setColumn(linkToLastToken(createColumn(name))); }
     // See InsertBulk(): <K_WITH> is in the FOLLOW set of every statement tail. WITH VALUES wins
     // over a hypothetical CTE named VALUES, which is the useful reading here.
     [ LOOKAHEAD(2) <K_WITH> <K_VALUES> { constraint.setWithValues(true); } ]
@@ -22957,7 +23254,7 @@ ConfigurationParameterChange ConfigurationParameterChange():
 
 Expression AccessSettingValue():
 { Expression value; Token token; }
-{ ( LOOKAHEAD(1) token=<K_ON> { value = new Column(token.image); } | value=PrimaryExpression() ) { return value; } }
+{ ( LOOKAHEAD(1) token=<K_ON> { value = linkToLastToken(new Column(token.image)); } | value=PrimaryExpression() ) { return value; } }
 
 /** PostgreSQL and MySQL static privileges; another identifier is a MySQL dynamic privilege. */
 Privilege AccessPrivilege():
@@ -23002,9 +23299,9 @@ Privilege AccessPrivilege():
     [ LOOKAHEAD({ isAccessKeywordAhead("PRIVILEGES") })
       AccessKeyword("PRIVILEGES") { requireAccessSyntax(result.getKind() == Privilege.Kind.ALL, "PRIVILEGES requires ALL"); result.setUsePrivileges(true); } ]
     [ "(" { columns = new ExpressionList<Column>(); }
-      column=RelObjectName() { columns.add(new Column(column)); }
-      ( "," column=RelObjectName() { columns.add(new Column(column)); } )*
-      ")" { result.setColumns(columns); } ]
+      column=RelObjectName() { columns.add(linkToLastToken(new Column(column))); }
+      ( "," column=RelObjectName() { columns.add(linkToLastToken(new Column(column))); } )*
+      ")" { result.setColumns(linkElements(columns)); } ]
     { return result; }
 }
 
@@ -23237,9 +23534,9 @@ TriggerEvent PostgreSqlTriggerEvent():
         | <K_TRUNCATE> { result = new TriggerEvent(CreateTrigger.Event.TRUNCATE); }
         | <K_UPDATE> { result = new TriggerEvent(CreateTrigger.Event.UPDATE); }
           [ <K_OF> { columns = new ExpressionList<Column>(); }
-            name=RelObjectName() { columns.add(createColumn(name)); }
-            ( "," name=RelObjectName() { columns.add(createColumn(name)); } )*
-            { result.setColumns(columns); } ]
+            name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); }
+            ( "," name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); } )*
+            { result.setColumns(linkElements(columns)); } ]
     )
     { return result; }
 }
@@ -23331,7 +23628,7 @@ Expression PostgreSqlTriggerArgument():
         token=<S_CHAR_LITERAL> { result = stringValue(token); }
         | token=<S_LONG> { result = new LongValue(token.image); }
         | token=<S_DOUBLE> { result = new DoubleValue(token.image); }
-        | name=RelObjectName() { result = createColumn(name); }
+        | name=RelObjectName() { result = linkToLastToken(createColumn(name)); }
     )
     { return result; }
 }
@@ -23517,7 +23814,12 @@ void SequenceDefinitionOptions(Sequence sequence):
             parameter=SequenceParameter() { parameters.add(parameter); }
         )
     )*
-    { sequence.setParameters(parameters); }
+    {
+        sequence.setParameters(parameters);
+        if (!parameters.isEmpty() || sequence.getOwnership() != null) {
+            widen(sequence, null, getToken(0));
+        }
+    }
 }
 
 CreateSequence CreateSequence():
@@ -24045,7 +24347,7 @@ Expression ExtensionVersion():
 { Token token; String name; Expression result; }
 {
     ( token=<S_CHAR_LITERAL> { result = stringValue(token); }
-      | name=RelObjectName() { result = createColumn(name); } )
+      | name=RelObjectName() { result = linkToLastToken(createColumn(name)); } )
     { return result; }
 }
 
@@ -24446,7 +24748,7 @@ void ReplicationKeyword(String expected):
 Expression ReplicationOptionValue():
 { Token token; Expression result; }
 {
-    ( LOOKAHEAD(1) token=<K_ON> { result = new Column(token.image); } | result=PrimaryExpression() )
+    ( LOOKAHEAD(1) token=<K_ON> { result = linkToLastToken(new Column(token.image)); } | result=PrimaryExpression() )
     { return result; }
 }
 
@@ -24487,9 +24789,9 @@ PublicationTable PublicationTable(boolean drop):
     table=Table() { result.setTable(table); }
     [ "*" { result.setIncludeDescendants(true); } ]
     [ LOOKAHEAD(1) "(" { columns = new ExpressionList<Column>(); }
-      name=RelObjectName() { columns.add(createColumn(name)); }
-      ( "," name=RelObjectName() { columns.add(createColumn(name)); } )* ")"
-      { result.setColumns(columns); } ]
+      name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); }
+      ( "," name=RelObjectName() { columns.add(linkToLastToken(createColumn(name))); } )* ")"
+      { result.setColumns(linkElements(columns)); } ]
     [ <K_WHERE> "(" expression=Expression() ")" { result.setWhere(expression); } ]
     {
         requireReplicationSyntax(!(result.isOnly() && result.isIncludeDescendants()), "ONLY and * cannot be combined");
@@ -24669,11 +24971,12 @@ DropPolicy DropPolicy():
 UnsupportedStatement UnsupportedStatement():
 {
   List<String> tokens = new LinkedList<String>();
+  Token first = getToken(1);
 }
 {
   tokens=captureUnsupportedStatementDeclaration()
   {
-    return new UnsupportedStatement(tokens);
+    return linked(new UnsupportedStatement(tokens), first);
   }
 }
 
@@ -25132,10 +25435,10 @@ CreateStatistics CreateStatistics():
     }
 }
 Expression PostgreSqlStatisticsExpression():
-{ Expression expression; String name; }
+{ Expression expression; String name; Token open; }
 {
-    ( "(" expression=Expression() ")" { expression = new ParenthesedExpressionList<Expression>(expression); }
-      | name=RelObjectName() { expression = createColumn(name); } )
+    ( open="(" expression=Expression() ")" { expression = new ParenthesedExpressionList<Expression>(expression); linkAST((ASTNodeAccess) expression, open); }
+      | name=RelObjectName() { expression = linkToLastToken(createColumn(name)); } )
     { return expression; }
 }
 AlterStatistics AlterStatistics():

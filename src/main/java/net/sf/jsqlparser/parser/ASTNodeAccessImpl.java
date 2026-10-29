@@ -71,22 +71,20 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
         return builder;
     }
 
+    /**
+     * The nearest enclosing object in the tree, or null when there is none. A node that carries
+     * only a token range, for an object no grammar rule opens a tree node for, has no parent.
+     */
     public ASTNodeAccess getParent() {
-        Node parent = (Node) node.jjtGetParent();
-        while (parent.jjtGetValue() == null) {
-            parent = (Node) parent.jjtGetParent();
-        }
-
-        return ASTNodeAccess.class.cast(parent.jjtGetValue());
+        return getParent(ASTNodeAccess.class);
     }
 
     public <T extends ASTNodeAccess> T getParent(Class<T> clazz) {
-        Node parent = (Node) node.jjtGetParent();
-        while (parent.jjtGetValue() == null || !clazz.isInstance(parent.jjtGetValue())) {
+        Node parent = node == null ? null : (Node) node.jjtGetParent();
+        while (parent != null && !clazz.isInstance(parent.jjtGetValue())) {
             parent = (Node) parent.jjtGetParent();
         }
-
-        return clazz.cast(parent.jjtGetValue());
+        return parent == null ? null : clazz.cast(parent.jjtGetValue());
     }
 
     @Override
