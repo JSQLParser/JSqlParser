@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.oracle;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** A PL/SQL NULL statement, which deliberately performs no action. */
-public class OracleNullStatement implements Statement {
+public class OracleNullStatement extends ASTNodeAccessImpl implements Statement {
     @Override
     public <T, S> T accept(StatementVisitor<T> visitor, S context) {
         return visitor.visit(this, context);

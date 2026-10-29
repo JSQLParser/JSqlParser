@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -24,7 +25,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * PostgreSQL options are typed {@link DatabaseOption}s; other option text is kept as a raw
  * {@link DatabaseOption.Kind#OTHER} option.
  */
-public class CreateDatabase implements Statement {
+public class CreateDatabase extends ASTNodeAccessImpl implements Statement {
 
     private String databaseName;
     private boolean hasIfNotExists = false;

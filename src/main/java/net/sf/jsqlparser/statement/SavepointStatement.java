@@ -11,11 +11,12 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class SavepointStatement implements Statement {
+public class SavepointStatement extends ASTNodeAccessImpl implements Statement {
     private String savepointName;
 
     public SavepointStatement(String savepointName) {

@@ -13,8 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class SessionStatement implements Statement {
+public class SessionStatement extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         START, APPLY, DROP, SHOW, DESCRIBE;
 

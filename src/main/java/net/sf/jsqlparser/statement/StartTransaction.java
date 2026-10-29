@@ -12,9 +12,10 @@ package net.sf.jsqlparser.statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /** START TRANSACTION, or BEGIN when a transaction dialect is selected. */
-public class StartTransaction implements Statement {
+public class StartTransaction extends ASTNodeAccessImpl implements Statement {
     public enum Command {
         START_TRANSACTION, BEGIN
     }

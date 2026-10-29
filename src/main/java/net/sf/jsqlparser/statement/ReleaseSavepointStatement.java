@@ -10,9 +10,10 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /** RELEASE [SAVEPOINT] name. */
-public class ReleaseSavepointStatement implements Statement {
+public class ReleaseSavepointStatement extends ASTNodeAccessImpl implements Statement {
     private String savepointName;
     private boolean usingSavepointKeyword = true;
 

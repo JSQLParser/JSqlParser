@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.policy.PolicyOptions;
 
-public class AlterPolicy implements Statement {
+public class AlterPolicy extends ASTNodeAccessImpl implements Statement {
     private String policyName;
     private net.sf.jsqlparser.schema.Table table;
     private String newName;

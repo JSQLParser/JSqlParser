@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
@@ -29,7 +30,7 @@ import net.sf.jsqlparser.statement.create.user.UserOptions;
  * {@link UserOptions#getDefaultRoles()}. {@code ALTER USER USER() ...} names the current user with
  * the unquoted account name {@code USER()}, see {@link #isUserFunction()}.
  */
-public class AlterUser implements Statement {
+public class AlterUser extends ASTNodeAccessImpl implements Statement {
 
     private static final String USER_FUNCTION = "USER()";
 

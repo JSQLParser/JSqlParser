@@ -14,11 +14,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class IfElseStatement implements Statement {
+public class IfElseStatement extends ASTNodeAccessImpl implements Statement {
     private final Expression condition;
     private final Statement ifStatement;
     private Statement elseStatement;

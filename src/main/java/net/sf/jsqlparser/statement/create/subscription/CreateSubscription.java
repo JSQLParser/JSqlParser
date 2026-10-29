@@ -14,10 +14,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreateSubscription implements Statement {
+public class CreateSubscription extends ASTNodeAccessImpl implements Statement {
     private String name;
     private StringValue connection;
     private List<String> publications = new ArrayList<>();

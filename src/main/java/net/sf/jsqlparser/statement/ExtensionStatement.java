@@ -9,13 +9,15 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * DuckDB's extension management statements {@code [FORCE] INSTALL extension [FROM repository]} and
  * {@code LOAD extension}.
  *
  * @see <a href="https://duckdb.org/docs/stable/extensions/overview">Extensions</a>
  */
-public class ExtensionStatement implements Statement {
+public class ExtensionStatement extends ASTNodeAccessImpl implements Statement {
     private Operation operation;
     private boolean force;
     private String extensionName;

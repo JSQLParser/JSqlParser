@@ -14,12 +14,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Analyze implements Statement {
+public class Analyze extends ASTNodeAccessImpl implements Statement {
 
     public enum Modifier {
         NO_WRITE_TO_BINLOG, LOCAL

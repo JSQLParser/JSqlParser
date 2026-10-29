@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.delete;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.PreferringClause;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.statement.OutputClause;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
-public class Delete implements Statement {
+public class Delete extends ASTNodeAccessImpl implements Statement {
 
     private List<WithItem<?>> withItemsList;
     private Table table;

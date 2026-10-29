@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.show;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -16,7 +17,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * @author Jayant Kumar Yadav
  */
 
-public class ShowIndexStatement implements Statement {
+public class ShowIndexStatement extends ASTNodeAccessImpl implements Statement {
 
     private String tableName;
 

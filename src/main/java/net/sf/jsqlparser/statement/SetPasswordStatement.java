@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 
 /**
@@ -19,7 +20,7 @@ import net.sf.jsqlparser.statement.create.user.UserAccount;
  * [REPLACE 'current'] [RETAIN CURRENT PASSWORD]}. The password is an expression, usually a string
  * literal; MariaDB also accepts {@code PASSWORD('...')}.
  */
-public class SetPasswordStatement implements Statement {
+public class SetPasswordStatement extends ASTNodeAccessImpl implements Statement {
 
     private UserAccount account;
     private Expression password;

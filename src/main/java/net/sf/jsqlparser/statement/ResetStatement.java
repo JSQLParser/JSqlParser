@@ -9,8 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public final class ResetStatement implements Statement {
+public final class ResetStatement extends ASTNodeAccessImpl implements Statement {
 
     private String name = "";
 

@@ -14,13 +14,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
 /**
  * A MySQL/MariaDB {@code CHECK TABLE}, {@code OPTIMIZE TABLE} or {@code REPAIR TABLE} statement.
  * {@code ANALYZE TABLE} remains {@link net.sf.jsqlparser.statement.analyze.Analyze}.
  */
-public class TableMaintenanceStatement implements Statement {
+public class TableMaintenanceStatement extends ASTNodeAccessImpl implements Statement {
 
     public enum Operation {
         CHECK, OPTIMIZE, REPAIR;

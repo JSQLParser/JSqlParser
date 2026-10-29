@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.refresh;
 
 import java.util.function.Consumer;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -22,7 +23,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * @author jxnu-liguobin
  */
 
-public class RefreshMaterializedViewStatement implements Statement {
+public class RefreshMaterializedViewStatement extends ASTNodeAccessImpl implements Statement {
 
     private Table view;
     private RefreshMode refreshMode;

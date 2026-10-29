@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.alter.schema;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL schema name or ownership change. Names retain SQL identifier quoting. */
-public class AlterSchema implements Statement {
+public class AlterSchema extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         RENAME, OWNER
     }

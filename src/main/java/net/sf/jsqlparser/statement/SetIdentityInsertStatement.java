@@ -11,10 +11,11 @@ package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
 /** SQL Server SET IDENTITY_INSERT [database.][schema.]table ON | OFF. */
-public final class SetIdentityInsertStatement implements Statement {
+public final class SetIdentityInsertStatement extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private boolean on;
 

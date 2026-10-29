@@ -13,10 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreatePublication implements Statement {
+public class CreatePublication extends ASTNodeAccessImpl implements Statement {
     private String name;
     private boolean allTables;
     private List<PublicationTarget> targets = new ArrayList<>();

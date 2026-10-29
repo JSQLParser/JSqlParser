@@ -11,12 +11,13 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.create.domain.DomainConstraint;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterDomain implements Statement {
+public class AlterDomain extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Action action;
     private Expression defaultExpression;

@@ -12,13 +12,14 @@ package net.sf.jsqlparser.statement.truncate;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.schema.TableReference;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Truncate implements Statement {
+public class Truncate extends ASTNodeAccessImpl implements Statement {
     public enum IdentityOption {
         RESTART, CONTINUE
     }

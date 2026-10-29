@@ -10,10 +10,11 @@
 package net.sf.jsqlparser.statement.create.type;
 
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreateType implements Statement {
+public class CreateType extends ASTNodeAccessImpl implements Statement {
     private String name;
     private TypeDefinition definition;
 

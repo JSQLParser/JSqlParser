@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class ShowStatement implements Statement {
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+public class ShowStatement extends ASTNodeAccessImpl implements Statement {
 
     private String name;
 

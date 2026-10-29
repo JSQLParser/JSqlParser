@@ -10,8 +10,9 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.function.Consumer;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class Block implements Statement {
+public class Block extends ASTNodeAccessImpl implements Statement {
     private boolean hasSemicolonAfterEnd = false;
 
     private Statements statements;

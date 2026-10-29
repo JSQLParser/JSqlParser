@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.accessmethod;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** A PostgreSQL table or index access method, whose handler names a function, not a table. */
-public class CreateAccessMethod implements Statement {
+public class CreateAccessMethod extends ASTNodeAccessImpl implements Statement {
     public enum Type {
         TABLE, INDEX
     }

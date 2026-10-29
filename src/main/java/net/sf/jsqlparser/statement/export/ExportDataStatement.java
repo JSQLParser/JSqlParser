@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.export;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.Select;
@@ -24,7 +25,7 @@ import java.util.function.Consumer;
  *      "https://cloud.google.com/bigquery/docs/reference/standard-sql/export-statements">Export
  *      statements</a>
  */
-public class ExportDataStatement implements Statement {
+public class ExportDataStatement extends ASTNodeAccessImpl implements Statement {
     private String connectionName;
     private ExpressionList<Expression> options;
     private Select select;

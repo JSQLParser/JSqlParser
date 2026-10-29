@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * DuckDB's {@code DISCONNECT [name]}, the counterpart of {@link ConnectStatement}.
  */
-public class DisconnectStatement implements Statement {
+public class DisconnectStatement extends ASTNodeAccessImpl implements Statement {
     private String name;
 
     public DisconnectStatement() {}

@@ -12,11 +12,12 @@ package net.sf.jsqlparser.statement.foreign;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ForeignDataOption;
 
 /** Shared structured options for PostgreSQL foreign-data DDL. */
-public abstract class ForeignDataStatement implements Statement {
+public abstract class ForeignDataStatement extends ASTNodeAccessImpl implements Statement {
     private List<ForeignDataOption> options;
 
     public List<ForeignDataOption> getOptions() {

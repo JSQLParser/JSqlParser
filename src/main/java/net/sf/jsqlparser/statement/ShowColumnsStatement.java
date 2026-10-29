@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement.SelectionMode;
 
@@ -19,7 +20,7 @@ import net.sf.jsqlparser.statement.show.ShowTablesStatement.SelectionMode;
  *
  * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/show-columns.html">MySQL SHOW COLUMNS</a>
  */
-public class ShowColumnsStatement implements Statement {
+public class ShowColumnsStatement extends ASTNodeAccessImpl implements Statement {
 
     private boolean extended;
     private boolean full;

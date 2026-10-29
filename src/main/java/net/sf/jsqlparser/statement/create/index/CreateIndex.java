@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.IndexOption;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.*;
@@ -18,7 +19,7 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
 
-public class CreateIndex implements Statement {
+public class CreateIndex extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private Index index;

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.synonym;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Synonym;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -16,7 +17,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateSynonym implements Statement {
+public class CreateSynonym extends ASTNodeAccessImpl implements Statement {
 
     public Synonym synonym;
     private boolean orReplace;

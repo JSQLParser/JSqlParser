@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * {@code PRAGMA name}, {@code PRAGMA name(arguments)} and {@code PRAGMA name = value}, used by
@@ -18,7 +19,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
  *
  * @see <a href="https://duckdb.org/docs/stable/configuration/pragmas">PRAGMA statements</a>
  */
-public class PragmaStatement implements Statement {
+public class PragmaStatement extends ASTNodeAccessImpl implements Statement {
     private String name;
     private ExpressionList<?> parameters;
     private Expression value;
