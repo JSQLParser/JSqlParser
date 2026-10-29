@@ -12783,11 +12783,11 @@ ExpressionList SimpleExpressionList():
 {
     expr=SimpleExpression() { expressions.add(expr); }
     (
-        LOOKAHEAD(2, {!interrupted} ) ","
+        LOOKAHEAD({ !interrupted && getToken(1).kind == K_COMMA }) ","
         (
             LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
-            expr=SimpleExpression()
+            LOOKAHEAD({ !interrupted }) expr=SimpleExpression()
         )
         {
             expressions.add(expr);
@@ -12835,14 +12835,15 @@ ExpressionList ComplexExpressionList():
         |
         LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=PostgresNamedFunctionParameter()
         |
-        expr=Expression()
+        // JavaCC scans an unguarded alternative's first token; a semantic-only lookahead enters directly
+        LOOKAHEAD({ !interrupted }) expr=Expression()
     )
     {
         expressions.add(expr);
     }
 
     (
-        LOOKAHEAD(2, {!interrupted}) ","
+        LOOKAHEAD({ !interrupted && getToken(1).kind == K_COMMA }) ","
         (
             LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=OracleNamedFunctionParameter()
             |
@@ -12850,7 +12851,7 @@ ExpressionList ComplexExpressionList():
             |
             LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
-            expr=Expression()
+            LOOKAHEAD({ !interrupted }) expr=Expression()
         ) { expressions.add(expr); }
     )*
 
