@@ -1333,12 +1333,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * everywhere else, e.g. f(content).
      */
     private void consumeXmlLeadingKeyword(Function function) {
-        String name = function.getName();
-        if (name == null) {
-            return;
-        }
-        name = name.toUpperCase(java.util.Locale.ROOT);
-        if (!"XMLPARSE".equals(name) && !"XMLELEMENT".equals(name) && !"XMLFOREST".equals(name)) {
+        if (!hasUnqualifiedName(function, "XMLPARSE") && !hasUnqualifiedName(function, "XMLELEMENT")
+                && !hasUnqualifiedName(function, "XMLFOREST")) {
             return;
         }
         Token token = getToken(1);
@@ -1356,6 +1352,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return;
         }
         function.setExtraKeyword(getNextToken().image);
+    }
+
+    // Matches the single name part, since getName() joins the parts into a new string on each call.
+    private static boolean hasUnqualifiedName(Function function, String name) {
+        List<String> nameParts = function.getMultipartName();
+        return nameParts != null && nameParts.size() == 1 && name.equalsIgnoreCase(nameParts.get(0));
     }
 
     /**
@@ -15439,7 +15441,7 @@ ExpressionList FunctionArgumentList(Function retval):
     Token extraKeywordToken;
 }
 {
-    { if ("XMLFOREST".equalsIgnoreCase(retval.getName())) { return XmlForestArguments(); } }
+    { if (hasUnqualifiedName(retval, "XMLFOREST")) { return XmlForestArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
     // explicit lookahead: InternalFunction accepts ORDER BY after IGNORE NULLS too
