@@ -301,6 +301,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Links an expression the operator loop builds, which no production opens a node for, to a node
+     * spanning its tokens from {@code first} to the last one consumed. The node is left out of the
+     * tree, so the operands' nodes keep their place in it.
+     */
+    private void linkAST(ASTNodeAccess access, Token first) {
+        Node node = new Node(this, JJTEXPRESSION);
+        node.jjtSetFirstToken(first);
+        node.jjtSetLastToken(getToken(0));
+        linkAST(access, node);
+    }
+
     public Node getASTRoot() {
         return jjtree.rootNode();
     }
@@ -1002,7 +1014,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return kind == K_RETURNING || kind == K_ABSENT && getToken(2).kind == K_ON;
     }
 
-        protected Expression prattArithRest(Expression left, int minPrec) throws ParseException {
+        protected Expression prattArithRest(Expression left, Token first, int minPrec) throws ParseException {
         while (!interrupted) {
             Token t = getToken(1);
             int op = t.kind;
@@ -1051,13 +1063,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (op == OP_PIPE && getToken(2).kind == OP_PIPE) {
                 jj_consume_token(OP_PIPE, getToken(1).image);
                 jj_consume_token(OP_PIPE, getToken(1).image);
-                Expression right = prattArithRest(PrimaryExpression(), prec + 1);
+                Token rightFirst = getToken(1);
+                Expression right = prattArithRest(PrimaryExpression(), rightFirst, prec + 1);
                 Concat r = new Concat(); r.setLeftExpression(left); r.setRightExpression(right); left = r;
+                linkAST(left, first);
                 continue;
             }
 
             jj_consume_token(op, getToken(1).image);
-            Expression right = prattArithRest(PrimaryExpression(), prec + 1);
+            Token rightFirst = getToken(1);
+            Expression right = prattArithRest(PrimaryExpression(), rightFirst, prec + 1);
 
             if (jsonAccess) {
                 JsonExpression access = left instanceof JsonExpression
@@ -1087,6 +1102,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 else if ("&".equals(img)) { BitwiseAnd     r = new BitwiseAnd();     r.setLeftExpression(left); r.setRightExpression(right); left = r; }
                 else if ("<->".equals(img) || "<#>".equals(img)) { GeometryDistance r = new GeometryDistance(img); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             }
+            linkAST(left, first);
         }
         return left;
     }
@@ -12944,16 +12960,18 @@ Expression SimpleExpression():
     Expression retval = null;
     UserVariable user = null;
     Token operation = null;
+    Token first;
 }
 {
     [ LOOKAHEAD( 5, { getToken(1).kind == S_AT_IDENTIFIER } ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
+    { first = getToken(1); }
     retval=PrimaryExpression()
     // PostgreSQL path operators bind below arithmetic and above comparisons.
     // MySQL also gives | and & their own tiers below <<, >>, so the loop's
     // entry floor drops to 2 there instead of the shared bitwise level 4.
     {
         int arithFloor = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 2 : 4;
-        retval = prattArithRest(retval, arithFloor);
+        retval = prattArithRest(retval, first, arithFloor);
     }
     {
         if (user != null) {
