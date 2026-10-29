@@ -393,6 +393,27 @@ public class TablesNamesFinderTest {
     }
 
     @Test
+    public void testSetStatementFindsTablesInValues() throws JSQLParserException {
+        assertThat(TablesNamesFinder
+                .findTables("SET @a = (SELECT MAX(id) FROM MY_TABLE1), @b = 2"))
+                .containsExactlyInAnyOrder("MY_TABLE1");
+        assertThat(TablesNamesFinder.findTables("SET search_path TO s1")).isEmpty();
+    }
+
+    @Test
+    public void testMySqlTriggerWithSetBody() throws JSQLParserException {
+        String sqlStr = "CREATE TRIGGER trg BEFORE INSERT ON MY_TABLE1 FOR EACH ROW "
+                + "SET NEW.a = (SELECT MAX(id) FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+
+        sqlStr = "CREATE TRIGGER trg BEFORE UPDATE ON MY_TABLE1 FOR EACH ROW "
+                + "BEGIN SET NEW.updated_at = NOW(); INSERT INTO MY_TABLE2 VALUES (NEW.id); END";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
     public void testCreateSynonym_throwsException() throws JSQLParserException {
         String sql = "CREATE SYNONYM foo FOR bar";
         Statement stmt = CCJSqlParserUtil.parse(sql);
