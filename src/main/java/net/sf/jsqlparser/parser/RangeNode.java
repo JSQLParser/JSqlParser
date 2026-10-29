@@ -14,10 +14,10 @@ package net.sf.jsqlparser.parser;
  * grammar rule opens a tree node for, or one whose text runs past its tree node. In that second
  * case it stands in for the tree node, answering its parent, children and id, with the wider range.
  */
-public final class RangeNode extends Node {
+final class RangeNode extends Node {
     private final Node treeNode;
 
-    public RangeNode(Token first, Token last, Node treeNode) {
+    RangeNode(Token first, Token last, Node treeNode) {
         super(CCJSqlParserTreeConstants.JJTEXPRESSION);
         this.treeNode = treeNode;
         jjtSetFirstToken(first);
