@@ -207,27 +207,31 @@ public class ASTNodeCoverageTest {
                 checkRange(value, range, enclosing);
             }
             int[] inner = range != null ? range : enclosing;
-            if (value instanceof Collection) {
-                for (Object element : (Collection<?>) value) {
-                    visit(element, inner);
-                }
-            } else if (value instanceof Map) {
-                for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
-                    visit(entry.getKey(), inner);
-                    visit(entry.getValue(), inner);
-                }
-            } else if (value instanceof Map.Entry) {
-                visit(((Map.Entry<?, ?>) value).getKey(), inner);
-                visit(((Map.Entry<?, ?>) value).getValue(), inner);
-            } else if (value instanceof Optional) {
-                ((Optional<?>) value).ifPresent(present -> visit(present, inner));
-            }
+            visitElements(value, inner);
             if (isModel(value)) {
                 for (Method getter : value.getClass().getMethods()) {
                     if (isChildGetter(getter)) {
                         visitChild(value, getter, inner);
                     }
                 }
+            }
+        }
+
+        private void visitElements(Object value, int[] enclosing) {
+            if (value instanceof Collection) {
+                for (Object element : (Collection<?>) value) {
+                    visit(element, enclosing);
+                }
+            } else if (value instanceof Map) {
+                for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+                    visit(entry.getKey(), enclosing);
+                    visit(entry.getValue(), enclosing);
+                }
+            } else if (value instanceof Map.Entry) {
+                visit(((Map.Entry<?, ?>) value).getKey(), enclosing);
+                visit(((Map.Entry<?, ?>) value).getValue(), enclosing);
+            } else if (value instanceof Optional) {
+                ((Optional<?>) value).ifPresent(present -> visit(present, enclosing));
             }
         }
 
@@ -271,14 +275,7 @@ public class ASTNodeCoverageTest {
             if (enclosing != null && (range[0] < enclosing[0] || range[1] > enclosing[1])) {
                 report("lies outside the object that holds it", value);
             }
-            ASTNodeAccess parent = value instanceof ASTNodeAccessImpl
-                    ? ((ASTNodeAccessImpl) value).getParent()
-                    : null;
-            Node parentNode = parent == null ? null : parent.getASTNode();
-            if (parentNode != null && (parentNode.jjtGetFirstToken().absoluteBegin - 1 > range[0]
-                    || parentNode.jjtGetLastToken().absoluteEnd - 1 < range[1])) {
-                report("lies outside its parent " + parent.getClass().getSimpleName(), value);
-            }
+            checkInsideParent(value, range);
             ranges.add(new Object[] {range, value});
             String text = sql.substring(range[0], range[1]);
             // PRIOR is an operator only inside CONNECT BY
@@ -287,6 +284,17 @@ public class ASTNodeCoverageTest {
                         expression -> CCJSqlParserUtil.parseExpression(expression, false));
             } else if (value instanceof Statement) {
                 checkReparses(value, text, CCJSqlParserUtil::parse);
+            }
+        }
+
+        private void checkInsideParent(Object value, int[] range) {
+            ASTNodeAccess parent = value instanceof ASTNodeAccessImpl
+                    ? ((ASTNodeAccessImpl) value).getParent()
+                    : null;
+            Node parentNode = parent == null ? null : parent.getASTNode();
+            if (parentNode != null && (parentNode.jjtGetFirstToken().absoluteBegin - 1 > range[0]
+                    || parentNode.jjtGetLastToken().absoluteEnd - 1 < range[1])) {
+                report("lies outside its parent " + parent.getClass().getSimpleName(), value);
             }
         }
 
@@ -341,6 +349,7 @@ public class ASTNodeCoverageTest {
     }
 
     // a getter that builds new objects on each call computes them rather than holding them
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private static boolean isHeld(Object child, Object again) {
         if (child instanceof ASTNodeAccess) {
             return child == again;
