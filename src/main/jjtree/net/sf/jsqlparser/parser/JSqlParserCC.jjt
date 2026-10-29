@@ -12181,14 +12181,20 @@ Expression Condition():
     Expression result;
     Expression left;
     // Leading NOT / ! prefixes, leftmost token wraps outermost (issue #1170).
-    final Deque<Boolean> exclamationMarks = new ArrayDeque<Boolean>();
+    Deque<Boolean> exclamationMarks = null;
     int oraclePrior = EqualsTo.NO_ORACLE_PRIOR;
     int oracleJoin = EqualsTo.NO_ORACLE_JOIN;
 }
 {
     (
         LOOKAHEAD({ getToken(1).kind == K_NOT || "!".equals(getToken(1).image) })
-        ( <K_NOT> { exclamationMarks.addFirst(Boolean.FALSE); } | "!" { exclamationMarks.addFirst(Boolean.TRUE); } )
+        ( <K_NOT> | "!" )
+        {
+            if (exclamationMarks == null) {
+                exclamationMarks = new ArrayDeque<Boolean>();
+            }
+            exclamationMarks.addFirst("!".equals(getToken(0).image));
+        }
     )*
     (
         LOOKAHEAD(<K_EXISTS> JdbcNamedParameter() ":", {
@@ -12258,7 +12264,7 @@ Expression Condition():
                 && result instanceof SupportsOldOracleJoinSyntax) {
             ((SupportsOldOracleJoinSyntax) result).setOraclePriorPosition(oraclePrior);
         }
-        while (!exclamationMarks.isEmpty()) {
+        while (exclamationMarks != null && !exclamationMarks.isEmpty()) {
             result = new NotExpression(result, exclamationMarks.pollFirst());
         }
         return result;
