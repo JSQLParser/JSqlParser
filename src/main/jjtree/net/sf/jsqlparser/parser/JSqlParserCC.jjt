@@ -9475,7 +9475,6 @@ PlainSelect PlainSelect() #PlainSelect:
     OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     PreferringClause preferringClause = null;
     ExpressionList expressionList = null;
-    boolean partitionByBrackets = false;
     List<Table> intoTables = null;
     MySqlSelectIntoClause mySqlSelectIntoClause = null;
     MySqlProcedureAnalyse mySqlProcedureAnalyse = null;
@@ -9581,13 +9580,9 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
         [LOOKAHEAD(2) <K_PARTITION> <K_BY>
-            (
-                LOOKAHEAD(2) expressionList=ComplexExpressionList()
-                |
-                "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")"
-            )
+            expressionList=ComplexExpressionList()
             {
-                preferringClause.setPartitionExpressionList(expressionList, partitionByBrackets);
+                preferringClause.setPartitionExpressionList(expressionList, false);
             }
         ]
     ]
@@ -14463,7 +14458,6 @@ JsonAggregateFunction JsonAggregateFunction() : {
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
-    boolean partitionByBrackets = false;
 }
 {
     (
@@ -14550,13 +14544,12 @@ JsonAggregateFunction JsonAggregateFunction() : {
             <K_OVER> {result.setAnalyticType(AnalyticType.OVER);}
             "("
             [<K_PARTITION> <K_BY>
-                (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-                | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                expressionList=ComplexExpressionList()
             ]
             [olist=OrderByElements() ]
             [windowElement = WindowElement() ]
             {
-                result.setPartitionExpressionList(expressionList, partitionByBrackets);
+                result.setPartitionExpressionList(expressionList, false);
                 result.setOrderByElements(olist);
                 result.setWindowElement(windowElement);
             }
@@ -14698,7 +14691,6 @@ KeepExpression KeepExpression() : {
 
 void windowFun(AnalyticExpression retval):{
      ExpressionList expressionList = null;
-     boolean partitionByBrackets = false;
      String windowName = null;
      WindowDefinition winDef;
 } {
@@ -14722,10 +14714,9 @@ void windowFun(AnalyticExpression retval):{
         [
             LOOKAHEAD(2) <K_OVER> "("
             [   <K_PARTITION> <K_BY>
-                    (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-                    | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                    expressionList=ComplexExpressionList()
             ]
-            ")" { winDef.setPartitionExpressionList(expressionList, partitionByBrackets); retval.setType(AnalyticType.WITHIN_GROUP_OVER); }
+            ")" { winDef.setPartitionExpressionList(expressionList, false); retval.setType(AnalyticType.WITHIN_GROUP_OVER); }
         ]
     )
 }
@@ -14734,7 +14725,6 @@ WindowDefinition windowDefinition() : {
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
-    boolean partitionByBrackets = false;
     WindowDefinition winDef = new WindowDefinition();
     String baseWindowName;
 } {
@@ -14748,13 +14738,12 @@ WindowDefinition windowDefinition() : {
         {}
     )
     [<K_PARTITION> <K_BY>
-        (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-        | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+        expressionList=ComplexExpressionList()
     ]
     [olist=OrderByElements() ]
     [windowElement = WindowElement() ]
     {
-        winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+        winDef.setPartitionExpressionList(expressionList, false);
         winDef.setOrderByElements(olist);
         winDef.setWindowElement(windowElement);
     }

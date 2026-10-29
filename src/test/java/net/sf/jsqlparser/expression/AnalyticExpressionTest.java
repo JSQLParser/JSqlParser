@@ -43,4 +43,23 @@ class AnalyticExpressionTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testPartitionByBracketedOperand() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUM(x) OVER (PARTITION BY (1 + a) / 2 ORDER BY b) FROM t", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUM(x) OVER w FROM t WINDOW w AS (PARTITION BY (1 + a) / 2)", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY y) OVER (PARTITION BY (1 + a) / 2) FROM t",
+                true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t PREFERRING HIGH x PARTITION BY (1 + a) / 2", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUM(x) OVER (PARTITION BY (a, b), c) FROM t", true);
+    }
 }
