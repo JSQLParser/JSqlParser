@@ -85,6 +85,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
@@ -1362,6 +1363,11 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(AlterUserMapping statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(DropUserMapping statement, S context) {
         return schemaOnly();
     }
 

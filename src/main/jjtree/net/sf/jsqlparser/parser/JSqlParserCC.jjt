@@ -4868,6 +4868,11 @@ Statement SingleStatement() :
             |
             LOOKAHEAD(<K_DROP> <K_POLICY>) stm = DropPolicy()
             |
+            LOOKAHEAD({ getToken(1).kind == K_DROP && getToken(2).kind == K_USER
+                    && "MAPPING".equalsIgnoreCase(getToken(3).image)
+                    && (getToken(4).kind == K_FOR || getToken(4).kind == K_IF) })
+            stm = DropUserMapping()
+            |
             stm = Drop()
             |
             LOOKAHEAD({ getToken(1).kind == K_REASSIGN && "OWNED".equalsIgnoreCase(getToken(2).image) })
@@ -20006,7 +20011,7 @@ Drop Drop():
     List<AlgorithmOrLockOption> indexOptions = new ArrayList<AlgorithmOrLockOption>();
     int indexOptionPosition = 0;
     boolean useTemporary = false;
-    boolean foreign = false;
+    String foreignType = null;
     boolean eventTrigger = false;
     CascadeBehavior behavior = null;
     String engine;
@@ -20015,7 +20020,11 @@ Drop Drop():
     <K_DROP>
     [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
-        <K_FOREIGN> tk=<K_TABLE> { foreign = true; }
+        <K_FOREIGN> (
+            <K_TABLE> { foreignType = "FOREIGN TABLE"; }
+            |
+            <K_DATA> ContextualKeyword("WRAPPER") { foreignType = "FOREIGN DATA WRAPPER"; }
+        )
         |
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
@@ -20063,7 +20072,7 @@ Drop Drop():
         |
         tk=<K_GROUP>
     )
-    { drop.setType(foreign ? "FOREIGN TABLE" : eventTrigger ? "EVENT TRIGGER" : tk.image); }
+    { drop.setType(foreignType != null ? foreignType : eventTrigger ? "EVENT TRIGGER" : tk.image); }
     [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
             && getToken(1).kind == K_CONCURRENTLY })
         <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
@@ -25265,6 +25274,18 @@ CreateUserMapping CreateUserMapping():
     <K_FOR> name=RelObjectName() { statement.setUser(name); }
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
+    { return statement; }
+}
+
+DropUserMapping DropUserMapping():
+{
+    DropUserMapping statement = new DropUserMapping(); String name;
+}
+{
+    <K_DROP> <K_USER> ContextualKeyword("MAPPING")
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+    <K_FOR> name=RelObjectName() { statement.setUser(name); }
+    ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     { return statement; }
 }
 

@@ -13,6 +13,7 @@ import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
@@ -1289,6 +1290,12 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(AlterUserMapping statement, S context) {
         validateFeature(Feature.alterUserMapping);
         statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DropUserMapping statement, S context) {
+        validateFeature(Feature.drop);
         return null;
     }
 
