@@ -1950,8 +1950,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetStatement setStatement, S context) {
-        if (setStatement.getOnOffOptions() == null) {
-            throwUnsupported(setStatement);
+        for (int i = 0; i < setStatement.getCount(); i++) {
+            List<Expression> expressions = setStatement.getExpressions(i);
+            if (expressions != null) {
+                for (Expression expression : expressions) {
+                    expression.accept(this, context);
+                }
+            }
         }
         return null;
     }
