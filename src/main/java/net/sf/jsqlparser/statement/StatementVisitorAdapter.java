@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
@@ -1085,6 +1086,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(AlterUserMapping statement, S context) {
         return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(DropUserMapping statement, S context) {
+        return null;
     }
 
     @Override
