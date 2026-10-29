@@ -48,7 +48,7 @@ public class SimpleCharStream {
     protected boolean trackLineColumn = true;
     protected int totalCharsRead = 0;
     protected int absoluteTokenBegin = 0;
-    // line, column and absolute position of each match begun since the last forgetMatchBegins()
+    // line, column and absolute position of each match begun since the last positionSpecialTokens()
     private int[] matchBegins = new int[24];
     private int matchBeginCount = 0;
     int bufsize;
@@ -111,20 +111,25 @@ public class SimpleCharStream {
     }
 
     /**
-     * The absolute position of the match that began at the given line and column since the last
-     * {@link #forgetMatchBegins()}, or 0 when none did. Lets a comment, which no token action sees,
-     * take its position from where its match began.
+     * Gives the comments in front of {@code token} the positions where their matches began, from
+     * the begins recorded since the last call, and forgets those. Comments come through no token
+     * action, so this is how they get a position. The comments chain backwards from the token while
+     * the begins are recorded forwards, so one backwards pass pairs them.
      */
-    public final int getAbsoluteBegin(int line, int column) {
-        for (int i = 0; i < matchBeginCount; i += 3) {
-            if (matchBegins[i] == line && matchBegins[i + 1] == column) {
-                return matchBegins[i + 2];
+    public final void positionSpecialTokens(Token token) {
+        int i = matchBeginCount - 3;
+        for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
+            while (i >= 0 && (matchBegins[i] != comment.beginLine
+                    || matchBegins[i + 1] != comment.beginColumn)) {
+                i -= 3;
             }
+            if (i < 0) {
+                break;
+            }
+            comment.absoluteBegin = matchBegins[i + 2];
+            comment.absoluteEnd = comment.absoluteBegin + comment.image.length();
+            i -= 3;
         }
-        return 0;
-    }
-
-    public final void forgetMatchBegins() {
         matchBeginCount = 0;
     }
 

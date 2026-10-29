@@ -356,6 +356,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Links a statement that no other rule linked to the range from {@code first} on. */
+    private void linkStatement(Statement statement, Token first) {
+        if (statement instanceof ASTNodeAccess) {
+            linkASTIfMissing((ASTNodeAccess) statement, first);
+        }
+    }
+
     /**
      * The last token of the qualifier in a dotted name running from {@code first} to {@code name},
      * which is the token two before {@code name}. Null when the name has no qualifier.
@@ -3554,8 +3561,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * PostgreSQL escape string with a Unicode escape that the server rejects is rejected as well.
      */
     private StringValue stringValue(Token token) throws ParseException {
-        StringValue value = new StringValue(token.image);
+        StringValue value = unlinkedStringValue(token);
         linkAST(value, token, token);
+        return value;
+    }
+
+    private StringValue unlinkedStringValue(Token token) throws ParseException {
+        StringValue value = new StringValue(token.image);
         // a U&'...' string brings its own escaping
         if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")
                 || value.getEscaping() == StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE) {
@@ -3781,15 +3793,8 @@ TOKEN_MGR_DECLS : {
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
 		t.absoluteEnd = t.absoluteBegin + t.image.length();
-        // comments come through no token action, so they take their position from where their match began
-        if (input_stream instanceof SimpleCharStream) {
-            SimpleCharStream stream = (SimpleCharStream) input_stream;
-            for (Token comment = t.specialToken; comment != null; comment = comment.specialToken) {
-                comment.absoluteBegin = stream.getAbsoluteBegin(comment.beginLine, comment.beginColumn);
-                comment.absoluteEnd = comment.absoluteBegin + comment.image.length();
-            }
-            stream.forgetMatchBegins();
-        }
+        positionComments(t);
+        lastToken = t;
         // Track the lexical region independently of parser lookahead: nested SELECT
         // disambiguation can fetch PATTERN tokens before its production is entered.
         if (rowPatternContext == null && t.kind == S_IDENTIFIER
@@ -3802,6 +3807,26 @@ TOKEN_MGR_DECLS : {
             if (rowPatternContext.isIdle()) { rowPatternContext = null; }
         }
 	}
+
+    // the last token handed out with a token action, whose successor is the first end-of-file token
+    private Token lastToken;
+
+    /**
+     * Gives the comments before the end of input their positions. The end-of-file token gets no
+     * token action, and it is the first one after the last token that does which holds them.
+     */
+    public void positionTrailingComments() {
+        if (lastToken != null && lastToken.next != null && lastToken.next.kind == EOF) {
+            positionComments(lastToken.next);
+        }
+    }
+
+    /** Gives the comments in front of a token their positions. */
+    public void positionComments(Token t) {
+        if (input_stream instanceof SimpleCharStream) {
+            ((SimpleCharStream) input_stream).positionSpecialTokens(t);
+        }
+    }
 
 	public int getCurrentTokenAbsolutePosition()
 	{
@@ -4883,6 +4908,7 @@ Statement Statement() #Statement:
                            ifElseStatement.setUsingSemicolonForElseStatement(true);
                         else if (ifElseStatement!=null)
                            ifElseStatement.setUsingSemicolonForIfStatement(true);
+                       widen(ifElseStatement, null, getToken(0));
                      }
                  ]
                  <EOF>
@@ -4911,6 +4937,7 @@ Statement Statement() #Statement:
     )
 
 	{
+		token_source.positionTrailingComments();
 		return ifElseStatement!=null ? ifElseStatement : stm;
 	}
 }
@@ -5089,9 +5116,7 @@ Statement SingleStatement() :
             LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
         )
         {
-            if (stm instanceof ASTNodeAccess) {
-                linkASTIfMissing((ASTNodeAccess) stm, first);
-            }
+            linkStatement(stm, first);
             return stm;
         }
 }
@@ -5142,7 +5167,7 @@ Statements OracleBlockStatements():
 }
 
 Statement OracleBlockStatement():
-{ Statement statement; Expression target; Expression value; }
+{ Statement statement; Expression target; Expression value; Token first = getToken(1); }
 {
     (
         LOOKAHEAD({ getToken(1).kind == K_DECLARE || getToken(1).kind == K_BEGIN }) statement=OracleBlock()
@@ -5155,7 +5180,7 @@ Statement OracleBlockStatement():
           statement=OracleImplicitCall()
         | statement=SingleStatement()
     )
-    { return statement; }
+    { linkStatement(statement, first); return statement; }
 }
 
 Execute OracleImplicitCall():
@@ -5296,6 +5321,7 @@ Statements Statements() #Statements: {
                                ifElseStatement.setUsingSemicolonForElseStatement(true);
                             else if (ifElseStatement!=null)
                                ifElseStatement.setUsingSemicolonForIfStatement(true);
+                           widen(ifElseStatement, null, getToken(0));
                          }
                      ]
                 )
@@ -5361,6 +5387,7 @@ Statements Statements() #Statements: {
                              ifElseStatement.setUsingSemicolonForElseStatement(true);
                           else if (ifElseStatement!=null)
                              ifElseStatement.setUsingSemicolonForIfStatement(true);
+                         widen(ifElseStatement, null, getToken(0));
              } )*
 
         )*
@@ -5379,6 +5406,7 @@ Statements Statements() #Statements: {
 
     <EOF>
     {
+        token_source.positionTrailingComments();
         return stmts;
     }
 }
@@ -7121,9 +7149,7 @@ ExplainStatement Explain():
                 )
             )
             {
-                if (statement instanceof ASTNodeAccess) {
-                    linkASTIfMissing((ASTNodeAccess) statement, statementFirst);
-                }
+                linkStatement(statement, statementFirst);
                 es = new ExplainStatement(tk.image, statement, options);
                 es.setParenthesizedOptions(parenthesized);
             }
@@ -9382,13 +9408,15 @@ ParenthesedInsert ParenthesedInsert() #ParenthesedInsert:
 {
     ParenthesedInsert parenthesedInsert = new ParenthesedInsert();
     Insert insert;
+    Token open = getToken(1);
+    Token statementFirst;
 }
 {
-    "("
-    insert = Insert()
+    "(" { statementFirst = getToken(1); }
+    insert = Insert() { linkStatement(insert, statementFirst); }
     ")"
     {
-        return parenthesedInsert.withInsert(insert);
+        return linked(parenthesedInsert.withInsert(insert), open);
     }
 }
 
@@ -9396,13 +9424,15 @@ ParenthesedUpdate ParenthesedUpdate() #ParenthesedUpdate:
 {
     ParenthesedUpdate parenthesedUpdate = new ParenthesedUpdate();
     Update update;
+    Token open = getToken(1);
+    Token statementFirst;
 }
 {
-    "("
-    update = Update()
+    "(" { statementFirst = getToken(1); }
+    update = Update() { linkStatement(update, statementFirst); }
     ")"
     {
-        return parenthesedUpdate.withUpdate(update);
+        return linked(parenthesedUpdate.withUpdate(update), open);
     }
 }
 
@@ -9410,13 +9440,15 @@ ParenthesedDelete ParenthesedDelete() #ParenthesedDelete:
 {
     ParenthesedDelete parenthesedDelete = new ParenthesedDelete();
     Delete delete;
+    Token open = getToken(1);
+    Token statementFirst;
 }
 {
-    "("
-    delete = Delete()
+    "(" { statementFirst = getToken(1); }
+    delete = Delete() { linkStatement(delete, statementFirst); }
     ")"
     {
-        return parenthesedDelete.withDelete(delete);
+        return linked(parenthesedDelete.withDelete(delete), open);
     }
 }
 
@@ -11284,11 +11316,11 @@ RowPattern RowPatternFactor(int depth) #RowPatternFactor:
                 && (pattern instanceof RowPattern.Permute || pattern instanceof RowPattern.Exclusion)) {
             throw new ParseException("BigQuery does not support PERMUTE or row pattern exclusion");
         }
-        linkAST(pattern, first);
     }
     [ LOOKAHEAD({ !(pattern instanceof RowPattern.Anchor)
             && ("?".equals(getToken(1).image) || "*".equals(getToken(1).image)
                 || "+".equals(getToken(1).image) || getToken(1).kind == OPENING_CURLY_BRACKET) })
+        { linkAST(pattern, first); }
         pattern=RowPatternQuantifier(pattern)
     ]
     { linkAST(pattern, jjtThis); return pattern; }
@@ -12951,7 +12983,7 @@ ExpressionList ExpressionList() #ExpressionList:
                 expressionList = subList;
             }
         }
-        linkAST(expressionList, first);
+        linkASTIfMissing(expressionList, first);
         return expressionList;
     }
 }
@@ -13399,19 +13431,25 @@ Expression NavigationStep(Expression base):
     { return step; }
 }
 
-StringValue CharacterLiteral():
+StringValue CharacterLiteral(boolean link):
 {
     Token literal;
     StringValue value;
     Token first = getToken(1);
 }
 {
-    literal=<S_CHAR_LITERAL> { value = stringValue(literal); }
+    literal=<S_CHAR_LITERAL> { value = unlinkedStringValue(literal); }
     ( LOOKAHEAD({ isAdjacentStringConcat() })
         literal=<S_CHAR_LITERAL>
-        { value.setValue(value.getValue() + stringValue(literal).getValue()); }
+        { value.setValue(value.getValue() + unlinkedStringValue(literal).getValue()); }
     )*
-    { linkAST(value, first); return value; }
+    {
+        // a primary expression links the literal itself, with its own tree node
+        if (link) {
+            linkAST(value, first);
+        }
+        return value;
+    }
 }
 
 Expression PrimaryExpression() #PrimaryExpression:
@@ -13540,7 +13578,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD({ !interrupted && (getToken(1).kind == K_TRUE || getToken(1).kind == K_FALSE) })
           (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
-        | retval=CharacterLiteral()
+        | retval=CharacterLiteral(false)
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
@@ -13588,34 +13626,33 @@ Expression PrimaryExpression() #PrimaryExpression:
                 { retval = new FunctionAllColumns(unwrapParenthesedFunction(retval)); } ]
 
             // Share field and method navigation with the other primary expressions.
-            ( LOOKAHEAD(1, ".") { linkASTIfMissing(retval, coreFirst); } nxt=NavigationStep(retval) { retval = nxt; linkASTIfMissing(retval, coreFirst); } )*
+            ( LOOKAHEAD(1, ".") { linkASTIfMissing(retval, coreFirst); } nxt=NavigationStep(retval) { retval = nxt; } )*
         )
     )
-    { linkASTIfMissing(retval, coreFirst); }
 
     [
-        LOOKAHEAD(2, { !isColumnCollateAhead() }) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); linkAST(retval, coreFirst); }
+        LOOKAHEAD(2, { !isColumnCollateAhead() }) { linkASTIfMissing(retval, coreFirst); }
+        <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); }
     ]
 
     [
-        LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval) { linkASTIfMissing(retval, coreFirst); }
+        LOOKAHEAD(2, { dateExpressionAllowed } ) { linkASTIfMissing(retval, coreFirst); } retval = IntervalExpressionWithoutInterval(retval)
     ]
 
-    [ LOOKAHEAD(2) retval = ArrayExpression(retval) { linkASTIfMissing(retval, coreFirst); } ]
+    [ LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } retval = ArrayExpression(retval) ]
 
     // navigation chains, e.g. Redshift SUPER col[0].field[1].sub: field accesses
     // and subscripts may alternate freely after the primary expression
     (
-        LOOKAHEAD(2) nxt = NavigationStep(retval) { retval = nxt; linkASTIfMissing(retval, coreFirst); }
+        LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } nxt = NavigationStep(retval) { retval = nxt; }
     )*
 
-    (  LOOKAHEAD(2) "::" type=ColDataType() {
+    (  LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } "::" type=ColDataType() {
             castExpr = new CastExpression();
             castExpr.setUseCastKeyword(false);
             castExpr.setLeftExpression(retval);
             castExpr.setColDataType(type);
             retval=castExpr;
-            linkAST(retval, coreFirst);
         }
     )*
 
@@ -13623,7 +13660,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     [
         LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
                 && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && !isSliceColonAhead())
-                    || !":".equals(getToken(1).image)) }) (
+                    || !":".equals(getToken(1).image)) }) { linkASTIfMissing(retval, coreFirst); } (
             LOOKAHEAD(2) (
                 token="->"
                 |
@@ -13645,10 +13682,10 @@ Expression PrimaryExpression() #PrimaryExpression:
                 jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
             }
         )+
-        retval = JsonExpression(retval, jsonIdents) { linkASTIfMissing(retval, coreFirst); }
+        retval = JsonExpression(retval, jsonIdents)
     ]
 
-    ( LOOKAHEAD(2) <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
+    ( LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
         if (timezoneExpr == null)
             timezoneExpr = new TimezoneExpression();
 
@@ -13662,17 +13699,21 @@ Expression PrimaryExpression() #PrimaryExpression:
             retval=timezoneExpr;
             // the field behind this getter is an ExpressionList
             linkElements((ExpressionList<?>) timezoneExpr.getTimezoneExpressions());
-            linkAST(retval, coreFirst);
         }
+        // each value gets a range node only once something wraps it, the outermost takes jjtThis
+        Token valueFirst = coreFirst;
         for (int i = innerSigns.size() - 1; i >= 0; i--) {
+            linkASTIfMissing(retval, valueFirst);
             retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
-            linkAST(retval, innerSigns.get(i));
+            valueFirst = innerSigns.get(i);
         }
         if (sign != null) {
+            linkASTIfMissing(retval, valueFirst);
             retval = new SignedExpression(sign.image.charAt(0), retval);
-            linkAST(retval, sign);
+            valueFirst = sign;
         }
         if (not) {
+            linkASTIfMissing(retval, valueFirst);
             retval = new NotExpression(retval, exclamationMarkNot);
         }
         linkAST(retval, jjtThis);
@@ -17920,6 +17961,7 @@ CreateSchema CreateSchema():
 Statement SchemaElement():
 {
     Statement element;
+    Token first = getToken(1);
 }
 {
     { schemaElementDepth++; }
@@ -17938,7 +17980,7 @@ Statement SchemaElement():
     } finally {
         schemaElementDepth--;
     }
-    { return element; }
+    { linkStatement(element, first); return element; }
 }
 
 DatabaseOption MySqlDatabaseOption():
@@ -18572,6 +18614,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
 {
     CreateTable createTable = new CreateTable();
     Token ofFirst;
+    Token executeFirst;
     Table table = null;
     List<TableElement> tableElements = new ArrayList<TableElement>();
     TableElement element;
@@ -18672,7 +18715,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                     tk.image.toUpperCase(Locale.ROOT))); } ]
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
         (
-            LOOKAHEAD(1, <K_EXECUTE>) execute=Execute() {
+            LOOKAHEAD(1, <K_EXECUTE>) { executeFirst = getToken(1); } execute=Execute() {
+                linkStatement(execute, executeFirst);
                 requireDdlSyntax(createTable.isUseAsKeyword() && createTable.getDuplicateHandling() == null,
                         "CREATE TABLE EXECUTE requires AS and cannot use duplicate handling");
                 createTable.setExecute(execute);
@@ -19678,7 +19722,7 @@ SecurityLabel SecurityLabel():
         |
         name=RelObjectName() { statement.setObjectName(type, new Table(name, false)); }
     )
-    <K_IS> ( label=CharacterLiteral() { statement.setLabel(label); } | <K_NULL> )
+    <K_IS> ( label=CharacterLiteral(true) { statement.setLabel(label); } | <K_NULL> )
     { return statement; }
 }
 
@@ -22953,7 +22997,7 @@ Comment Comment():
     )
     <K_IS>
     (
-        comment=CharacterLiteral() { result.setComment(comment); }
+        comment=CharacterLiteral(true) { result.setComment(comment); }
         | <K_NULL>
     )
     {
@@ -23514,14 +23558,15 @@ Revoke Revoke(boolean defaults):
 }
 
 AlterDefaultPrivileges AlterDefaultPrivileges():
-{ AlterDefaultPrivileges result = new AlterDefaultPrivileges(); Token token; List<String> names; Grant grant; Revoke revoke; }
+{ AlterDefaultPrivileges result = new AlterDefaultPrivileges(); Token token; List<String> names; Grant grant; Revoke revoke; Token statementFirst; }
 {
     <K_DEFAULT> AccessKeyword("PRIVILEGES")
     [ <K_FOR> ( token=<S_IDENTIFIER> | token=<K_USER> ) { result.setRoleKeyword(accessEnum(AlterDefaultPrivileges.RoleKeyword.class, token.image)); }
       names=AccessNames() { result.setRoles(names); } ]
     [ <K_IN> <K_SCHEMA> names=AccessNames() { result.setSchemas(names); } ]
-    ( grant=AccessGrant(true) { result.setGrant(grant); }
-      | revoke=Revoke(true) { result.setRevoke(revoke); } )
+    { statementFirst = getToken(1); }
+    ( grant=AccessGrant(true) { linkStatement(grant, statementFirst); result.setGrant(grant); }
+      | revoke=Revoke(true) { linkStatement(revoke, statementFirst); result.setRevoke(revoke); } )
     { return result; }
 }
 

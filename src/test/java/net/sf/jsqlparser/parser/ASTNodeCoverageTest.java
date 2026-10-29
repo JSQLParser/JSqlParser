@@ -43,6 +43,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import org.junit.jupiter.api.Test;
@@ -64,14 +65,20 @@ public class ASTNodeCoverageTest {
             String sql = Files.readString(file);
             Object statements;
             try {
-                // a statement the parser rejects leaves the rest of its file to check
-                statements =
-                        CCJSqlParserUtil.parseStatements(sql, parser -> parser.withErrorRecovery());
+                // a statement the parser rejects leaves the rest of its file to check, and the
+                // Oracle tests parse in the dialect they are written in
+                boolean oracle = file.toString().contains("oracle-tests");
+                statements = CCJSqlParserUtil.parseStatements(sql, parser -> {
+                    parser.withErrorRecovery();
+                    if (oracle) {
+                        parser.withDialect(AbstractJSqlParser.Dialect.ORACLE);
+                    }
+                });
             } catch (JSQLParserException e) {
                 // the corpus also holds SQL the parser rejects
                 continue;
             }
-            new Walk(file, sql, problems).check(statements);
+            new Walk(file.toString(), sql, problems).check(statements);
         }
         assertThat(problems).isEmpty();
     }
@@ -83,13 +90,6 @@ public class ASTNodeCoverageTest {
 
         sql = "UPDATE t SET a = 1 WHERE b = 2";
         assertSpans(sql, sql, (ASTNodeAccess) statement(sql));
-
-        sql = "BEGIN SELECT 1; END;";
-        assertSpans(sql, sql, (ASTNodeAccess) statement(sql));
-
-        sql = "FOO BAR BAZ";
-        assertSpans(sql, sql, (ASTNodeAccess) CCJSqlParserUtil.parse(sql,
-                parser -> parser.withUnsupportedStatements(true)));
 
         sql = "SELECT /*+ INDEX(t i) */ a FROM t";
         assertSpans("/*+ INDEX(t i) */", sql, ((PlainSelect) statement(sql)).getOracleHint());
@@ -126,6 +126,39 @@ public class ASTNodeCoverageTest {
         assertSpans("'a'\n'b'", sql, item((PlainSelect) merged, 0));
     }
 
+    @Test
+    public void testStatementsTheCorpusLacks() throws JSQLParserException {
+        Map<String, String> problems = new TreeMap<>();
+        for (String sql : new String[] {
+                "WITH x AS (INSERT INTO t VALUES (1) RETURNING *) SELECT * FROM x",
+                "WITH x AS (UPDATE t SET a = 1 RETURNING *) SELECT * FROM x",
+                "WITH x AS (DELETE FROM t RETURNING *) SELECT * FROM x",
+                "CREATE SCHEMA s CREATE TABLE t (a INT) CREATE VIEW v AS SELECT 1",
+                "CREATE TABLE t AS EXECUTE p",
+                "ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO r",
+                "IF a = 1 SELECT 1;",
+                "BEGIN SELECT 1; END;"}) {
+            new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
+        }
+        String block = "BEGIN x := 1; NULL; foo(1); END;";
+        new Walk(block, block, problems).check(CCJSqlParserUtil.parseStatements(block,
+                parser -> parser.withDialect(AbstractJSqlParser.Dialect.ORACLE)));
+        String opaque = "FOO BAR BAZ";
+        new Walk(opaque, opaque, problems).check(CCJSqlParserUtil.parseStatements(opaque,
+                parser -> parser.withUnsupportedStatements(true)));
+        assertThat(problems).isEmpty();
+    }
+
+    @Test
+    public void testCommentBeforeEndOfInputHasPosition() throws ParseException {
+        String sql = "SELECT a FROM t -- trailing";
+        Statements statements = CCJSqlParserUtil.newParser(sql).Statements();
+        Token endOfInput = ((ASTNodeAccess) statements.get(0)).getASTNode().jjtGetLastToken().next;
+        Token comment = endOfInput.specialToken;
+        assertEquals("-- trailing",
+                sql.substring(comment.absoluteBegin - 1, comment.absoluteEnd - 1));
+    }
+
     private static Statement statement(String sql) throws JSQLParserException {
         return CCJSqlParserUtil.parse(sql);
     }
@@ -148,14 +181,14 @@ public class ASTNodeCoverageTest {
     }
 
     private static final class Walk {
-        private final Path file;
+        private final String source;
         private final String sql;
         private final Map<String, String> problems;
         private final Set<Object> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         private final List<Object[]> ranges = new ArrayList<>();
 
-        Walk(Path file, String sql, Map<String, String> problems) {
-            this.file = file;
+        Walk(String source, String sql, Map<String, String> problems) {
+            this.source = source;
             this.sql = sql;
             this.problems = problems;
         }
@@ -238,6 +271,14 @@ public class ASTNodeCoverageTest {
             if (enclosing != null && (range[0] < enclosing[0] || range[1] > enclosing[1])) {
                 report("lies outside the object that holds it", value);
             }
+            ASTNodeAccess parent = value instanceof ASTNodeAccessImpl
+                    ? ((ASTNodeAccessImpl) value).getParent()
+                    : null;
+            Node parentNode = parent == null ? null : parent.getASTNode();
+            if (parentNode != null && (parentNode.jjtGetFirstToken().absoluteBegin - 1 > range[0]
+                    || parentNode.jjtGetLastToken().absoluteEnd - 1 < range[1])) {
+                report("lies outside its parent " + parent.getClass().getSimpleName(), value);
+            }
             ranges.add(new Object[] {range, value});
             String text = sql.substring(range[0], range[1]);
             // PRIOR is an operator only inside CONNECT BY
@@ -287,7 +328,7 @@ public class ASTNodeCoverageTest {
 
         private void report(String problem, Object value, Object detail) {
             problems.putIfAbsent(value.getClass().getSimpleName() + " " + problem,
-                    file + ": " + detail);
+                    source + ": " + detail);
         }
     }
 
