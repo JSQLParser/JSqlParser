@@ -19131,6 +19131,7 @@ AlterExpression AlterSharedTableOption():
                 charset.setConvertType(useDefault ? AlterExpression.ConvertType.DEFAULT_CHARACTER_SET
                         : AlterExpression.ConvertType.CHARACTER_SET);
                 charset.setCharacterSet(option.getValue());
+                charset.setUseCharsetKeyword(option.getName().toUpperCase(Locale.ROOT).endsWith("CHARSET"));
                 charset.setHasEqualForCharacterSet(option.isUseEquals());
                 if (collation != null) {
                     charset.setCollation(collation.getValue());
@@ -19519,8 +19520,16 @@ void TypeCharacterSet(ColDataType type):
 {
     ( <K_CHARACTER> <K_SET>
       | LOOKAHEAD({ isKeywordAhead("CHARSET") }) <S_IDENTIFIER> { abbreviated = true; } )
-    ( name=<S_IDENTIFIER> | name=<K_BINARY> | name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER> )
+    name=CharacterSetName()
     { type.setCharacterSet(name.image); type.setUseCharsetKeyword(abbreviated); }
+}
+
+/** A MySQL character set or collation name: an identifier, BINARY or a quoted name. */
+Token CharacterSetName():
+{ Token name; }
+{
+    ( name=<S_IDENTIFIER> | name=<K_BINARY> | name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER> )
+    { return name; }
 }
 
 XmlTypeModifier XmlTypeModifier():
@@ -22081,8 +22090,11 @@ AlterExpression AlterExpression():
           alterExp.setOperation(AlterOperation.CONVERT);
           alterExp.setConvertType(AlterExpression.ConvertType.CONVERT_TO);
         }
-        <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
-        [ LOOKAHEAD(2) <K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+        <K_TO>
+        ( <K_CHARACTER> <K_SET>
+          | LOOKAHEAD({ isKeywordAhead("CHARSET") }) <S_IDENTIFIER> { alterExp.setUseCharsetKeyword(true); } )
+        ( tk=<K_DEFAULT> | tk=CharacterSetName() ) { alterExp.setCharacterSet(tk.image); }
+        [ LOOKAHEAD(2) <K_COLLATE> tk2=CharacterSetName() { alterExp.setCollation(tk2.image); }]
         )
       |
         alterExp = AlterExpressionDiscardOrImport()
