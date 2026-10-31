@@ -20401,19 +20401,45 @@ Drop Drop():
     List<AlgorithmOrLockOption> indexOptions = new ArrayList<AlgorithmOrLockOption>();
     int indexOptionPosition = 0;
     boolean useTemporary = false;
-    String foreignType = null;
+    String multiWordType = null;
     boolean eventTrigger = false;
     CascadeBehavior behavior = null;
     String engine;
+    String accessMethod;
 }
 {
     <K_DROP>
     [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
         <K_FOREIGN> (
-            <K_TABLE> { foreignType = "FOREIGN TABLE"; }
+            <K_TABLE> { multiWordType = "FOREIGN TABLE"; }
             |
-            <K_DATA> ContextualKeyword("WRAPPER") { foreignType = "FOREIGN DATA WRAPPER"; }
+            <K_DATA> ContextualKeyword("WRAPPER") { multiWordType = "FOREIGN DATA WRAPPER"; }
+        )
+        |
+        // PostgreSQL object types of several words, written as COMMENT ON names them
+        LOOKAHEAD({ isKeywordAhead("ACCESS") && "METHOD".equalsIgnoreCase(getToken(2).image) })
+        ContextualKeyword("ACCESS") ContextualKeyword("METHOD") { multiWordType = "ACCESS METHOD"; }
+        |
+        LOOKAHEAD({ isKeywordAhead("PROCEDURAL") && "LANGUAGE".equalsIgnoreCase(getToken(2).image) })
+        ContextualKeyword("PROCEDURAL") ContextualKeyword("LANGUAGE")
+        { drop.setProcedural(true); multiWordType = "LANGUAGE"; }
+        |
+        // a schema named CLASS or FAMILY may qualify an operator, as in class.+
+        LOOKAHEAD({ isKeywordAhead("OPERATOR") && !".".equals(getToken(3).image)
+                && ("CLASS".equalsIgnoreCase(getToken(2).image) || "FAMILY".equalsIgnoreCase(getToken(2).image)) })
+        ContextualKeyword("OPERATOR")
+        ( LOOKAHEAD({ isKeywordAhead("CLASS") }) ContextualKeyword("CLASS") { multiWordType = "OPERATOR CLASS"; }
+          | ContextualKeyword("FAMILY") { multiWordType = "OPERATOR FAMILY"; } )
+        |
+        LOOKAHEAD({ isKeywordAhead("TEXT") && getToken(2).kind == K_SEARCH }) <K_TEXT_LITERAL> <K_SEARCH>
+        (
+            <K_PARSER> { multiWordType = "TEXT SEARCH PARSER"; }
+            | LOOKAHEAD({ isKeywordAhead("CONFIGURATION") }) ContextualKeyword("CONFIGURATION")
+              { multiWordType = "TEXT SEARCH CONFIGURATION"; }
+            | LOOKAHEAD({ isKeywordAhead("DICTIONARY") }) ContextualKeyword("DICTIONARY")
+              { multiWordType = "TEXT SEARCH DICTIONARY"; }
+            | ContextualKeyword("TEMPLATE") { multiWordType = "TEXT SEARCH TEMPLATE"; }
         )
         |
         // PostgreSQL DROP OWNED BY role [, ...]
@@ -20462,7 +20488,7 @@ Drop Drop():
         |
         tk=<K_GROUP>
     )
-    { drop.setType(foreignType != null ? foreignType : eventTrigger ? "EVENT TRIGGER" : tk.image); }
+    { drop.setType(multiWordType != null ? multiWordType : eventTrigger ? "EVENT TRIGGER" : tk.image); }
     [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
             && getToken(1).kind == K_CONCURRENTLY })
         <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
@@ -20471,6 +20497,15 @@ Drop Drop():
         <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     DropTargets(drop)
+    [
+        // PostgreSQL DROP OPERATOR CLASS and FAMILY require USING: they name one object of an
+        // index access method. The semantic lookahead alone selects this clause.
+        LOOKAHEAD({ drop.getObjectType().hasAccessMethod() })
+        <K_USING> accessMethod=RelObjectName() {
+            requireDdlSyntax(drop.getNames().size() == 1, "DROP " + drop.getType() + " takes one name");
+            drop.setAccessMethod(accessMethod);
+        }
+    ]
     [
         LOOKAHEAD({ DropLookahead.isForceAhead(drop, getToken(1), getToken(2), getToken(3)) })
         ( <K_FORCE> | [ <K_WITH> ] "(" <K_FORCE> ")" ) { drop.setForce(true); }
