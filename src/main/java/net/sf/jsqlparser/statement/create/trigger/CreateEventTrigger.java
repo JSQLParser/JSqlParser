@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -27,7 +28,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * invoked like a {@link CreateTrigger} routine, with the same {@code FUNCTION} or {@code PROCEDURE}
  * spelling, but never takes arguments.
  */
-public class CreateEventTrigger implements Statement {
+public class CreateEventTrigger extends ASTNodeAccessImpl implements Statement {
 
     private String name;
     private String event;

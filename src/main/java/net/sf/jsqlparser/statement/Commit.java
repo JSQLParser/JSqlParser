@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class Commit implements Statement {
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+public class Commit extends ASTNodeAccessImpl implements Statement {
     private TransactionKeyword keyword;
     private TransactionChain chain;
 

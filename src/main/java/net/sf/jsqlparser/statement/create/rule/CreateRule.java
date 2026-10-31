@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL rewrite rule whose actions reuse ordinary statement AST nodes. */
-public class CreateRule implements Statement {
+public class CreateRule extends ASTNodeAccessImpl implements Statement {
     public enum Event {
         SELECT, INSERT, UPDATE, DELETE
     }

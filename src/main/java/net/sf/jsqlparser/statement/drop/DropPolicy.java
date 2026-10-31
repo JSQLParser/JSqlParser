@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.drop;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class DropPolicy implements Statement {
+public class DropPolicy extends ASTNodeAccessImpl implements Statement {
     private String policyName;
     private net.sf.jsqlparser.schema.Table table;
     private boolean ifExists = false;

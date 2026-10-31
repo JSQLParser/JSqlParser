@@ -18,10 +18,11 @@ import java.util.Optional;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
-public final class DeclareStatement implements Statement {
+public final class DeclareStatement extends ASTNodeAccessImpl implements Statement {
 
     private UserVariable userVariable = null;
     private DeclareType declareType = DeclareType.TYPE;

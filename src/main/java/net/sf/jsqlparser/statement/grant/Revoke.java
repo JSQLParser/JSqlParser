@@ -11,11 +11,12 @@ package net.sf.jsqlparser.statement.grant;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Revoke implements Statement {
+public class Revoke extends ASTNodeAccessImpl implements Statement {
     private PrivilegeClause clause = new PrivilegeClause();
     private boolean ifExists;
     private GrantOption.Kind optionFor;

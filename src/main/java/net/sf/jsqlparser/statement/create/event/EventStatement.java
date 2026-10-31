@@ -10,12 +10,13 @@
 package net.sf.jsqlparser.statement.create.event;
 
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.MySqlDefiner;
 import net.sf.jsqlparser.statement.Statement;
 
 /** Common structured properties of MySQL {@code CREATE EVENT} and {@code ALTER EVENT}. */
-public abstract class EventStatement implements Statement {
+public abstract class EventStatement extends ASTNodeAccessImpl implements Statement {
 
     private MySqlDefiner definer;
     private Table event;

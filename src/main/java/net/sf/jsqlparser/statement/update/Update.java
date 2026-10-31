@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.update;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.PreferringClause;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ForPortionClause;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class Update implements Statement {
+public class Update extends ASTNodeAccessImpl implements Statement {
 
     private List<WithItem<?>> withItemsList;
     private Table table;

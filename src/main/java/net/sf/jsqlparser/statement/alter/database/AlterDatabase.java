@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.ConfigurationParameterChange;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -24,7 +25,7 @@ import net.sf.jsqlparser.statement.create.database.DatabaseOption;
  * options, and a missing name selects the current database. The options use the same
  * {@link DatabaseOption} model as {@code CREATE DATABASE}. Names retain SQL identifier quoting.
  */
-public class AlterDatabase implements Statement {
+public class AlterDatabase extends ASTNodeAccessImpl implements Statement {
 
     public enum Action {
         /** MySQL options or PostgreSQL {@code [WITH] option ...}, see {@link #getOptions()}. */

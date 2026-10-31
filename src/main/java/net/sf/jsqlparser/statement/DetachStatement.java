@@ -9,12 +9,14 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * DuckDB's {@code DETACH [DATABASE] [IF EXISTS] name}, the counterpart of {@link AttachStatement}.
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/attach">DETACH</a>
  */
-public class DetachStatement implements Statement {
+public class DetachStatement extends ASTNodeAccessImpl implements Statement {
     private String databaseName;
     private boolean usingDatabaseKeyword;
     private boolean ifExists;

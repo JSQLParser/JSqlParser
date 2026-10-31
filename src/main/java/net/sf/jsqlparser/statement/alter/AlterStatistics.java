@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL statistics object metadata; a null target denotes SET STATISTICS DEFAULT. */
-public class AlterStatistics implements Statement {
+public class AlterStatistics extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         RENAME, OWNER, SET_SCHEMA, SET_STATISTICS
     }

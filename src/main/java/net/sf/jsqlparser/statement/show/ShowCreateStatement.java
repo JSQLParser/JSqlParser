@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.show;
 
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -30,7 +31,7 @@ import net.sf.jsqlparser.statement.create.user.UserAccount;
  * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/show-create-table.html">MySQL SHOW CREATE
  *      TABLE</a>
  */
-public class ShowCreateStatement implements Statement {
+public class ShowCreateStatement extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
         TABLE, VIEW, PROCEDURE, FUNCTION, TRIGGER, EVENT, DATABASE, USER;

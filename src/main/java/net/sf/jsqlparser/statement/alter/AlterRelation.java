@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL ALTER INDEX, ALTER VIEW properties and ALTER MATERIALIZED VIEW. */
-public class AlterRelation implements Statement {
+public class AlterRelation extends ASTNodeAccessImpl implements Statement {
     public enum ObjectType {
         INDEX, VIEW, MATERIALIZED_VIEW
     }

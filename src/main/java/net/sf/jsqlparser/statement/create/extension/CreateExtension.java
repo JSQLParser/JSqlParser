@@ -12,10 +12,11 @@ package net.sf.jsqlparser.statement.create.extension;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreateExtension implements Statement {
+public class CreateExtension extends ASTNodeAccessImpl implements Statement {
     private String name;
     private boolean ifNotExists;
     private boolean useWith;

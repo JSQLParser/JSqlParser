@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -25,7 +26,7 @@ import java.util.function.Consumer;
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/copy">COPY</a>
  */
-public class CopyStatement implements Statement {
+public class CopyStatement extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private ExpressionList<Column> columns;
     private Select select;

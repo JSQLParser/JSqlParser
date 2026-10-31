@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** MySQL and PostgreSQL trigger definitions with distinct body and routine-invocation forms. */
-public class CreateTrigger implements Statement {
+public class CreateTrigger extends ASTNodeAccessImpl implements Statement {
 
     public enum Timing {
         BEFORE, AFTER, INSTEAD_OF

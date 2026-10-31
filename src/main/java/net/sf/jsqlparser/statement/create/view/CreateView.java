@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -21,7 +22,7 @@ import net.sf.jsqlparser.statement.create.table.IndexOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class CreateView implements Statement {
+public class CreateView extends ASTNodeAccessImpl implements Statement {
 
     private MySqlViewOptions mySqlOptions;
 

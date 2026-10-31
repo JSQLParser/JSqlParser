@@ -10,11 +10,12 @@
 package net.sf.jsqlparser.statement.alter;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.extension.ExtensionObject;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterExtension implements Statement {
+public class AlterExtension extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Action action;
     private Expression version;

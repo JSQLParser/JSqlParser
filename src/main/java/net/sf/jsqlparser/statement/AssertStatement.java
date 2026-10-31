@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ import java.util.function.Consumer;
  *      "https://cloud.google.com/bigquery/docs/reference/standard-sql/debugging-statements">Debugging
  *      statements</a>
  */
-public class AssertStatement implements Statement {
+public class AssertStatement extends ASTNodeAccessImpl implements Statement {
     private Expression expression;
     private StringValue description;
 

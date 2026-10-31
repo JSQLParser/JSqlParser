@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create.macro;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/create_macro">CREATE MACRO</a>
  */
-public class CreateMacro implements Statement {
+public class CreateMacro extends ASTNodeAccessImpl implements Statement {
     private boolean orReplace;
     private boolean temporary;
     private boolean functionKeyword;

@@ -17,6 +17,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.schema.Table;
@@ -32,7 +33,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class Insert implements Statement {
+public class Insert extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private OracleHint oracleHint = null;

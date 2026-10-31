@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.RoutineReference;
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.create.index.AlgorithmOrLockOption;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Drop implements Statement {
+public class Drop extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
         DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, OTHER;

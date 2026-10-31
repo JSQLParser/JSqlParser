@@ -25,10 +25,12 @@
 
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * @author are
  */
-public class RollbackStatement implements Statement {
+public class RollbackStatement extends ASTNodeAccessImpl implements Statement {
     private TransactionKeyword keyword;
     private TransactionChain chain;
     private boolean usingSavepointKeyword = false;

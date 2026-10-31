@@ -13,6 +13,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.RoutineReference;
@@ -25,7 +26,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * selects its object type and discards the previous target. A null label stands for
  * {@code IS NULL}, which removes the label.
  */
-public class SecurityLabel implements Statement {
+public class SecurityLabel extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
         TABLE, COLUMN, AGGREGATE, DATABASE, DOMAIN, EVENT_TRIGGER, FOREIGN_TABLE, FUNCTION, LANGUAGE, LARGE_OBJECT, MATERIALIZED_VIEW, PROCEDURE, PUBLICATION, ROLE, ROUTINE, SCHEMA, SEQUENCE, SUBSCRIPTION, TABLESPACE, TYPE, VIEW;

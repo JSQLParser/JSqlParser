@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterCollation implements Statement {
+public class AlterCollation extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         REFRESH_VERSION, RENAME, OWNER, SET_SCHEMA
     }

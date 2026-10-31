@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.user.RoleSelection;
 
-public class Grant implements Statement {
+public class Grant extends ASTNodeAccessImpl implements Statement {
     private PrivilegeClause clause = new PrivilegeClause();
     private final List<GrantOption> options = new ArrayList<>();
     private Grantee asUser;

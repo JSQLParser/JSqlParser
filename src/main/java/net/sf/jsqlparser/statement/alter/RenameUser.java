@@ -15,12 +15,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 
 /** MySQL {@code RENAME USER old TO new [, old TO new] ...} statement. */
-public class RenameUser implements Statement {
+public class RenameUser extends ASTNodeAccessImpl implements Statement {
 
     private final List<Rename> renames = new ArrayList<>();
 

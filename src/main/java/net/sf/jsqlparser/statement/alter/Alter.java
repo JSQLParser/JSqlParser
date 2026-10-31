@@ -15,11 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Alter implements Statement {
+public class Alter extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private boolean useOnly = false;
     private boolean useTableIfExists = false;

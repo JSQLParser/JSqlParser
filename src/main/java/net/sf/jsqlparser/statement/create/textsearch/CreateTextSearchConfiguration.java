@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.textsearch;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreateTextSearchConfiguration implements Statement {
+public class CreateTextSearchConfiguration extends ASTNodeAccessImpl implements Statement {
     public enum SourceKind {
         PARSER, COPY
     }

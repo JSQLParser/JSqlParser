@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.lock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -22,7 +23,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * LOCK TABLE t IN EXCLUSIVE MODE<br>
  * <br>
  */
-public class LockStatement implements Statement {
+public class LockStatement extends ASTNodeAccessImpl implements Statement {
 
     private final List<Target> targets = new ArrayList<>();
     private boolean useTableKeyword = true;

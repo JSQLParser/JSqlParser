@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -22,7 +23,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * {@link UserOptions} after the account list are shared with
  * {@link net.sf.jsqlparser.statement.alter.AlterUser}.
  */
-public class CreateUser implements Statement {
+public class CreateUser extends ASTNodeAccessImpl implements Statement {
 
     private boolean ifNotExists;
     private final List<UserAccount> accounts = new ArrayList<>();

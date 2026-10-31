@@ -15,12 +15,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** A PostgreSQL {@code REINDEX} statement. */
-public class Reindex implements Statement {
+public class Reindex extends ASTNodeAccessImpl implements Statement {
 
     public enum Target {
         INDEX, TABLE, SCHEMA, DATABASE, SYSTEM

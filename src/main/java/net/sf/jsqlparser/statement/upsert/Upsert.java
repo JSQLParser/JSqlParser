@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.upsert;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -27,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class Upsert implements Statement {
+public class Upsert extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private ExpressionList<Column> columns;

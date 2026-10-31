@@ -11,9 +11,10 @@ package net.sf.jsqlparser.statement;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /** A PostgreSQL anonymous routine. The language-specific body remains a string literal. */
-public class DoStatement implements Statement {
+public class DoStatement extends ASTNodeAccessImpl implements Statement {
     private StringValue code;
     private String language;
     private boolean languageBeforeCode;

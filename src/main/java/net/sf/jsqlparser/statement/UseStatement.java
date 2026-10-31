@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class UseStatement implements Statement {
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+public class UseStatement extends ASTNodeAccessImpl implements Statement {
 
     private String name;
     private boolean schemaKeyword;

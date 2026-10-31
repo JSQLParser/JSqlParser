@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.create.type.TypeAttribute;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterType implements Statement {
+public class AlterType extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Action action;
     private String newName;
