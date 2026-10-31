@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -30,12 +31,19 @@ public class Analyze extends ASTNodeAccessImpl implements Statement {
         UPDATE, DROP
     }
 
+    /** Whether MySQL updates a histogram automatically when it updates the table statistics. */
+    public enum HistogramUpdateMode {
+        AUTO, MANUAL
+    }
+
     private final List<Table> tables = new ArrayList<>();
     private boolean tableKeyword;
     private Modifier modifier;
     private HistogramAction histogramAction;
     private final List<Column> histogramColumns = new ArrayList<>();
     private Integer histogramBucketCount;
+    private StringValue histogramData;
+    private HistogramUpdateMode histogramUpdateMode;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -107,6 +115,24 @@ public class Analyze extends ASTNodeAccessImpl implements Statement {
         this.histogramBucketCount = histogramBucketCount;
     }
 
+    /** The JSON histogram of {@code UPDATE HISTOGRAM ... USING DATA}, or null. */
+    public StringValue getHistogramData() {
+        return histogramData;
+    }
+
+    public void setHistogramData(StringValue histogramData) {
+        this.histogramData = histogramData;
+    }
+
+    /** The {@code AUTO UPDATE} or {@code MANUAL UPDATE} of {@code UPDATE HISTOGRAM}, or null. */
+    public HistogramUpdateMode getHistogramUpdateMode() {
+        return histogramUpdateMode;
+    }
+
+    public void setHistogramUpdateMode(HistogramUpdateMode histogramUpdateMode) {
+        this.histogramUpdateMode = histogramUpdateMode;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("ANALYZE");
@@ -124,6 +150,12 @@ public class Analyze extends ASTNodeAccessImpl implements Statement {
                             .collect(Collectors.joining(", ")));
             if (histogramBucketCount != null) {
                 builder.append(" WITH ").append(histogramBucketCount).append(" BUCKETS");
+            }
+            if (histogramData != null) {
+                builder.append(" USING DATA ").append(histogramData);
+            }
+            if (histogramUpdateMode != null) {
+                builder.append(" ").append(histogramUpdateMode).append(" UPDATE");
             }
         }
         return builder.toString();
@@ -171,6 +203,16 @@ public class Analyze extends ASTNodeAccessImpl implements Statement {
 
     public Analyze withHistogramBucketCount(Integer histogramBucketCount) {
         setHistogramBucketCount(histogramBucketCount);
+        return this;
+    }
+
+    public Analyze withHistogramData(StringValue histogramData) {
+        setHistogramData(histogramData);
+        return this;
+    }
+
+    public Analyze withHistogramUpdateMode(HistogramUpdateMode histogramUpdateMode) {
+        setHistogramUpdateMode(histogramUpdateMode);
         return this;
     }
 }

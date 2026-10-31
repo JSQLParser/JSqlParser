@@ -737,7 +737,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(TableMaintenanceStatement statement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA, StmtFeature.RETURNS_RESULT_SET);
-        if (statement.getOperation() != TableMaintenanceStatement.Operation.CHECK) {
+        if (statement.getOperation() == TableMaintenanceStatement.Operation.OPTIMIZE
+                || statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {
             // OPTIMIZE rebuilds table storage; REPAIR may also rewrite or discard rows
             analysis.certain(StmtFeature.MODIFIES_SCHEMA);
             if (statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {

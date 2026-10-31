@@ -478,7 +478,8 @@ public enum Feature {
     analyze,
 
     /**
-     * MySQL/MariaDB "CHECK TABLE", "OPTIMIZE TABLE" and "REPAIR TABLE" statements are allowed
+     * MySQL/MariaDB "CHECK TABLE", "CHECKSUM TABLE", "OPTIMIZE TABLE" and "REPAIR TABLE" statements
+     * are allowed
      *
      * @see TableMaintenanceStatement
      */
