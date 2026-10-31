@@ -12723,23 +12723,9 @@ ExpressionList ExpressionList() #ExpressionList:
     ExpressionList expressionList;
 }
 {
-    (
-        LOOKAHEAD(3, { !interrupted }) expressionList = ComplexExpressionList()
-        |
-        LOOKAHEAD(3) expressionList = SimpleExpressionList()
-        |
-        LOOKAHEAD(3) expressionList = ParenthesedExpressionList()
-        |
-        // Fallback, see isUnparenthesizedSelectAhead(): the three probes above are
-        // syntactic and cannot see through the Pratt operator loop, which lives in a
-        // Java action. They all fail on a bracketed operand of a larger expression,
-        // e.g. "( 1 + a ) / ( 1 + b )" or "( 1 + a )" - the third token is an operator
-        // where the probe expects "," or ")". Such input is still a valid expression
-        // list, so parse it as one instead of raising a ParseException.
-        LOOKAHEAD({ !interrupted }) expressionList = ComplexExpressionList()
-        |
-        expressionList = SimpleExpressionList()
-    )
+    // ComplexExpressionList() parses every list form, "()" and bracketed operands such as
+    // "( 1 + a ) / ( 1 + b )" included.
+    expressionList = ComplexExpressionList()
     {
         // Avoid redundant ExpressionLists containing only one ParenthesedExpressionList
         // return the Parenthesed Sub ExpressionList instead
@@ -12771,11 +12757,7 @@ ParenthesedExpressionList ParenthesedExpressionList():
 }
 {
     "("
-    (
-        LOOKAHEAD({ !interrupted }) expressions = ComplexExpressionList()
-        |
-        expressions = SimpleExpressionList()
-    )?
+    [ LOOKAHEAD({ getToken(1).kind != CLOSING_BRACKET }) expressions = ComplexExpressionList() ]
     ")"
     {
         return new ParenthesedExpressionList(expressions);
@@ -12843,7 +12825,7 @@ ExpressionList ComplexExpressionList():
         |
         LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=PostgresNamedFunctionParameter()
         |
-        // JavaCC scans an unguarded alternative's first token; a semantic-only lookahead enters directly
+        // The semantic lookahead makes JavaCC enter Expression() with no scan of its first token.
         LOOKAHEAD({ !interrupted }) expr=Expression()
     )
     {

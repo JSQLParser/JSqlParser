@@ -157,4 +157,14 @@ class FunctionTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testBracketedOperandAndEmptyListArguments() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT f((1 + a) / (1 + b), (c + d) * 2) FROM t", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT f(()) FROM t", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("INSERT INTO t VALUES ()", true);
+    }
 }
