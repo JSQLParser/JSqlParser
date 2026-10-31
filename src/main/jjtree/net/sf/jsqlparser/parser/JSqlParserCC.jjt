@@ -18924,7 +18924,10 @@ ColDataType DataType():
                     | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; }
             )*
             [
-                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = tk.image; } |  tk=<K_MAX> { precision = "MAX"; } )
+                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = tk.image; } |  tk=<K_MAX> { precision = "MAX"; }
+                    // Oracle's NUMBER(*, s) and NUMBER(*)
+                    | "*" { precision = "*"; requireDdlSyntax("NUMBER".equalsIgnoreCase(type),
+                            "Wildcard precision is only supported for NUMBER"); } )
                 [ <K_BYTE> | <K_CHAR> ]
                 [ "," scaleText=SignedIntegerTypeArgument() { scale = Integer.valueOf(scaleText); } ]
                 ")"
@@ -19067,6 +19070,8 @@ ColDataType ColDataType():
 			| tk=<K_NAME>
 			// PostgreSQL's geometric type
 			| tk=<K_PATH>
+			// Oracle's RAW(n)
+			| tk=<K_RAW>
         )
         {
             schema = tk.image;
