@@ -271,9 +271,14 @@ typed properties:
   ``DROP [UNDO] TABLESPACE name [ENGINE [=] engine]``. ``isForce()`` covers
   PostgreSQL ``DROP DATABASE name [WITH] (FORCE)``; the optional WITH is
   always rendered.
+* ``getAccessMethod()`` holds the index access method of PostgreSQL
+  ``DROP OPERATOR CLASS|FAMILY name USING method``, which takes one name.
+  ``isProcedural()`` records the ``PROCEDURAL LANGUAGE`` spelling.
 
 TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
-object types. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+object types, and so are PostgreSQL's ACCESS METHOD, LANGUAGE, OPERATOR CLASS,
+OPERATOR FAMILY and TEXT SEARCH CONFIGURATION, DICTIONARY, PARSER and TEMPLATE.
+``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
 parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 .. code-block:: java

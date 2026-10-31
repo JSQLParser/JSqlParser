@@ -32,7 +32,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -47,6 +47,11 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         /** The target can name the table that owns it with ON. */
         public boolean hasOwnerTable() {
             return this == INDEX || this == TRIGGER || this == RULE;
+        }
+
+        /** The target is named within the index access method given with USING. */
+        public boolean hasAccessMethod() {
+            return this == OPERATOR_CLASS || this == OPERATOR_FAMILY;
         }
     }
 
@@ -68,6 +73,8 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
     private boolean undo;
     private boolean force;
     private boolean publicSynonym;
+    private boolean procedural;
+    private String accessMethod;
     private String engine;
     private boolean engineUseEquals;
 
@@ -369,6 +376,37 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    /** Whether a {@link ObjectType#LANGUAGE} is written as PostgreSQL PROCEDURAL LANGUAGE. */
+    public boolean isProcedural() {
+        return procedural;
+    }
+
+    public void setProcedural(boolean procedural) {
+        this.procedural = procedural;
+    }
+
+    public Drop withProcedural(boolean procedural) {
+        setProcedural(procedural);
+        return this;
+    }
+
+    /**
+     * The index access method of an {@link ObjectType#OPERATOR_CLASS} or
+     * {@link ObjectType#OPERATOR_FAMILY}, written with USING.
+     */
+    public String getAccessMethod() {
+        return accessMethod;
+    }
+
+    public void setAccessMethod(String accessMethod) {
+        this.accessMethod = accessMethod;
+    }
+
+    public Drop withAccessMethod(String accessMethod) {
+        setAccessMethod(accessMethod);
+        return this;
+    }
+
     /** The storage engine of MySQL DROP TABLESPACE ... ENGINE, or null when it is omitted. */
     public String getEngine() {
         return engine;
@@ -496,6 +534,9 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         if (publicSynonym) {
             builder.append("PUBLIC ");
         }
+        if (procedural) {
+            builder.append("PROCEDURAL ");
+        }
         builder.append(type);
         if (concurrently) {
             builder.append(" CONCURRENTLY");
@@ -505,6 +546,9 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         }
         builder.append(ifExists ? " IF EXISTS " : " ");
         appendTargets(builder, tablePrinter);
+        if (accessMethod != null) {
+            builder.append(" USING ").append(accessMethod);
+        }
         if (force) {
             builder.append(objectType == ObjectType.SYNONYM ? " FORCE" : " WITH (FORCE)");
         }
