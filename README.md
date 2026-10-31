@@ -106,7 +106,7 @@ Snapshot coordinates and repository setup are on the
 ## Performance
 
 **11× faster than 5.3**, and the fastest parser on real-world SQL of any of the parsers
-tested, in any language — 19× ahead of `sqlglot[c]` on JSqlParser's own `SELECT` test suite.
+tested, in any language — 19× ahead of `sqlglot[c]` on JSqlParser's own `SELECT` test suite. And the community kept sending performance improvements since. Thank you everyone!
 
 <div align="right">
   <a href="https://github.com/manticore-projects/jsqlparser-bench">
@@ -116,7 +116,8 @@ tested, in any language — 19× ahead of `sqlglot[c]` on JSqlParser's own `SELE
 
 ```text
 Benchmark                                     (version)  Mode  Cnt    Score   Error  Units
-JSQLParserBenchmark.parseSQLStatements           latest  avgt   15   32.525 ± 0.413  ms/op
+JSQLParserBenchmark.parseSQLStatements           latest  avgt   15   21.138 ± 0.557  ms/op <-- Community sponsored improvements!
+JSQLParserBenchmark.parseSQLStatements              5.4  avgt   15   32.528 ± 0.666  ms/op
 JSQLParserBenchmark.parseSQLStatements              5.3  avgt   15  983.459 ± 8.197  ms/op
 JSQLParserBenchmark.parseSQLStatements              5.1  avgt   15  319.601 ± 4.081  ms/op
 ```
