@@ -1340,6 +1340,8 @@ Find Table Names
      tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
      assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
 
+A name is left out only where it resolves to a ``WITH`` item in scope. An alias hides no table, and without ``RECURSIVE`` a ``WITH`` item does not see itself or the items after it. The target of a DML statement is always reported. So the result may hold names that are no tables on some databases, such as a ``WITH`` item that recurses without ``RECURSIVE``: check it against the metadata of the database if that matters.
+
 
 Use the Visitor Patterns
 ==============================

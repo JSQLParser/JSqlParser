@@ -40,6 +40,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class TablesNamesFinderTest {
 
@@ -559,13 +561,13 @@ public class TablesNamesFinderTest {
         assertThat(tables).containsExactlyInAnyOrder("a", "b");
         assertThat(tables).doesNotContain("a1");
 
+        // a sub-select cannot select from an alias: this statement only runs if a1 is a table
         sqlStr = "SELECT * FROM b, (SELECT * FROM a) as a1 WHERE b.id IN ( SELECT id FROM a1 )";
         tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("a1", "a", "b");
 
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b");
-        assertThat(tables).doesNotContain("a1");
+        assertThat(tables).containsExactlyInAnyOrder("a", "a1", "b");
 
         sqlStr = "select (a_alias.col1), b_alias.col2\n" +
                 "from b b_alias, a as a_alias, c join b on c.id = b.id\n" +
@@ -589,14 +591,14 @@ public class TablesNamesFinderTest {
                 +
                 "            and a.max > (select max(val) from bc_nested, f) and a.desc like 'abc'";
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "bc_nested", "c", "d", "e", "f");
 
         sqlStr = " select (select max(val) from e) as maxval, id\n" +
                 "            from  (select * from b, (select * from c) c_alias) as bc_nested, a\n" +
                 "            where a.max > (select max(val) from bc_nested, f) and \n" +
                 "            a.id in ( select id from (select * from d) d_alias join bc_nested on bc_nested.id = d_alias.id )";
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "bc_nested", "c", "d", "e", "f");
 
         sqlStr = "select a.id, bc_nested.id\n" +
                 "            from (select * from b, (select * from c) c_alias) as bc_nested, a\n" +
@@ -608,7 +610,7 @@ public class TablesNamesFinderTest {
                 "                   on bc_nested_alias.id = d.id\n" +
                 "            )))";
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "bc_nested", "c", "d", "e");
 
         sqlStr = "select id\n" +
                 "from (select * from c, (select * from b) b_alias) as bc_nested, a\n" +
@@ -618,7 +620,7 @@ public class TablesNamesFinderTest {
                 "join bc_nested on bc_nested_alias.id = bc_nested.id\n" +
                 ")";
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "bc_nested", "c", "d", "e");
 
         sqlStr = "with\n" +
                 "    temp1 as (\n" +
@@ -634,7 +636,7 @@ public class TablesNamesFinderTest {
                 +
                 "where exist ( select * from e, e_alias where e.test = dtest.test ) and temp1.max = (select max(column_1) from g)";
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f", "g");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "e_alias", "f", "g");
     }
 
     @Test
@@ -646,7 +648,110 @@ public class TablesNamesFinderTest {
         assertThat(tables).containsExactlyInAnyOrder("A", "B", "C");
 
         tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(tables).containsExactlyInAnyOrder("B", "C");
+        assertThat(tables).containsExactlyInAnyOrder("A", "B", "C");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM (SELECT * FROM secrets) AS secrets",
+            "SELECT (SELECT max(pw) FROM secrets) FROM (SELECT 1) AS secrets",
+            "SELECT * FROM (SELECT 1) AS secrets, LATERAL (SELECT * FROM secrets) AS x",
+            "SELECT * FROM t, LATERAL (SELECT * FROM secrets) AS secrets",
+            "FROM secrets |> AS secrets",
+            "DELETE FROM secrets WHERE id IN (SELECT id FROM (SELECT 1 AS id) AS secrets)",
+            "UPDATE secrets SET pw = 'x' WHERE id IN (SELECT id FROM (SELECT 1 AS id) AS secrets)",
+            "INSERT INTO secrets (id) SELECT id FROM (SELECT 1 AS id) AS secrets",
+            "MERGE INTO secrets AS t USING (SELECT 1 AS id) AS secrets ON (t.id = secrets.id)"
+                    + " WHEN MATCHED THEN DELETE"})
+    void testAliasDoesNotHideTable(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).contains("secrets");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // without RECURSIVE a WITH item does not see itself or the items after it
+            "WITH secrets AS (SELECT * FROM secrets) SELECT * FROM secrets",
+            "WITH secrets AS (SELECT 1 AS id UNION ALL SELECT id FROM secrets) SELECT * FROM secrets",
+            "WITH x AS (SELECT id FROM secrets), secrets AS (SELECT 1 AS id) SELECT * FROM x, secrets",
+            // a WITH item only exists in the query that declares it
+            "SELECT * FROM secrets WHERE EXISTS (WITH secrets AS (SELECT 1 AS a) SELECT a FROM secrets)",
+            "SELECT id FROM secrets UNION ALL (WITH secrets AS (SELECT 1 AS id) SELECT id FROM secrets)",
+            "SELECT * FROM (WITH secrets AS (SELECT 1 AS id) SELECT * FROM secrets) AS s, secrets",
+            "WITH a AS (WITH secrets AS (SELECT 1 AS id) SELECT * FROM secrets) SELECT * FROM a, secrets",
+            // the target of a DML statement is never a WITH item
+            "WITH secrets AS (SELECT 1 AS id) DELETE FROM secrets",
+            "WITH secrets AS (SELECT 1 AS id) UPDATE secrets SET pw = 'x'",
+            "WITH secrets AS (SELECT 1 AS id) INSERT INTO secrets (id) SELECT id FROM secrets",
+            "WITH secrets AS (SELECT 1 AS id) MERGE INTO secrets USING secrets AS s"
+                    + " ON (s.id = secrets.id) WHEN MATCHED THEN DELETE",
+            "WITH secrets AS (SELECT 1 AS id), d AS (DELETE FROM secrets RETURNING *) SELECT * FROM d",
+            "WITH secrets AS (SELECT 1 AS id), d AS (UPDATE secrets SET pw = 'x' RETURNING *)"
+                    + " SELECT * FROM d",
+            "WITH secrets AS (SELECT 1 AS id), d AS (INSERT INTO secrets (id) VALUES (2) RETURNING *)"
+                    + " SELECT * FROM d",
+            // WITH on the kinds of select that used to skip it
+            "SELECT * FROM (WITH a AS (SELECT * FROM secrets) TABLE a) AS s",
+            "SELECT * FROM (WITH a AS (SELECT id FROM secrets) VALUES ((SELECT max(id) FROM a))) AS s"})
+    void testWithItemDoesNotHideTableOutsideItsScope(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).contains("secrets");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT * FROM t",
+            // RECURSIVE is parsed onto the first item, but covers the whole list
+            "WITH RECURSIVE a AS (SELECT 1 AS n), t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t"
+                    + " WHERE n < 5) SELECT * FROM t, a",
+            "WITH RECURSIVE x AS (SELECT id FROM y), y AS (SELECT 1 AS id) SELECT * FROM x",
+            "WITH a AS (SELECT 1 AS id), b AS (SELECT * FROM a) SELECT * FROM b",
+            "WITH a AS (SELECT 1 AS id) SELECT id FROM a UNION SELECT id FROM a",
+            "WITH a AS (SELECT 1 AS id) SELECT * FROM a WHERE id IN (SELECT id FROM a)",
+            "WITH a AS (SELECT 1 AS id) (SELECT * FROM a)",
+            "WITH a AS (SELECT 1 AS id) SELECT * FROM (SELECT * FROM a) AS s",
+            // a nested WITH repeating a name does not end the enclosing one
+            "WITH a AS (SELECT 1 AS id) SELECT * FROM (WITH a AS (SELECT 2 AS id) SELECT * FROM a) AS s, a",
+            "SELECT * FROM (WITH a AS (SELECT 1 AS id) TABLE a) AS s",
+            "SELECT * FROM (WITH a AS (SELECT 1 AS id) VALUES ((SELECT max(id) FROM a))) AS s"})
+    void testWithItemInScopeIsNoTable(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "WITH a AS (SELECT 1 AS id) INSERT INTO t (id) SELECT id FROM a",
+            "INSERT INTO t (id) WITH a AS (SELECT 1 AS id) SELECT id FROM a",
+            "WITH a AS (SELECT 1 AS id) UPDATE t SET id = a.id FROM a",
+            "WITH a AS (SELECT 1 AS id) DELETE FROM t USING a WHERE t.id = a.id",
+            "WITH a AS (SELECT 1 AS id) MERGE INTO t USING a ON (t.id = a.id) WHEN MATCHED THEN DELETE"})
+    void testWithItemInScopeOfDmlIsNoTable(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("t");
+    }
+
+    @Test
+    void testWithItemDoesNotHideQualifiedTable() throws JSQLParserException {
+        String sqlStr = "WITH secrets AS (SELECT 1 AS id) SELECT * FROM public.secrets";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("public.secrets");
+
+        TablesNamesFinder<Void> finderWithoutSchema = new TablesNamesFinder<Void>() {
+            @Override
+            protected String extractTableName(Table table) {
+                return table.getName();
+            }
+        };
+        assertThat(finderWithoutSchema.getTables(CCJSqlParserUtil.parse(sqlStr)))
+                .containsExactly("secrets");
+    }
+
+    @Test
+    void testAliasInExpression() throws JSQLParserException {
+        assertThat(TablesNamesFinder
+                .findTablesInExpression("(SELECT 1 FROM (SELECT * FROM secrets) AS secrets)"))
+                .containsExactly("secrets");
+
+        // an alias still is no table when it qualifies a column
+        assertThat(TablesNamesFinder
+                .findTablesInExpression("(SELECT max(id) FROM (SELECT id FROM t) AS x) = x.id"))
+                .containsExactly("t");
     }
 
     @Test
