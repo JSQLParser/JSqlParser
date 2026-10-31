@@ -27,5 +27,8 @@ public class LimitValidator extends AbstractValidator<Limit> {
             validateFeature(c, limit.isLimitAll(), Feature.limitAll);
             validateOptionalFeature(c, limit.getOffset(), Feature.limitOffset);
         }
+
+        validateOptionalExpression(limit.getRowCount());
+        validateOptionalExpression(limit.getOffset());
     }
 }

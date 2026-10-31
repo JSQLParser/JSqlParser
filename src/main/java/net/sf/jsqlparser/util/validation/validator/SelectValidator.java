@@ -15,6 +15,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
@@ -152,10 +153,17 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
 
-        // to correctly recognize aliased tables
-        // @todo: fix this properly, I don't understand functional syntax
-        // validateOptionalList(plainSelect.getSelectItems(), () -> this, SelectItem::accept,
-        // context);
+        // after the FROM items, to correctly recognize aliased tables
+        if (plainSelect.getDistinct() != null
+                && isNotEmpty(plainSelect.getDistinct().getOnSelectItems())) {
+            plainSelect.getDistinct().getOnSelectItems()
+                    .forEach(item -> item.accept(this, context));
+        }
+        validateOptional(plainSelect.getTop(),
+                top -> validateOptionalExpression(top.getExpression()));
+        if (isNotEmpty(plainSelect.getSelectItems())) {
+            plainSelect.getSelectItems().forEach(item -> item.accept(this, context));
+        }
 
         validateOptionalExpression(plainSelect.getPreWhere());
         validateOptionalExpression(plainSelect.getWhere());
@@ -168,6 +176,13 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         }
 
         validateOptionalExpression(plainSelect.getHaving());
+        validateOptionalExpression(plainSelect.getQualify());
+        if (isNotEmpty(plainSelect.getWindowDefinitions())) {
+            for (WindowDefinition windowDefinition : plainSelect.getWindowDefinitions()) {
+                validateOptionalExpressions(windowDefinition.getPartitionExpressionList());
+                validateOptionalOrderByElements(windowDefinition.getOrderByElements());
+            }
+        }
         validateOptionalOrderByElements(plainSelect.getOrderByElements());
         validateOptionalInterpolate(plainSelect.getInterpolate());
         validateOptionalOption(plainSelect.getOption());
@@ -332,6 +347,8 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFeature(c, Feature.offset);
             validateOptionalFeature(c, offset.getOffsetParam(), Feature.offsetParam);
         }
+
+        validateOptionalExpression(offset.getOffset());
     }
 
     public void validateFetch(Fetch fetch) {
@@ -341,7 +358,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFeature(c, !fetch.isFetchParamFirst(), Feature.fetchNext);
         }
 
-        validateOptionalExpression(fetch.getFetchJdbcParameter());
+        validateOptionalExpression(fetch.getExpression());
     }
 
     public void validateOptionalJoins(List<Join> joins) {

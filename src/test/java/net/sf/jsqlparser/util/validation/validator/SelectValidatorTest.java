@@ -246,6 +246,29 @@ public class SelectValidatorTest extends ValidationTestAsserts {
         validateNotAllowed(sql, 1, 1, SELECT_WITH_TABLE_FUNCTIONS, Feature.jdbcParameter);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT upper(a) FROM t",
+            "SELECT DISTINCT ON (upper(a)) a FROM t",
+            "SELECT TOP (upper(a)) a FROM t",
+            "SELECT a FROM t QUALIFY upper(a) = 'X'",
+            "SELECT a FROM t WINDOW w AS (PARTITION BY upper(a))",
+            "SELECT a FROM t WINDOW w AS (ORDER BY upper(a))",
+            "SELECT a FROM t LIMIT upper(a)",
+            "SELECT a FROM t LIMIT 1 OFFSET upper(a)",
+            "SELECT a FROM t OFFSET upper(a) ROWS",
+            "SELECT a FROM t FETCH FIRST upper(a) ROWS ONLY",
+            "SELECT a FROM t UNION SELECT b FROM u LIMIT upper(a)"})
+    public void testValidateFunctionOutsideWhere(String sql) {
+        validateNotAllowed(sql, 1, 1,
+                new FeaturesAllowed(Feature.values()).remove(Feature.function), Feature.function);
+    }
+
+    @Test
+    public void testValidateSubSelectInSelectList() {
+        validateNotAllowed("SELECT (SELECT a FROM t FOR UPDATE)", 1, 1, FeaturesAllowed.SELECT,
+                Feature.selectForUpdate);
+    }
+
     @Test
     public void testValidateLateral() throws JSQLParserException {
         validateNoErrors(
