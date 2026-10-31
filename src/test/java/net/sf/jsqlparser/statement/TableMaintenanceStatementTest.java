@@ -95,6 +95,27 @@ class TableMaintenanceStatementTest {
     }
 
     @Test
+    void checksumTableWithOption() throws JSQLParserException {
+        TableMaintenanceStatement statement = parse("CHECKSUM TABLE t1, db.t2 QUICK");
+
+        assertEquals(Operation.CHECKSUM, statement.getOperation());
+        assertNull(statement.getModifier());
+        assertEquals(List.of("t1", "db.t2"), tableNames(statement));
+        assertEquals(List.of(Option.QUICK), statement.getOptions());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CHECKSUM TABLE t", "CHECKSUM TABLE t EXTENDED",
+            "CHECKSUM TABLES t1, t2"})
+    void checksumTableForms(String sql) throws JSQLParserException {
+        assertEquals(Operation.CHECKSUM, parse(sql).getOperation());
+        for (Dialect dialect : List.of(Dialect.MYSQL, Dialect.MARIADB)) {
+            assertEquals(sql, CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(dialect))
+                    .toString());
+        }
+    }
+
+    @Test
     void keywordsAreCaseInsensitive() throws JSQLParserException {
         Statement statement = CCJSqlParserUtil.parse("check tables t medium for upgrade");
 
@@ -110,7 +131,13 @@ class TableMaintenanceStatementTest {
             "REPAIR TABLE t FAST",
             "REPAIR TABLE t FOR UPGRADE",
             "OPTIMIZE t",
-            "REPAIR TABLE"
+            "REPAIR TABLE",
+            "CHECKSUM NO_WRITE_TO_BINLOG TABLE t",
+            "CHECKSUM LOCAL TABLE t",
+            "CHECKSUM TABLE t FAST",
+            "CHECKSUM TABLE t FOR UPGRADE",
+            "CHECKSUM TABLE t QUICK EXTENDED",
+            "CHECKSUM t"
     })
     void rejectsSyntaxOutsideTheStatementDefinition(String sql) {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql));
@@ -149,6 +176,10 @@ class TableMaintenanceStatementTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t OPTIMIZE PARTITION p1");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t CHECK PARTITION p1");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t REPAIR PARTITION p1");
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT checksum, CHECKSUM(*), CHECKSUM(a, b) FROM checksum");
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (checksum INT) CHECKSUM = 1");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t CHECKSUM = 0, ADD COLUMN checksum INT");
     }
 
     @Test
@@ -168,6 +199,11 @@ class TableMaintenanceStatementTest {
         StatementFeatures check = CCJSqlParserUtil.parse("CHECK TABLE t").getFeatures();
         assertThat(check.getCertain()).containsExactlyInAnyOrder(StmtFeature.READS_DATA,
                 StmtFeature.RETURNS_RESULT_SET);
+
+        StatementFeatures checksum = CCJSqlParserUtil.parse("CHECKSUM TABLE t").getFeatures();
+        assertThat(checksum.getCertain()).containsExactlyInAnyOrder(StmtFeature.READS_DATA,
+                StmtFeature.RETURNS_RESULT_SET);
+        assertFalse(checksum.may(StmtFeature.MODIFIES_SCHEMA));
 
         StatementFeatures optimize = CCJSqlParserUtil.parse("OPTIMIZE TABLE t").getFeatures();
         assertThat(optimize.getCertain()).contains(StmtFeature.MODIFIES_SCHEMA);

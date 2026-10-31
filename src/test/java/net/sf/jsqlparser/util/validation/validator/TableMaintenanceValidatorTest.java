@@ -24,7 +24,7 @@ public class TableMaintenanceValidatorTest extends ValidationTestAsserts {
     @Test
     public void testAllowedForMySqlAndMariaDb() throws JSQLParserException {
         for (String sql : new String[] {"OPTIMIZE TABLE t1, t2", "REPAIR TABLE t QUICK",
-                "CHECK TABLE t FOR UPGRADE"}) {
+                "CHECK TABLE t FOR UPGRADE", "CHECKSUM TABLE t1, t2 EXTENDED"}) {
             validateNoErrors(sql, 1, MySqlVersion.V8_0, MariaDbVersion.V10_5_4,
                     DatabaseType.MYSQL, DatabaseType.MARIADB);
         }

@@ -2458,14 +2458,15 @@ MySQL `ALTER FUNCTION <https://dev.mysql.com/doc/refman/8.4/en/alter-function.ht
 MySQL table maintenance statements
 ----------------------------------
 
-``CHECK TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
+``CHECK TABLE``, ``CHECKSUM TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
 ``TableMaintenanceStatement`` in every dialect; ``ANALYZE TABLE`` remains ``Analyze``.
 ``getOperation()`` identifies the statement, ``getModifier()`` returns
 ``NO_WRITE_TO_BINLOG`` or ``LOCAL`` for OPTIMIZE and REPAIR, and ``isTablesKeyword()``
 records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in source
 order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
-``CHANGED``; REPAIR accepts ``QUICK``, ``EXTENDED`` and ``USE_FRM``. Other combinations
-are rejected, and the option words remain ordinary identifiers elsewhere.
+``CHANGED``; CHECKSUM accepts one of ``QUICK`` and ``EXTENDED``; REPAIR accepts ``QUICK``,
+``EXTENDED`` and ``USE_FRM``. Other combinations are rejected, and the option words and
+``CHECKSUM`` remain ordinary identifiers elsewhere.
 
 .. code-block:: java
 
@@ -2478,6 +2479,12 @@ Table visitors and metadata validation use the table list. Validators report the
 ``tableMaintenance`` feature, which the MySQL and MariaDB capabilities enable. Feature
 analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
 report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
+
+``ANALYZE TABLE ... UPDATE HISTOGRAM ON`` keeps ``WITH n BUCKETS``
+(``getHistogramBucketCount()``), MySQL 8.4's ``AUTO UPDATE`` or ``MANUAL UPDATE``
+(``getHistogramUpdateMode()``) and ``USING DATA 'json'`` (``getHistogramData()``, a
+``StringValue``). ``USING DATA`` excludes the other two options, and ``DROP HISTOGRAM``
+takes none of them.
 
 MySQL account management statements
 -----------------------------------

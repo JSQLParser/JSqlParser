@@ -2498,17 +2498,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
-     * Whether a MySQL CHECK, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or TABLES must
-     * follow, so other uses of these words are unaffected.
+     * Whether a MySQL CHECK, CHECKSUM, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or
+     * TABLES must follow, so other uses of these words are unaffected.
      */
     private boolean isTableMaintenanceAhead() {
         int kind = getToken(1).kind;
-        if (kind != K_CHECK && kind != K_OPTIMIZE && kind != K_REPAIR) {
+        if (kind != K_CHECK && kind != K_CHECKSUM && kind != K_OPTIMIZE && kind != K_REPAIR) {
             return false;
         }
         int offset = 2;
         int modifier = getToken(2).kind;
-        if (kind != K_CHECK && (modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL)) {
+        if ((kind == K_OPTIMIZE || kind == K_REPAIR)
+                && (modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL)) {
             offset = 3;
         }
         int table = getToken(offset).kind;
@@ -4033,6 +4034,7 @@ String NonReservedWordPart1() :
       | tk=<K_CHANGE:"CHANGE">
       | tk=<K_CHANGES:"CHANGES">
       | tk=<K_CHECKPOINT:"CHECKPOINT">
+      | tk=<K_CHECKSUM:"CHECKSUM">
       | tk=<K_CHAR:"CHAR">
       | tk=<K_CLOSE:"CLOSE">
       | tk=<K_CLOUD:"CLOUD">
@@ -19086,7 +19088,7 @@ TableOption MySqlAdditionalTableOption():
         value=MySqlSizeNumber()
         |
         LOOKAHEAD({ isKeywordAhead("CHECKSUM") || isKeywordAhead("DELAY_KEY_WRITE") })
-        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        ( token=<K_CHECKSUM> | token=<S_IDENTIFIER> ) { name = token.image.toUpperCase(Locale.ROOT); }
         [ "=" { useEquals = true; } ]
         token=<S_LONG> { value = token.image; }
         |
@@ -19565,8 +19567,8 @@ ColDataType.TypeModifier MySqlTypeModifier():
 }
 
 /**
- * Parses MySQL/MariaDB CHECK, OPTIMIZE and REPAIR TABLE statements. Options are accepted only for
- * the operation that defines them, without reserving the option words.
+ * Parses MySQL/MariaDB CHECK, CHECKSUM, OPTIMIZE and REPAIR TABLE statements. Options are accepted
+ * only for the operation that defines them, without reserving the option words.
  */
 TableMaintenanceStatement TableMaintenanceStatement():
 {
@@ -19580,6 +19582,7 @@ TableMaintenanceStatement TableMaintenanceStatement():
 {
     (
         <K_CHECK> { operation = TableMaintenanceStatement.Operation.CHECK; }
+        | <K_CHECKSUM> { operation = TableMaintenanceStatement.Operation.CHECKSUM; }
         | <K_OPTIMIZE> { operation = TableMaintenanceStatement.Operation.OPTIMIZE; }
         | <K_REPAIR> { operation = TableMaintenanceStatement.Operation.REPAIR; }
     )
@@ -19607,7 +19610,11 @@ TableMaintenanceStatement TableMaintenanceStatement():
         )
         { statement.addOptions(option); }
     )*
-    { return statement; }
+    {
+        requireDdlSyntax(operation != TableMaintenanceStatement.Operation.CHECKSUM
+                || statement.getOptions().size() <= 1, "CHECKSUM TABLE takes QUICK or EXTENDED, not both");
+        return statement;
+    }
 }
 
 Analyze Analyze():
@@ -19618,6 +19625,7 @@ Analyze Analyze():
     Token modifier = null;
     Token histogramAction = null;
     Token bucketCount = null;
+    Token data;
 }
 {
     <K_ANALYZE>
@@ -19639,11 +19647,28 @@ Analyze Analyze():
         <K_HISTOGRAM> <K_ON>
         column=Column() { analyze.addHistogramColumns(column); }
         ( "," column=Column() { analyze.addHistogramColumns(column); } )*
-        [
-            LOOKAHEAD(3)
-            <K_WITH> bucketCount=<S_LONG> <K_BUCKETS>
-            { analyze.setHistogramBucketCount(Integer.valueOf(bucketCount.image)); }
-        ]
+        (
+            // MySQL 8.4 sets a histogram from JSON instead of sampling the column
+            LOOKAHEAD(2) <K_USING> <K_DATA> data=<S_CHAR_LITERAL> {
+                requireDdlSyntax(histogramAction.kind == K_UPDATE, "USING DATA requires UPDATE HISTOGRAM");
+                analyze.setHistogramData(stringValue(data));
+            }
+            |
+            [
+                LOOKAHEAD(3)
+                <K_WITH> bucketCount=<S_LONG> <K_BUCKETS>
+                { analyze.setHistogramBucketCount(Integer.valueOf(bucketCount.image)); }
+            ]
+            [
+                LOOKAHEAD({ (getToken(1).kind == K_AUTO || isKeywordAhead("MANUAL"))
+                        && getToken(2).kind == K_UPDATE })
+                ( <K_AUTO> { analyze.setHistogramUpdateMode(Analyze.HistogramUpdateMode.AUTO); }
+                  | ContextualKeyword("MANUAL") { analyze.setHistogramUpdateMode(Analyze.HistogramUpdateMode.MANUAL); } )
+                <K_UPDATE> {
+                    requireDdlSyntax(histogramAction.kind == K_UPDATE, "AUTO UPDATE and MANUAL UPDATE require UPDATE HISTOGRAM");
+                }
+            ]
+        )
     ]
 
     {

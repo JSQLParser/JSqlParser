@@ -18,19 +18,22 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
 /**
- * A MySQL/MariaDB {@code CHECK TABLE}, {@code OPTIMIZE TABLE} or {@code REPAIR TABLE} statement.
- * {@code ANALYZE TABLE} remains {@link net.sf.jsqlparser.statement.analyze.Analyze}.
+ * A MySQL/MariaDB {@code CHECK TABLE}, {@code CHECKSUM TABLE}, {@code OPTIMIZE TABLE} or
+ * {@code REPAIR TABLE} statement. {@code ANALYZE TABLE} remains
+ * {@link net.sf.jsqlparser.statement.analyze.Analyze}.
  */
 public class TableMaintenanceStatement extends ASTNodeAccessImpl implements Statement {
 
     public enum Operation {
-        CHECK, OPTIMIZE, REPAIR;
+        CHECK, CHECKSUM, OPTIMIZE, REPAIR;
 
         /** Whether this operation accepts the option after its table list. */
         public boolean allows(Option option) {
             switch (this) {
                 case CHECK:
                     return option != Option.USE_FRM;
+                case CHECKSUM:
+                    return option == Option.QUICK || option == Option.EXTENDED;
                 case REPAIR:
                     return option == Option.QUICK || option == Option.EXTENDED
                             || option == Option.USE_FRM;
@@ -41,7 +44,7 @@ public class TableMaintenanceStatement extends ASTNodeAccessImpl implements Stat
 
         /** Whether this operation accepts {@code NO_WRITE_TO_BINLOG} or {@code LOCAL}. */
         public boolean allowsModifier() {
-            return this != CHECK;
+            return this == OPTIMIZE || this == REPAIR;
         }
     }
 
