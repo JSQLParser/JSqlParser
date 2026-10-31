@@ -72,6 +72,7 @@ public class AlterExpression implements Serializable {
     private List<String> parameters;
 
     private ConvertType convertType;
+    private boolean useCharsetKeyword;
     private boolean hasEqualForCharacterSet;
     private boolean hasEqualForCollate;
 
@@ -956,6 +957,15 @@ public class AlterExpression implements Serializable {
         this.convertType = convertType;
     }
 
+    /** Whether the character set clause uses MySQL's CHARSET abbreviation. */
+    public boolean isUseCharsetKeyword() {
+        return useCharsetKeyword;
+    }
+
+    public void setUseCharsetKeyword(boolean useCharsetKeyword) {
+        this.useCharsetKeyword = useCharsetKeyword;
+    }
+
     public String getCharacterSet() {
         return characterSet;
     }
@@ -1485,15 +1495,16 @@ public class AlterExpression implements Serializable {
 
     protected void toStringConvert(StringBuilder b) {
         if (operation == AlterOperation.CONVERT) {
+            String keyword = useCharsetKeyword ? "CHARSET " : "CHARACTER SET ";
             if (convertType == ConvertType.CONVERT_TO) {
-                b.append("CONVERT TO CHARACTER SET ");
+                b.append("CONVERT TO ").append(keyword);
             } else if (convertType == ConvertType.DEFAULT_CHARACTER_SET) {
-                b.append("DEFAULT CHARACTER SET ");
+                b.append("DEFAULT ").append(keyword);
                 if (hasEqualForCharacterSet) {
                     b.append("= ");
                 }
             } else if (convertType == ConvertType.CHARACTER_SET) {
-                b.append("CHARACTER SET ");
+                b.append(keyword);
                 if (hasEqualForCharacterSet) {
                     b.append("= ");
                 }
