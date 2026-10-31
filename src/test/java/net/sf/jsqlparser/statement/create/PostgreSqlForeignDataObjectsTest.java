@@ -12,11 +12,14 @@ package net.sf.jsqlparser.statement.create;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
@@ -27,6 +30,8 @@ import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.table.ForeignDataOption;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
@@ -68,6 +73,50 @@ class PostgreSqlForeignDataObjectsTest {
         assertEquals(2, CCJSqlParserUtil.parseStatements(sql + "; SELECT 1").size());
         assertTrue(new Validation(List.of(FeaturesAllowed.DDL), sql).validate().isEmpty());
         assertFalse(new Validation(List.of(FeaturesAllowed.SELECT), sql).validate().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP FOREIGN DATA WRAPPER w",
+            "DROP FOREIGN DATA WRAPPER IF EXISTS w1, w2 CASCADE",
+            "DROP FOREIGN DATA WRAPPER w RESTRICT",
+            "DROP USER MAPPING FOR CURRENT_USER SERVER s",
+            "DROP USER MAPPING IF EXISTS FOR PUBLIC SERVER s",
+            "DROP USER MAPPING FOR USER SERVER s",
+            "DROP USER MAPPING FOR \"user name\" SERVER \"server name\""})
+    void dropsForeignDataObjects(String sql) throws JSQLParserException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertEquals(sql, statement.toString());
+        assertTrue(new TablesNamesFinder().getTables(statement).isEmpty());
+        roundTrip(statement);
+        assertEquals(2, CCJSqlParserUtil.parseStatements(sql + "; SELECT 1").size());
+        assertTrue(new Validation(List.of(FeaturesAllowed.DDL), sql).validate().isEmpty());
+        assertFalse(new Validation(List.of(FeaturesAllowed.SELECT), sql).validate().isEmpty());
+    }
+
+    @Test
+    void dropStatementsKeepObjectKindAndMappingKey() throws JSQLParserException {
+        Drop wrapper = (Drop) CCJSqlParserUtil.parse(
+                "DROP FOREIGN DATA WRAPPER IF EXISTS w1, w2 CASCADE");
+        assertEquals(Drop.ObjectType.FOREIGN_DATA_WRAPPER, wrapper.getObjectType());
+        assertEquals(List.of("w1", "w2"),
+                wrapper.getNames().stream().map(Table::getFullyQualifiedName)
+                        .collect(Collectors.toList()));
+        assertTrue(wrapper.isIfExists());
+        assertEquals(CascadeBehavior.CASCADE, wrapper.getBehavior());
+
+        DropUserMapping mapping = (DropUserMapping) CCJSqlParserUtil.parse(
+                "DROP USER MAPPING IF EXISTS FOR CURRENT_USER SERVER s");
+        assertTrue(mapping.isIfExists());
+        assertEquals("CURRENT_USER", mapping.getUser());
+        assertEquals("s", mapping.getServer());
+        mapping.setIfExists(false);
+        mapping.setServer("s2");
+        assertEquals("DROP USER MAPPING FOR CURRENT_USER SERVER s2", mapping.toString());
+        roundTrip(mapping);
+
+        // MAPPING followed by neither FOR nor IF is still a user name
+        Drop user = (Drop) CCJSqlParserUtil.parse("DROP USER mapping");
+        assertEquals(Drop.ObjectType.USER, user.getObjectType());
     }
 
     @Test
@@ -210,7 +259,9 @@ class PostgreSqlForeignDataObjectsTest {
             "ALTER SERVER s OPTIONS(SET x)", "ALTER SERVER s OPTIONS(DROP x 'y')",
             "ALTER SERVER s OPTIONS()", "ALTER SERVER s OPTIONS(host = 'localhost')",
             "CREATE SERVER s TYPE NULL FOREIGN DATA WRAPPER w", "ALTER SERVER s VERSION 18",
-            "ALTER SERVER s RENAME TO s2 OPTIONS(x 'y')"})
+            "ALTER SERVER s RENAME TO s2 OPTIONS(x 'y')",
+            "DROP USER MAPPING FOR u", "DROP USER MAPPING FOR u SERVER s CASCADE",
+            "DROP USER MAPPING IF EXISTS u SERVER s"})
     void rejectsWrongObjectAndOptionForms(String sql) {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql));
     }

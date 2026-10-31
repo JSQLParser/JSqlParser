@@ -156,4 +156,12 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
                 new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
         validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
     }
+
+    @Test
+    public void testValidationMetadataSelectListError() throws JSQLParserException, SQLException {
+        String sql = "select my.id, my.price from mytable as my";
+        JdbcDatabaseMetaDataCapability meta =
+                new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateMetadata(sql, 1, 1, meta, true, "my.price");
+    }
 }

@@ -276,7 +276,9 @@ test {
     jvmArgs = ['-Xss4m', '--add-opens=java.base/java.lang=ALL-UNNAMED']
 
     jacoco {
-        excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']
+        // the generated parser exceeds the constant-pool limit once instrumented (#2866)
+        excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager',
+                    'net/sf/jsqlparser/parser/CCJSqlParser']
     }
 }
 
@@ -291,13 +293,23 @@ jacocoTestReport {
         csv.required = false
         html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
-}
-jacocoTestCoverageVerification {
-    // Jacoco can't handle the TokenManager class
+    // the classes that are not instrumented, see test.jacoco
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    "**CCJSqlParserTokenManager**"
+                    "**/parser/CCJSqlParserTokenManager.class",
+                    "**/parser/CCJSqlParser.class"
+            ])
+        }))
+    }
+}
+jacocoTestCoverageVerification {
+    // Jacoco can't handle the TokenManager and the generated parser classes
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/parser/CCJSqlParserTokenManager.class",
+                    "**/parser/CCJSqlParser.class"
             ])
         }))
     }

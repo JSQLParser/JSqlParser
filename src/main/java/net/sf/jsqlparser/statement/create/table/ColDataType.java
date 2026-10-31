@@ -103,9 +103,10 @@ public class ColDataType extends ASTNodeAccessImpl {
     private void setNumericTypeParameters(String parameter, Integer scale) {
         if (parameter != null) {
             maxPrecision = "MAX".equalsIgnoreCase(parameter);
-            precision = maxPrecision ? null : new BigInteger(parameter);
+            // Oracle's NUMBER(*, s) has no precision of its own.
+            precision = maxPrecision || "*".equals(parameter) ? null : new BigInteger(parameter);
             this.scale = scale;
-            dataType += " (" + (maxPrecision ? "MAX" : precision)
+            dataType += " (" + (maxPrecision ? "MAX" : precision != null ? precision : parameter)
                     + (scale != null ? ", " + scale : "") + ")";
         }
     }
@@ -330,9 +331,10 @@ public class ColDataType extends ASTNodeAccessImpl {
      * The first numeric type parameter, e.g. {@code 255} for {@code VARCHAR(255)} or {@code 10} for
      * {@code DECIMAL(10, 2)}. {@code MAX} is reported as {@link Integer#MAX_VALUE}. Returns
      * {@code null} when the type carries no numeric parameters, e.g. {@code INT} or
-     * {@code ENUM('a', 'b')}, or when a numeric length exceeds the integer range. Use
-     * {@link #getNumericPrecision()} for the full range and {@link #isMaxPrecision()} to
-     * distinguish MAX from the numeric value 2147483647.
+     * {@code ENUM('a', 'b')}, when the precision is Oracle's {@code *} as in {@code NUMBER(*, 0)},
+     * or when a numeric length exceeds the integer range. Use {@link #getNumericPrecision()} for
+     * the full range and {@link #isMaxPrecision()} to distinguish MAX from the numeric value
+     * 2147483647.
      */
     public Integer getPrecision() {
         return maxPrecision ? Integer.valueOf(Integer.MAX_VALUE)

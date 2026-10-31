@@ -44,6 +44,22 @@ public class SelectValidatorTest extends ValidationTestAsserts {
         validateNotSupported(sql, 1, 1, DatabaseType.POSTGRESQL, Feature.mysqlSelectModifiers);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT a INTO OUTFILE '/tmp/a.txt' FROM t",
+            "SELECT a FROM t INTO OUTFILE '/tmp/a.txt'",
+            "SELECT a FROM t INTO DUMPFILE '/tmp/a.bin'",
+            "SELECT a FROM t WHERE a IN (SELECT b FROM u INTO OUTFILE '/tmp/b.txt')",
+            "SELECT * FROM t INTO TEMP x"})
+    public void testValidationSelectIntoNotAllowed(String sql) {
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT, Feature.selectInto);
+    }
+
+    @Test
+    public void testValidationMySqlSelectIntoOutfile() {
+        String sql = "SELECT a FROM t INTO OUTFILE '/tmp/a.txt'";
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
+    }
+
     @Test
     public void testValidationSelectDistinct() throws JSQLParserException {
         String sql = "SELECT DISTINCT a, b FROM tab";
@@ -228,6 +244,29 @@ public class SelectValidatorTest extends ValidationTestAsserts {
             "SELECT * FROM ROWS FROM (f(1), g(?)) WITH ORDINALITY"})
     public void testValidateTableFunctionArguments(String sql) {
         validateNotAllowed(sql, 1, 1, SELECT_WITH_TABLE_FUNCTIONS, Feature.jdbcParameter);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT upper(a) FROM t",
+            "SELECT DISTINCT ON (upper(a)) a FROM t",
+            "SELECT TOP (upper(a)) a FROM t",
+            "SELECT a FROM t QUALIFY upper(a) = 'X'",
+            "SELECT a FROM t WINDOW w AS (PARTITION BY upper(a))",
+            "SELECT a FROM t WINDOW w AS (ORDER BY upper(a))",
+            "SELECT a FROM t LIMIT upper(a)",
+            "SELECT a FROM t LIMIT 1 OFFSET upper(a)",
+            "SELECT a FROM t OFFSET upper(a) ROWS",
+            "SELECT a FROM t FETCH FIRST upper(a) ROWS ONLY",
+            "SELECT a FROM t UNION SELECT b FROM u LIMIT upper(a)"})
+    public void testValidateFunctionOutsideWhere(String sql) {
+        validateNotAllowed(sql, 1, 1,
+                new FeaturesAllowed(Feature.values()).remove(Feature.function), Feature.function);
+    }
+
+    @Test
+    public void testValidateSubSelectInSelectList() {
+        validateNotAllowed("SELECT (SELECT a FROM t FOR UPDATE)", 1, 1, FeaturesAllowed.SELECT,
+                Feature.selectForUpdate);
     }
 
     @Test

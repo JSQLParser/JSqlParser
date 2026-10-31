@@ -1430,12 +1430,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * everywhere else, e.g. f(content).
      */
     private void consumeXmlLeadingKeyword(Function function) {
-        String name = function.getName();
-        if (name == null) {
-            return;
-        }
-        name = name.toUpperCase(java.util.Locale.ROOT);
-        if (!"XMLPARSE".equals(name) && !"XMLELEMENT".equals(name) && !"XMLFOREST".equals(name)) {
+        if (!hasUnqualifiedName(function, "XMLPARSE") && !hasUnqualifiedName(function, "XMLELEMENT")
+                && !hasUnqualifiedName(function, "XMLFOREST")) {
             return;
         }
         Token token = getToken(1);
@@ -1453,6 +1449,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return;
         }
         function.setExtraKeyword(getNextToken().image);
+    }
+
+    // Matches the single name part, since getName() joins the parts into a new string on each call.
+    private static boolean hasUnqualifiedName(Function function, String name) {
+        List<String> nameParts = function.getMultipartName();
+        return nameParts != null && nameParts.size() == 1 && name.equalsIgnoreCase(nameParts.get(0));
     }
 
     /**
@@ -4996,6 +4998,11 @@ Statement SingleStatement() :
             stm = Create()
             |
             LOOKAHEAD(<K_DROP> <K_POLICY>) stm = DropPolicy()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DROP && getToken(2).kind == K_USER
+                    && "MAPPING".equalsIgnoreCase(getToken(3).image)
+                    && (getToken(4).kind == K_FOR || getToken(4).kind == K_IF) })
+            stm = DropUserMapping()
             |
             stm = Drop()
             |
@@ -9645,7 +9652,6 @@ PlainSelect PlainSelect() #PlainSelect:
     OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     PreferringClause preferringClause = null;
     ExpressionList expressionList = null;
-    boolean partitionByBrackets = false;
     Token partitionFirst = null;
     List<Table> intoTables = null;
     MySqlSelectIntoClause mySqlSelectIntoClause = null;
@@ -9752,13 +9758,9 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
         [LOOKAHEAD(2) partitionFirst=<K_PARTITION> <K_BY>
-            (
-                LOOKAHEAD(2) expressionList=ComplexExpressionList()
-                |
-                "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")"
-            )
+            expressionList=ComplexExpressionList()
             {
-                preferringClause.setPartitionExpressionList(expressionList, partitionByBrackets);
+                preferringClause.setPartitionExpressionList(expressionList, false);
                 linkAST(preferringClause.getPartitionBy(), partitionFirst);
             }
         ]
@@ -12393,7 +12395,6 @@ Expression Condition():
     Expression result;
     Expression left;
     // Leading NOT / ! prefixes, leftmost token wraps outermost (issue #1170).
-    final Deque<Boolean> exclamationMarks = new ArrayDeque<Boolean>();
     Deque<Token> notTokens = null;
     int oraclePrior = EqualsTo.NO_ORACLE_PRIOR;
     int oracleJoin = EqualsTo.NO_ORACLE_JOIN;
@@ -12402,7 +12403,7 @@ Expression Condition():
 {
     (
         LOOKAHEAD({ getToken(1).kind == K_NOT || "!".equals(getToken(1).image) })
-        ( <K_NOT> { exclamationMarks.addFirst(Boolean.FALSE); } | "!" { exclamationMarks.addFirst(Boolean.TRUE); } )
+        ( <K_NOT> | "!" )
         {
             if (notTokens == null) {
                 notTokens = new ArrayDeque<Token>();
@@ -12479,9 +12480,10 @@ Expression Condition():
             ((SupportsOldOracleJoinSyntax) result).setOraclePriorPosition(oraclePrior);
             widen(result, prior, null);
         }
-        while (!exclamationMarks.isEmpty()) {
-            result = new NotExpression(result, exclamationMarks.pollFirst());
-            linkAST(result, notTokens.pollFirst());
+        while (notTokens != null && !notTokens.isEmpty()) {
+            Token notToken = notTokens.pollFirst();
+            result = new NotExpression(result, "!".equals(notToken.image));
+            linkAST(result, notToken);
         }
         return result;
     }
@@ -12954,23 +12956,9 @@ ExpressionList ExpressionList() #ExpressionList:
     Token first = getToken(1);
 }
 {
-    (
-        LOOKAHEAD(3, { !interrupted }) expressionList = ComplexExpressionList()
-        |
-        LOOKAHEAD(3) expressionList = SimpleExpressionList()
-        |
-        LOOKAHEAD(3) expressionList = ParenthesedExpressionList()
-        |
-        // Fallback, see isUnparenthesizedSelectAhead(): the three probes above are
-        // syntactic and cannot see through the Pratt operator loop, which lives in a
-        // Java action. They all fail on a bracketed operand of a larger expression,
-        // e.g. "( 1 + a ) / ( 1 + b )" or "( 1 + a )" - the third token is an operator
-        // where the probe expects "," or ")". Such input is still a valid expression
-        // list, so parse it as one instead of raising a ParseException.
-        LOOKAHEAD({ !interrupted }) expressionList = ComplexExpressionList()
-        |
-        expressionList = SimpleExpressionList()
-    )
+    // ComplexExpressionList() parses every list form, "()" and bracketed operands such as
+    // "( 1 + a ) / ( 1 + b )" included.
+    expressionList = ComplexExpressionList()
     {
         // Avoid redundant ExpressionLists containing only one ParenthesedExpressionList
         // return the Parenthesed Sub ExpressionList instead
@@ -13000,11 +12988,7 @@ ParenthesedExpressionList ParenthesedExpressionList():
 }
 {
     "("
-    (
-        LOOKAHEAD({ !interrupted }) expressions = ComplexExpressionList()
-        |
-        expressions = SimpleExpressionList()
-    )?
+    [ LOOKAHEAD({ getToken(1).kind != CLOSING_BRACKET }) expressions = ComplexExpressionList() ]
     ")"
     {
         ParenthesedExpressionList result = new ParenthesedExpressionList(expressions);
@@ -13023,11 +13007,11 @@ ExpressionList SimpleExpressionList():
 {
     expr=SimpleExpression() { expressions.add(expr); }
     (
-        LOOKAHEAD(2, {!interrupted} ) ","
+        LOOKAHEAD({ !interrupted && getToken(1).kind == K_COMMA }) ","
         (
             LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
-            expr=SimpleExpression()
+            LOOKAHEAD({ !interrupted }) expr=SimpleExpression()
         )
         {
             expressions.add(expr);
@@ -13082,14 +13066,15 @@ ExpressionList ComplexExpressionList():
         |
         LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=PostgresNamedFunctionParameter()
         |
-        expr=Expression()
+        // The semantic lookahead makes JavaCC enter Expression() with no scan of its first token.
+        LOOKAHEAD({ !interrupted }) expr=Expression()
     )
     {
         expressions.add(expr);
     }
 
     (
-        LOOKAHEAD(2, {!interrupted}) ","
+        LOOKAHEAD({ !interrupted && getToken(1).kind == K_COMMA }) ","
         (
             LOOKAHEAD(2, { isNamedParameterAssignmentAhead() }) expr=OracleNamedFunctionParameter()
             |
@@ -13097,7 +13082,7 @@ ExpressionList ComplexExpressionList():
             |
             LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
-            expr=Expression()
+            LOOKAHEAD({ !interrupted }) expr=Expression()
         ) { expressions.add(expr); }
     )*
 
@@ -13468,7 +13453,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     Token token = null;
     Token sign = null;
     Token innerSign;
-    List<Token> innerSigns = new ArrayList<Token>();
+    List<Token> innerSigns = null;
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
@@ -13476,14 +13461,22 @@ Expression PrimaryExpression() #PrimaryExpression:
     Token coreFirst = null;
     ExpressionList list;
 
-    final List<Map.Entry<Expression, String>> jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
+    List<Map.Entry<Expression, String>> jsonIdents = null;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
     [
         ( sign="+" | sign="-" | sign="~" )
         // DuckDB's chained signs, e.g. - -1 or +-+1
-        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
+        (
+            LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" )
+            {
+                if (innerSigns == null) {
+                    innerSigns = new ArrayList<Token>();
+                }
+                innerSigns.add(innerSign);
+            }
+        )*
     ]
     { coreFirst = getToken(1); }
     (
@@ -13684,6 +13677,9 @@ Expression PrimaryExpression() #PrimaryExpression:
                 expression=SimpleExpression()
             )
             {
+                if (jsonIdents == null) {
+                    jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
+                }
                 jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
             }
         )+
@@ -13707,10 +13703,12 @@ Expression PrimaryExpression() #PrimaryExpression:
         }
         // each value gets a range node only once something wraps it, the outermost takes jjtThis
         Token valueFirst = coreFirst;
-        for (int i = innerSigns.size() - 1; i >= 0; i--) {
-            linkASTIfMissing(retval, valueFirst);
-            retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
-            valueFirst = innerSigns.get(i);
+        if (innerSigns != null) {
+            for (int i = innerSigns.size() - 1; i >= 0; i--) {
+                linkASTIfMissing(retval, valueFirst);
+                retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
+                valueFirst = innerSigns.get(i);
+            }
         }
         if (sign != null) {
             linkASTIfMissing(retval, valueFirst);
@@ -14764,7 +14762,6 @@ JsonAggregateFunction JsonAggregateFunction() : {
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
-    boolean partitionByBrackets = false;
     Token partitionFirst = null;
     Token partitionLast = null;
 }
@@ -14853,14 +14850,13 @@ JsonAggregateFunction JsonAggregateFunction() : {
             <K_OVER> {result.setAnalyticType(AnalyticType.OVER);}
             "("
             [partitionFirst=<K_PARTITION> <K_BY>
-                (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-                | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                expressionList=ComplexExpressionList()
                 { partitionLast = getToken(0); }
             ]
             [olist=OrderByElements() ]
             [windowElement = WindowElement() ]
             {
-                result.setPartitionExpressionList(expressionList, partitionByBrackets);
+                result.setPartitionExpressionList(expressionList, false);
                 if (partitionFirst != null) {
                     linkAST(result.getPartitionExpressionList(), partitionFirst, partitionLast);
                 }
@@ -15007,7 +15003,6 @@ KeepExpression KeepExpression() : {
 
 void windowFun(AnalyticExpression retval):{
      ExpressionList expressionList = null;
-     boolean partitionByBrackets = false;
      Token partitionFirst = null;
      Token partitionLast = null;
      String windowName = null;
@@ -15033,12 +15028,11 @@ void windowFun(AnalyticExpression retval):{
         [
             LOOKAHEAD(2) <K_OVER> "("
             [   partitionFirst=<K_PARTITION> <K_BY>
-                    (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-                    | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                    expressionList=ComplexExpressionList()
                     { partitionLast = getToken(0); }
             ]
             ")" {
-                winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+                winDef.setPartitionExpressionList(expressionList, false);
                 if (partitionFirst != null) {
                     linkAST(winDef.getPartitionBy(), partitionFirst, partitionLast);
                 }
@@ -15052,7 +15046,6 @@ WindowDefinition windowDefinition() : {
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
     WindowElement windowElement = null;
-    boolean partitionByBrackets = false;
     Token partitionFirst = null;
     Token partitionLast = null;
     WindowDefinition winDef = new WindowDefinition();
@@ -15068,14 +15061,13 @@ WindowDefinition windowDefinition() : {
         {}
     )
     [partitionFirst=<K_PARTITION> <K_BY>
-        (LOOKAHEAD(3) expressionList=ComplexExpressionList()
-        | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+        expressionList=ComplexExpressionList()
         { partitionLast = getToken(0); }
     ]
     [olist=OrderByElements() ]
     [windowElement = WindowElement() ]
     {
-        winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+        winDef.setPartitionExpressionList(expressionList, false);
         if (partitionFirst != null) {
             linkAST(winDef.getPartitionBy(), partitionFirst, partitionLast);
         }
@@ -15753,7 +15745,7 @@ ExpressionList FunctionArgumentList(Function retval):
     Token extraKeywordToken;
 }
 {
-    { if ("XMLFOREST".equalsIgnoreCase(retval.getName())) { return XmlForestArguments(); } }
+    { if (hasUnqualifiedName(retval, "XMLFOREST")) { return XmlForestArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
     // explicit lookahead: InternalFunction accepts ORDER BY after IGNORE NULLS too
@@ -17685,7 +17677,13 @@ EventStatus MySqlEventStatus():
         <K_ENABLE> { status = EventStatus.ENABLE; }
         |
         <K_DISABLE> { status = EventStatus.DISABLE; }
-        [ LOOKAHEAD(2) <K_ON> <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; } ]
+        [ LOOKAHEAD({ getToken(1).kind == K_ON && (getToken(2).kind == K_SLAVE
+                || "REPLICA".equalsIgnoreCase(getToken(2).image)) })
+          <K_ON> (
+              <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; }
+              |
+              ContextualKeyword("REPLICA") { status = EventStatus.DISABLE_ON_REPLICA; }
+          ) ]
     )
     { return status; }
 }
@@ -17699,8 +17697,11 @@ CreateEvent CreateEvent():
     EventStatus status = null;
     Token comment = null;
     Statement body = null;
+    MySqlDefiner definer = null;
 }
 {
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") })
+      definer=MySqlRoutineDefiner() { createEvent.setDefiner(definer); } ]
     <K_EVENT>
     [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createEvent.setIfNotExists(true); } ]
     event=Table() { createEvent.setEvent(event); }
@@ -17713,7 +17714,7 @@ CreateEvent CreateEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
         createEvent.setComment(stringValue(comment));
     } ]
-    <K_DO> body=SingleStatement() { createEvent.setBody(body); }
+    <K_DO> body=MySqlTriggerBody() { createEvent.setBody(body); }
     { return createEvent; }
 }
 
@@ -17727,8 +17728,11 @@ AlterEvent AlterEvent():
     EventStatus status = null;
     Token comment = null;
     Statement body = null;
+    MySqlDefiner definer = null;
 }
 {
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") })
+      definer=MySqlRoutineDefiner() { alterEvent.setDefiner(definer); } ]
     <K_EVENT> event=Table() { alterEvent.setEvent(event); }
     [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_SCHEDULE })
       schedule=MySqlEventSchedule() { alterEvent.setSchedule(schedule); } ]
@@ -17742,7 +17746,7 @@ AlterEvent AlterEvent():
         alterEvent.setComment(stringValue(comment));
     } ]
     [ LOOKAHEAD({ getToken(1).kind == K_DO })
-      <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
+      <K_DO> body=MySqlTriggerBody() { alterEvent.setBody(body); } ]
     { return alterEvent; }
 }
 
@@ -17827,9 +17831,9 @@ CreateTrigger.Order MySqlTriggerOrder():
 }
 
 /**
- * MySQL trigger statement. BEGIN ... END with SQL statements only remains a Block. Other compound
- * statements, such as those with IF or DECLARE, keep their tokens like routine bodies and use the
- * same boundary tracking. The semicolon after END is left to separate statements.
+ * MySQL trigger or event statement. BEGIN ... END with SQL statements only remains a Block. Other
+ * compound statements, such as those with IF or DECLARE, keep their tokens like routine bodies and
+ * use the same boundary tracking. The semicolon after END is left to separate statements.
  */
 Statement MySqlTriggerBody():
 {
@@ -19247,7 +19251,10 @@ ColDataType DataType():
                     | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; }
             )*
             [
-                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = tk.image; } |  tk=<K_MAX> { precision = "MAX"; } )
+                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = tk.image; } |  tk=<K_MAX> { precision = "MAX"; }
+                    // Oracle's NUMBER(*, s) and NUMBER(*)
+                    | "*" { precision = "*"; requireDdlSyntax("NUMBER".equalsIgnoreCase(type),
+                            "Wildcard precision is only supported for NUMBER"); } )
                 [ <K_BYTE> | <K_CHAR> ]
                 [ "," scaleText=SignedIntegerTypeArgument() { scale = Integer.valueOf(scaleText); } ]
                 ")"
@@ -19391,6 +19398,8 @@ ColDataType ColDataType():
 			| tk=<K_NAME>
 			// PostgreSQL's geometric type
 			| tk=<K_PATH>
+			// Oracle's RAW(n)
+			| tk=<K_RAW>
         )
         {
             schema = tk.image;
@@ -20358,7 +20367,7 @@ Drop Drop():
     List<AlgorithmOrLockOption> indexOptions = new ArrayList<AlgorithmOrLockOption>();
     int indexOptionPosition = 0;
     boolean useTemporary = false;
-    boolean foreign = false;
+    String foreignType = null;
     boolean eventTrigger = false;
     CascadeBehavior behavior = null;
     String engine;
@@ -20367,7 +20376,11 @@ Drop Drop():
     <K_DROP>
     [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
-        <K_FOREIGN> tk=<K_TABLE> { foreign = true; }
+        <K_FOREIGN> (
+            <K_TABLE> { foreignType = "FOREIGN TABLE"; }
+            |
+            <K_DATA> ContextualKeyword("WRAPPER") { foreignType = "FOREIGN DATA WRAPPER"; }
+        )
         |
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
@@ -20415,7 +20428,7 @@ Drop Drop():
         |
         tk=<K_GROUP>
     )
-    { drop.setType(foreign ? "FOREIGN TABLE" : eventTrigger ? "EVENT TRIGGER" : tk.image); }
+    { drop.setType(foreignType != null ? foreignType : eventTrigger ? "EVENT TRIGGER" : tk.image); }
     [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
             && getToken(1).kind == K_CONCURRENTLY })
         <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
@@ -22188,6 +22201,8 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isPostgreSqlEventTriggerAhead(true) }) statement = AlterEventTrigger()
                 |
+                LOOKAHEAD([ MySqlRoutineDefiner() ] <K_EVENT>,
+                        { getToken(1).kind == K_EVENT || isKeywordAhead("DEFINER") })
                 statement = AlterEvent()
                 |
                 LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
@@ -23995,6 +24010,8 @@ Statement Create():
         { requireDdlSyntax(!isUsingOrReplace, "CREATE EVENT TRIGGER does not support OR REPLACE"); }
         statement = CreateEventTrigger()
         |
+        LOOKAHEAD([ MySqlRoutineDefiner() ] <K_EVENT>,
+                { getToken(1).kind == K_EVENT || isKeywordAhead("DEFINER") })
         statement = CreateEvent()
         |
         LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = CreateView(isUsingOrReplace)
@@ -25620,6 +25637,18 @@ CreateUserMapping CreateUserMapping():
     <K_FOR> name=RelObjectName() { statement.setUser(name); }
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
+    { return statement; }
+}
+
+DropUserMapping DropUserMapping():
+{
+    DropUserMapping statement = new DropUserMapping(); String name;
+}
+{
+    <K_DROP> <K_USER> ContextualKeyword("MAPPING")
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+    <K_FOR> name=RelObjectName() { statement.setUser(name); }
+    ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     { return statement; }
 }
 

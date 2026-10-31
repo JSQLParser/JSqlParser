@@ -10,7 +10,8 @@
 package net.sf.jsqlparser.statement.create.event;
 
 public enum EventStatus {
-    ENABLE("ENABLE"), DISABLE("DISABLE"), DISABLE_ON_SLAVE("DISABLE ON SLAVE");
+    ENABLE("ENABLE"), DISABLE("DISABLE"), DISABLE_ON_SLAVE("DISABLE ON SLAVE"), DISABLE_ON_REPLICA(
+            "DISABLE ON REPLICA");
 
     private final String sql;
 

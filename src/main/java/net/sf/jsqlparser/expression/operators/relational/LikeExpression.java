@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -174,9 +175,11 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
     public enum KeyWord {
         LIKE, ILIKE, RLIKE, REGEXP_LIKE, REGEXP, GLOB, SIMILAR_TO, MATCH_ANY, MATCH_ALL, MATCH_PHRASE, MATCH_PHRASE_PREFIX, MATCH_REGEXP;
 
+        private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+
         public static KeyWord from(String keyword) {
             return Enum.valueOf(KeyWord.class,
-                    keyword.toUpperCase(Locale.ROOT).replaceAll("\\s+", "_"));
+                    WHITESPACE.matcher(keyword.toUpperCase(Locale.ROOT)).replaceAll("_"));
         }
     }
 

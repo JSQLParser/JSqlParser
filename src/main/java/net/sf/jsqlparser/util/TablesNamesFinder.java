@@ -176,6 +176,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.execute.ExecuteArgument;
 import net.sf.jsqlparser.statement.export.Export;
@@ -1949,8 +1950,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetStatement setStatement, S context) {
-        if (setStatement.getOnOffOptions() == null) {
-            throwUnsupported(setStatement);
+        for (int i = 0; i < setStatement.getCount(); i++) {
+            List<Expression> expressions = setStatement.getExpressions(i);
+            if (expressions != null) {
+                for (Expression expression : expressions) {
+                    expression.accept(this, context);
+                }
+            }
         }
         return null;
     }
@@ -3244,6 +3250,12 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(AlterUserMapping statement, S context) {
         statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DropUserMapping statement, S context) {
+        // User and server names do not refer to tables.
         return null;
     }
 

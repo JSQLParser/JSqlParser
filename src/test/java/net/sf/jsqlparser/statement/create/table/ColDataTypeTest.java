@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.IntervalQualifier;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ColDataTypeTest {
     @Test
@@ -145,6 +147,31 @@ class ColDataTypeTest {
         ColDataType unparameterized =
                 parseColumnType("CREATE TABLE t (a TIMESTAMP WITH TIME ZONE)");
         assertNull(unparameterized.getPrecision());
+    }
+
+    @Test
+    void testOracleNumberWithWildcardPrecision() throws JSQLParserException {
+        ColDataType number =
+                parseColumnType("CREATE TABLE t (a NUMBER(*, 0), b NUMBER(*), c NUMBER(*, 2))");
+        assertEquals("NUMBER (*, 0)", number.getDataType());
+        assertEquals("NUMBER", number.getBaseTypeName());
+        assertNull(number.getPrecision());
+        assertEquals(0, number.getScale());
+
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(1.5 AS NUMBER(*, 0)) FROM dual", true);
+
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseColDataType("NUMBER(*, *)"));
+    }
+
+    @Test
+    void testOracleRawType() throws JSQLParserException {
+        ColDataType raw = parseColumnType("CREATE TABLE t (id RAW(16), payload raw(2000))");
+        assertEquals("RAW", raw.getDataType());
+        assertEquals(16, raw.getPrecision());
+
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD payload RAW(2000)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(HEXTORAW('AB') AS RAW(16)) FROM dual", true);
     }
 
     private ColDataType parseColumnType(String sqlStr) throws JSQLParserException {
