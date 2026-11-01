@@ -49,6 +49,9 @@ public class UpdateDeParser extends AbstractDeParser<Update>
         if (update.getOracleHint() != null) {
             builder.append(update.getOracleHint()).append(" ");
         }
+        if (update.getConflictAlgorithm() != null) {
+            builder.append("OR ").append(update.getConflictAlgorithm()).append(" ");
+        }
         if (update.getModifierPriority() != null) {
             builder.append(update.getModifierPriority()).append(" ");
         }
