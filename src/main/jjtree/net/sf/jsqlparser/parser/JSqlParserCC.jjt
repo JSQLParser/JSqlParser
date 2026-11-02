@@ -4791,11 +4791,13 @@ TOKEN:
                         (
                             // Backslash escapes and doubled quotes; trimmed below to the rules in effect
                             ("'" ( "\\" ~[] | "''" | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
-                            // Alternative Oracle Escape Modes
-                            | ("q'{" (~[])* "}'")
-                            | ("q'(" (~[])* ")'")
-                            | ("q'[" (~[])* "]'")
-                            | ("q''" (~[])* "''")
+                            // Alternative Oracle Escape Modes, up to the first closing delimiter
+                            // followed by a quote: a body cannot contain that pair, so the longest
+                            // match stops there and cannot run on to a later literal
+                            | ("q'{" ( ~["}"] | ("}")+ ~["}", "'"] )* ("}")+ "'")
+                            | ("q'(" ( ~[")"] | (")")+ ~[")", "'"] )* (")")+ "'")
+                            | ("q'[" ( ~["]"] | ("]")+ ~["]", "'"] )* ("]")+ "'")
+                            | ("q''" ( ~["'"] | "'" ~["'"] )* "''")
                             // | ("q'\\" (~[])* "\\'") <--- Does not work
                         )
                         // PostgreSQL Unicode escape string with an optional UESCAPE clause, see
