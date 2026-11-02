@@ -113,8 +113,9 @@ public abstract class AbstractJSqlParser<P> {
 
     /**
      * Resolves MySQL executable comments against this server version (for example 90702 for 9.7.2).
-     * Requires the MYSQL dialect. Rendered SQL reflects this version, without conditional wrappers.
-     * Without an explicit version, conditional executable comments raise a lexical error.
+     * Requires the MYSQL dialect, or MARIADB with the MariaDB version (for example 110402 for
+     * 11.4.2). Rendered SQL reflects this version, without conditional wrappers. Without an
+     * explicit version, conditional executable comments raise a lexical error.
      *
      * @param version major * 10000 + minor * 100 + patch, from 0 through 999999
      * @return this parser

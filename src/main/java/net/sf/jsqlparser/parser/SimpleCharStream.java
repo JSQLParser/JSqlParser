@@ -242,8 +242,7 @@ public class SimpleCharStream {
             buffer[bufpos] = HASH_SUBSTITUTION;
             c = HASH_SUBSTITUTION;
         } else if ((c == '-' || c == '/' || c == '*') && featureConfiguration != null
-                && AbstractJSqlParser.Dialect.MYSQL.name()
-                        .equals(featureConfiguration.getValue(Feature.dialect))) {
+                && isMySqlCommentDialect(featureConfiguration.getValue(Feature.dialect))) {
             c = mySqlCommentBoundary(c);
         } else if (c == '\n' && featureConfiguration != null
                 && !featureConfiguration
@@ -255,6 +254,12 @@ public class SimpleCharStream {
             c = ' ';
         }
         return c;
+    }
+
+    /** MariaDB shares the MySQL rules for {@code --} and executable comments. */
+    private static boolean isMySqlCommentDialect(Object dialect) {
+        return AbstractJSqlParser.Dialect.MYSQL.name().equals(dialect)
+                || AbstractJSqlParser.Dialect.MARIADB.name().equals(dialect);
     }
 
     /** Changes only token boundaries, never characters being scanned inside strings or names. */
@@ -273,23 +278,31 @@ public class SimpleCharStream {
             return ' ';
         } else if (c == '/') {
             String following = peekCharacters(9);
-            if (following.startsWith("*!")) {
+            boolean mariaDb = AbstractJSqlParser.Dialect.MARIADB.name()
+                    .equals(featureConfiguration.getValue(Feature.dialect));
+            // MariaDB also runs its own /*M! ... */ comments, which MySQL ignores.
+            int marker = following.startsWith("*!") ? 2
+                    : mariaDb && following.startsWith("*M!") ? 3 : 0;
+            if (marker > 0) {
                 if (mySqlExecutableComment) {
                     return mySqlCommentError("Nested MySQL executable comments are not supported");
                 }
-                int digits = mySqlCommentVersionLength(following);
+                int digits = mariaDb ? mariaDbCommentVersionLength(following, marker)
+                        : mySqlCommentVersionLength(following);
                 if (digits > 0) {
                     long target = featureConfiguration.getAsLong(Feature.mySqlServerVersion);
                     if (target < 0 || target > 999999) {
                         return mySqlCommentError("MySQL conditional executable comments require "
                                 + "withMySqlServerVersion(major * 10000 + minor * 100 + patch)");
                     }
-                    int minimum = Integer.parseInt(following.substring(2, 2 + digits));
-                    if (minimum > target) {
+                    int minimum = Integer.parseInt(following.substring(marker, marker + digits));
+                    // MariaDB skips /*! comments for MySQL 5.7 and later, but not /*M! ones.
+                    if (minimum > target
+                            || mariaDb && marker == 2 && minimum >= 50700 && minimum <= 99999) {
                         return c;
                     }
                 }
-                eraseCommentMarker(3 + digits);
+                eraseCommentMarker(marker + 1 + digits);
                 mySqlExecutableComment = true;
                 return ' ';
             }
@@ -317,6 +330,20 @@ public class SimpleCharStream {
                         || following.charAt(8) >= '\t' && following.charAt(8) <= '\r')
                                 ? 6
                                 : 5;
+    }
+
+    private static int mariaDbCommentVersionLength(String following, int marker) {
+        if (following.length() < marker + 5) {
+            return 0;
+        }
+        for (int i = marker; i < marker + 5; i++) {
+            if (following.charAt(i) < '0' || following.charAt(i) > '9') {
+                return 0;
+            }
+        }
+        // MariaDB takes a sixth digit whenever there is one, whatever follows it.
+        return following.length() > marker + 5 && following.charAt(marker + 5) >= '0'
+                && following.charAt(marker + 5) <= '9' ? 6 : 5;
     }
 
     private String peekCharacters(int length) {
