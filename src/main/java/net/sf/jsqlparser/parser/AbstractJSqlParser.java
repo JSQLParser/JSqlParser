@@ -51,6 +51,11 @@ public abstract class AbstractJSqlParser<P> {
                                                         Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
                                                                 Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA, SQLITE;
 
+        // MySQL, MariaDB, SQLite, Oracle, BigQuery and Spanner document that block comments do
+        // not nest: the first closing delimiter ends the comment.
+        private static final Set<Dialect> FLAT_BLOCK_COMMENT_DIALECTS =
+                EnumSet.of(MYSQL, MARIADB, ORACLE, SQLITE, BIGQUERY, SPANNER);
+
         private final Set<Feature> lexerFeatures;
         private final AdjacentStringLiterals adjacentStringLiterals;
 
@@ -71,6 +76,15 @@ public abstract class AbstractJSqlParser<P> {
 
         public AdjacentStringLiterals getAdjacentStringLiterals() {
             return adjacentStringLiterals;
+        }
+
+        /**
+         * Whether a {@code /*} inside a block comment opens a nested comment that needs its own
+         * closing {@code *}{@code /}, as in the SQL standard, PostgreSQL, SQL Server or H2. The
+         * other dialects end the comment at the first closing delimiter.
+         */
+        public boolean isNestedBlockComments() {
+            return !FLAT_BLOCK_COMMENT_DIALECTS.contains(this);
         }
     }
 

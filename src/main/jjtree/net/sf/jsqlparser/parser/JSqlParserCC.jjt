@@ -3918,17 +3918,18 @@ TOKEN_MGR_DECLS : {
 
     /**
      * Consumes the body of a block comment after the opening delimiter has been matched,
-     * honouring nesting, up to and including the outermost closing delimiter. Then backs
-     * up 2 characters so the MULTI_LINE_COMMENT rule matches the closing delimiter and
-     * terminates the MORE chain.
+     * honouring nesting where the dialect nests, up to and including the outermost closing
+     * delimiter. Then backs up 2 characters so the MULTI_LINE_COMMENT rule matches the
+     * closing delimiter and terminates the MORE chain.
      */
     void consumeBlockCommentBody() {
+        boolean nested = isNestedBlockCommentDialect();
         int nesting = 1;
         char prev = 0;
         try {
             while (nesting > 0) {
                 char c = input_stream.readChar();
-                if (prev == '/' && c == '*') {
+                if (nested && prev == '/' && c == '*') {
                     nesting++;
                     prev = 0;
                 } else if (prev == '*' && c == '/') {
@@ -3943,6 +3944,18 @@ TOKEN_MGR_DECLS : {
             // Unterminated comment: leave the stream at EOF and let the token
             // manager raise the lexical error from IN_BLOCK_COMMENT.
         }
+    }
+
+    // Without a dialect block comments nest as in the SQL standard. A dialect whose server ends
+    // the comment at the first closing delimiter must not hide the SQL that follows it.
+    private boolean isNestedBlockCommentDialect() {
+        Object dialect = configuration.getValue(Feature.dialect);
+        for (AbstractJSqlParser.Dialect candidate : AbstractJSqlParser.Dialect.values()) {
+            if (candidate.name().equals(dialect)) {
+                return candidate.isNestedBlockComments();
+            }
+        }
+        return true;
     }
 }
 
