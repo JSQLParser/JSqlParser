@@ -1209,7 +1209,7 @@ The features
       - ``SELECT``, ``DELETE .. RETURNING``, ``SHOW``, ``DESCRIBE``, ``EXPLAIN``
     * - ``MODIFIES_DATA``
       - rows are written or destroyed
-      - ``INSERT``, ``UPDATE``, ``DELETE``, ``MERGE``, ``UPSERT``, ``TRUNCATE``, ``DROP``
+      - ``INSERT``, ``UPDATE``, ``DELETE``, ``MERGE``, ``UPSERT``, ``TRUNCATE``, ``DROP``, ``ALTER TABLE .. TRUNCATE PARTITION``
     * - ``MODIFIES_SCHEMA``
       - the catalogue changes
       - ``CREATE``, ``ALTER``, ``DROP``, ``TRUNCATE``, ``GRANT``, ``COMMENT``

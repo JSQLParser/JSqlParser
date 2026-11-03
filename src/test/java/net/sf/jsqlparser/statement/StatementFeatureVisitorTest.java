@@ -255,6 +255,45 @@ class StatementFeatureVisitorTest {
         }
     }
 
+    /**
+     * The ALTER TABLE actions that delete, swap or replace rows are destructive DDL in the same
+     * sense: {@code TRUNCATE PARTITION ALL} empties a partitioned table just like TRUNCATE.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t TRUNCATE PARTITION ALL",
+            "ALTER TABLE t TRUNCATE PARTITION p0", "ALTER TABLE t DROP PARTITION p0, p1",
+            "ALTER TABLE t ADD COLUMN c INT, DROP PARTITION p0",
+            "ALTER TABLE t EXCHANGE PARTITION p0 WITH TABLE u",
+            "ALTER TABLE t DISCARD TABLESPACE", "ALTER TABLE t DISCARD PARTITION p0 TABLESPACE",
+            "ALTER TABLE t IMPORT TABLESPACE", "ALTER TABLE t IMPORT PARTITION p0 TABLESPACE"})
+    void destructiveAlterActionsAlsoModifyData(String sql) throws JSQLParserException {
+        StatementFeatures f = analyse(sql);
+        assertThat(f.modifiesSchema()).isTrue();
+        assertThat(f.modifiesData()).isTrue();
+        assertThat(f.returnsResultSet()).isFalse();
+    }
+
+    /**
+     * An ALTER TABLE action the grammar does not model, such as ClickHouse's DELETE and UPDATE
+     * mutations, is kept as raw text, so a write cannot be excluded.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t DELETE WHERE id > 0",
+            "ALTER TABLE t UPDATE c = 1 WHERE id > 0"})
+    void unmodelledAlterActionMayModifyData(String sql) throws JSQLParserException {
+        StatementFeatures f = analyse(sql);
+        assertThat(f.modifiesSchema()).isTrue();
+        assertThat(f.mayModifyData()).isTrue();
+        assertThat(f.getUnresolvedReferences()).containsExactly("unsupported");
+    }
+
+    @Test
+    void repairPartitionMayModifyDataLikeRepairTable() throws JSQLParserException {
+        StatementFeatures f = analyse("ALTER TABLE t REPAIR PARTITION p0");
+        assertThat(f.modifiesData()).isFalse();
+        assertThat(f.mayModifyData()).isTrue();
+    }
+
     // ---- the cases a flag union gets wrong --------------------------------------------------
 
     @Test
