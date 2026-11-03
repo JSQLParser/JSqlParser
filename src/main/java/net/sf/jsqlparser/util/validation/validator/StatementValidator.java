@@ -125,7 +125,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
@@ -143,6 +145,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
@@ -820,6 +823,23 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(LockStatement lock, S context) {
         validateFeature(Feature.lock);
+        for (LockStatement.Target target : lock.getTargets()) {
+            Table table = target.getTable();
+            validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
+                    ValidationUtil.getAlias(table.getAlias()));
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(UnlockStatement unlock, S context) {
+        validateFeature(Feature.unlockTables);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(BackupLockStatement backupLock, S context) {
+        validateFeature(Feature.backupLock);
         return null;
     }
 

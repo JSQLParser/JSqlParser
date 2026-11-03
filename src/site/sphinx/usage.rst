@@ -2557,6 +2557,43 @@ lists or the index. Validators report the ``analyze``, ``vacuum``, ``cluster`` a
 capabilities now enable ``analyze`` as well. Feature analysis reports ``MODIFIES_SCHEMA`` and
 ``READS_DATA`` for VACUUM and CLUSTER, as for ANALYZE, and ``MODIFIES_SESSION`` for
 CHECKPOINT, a server operation like ``ALTER SYSTEM CHECKPOINT``.
+MySQL table and backup locks
+----------------------------
+
+MySQL and MariaDB `LOCK TABLES <https://dev.mysql.com/doc/refman/8.4/en/lock-tables.html>`_
+parses to the ``LockStatement`` of PostgreSQL and Oracle ``LOCK TABLE``. Each entry of
+``getTargets()`` keeps its table, the alias as ``getTable().getAlias()``, and
+``getLockType()``: ``READ``, ``READ_LOCAL``, ``WRITE``, ``LOW_PRIORITY_WRITE`` or MariaDB's
+``WRITE_CONCURRENT``. MySQL 8.4 has only ``READ [LOCAL]`` and ``WRITE``;
+``LOW_PRIORITY WRITE`` is accepted because `MySQL 8.0
+<https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html>`_ (deprecated, without effect)
+and MariaDB accept it. The lock type is null for a PostgreSQL or Oracle target, and
+``isTablesKeyword()`` records the ``TABLES`` spelling. MariaDB's trailing ``WAIT n`` and
+``NOWAIT`` use ``getWaitSeconds()`` and ``isNoWait()``, like PostgreSQL and Oracle.
+``UNLOCK TABLE`` and ``UNLOCK TABLES`` parse to ``UnlockStatement``, and
+`LOCK INSTANCE FOR BACKUP and UNLOCK INSTANCE
+<https://dev.mysql.com/doc/refman/8.4/en/lock-instance-for-backup.html>`_ to
+``BackupLockStatement``, whose ``getAction()`` is ``LOCK`` or ``UNLOCK``.
+
+.. code-block:: java
+
+    LockStatement lock = (LockStatement) CCJSqlParserUtil.parse(
+        "LOCK TABLES t AS a READ LOCAL, u WRITE");
+    lock.getTargets().get(0).getTable().getAlias().getName();   // a
+    lock.getTargets().get(0).getLockType();                    // READ_LOCAL
+
+The MySQL and MariaDB dialects read these forms, and so does the parser without a dialect:
+an alias or a lock type after the first table name tells MySQL's form from PostgreSQL's
+``LOCK [TABLE] name``, so ``LOCK tables NOWAIT`` still locks a table named ``tables``.
+``WRITE CONCURRENT``, ``WAIT`` and ``NOWAIT`` after a MySQL target list require
+``Dialect.MARIADB``, and ``Dialect.MARIADB`` rejects the backup lock statements, which
+MariaDB does not have. PostgreSQL and the other dialects keep rejecting the MySQL forms.
+``UNLOCK``, ``INSTANCE`` and ``BACKUP`` remain ordinary identifiers.
+
+Table visitors report the locked tables but not their aliases. Validators report the
+``lock``, ``unlockTables`` and ``backupLock`` features; the MySQL capabilities enable all
+three, MariaDB the first two, and PostgreSQL and Oracle ``lock``. Feature analysis reports
+``MODIFIES_TRANSACTION``.
 
 MySQL account management statements
 -----------------------------------

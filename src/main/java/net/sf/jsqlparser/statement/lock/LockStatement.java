@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.lock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -19,14 +20,17 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
  * Statement to lock one or more tables.<br>
- * Example:<br>
+ * Examples:<br>
  * LOCK TABLE t IN EXCLUSIVE MODE<br>
+ * LOCK TABLES t READ, u AS a WRITE (MySQL and MariaDB, where each target has a
+ * {@link TableLockType})<br>
  * <br>
  */
 public class LockStatement extends ASTNodeAccessImpl implements Statement {
 
     private final List<Target> targets = new ArrayList<>();
     private boolean useTableKeyword = true;
+    private boolean tablesKeyword;
     private LockMode lockMode;
     private boolean noWait;
     private Long waitSeconds;
@@ -35,9 +39,42 @@ public class LockStatement extends ASTNodeAccessImpl implements Statement {
         DEFAULT, ONLY, INCLUDING_DESCENDANTS
     }
 
+    /**
+     * A locked table. A MySQL or MariaDB target also has a lock type and may have an alias, which
+     * is the {@link Table#getAlias() alias of its table}.
+     */
     public static class Target extends net.sf.jsqlparser.schema.TableReference {
+        private TableLockType lockType;
+
         public Target(Table table) {
             super(table);
+        }
+
+        /** Returns the MySQL or MariaDB lock type, or null for a PostgreSQL or Oracle target. */
+        public TableLockType getLockType() {
+            return lockType;
+        }
+
+        public void setLockType(TableLockType lockType) {
+            this.lockType = lockType;
+        }
+
+        public Target withLockType(TableLockType lockType) {
+            setLockType(lockType);
+            return this;
+        }
+
+        @Override
+        public StringBuilder appendTo(StringBuilder builder) {
+            super.appendTo(builder);
+            Alias alias = getTable().getAlias();
+            if (alias != null) {
+                builder.append(alias);
+            }
+            if (lockType != null) {
+                builder.append(' ').append(lockType.getValue());
+            }
+            return builder;
         }
 
         public Scope getScope() {
@@ -100,8 +137,25 @@ public class LockStatement extends ASTNodeAccessImpl implements Statement {
         return useTableKeyword;
     }
 
+    /** Setting false also clears {@link #isTablesKeyword()}. */
     public void setUseTableKeyword(boolean useTableKeyword) {
         this.useTableKeyword = useTableKeyword;
+        if (!useTableKeyword) {
+            tablesKeyword = false;
+        }
+    }
+
+    /** Whether the statement is spelled LOCK TABLES, as MySQL and MariaDB allow. */
+    public boolean isTablesKeyword() {
+        return tablesKeyword;
+    }
+
+    /** Setting true also sets {@link #isUseTableKeyword()}. */
+    public void setTablesKeyword(boolean tablesKeyword) {
+        this.tablesKeyword = tablesKeyword;
+        if (tablesKeyword) {
+            useTableKeyword = true;
+        }
     }
 
     /** Returns null when IN ... MODE was omitted. */
@@ -150,12 +204,17 @@ public class LockStatement extends ASTNodeAccessImpl implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append(useTableKeyword ? "LOCK TABLE " : "LOCK ");
+        builder.append("LOCK ");
+        if (tablesKeyword) {
+            builder.append("TABLES ");
+        } else if (useTableKeyword) {
+            builder.append("TABLE ");
+        }
         for (int i = 0; i < targets.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
             }
-            builder.append(targets.get(i));
+            targets.get(i).appendTo(builder);
         }
         if (lockMode != null) {
             builder.append(" IN ").append(lockMode.getValue()).append(" MODE");
