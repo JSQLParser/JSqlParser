@@ -97,6 +97,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -745,6 +748,30 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
                 analysis.possible(StmtFeature.MODIFIES_DATA);
             }
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        // reclaims storage and, with ANALYZE, rewrites statistics; FULL rewrites the tables
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        // rewrites the table in index order
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        // a server operation like ALTER SYSTEM CHECKPOINT; no data or schema changes
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
         return null;
     }
 

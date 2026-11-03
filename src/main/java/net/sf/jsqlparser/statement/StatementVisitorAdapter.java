@@ -94,6 +94,9 @@ import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.InsertConflictAction;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
@@ -705,6 +708,21 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(TableMaintenanceStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(VacuumStatement vacuum, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ClusterStatement cluster, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CheckpointStatement checkpoint, S context) {
         return null;
     }
 

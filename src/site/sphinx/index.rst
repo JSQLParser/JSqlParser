@@ -160,6 +160,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``DROP OWNED`` · ``REASSIGN OWNED``
     * - **MySQL table maintenance**
       - ``ANALYZE`` · ``CHECK`` · ``CHECKSUM`` · ``OPTIMIZE`` · ``REPAIR TABLE``
+    * - **PostgreSQL maintenance**
+      - ``VACUUM`` · ``ANALYZE`` · ``CLUSTER`` · ``CHECKPOINT``
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

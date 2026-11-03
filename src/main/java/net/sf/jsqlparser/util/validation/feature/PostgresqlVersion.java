@@ -166,6 +166,12 @@ public enum PostgresqlVersion implements Version {
                     Feature.deleteReturningExpressionList, // https://www.postgresql.org/docs/current/sql-truncate.html
                     Feature.truncate,
 
+                    // https://www.postgresql.org/docs/current/sql-analyze.html
+                    Feature.analyze, // https://www.postgresql.org/docs/current/sql-vacuum.html
+                    Feature.vacuum, // https://www.postgresql.org/docs/current/sql-cluster.html
+                    Feature.cluster, // https://www.postgresql.org/docs/current/sql-checkpoint.html
+                    Feature.checkpoint,
+
                     // https://www.postgresql.org/docs/current/sql-call.html
                     Feature.execute, Feature.executeCall,
 

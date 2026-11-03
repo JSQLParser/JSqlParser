@@ -91,6 +91,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -369,6 +372,30 @@ public interface StatementVisitor<T> {
 
     default void visit(TableMaintenanceStatement statement) {
         this.visit(statement, null);
+    }
+
+    default <S> T visit(VacuumStatement vacuum, S context) {
+        return null;
+    }
+
+    default void visit(VacuumStatement vacuum) {
+        this.visit(vacuum, null);
+    }
+
+    default <S> T visit(ClusterStatement cluster, S context) {
+        return null;
+    }
+
+    default void visit(ClusterStatement cluster) {
+        this.visit(cluster, null);
+    }
+
+    default <S> T visit(CheckpointStatement checkpoint, S context) {
+        return null;
+    }
+
+    default void visit(CheckpointStatement checkpoint) {
+        this.visit(checkpoint, null);
     }
 
     default void visit(Execute execute) {

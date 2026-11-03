@@ -124,6 +124,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -640,6 +643,24 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        getValidator(VacuumValidator.class).validate(vacuum);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        getValidator(ClusterValidator.class).validate(cluster);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        validateFeature(Feature.checkpoint);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(SavepointStatement savepointStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -990,6 +1011,21 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public void visit(TableMaintenanceStatement statement) {
         visit(statement, null);
+    }
+
+    @Override
+    public void visit(VacuumStatement vacuum) {
+        visit(vacuum, null);
+    }
+
+    @Override
+    public void visit(ClusterStatement cluster) {
+        visit(cluster, null);
+    }
+
+    @Override
+    public void visit(CheckpointStatement checkpoint) {
+        visit(checkpoint, null);
     }
 
     public void visit(SavepointStatement savepointStatement) {

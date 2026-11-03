@@ -81,7 +81,7 @@ public enum MariaDbVersion implements Version {
                     Feature.truncate,
 
                     // https://mariadb.com/kb/en/table-statements/
-                    Feature.tableMaintenance,
+                    Feature.analyze, Feature.tableMaintenance,
 
                     // https://mariadb.com/kb/en/account-management-sql-statements/
                     Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
