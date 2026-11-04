@@ -25128,7 +25128,8 @@ List<String> captureRest() {
     int l = tokens.size();
     if( tok.kind == EOF || tok.kind == ST_SEMICOLON ) {
       break;
-    } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
+    } else if ( l>0 && !joinsNumberPart(tok) && joinsDot(tok, l) ) {
+        // collapse a qualified name such as a . b into the single a.b
         tokens.set(l-1, tokens.get(l-1) + tok.image);
     } else {
         tokens.add(tok.image);
@@ -25136,6 +25137,62 @@ List<String> captureRest() {
     tok = getNextToken();
   }
   return tokens;
+}
+
+/**
+ * Whether a dot which is about to be consumed joins the previous token to the
+ * one behind it.
+ *
+ * @param tok  the token which is about to be consumed
+ * @param size  the number of tokens captured so far
+ * @return whether the dot belongs to the previous token
+ */
+JAVACODE
+boolean joinsDot(Token tok, int size) {
+  if (".".equals(tok.image)) {
+    // the dot closes the previous token, unless it opens a number as in a . 5
+    return !numberFollows();
+  }
+  return size > 0 && tok.kind != S_DOUBLE && tok.kind != S_LONG
+      && numberPrecedes();
+}
+
+/**
+ * Whether the token behind the dot which is about to be consumed is a number,
+ * which makes the dot part of the number instead of a qualifier.
+ *
+ * @return whether a number follows the dot
+ */
+JAVACODE
+boolean numberFollows() {
+  Token next = getToken(2);
+  return next != null && (next.kind == S_LONG || next.kind == S_DOUBLE);
+}
+
+/**
+ * Whether the previous token ends with a dot, which makes the token about to be
+ * consumed the part of a qualified name after that dot.
+ *
+ * @return whether a dot precedes the token
+ */
+JAVACODE
+boolean numberPrecedes() {
+  Token previous = getToken(0);
+  return previous != null && previous.image.endsWith(".");
+}
+
+/**
+ * Whether a token has to stay separate because a {@code .} in it starts a
+ * number. The lexer reads {@code .5} and {@code 5.} as single doubles, so
+ * gluing such a token to its neighbour changes the token stream and the
+ * captured statement would no longer parse back.
+ *
+ * @param tok  the token which is about to be consumed
+ * @return whether the token is a number
+ */
+JAVACODE
+boolean joinsNumberPart(Token tok) {
+  return tok.kind == S_DOUBLE || tok.kind == S_LONG;
 }
 
 /**

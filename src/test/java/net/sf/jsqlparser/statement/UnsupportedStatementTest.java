@@ -127,6 +127,47 @@ public class UnsupportedStatementTest {
     }
 
     @Test
+    void testCaptureRestKeepsADotInFrontOfANumber() throws JSQLParserException {
+        // a dot which starts a number is not a qualifier, so it must not be
+        // glued to the token in front of it: the captured tokens have to read
+        // back the same way once they are rendered and parsed again
+        for (String sqlStr : Arrays.asList("REPLACE( . 5",
+                "REPLACE( INTO t VALUES (1, . 5)",
+                "REPLACE( . . 5)",
+                "REPLACE( 5 . 5)",
+                "REPLACE( SELECT . 5",
+                "REPLACE( x . 1 . 2")) {
+            Statement statement = CCJSqlParserUtil.parse(sqlStr,
+                    parser -> parser.withUnsupportedStatements(true));
+            assertInstanceOf(UnsupportedStatement.class, statement);
+
+            assertEquals(sqlStr.replaceAll("\\s+", ""), statement.toString().replaceAll("\\s+", ""));
+
+            String rendered = statement.toString();
+            assertEquals(rendered, CCJSqlParserUtil.parse(rendered,
+                    parser -> parser.withUnsupportedStatements(true)).toString());
+        }
+    }
+
+    @Test
+    void testCaptureRestStillCollapsesAQualifiedName() throws JSQLParserException {
+        // the dot of a qualified name is a qualifier and is still collapsed
+        Statement statement = CCJSqlParserUtil.parse("REPLACE( t . a . b",
+                parser -> parser.withUnsupportedStatements(true));
+        assertInstanceOf(UnsupportedStatement.class, statement);
+
+        assertEquals("REPLACE ( t.a.b", statement.toString());
+        assertEquals(statement.toString(), CCJSqlParserUtil.parse(statement.toString(),
+                parser -> parser.withUnsupportedStatements(true)).toString());
+
+        // and a quoted name still collapses to the single identifier
+        Statements statements = CCJSqlParserUtil.parseStatements("Select 1; ALTER TABLE \"inter\".\"inter_user_rec\" \n"
+                + "  OWNER TO \"postgres\"; select 2; select 3;",
+                parser -> parser.withErrorRecovery(false));
+        Assertions.assertEquals(4, statements.size());
+    }
+
+    @Test
     void testFormerlyUnsupportedAlterIndex() throws JSQLParserException {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
