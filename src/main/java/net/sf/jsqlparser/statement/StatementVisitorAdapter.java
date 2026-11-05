@@ -137,6 +137,9 @@ import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
@@ -607,6 +610,24 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DeclareCursorStatement declareCursor, S context) {
+        if (declareCursor.getQuery() != null) {
+            declareCursor.getQuery().accept(selectVisitor, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FetchCursorStatement fetchCursor, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CloseCursorStatement closeCursor, S context) {
         return null;
     }
 

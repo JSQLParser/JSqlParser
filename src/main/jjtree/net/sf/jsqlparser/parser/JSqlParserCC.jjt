@@ -107,6 +107,11 @@ import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
 import net.sf.jsqlparser.statement.admin.*;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.CursorOption;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchDirection;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CancellationException;
@@ -194,6 +199,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isKillAhead();
             case K_HANDLER:
                 return isHandlerAhead();
+            case K_FETCH: case K_MOVE: case K_CLOSE:
+                return isCursorStatementAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -3092,6 +3099,163 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "*".equals(token.image) : token.kind == K_USING || token.kind == K_ON;
     }
 
+    /** The direction words of FETCH and MOVE that the grammar has no token for. */
+    private static final Set<String> FETCH_DIRECTION_WORDS = new HashSet<String>(Arrays.asList(
+            "ABSOLUTE", "RELATIVE", "FORWARD", "BACKWARD"));
+
+    /** The cursor options of DECLARE that the grammar has no token for. */
+    private static final Set<String> CURSOR_OPTION_WORDS = new HashSet<String>(Arrays.asList(
+            "SCROLL", "ASENSITIVE", "INSENSITIVE"));
+
+    /**
+     * Whether a PostgreSQL FETCH, MOVE or CLOSE statement starts here. The PostgreSQL dialect
+     * always reads these words as cursor statements, and other dialects never do. Without a
+     * dialect the whole statement must take the PostgreSQL form, so that other products' variants
+     * such as FETCH NEXT FROM c INTO @x or CLOSE GLOBAL c stay unsupported statements.
+     */
+    private boolean isCursorStatementAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_FETCH && kind != K_MOVE && kind != K_CLOSE) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect != null) {
+            return Dialect.POSTGRESQL.name().equals(dialect);
+        }
+        int offset = 2;
+        if (kind == K_CLOSE && getToken(offset).kind == K_ALL) {
+            return isCursorStatementEnd(getToken(offset + 1));
+        }
+        if (kind != K_CLOSE) {
+            offset = skipFetchDirection(offset);
+            if (offset < 0) {
+                return false;
+            }
+            if (getToken(offset).kind == K_FROM || getToken(offset).kind == K_IN) {
+                offset++;
+            }
+        }
+        return isCursorNameToken(getToken(offset)) && isCursorStatementEnd(getToken(offset + 1));
+    }
+
+    private static boolean isCursorStatementEnd(Token token) {
+        return token.kind == EOF || token.kind == ST_SEMICOLON;
+    }
+
+    /** Whether the token can name a cursor: PostgreSQL takes any column identifier (ColId). */
+    private static boolean isCursorNameToken(Token token) {
+        if (!isIdentifierishNameToken(token)) {
+            return false;
+        }
+        String word = token.image.toUpperCase(Locale.ROOT);
+        return !POSTGRESQL_RESERVED_KEYWORDS.contains(word)
+                && !POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS.contains(word);
+    }
+
+    /**
+     * Whether a FETCH or MOVE direction starts at the offset. As in PostgreSQL's grammar, a
+     * direction word right before the end of the statement is the cursor name, as in FETCH next.
+     */
+    private boolean isFetchDirectionAt(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_ALL || isFetchCountAt(offset)) {
+            return true;
+        }
+        boolean word = token.kind == K_NEXT || token.kind == K_PRIOR || token.kind == K_FIRST
+                || token.kind == K_LAST || token.kind == S_IDENTIFIER
+                        && FETCH_DIRECTION_WORDS.contains(token.image.toUpperCase(Locale.ROOT));
+        return word && !isCursorStatementEnd(getToken(offset + 1));
+    }
+
+    /** Whether a FETCH or MOVE count, an integer with an optional sign, starts at the offset. */
+    private boolean isFetchCountAt(int offset) {
+        Token token = getToken(offset);
+        return token.kind == S_LONG || ("+".equals(token.image) || "-".equals(token.image))
+                && getToken(offset + 1).kind == S_LONG;
+    }
+
+    private int skipFetchCount(int offset) {
+        return getToken(offset).kind == S_LONG ? offset + 1 : offset + 2;
+    }
+
+    /**
+     * The offset after the FETCH or MOVE direction at the offset, the offset itself without a
+     * direction, or -1 when ABSOLUTE or RELATIVE lacks its count.
+     */
+    private int skipFetchDirection(int offset) {
+        if (!isFetchDirectionAt(offset)) {
+            return offset;
+        }
+        if (getToken(offset).kind == K_ALL) {
+            return offset + 1;
+        }
+        if (isFetchCountAt(offset)) {
+            return skipFetchCount(offset);
+        }
+        String word = getToken(offset).image.toUpperCase(Locale.ROOT);
+        int next = offset + 1;
+        if ("ABSOLUTE".equals(word) || "RELATIVE".equals(word)) {
+            return isFetchCountAt(next) ? skipFetchCount(next) : -1;
+        }
+        if ("FORWARD".equals(word) || "BACKWARD".equals(word)) {
+            if (getToken(next).kind == K_ALL) {
+                return next + 1;
+            }
+            if (isFetchCountAt(next)) {
+                return skipFetchCount(next);
+            }
+        }
+        return next;
+    }
+
+    /**
+     * A FETCH or MOVE count. PostgreSQL's grammar takes a 32-bit integer; a larger one is a
+     * numeric constant there and a syntax error.
+     */
+    private Long fetchCount(Token sign, Token digits) throws ParseException {
+        String value = digits.image.replaceFirst("^0+(?=.)", "");
+        requireDdlSyntax(value.length() < 10 || value.length() == 10 && value.compareTo("2147483647") <= 0,
+                "A FETCH or MOVE count must be a 32-bit integer: " + digits.image);
+        long count = Long.parseLong(value);
+        return sign != null && "-".equals(sign.image) ? -count : count;
+    }
+
+    /**
+     * Whether a PostgreSQL DECLARE ... CURSOR starts here rather than the SQL Server DECLARE of a
+     * variable. The PostgreSQL dialect reads every DECLARE of a name as a cursor; without a dialect
+     * the name, the cursor options and CURSOR must follow. Other dialects keep their readings.
+     */
+    private boolean isDeclareCursorAhead() {
+        if (getToken(1).kind != K_DECLARE || getToken(2).kind == S_AT_IDENTIFIER) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect != null) {
+            return Dialect.POSTGRESQL.name().equals(dialect);
+        }
+        int offset = 3;
+        while (isCursorOptionAt(offset)) {
+            offset += getToken(offset).kind == K_NO ? 2 : 1;
+        }
+        Token cursor = getToken(offset);
+        return isCursorNameToken(getToken(2)) && cursor.kind == S_IDENTIFIER
+                && "CURSOR".equalsIgnoreCase(cursor.image);
+    }
+
+    /** Whether a DECLARE cursor option starts at the offset: BINARY, [NO] SCROLL or a sensitivity. */
+    private boolean isCursorOptionAt(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_BINARY) {
+            return true;
+        }
+        if (token.kind == K_NO) {
+            Token next = getToken(offset + 1);
+            return next.kind == S_IDENTIFIER && "SCROLL".equalsIgnoreCase(next.image);
+        }
+        return token.kind == S_IDENTIFIER
+                && CURSOR_OPTION_WORDS.contains(token.image.toUpperCase(Locale.ROOT));
+    }
+
     /**
      * Whether VERBOSE is the PostgreSQL option of ANALYZE. Without a dialect a table name must
      * follow, so ANALYZE verbose still analyzes a table named verbose; other dialects keep that
@@ -5315,6 +5479,7 @@ String NonReservedWordPart2() :
       | tk=<K_MODE: "MODE">
       | tk=<K_MODULUS: "MODULUS">
       | tk=<K_MODIFY: "MODIFY">
+      | tk=<K_MOVE: "MOVE">
       | tk=<K_MOVEMENT: "MOVEMENT">
       | tk=<K_NAMES:"NAMES">
       | tk=<K_NAME:"NAME">
@@ -6214,6 +6379,11 @@ Statement SingleStatement() :
             stm = Describe()
             |
             stm = Explain()
+            |
+            LOOKAHEAD({ isDeclareCursorAhead() }) stm = DeclareCursorStatement()
+            |
+            LOOKAHEAD({ isCursorStatementAhead() })
+            ( stm = FetchCursorStatement() | stm = CloseCursorStatement() )
             |
             stm = Declare()
             |
@@ -7612,6 +7782,134 @@ DeclareStatement Declare(): {
     {
        return stmt;
     }
+}
+
+// https://www.postgresql.org/docs/18/sql-declare.html
+DeclareCursorStatement DeclareCursorStatement():
+{
+    DeclareCursorStatement statement = new DeclareCursorStatement();
+    String name;
+    CursorOption option;
+    Select query;
+}
+{
+    <K_DECLARE> name=CursorName() { statement.setCursorName(name); }
+    ( LOOKAHEAD({ isCursorOptionAt(1) }) option=CursorOption() { statement.getOptions().add(option); } )*
+    ContextualKeyword("CURSOR")
+    [
+        <K_WITH> ContextualKeyword("HOLD")
+        { statement.setHoldability(DeclareCursorStatement.Holdability.WITH_HOLD); }
+        |
+        <K_WITHOUT> ContextualKeyword("HOLD")
+        { statement.setHoldability(DeclareCursorStatement.Holdability.WITHOUT_HOLD); }
+    ]
+    <K_FOR> query=Select() { statement.setQuery(query); }
+    { return statement; }
+}
+
+/** Only used where isCursorOptionAt(1) holds, which limits the identifier to the option words. */
+CursorOption CursorOption():
+{ Token token; CursorOption option; }
+{
+    (
+        <K_BINARY> { option = CursorOption.BINARY; }
+        |
+        <K_NO> ContextualKeyword("SCROLL") { option = CursorOption.NO_SCROLL; }
+        |
+        token=<S_IDENTIFIER> { option = CursorOption.valueOf(token.image.toUpperCase(Locale.ROOT)); }
+    )
+    { return option; }
+}
+
+/** A cursor name: any name but the words PostgreSQL reserves or keeps for types and functions. */
+String CursorName():
+{ Token token = getToken(1); String name; }
+{
+    name=RelObjectName()
+    {
+        requireDdlSyntax(isCursorNameToken(token), "Invalid cursor name: " + token.image);
+        return name;
+    }
+}
+
+// https://www.postgresql.org/docs/18/sql-fetch.html
+// https://www.postgresql.org/docs/18/sql-move.html
+FetchCursorStatement FetchCursorStatement():
+{
+    FetchCursorStatement statement = new FetchCursorStatement();
+    String name;
+}
+{
+    ( <K_FETCH> | <K_MOVE> { statement.setKind(FetchCursorStatement.Kind.MOVE); } )
+    [ LOOKAHEAD({ isFetchDirectionAt(1) }) FetchCursorDirection(statement) ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_FROM || getToken(1).kind == K_IN })
+        (
+            <K_FROM> { statement.setFromKeyword(FetchCursorStatement.FromKeyword.FROM); }
+            |
+            <K_IN> { statement.setFromKeyword(FetchCursorStatement.FromKeyword.IN); }
+        )
+    ]
+    name=CursorName() { statement.setCursorName(name); }
+    { return statement; }
+}
+
+/** Only used where isFetchDirectionAt(1) holds. */
+void FetchCursorDirection(FetchCursorStatement statement):
+{ Token token; Long count; }
+{
+    (
+        <K_NEXT> { statement.setDirection(FetchDirection.NEXT); }
+        |
+        <K_PRIOR> { statement.setDirection(FetchDirection.PRIOR); }
+        |
+        <K_FIRST> { statement.setDirection(FetchDirection.FIRST); }
+        |
+        <K_LAST> { statement.setDirection(FetchDirection.LAST); }
+        |
+        <K_ALL> { statement.setAll(true); }
+        |
+        count=FetchCount() { statement.setCount(count); }
+        |
+        // ABSOLUTE n or RELATIVE n
+        LOOKAHEAD({ isKeywordAhead("ABSOLUTE") || isKeywordAhead("RELATIVE") })
+        token=<S_IDENTIFIER> count=FetchCount()
+        {
+            statement.setDirection(FetchDirection.valueOf(token.image.toUpperCase(Locale.ROOT)));
+            statement.setCount(count);
+        }
+        |
+        // FORWARD or BACKWARD [n | ALL]
+        token=<S_IDENTIFIER>
+        { statement.setDirection(FetchDirection.valueOf(token.image.toUpperCase(Locale.ROOT))); }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_ALL || isFetchCountAt(1) })
+            ( <K_ALL> { statement.setAll(true); } | count=FetchCount() { statement.setCount(count); } )
+        ]
+    )
+}
+
+Long FetchCount():
+{ Token sign = null; Token digits; }
+{
+    [ sign="+" | sign="-" ] digits=<S_LONG>
+    { return fetchCount(sign, digits); }
+}
+
+// https://www.postgresql.org/docs/18/sql-close.html
+CloseCursorStatement CloseCursorStatement():
+{
+    CloseCursorStatement statement = new CloseCursorStatement();
+    String name;
+}
+{
+    <K_CLOSE>
+    (
+        LOOKAHEAD({ getToken(1).kind == K_ALL }) <K_ALL>
+        |
+        name=CursorName() { statement.setCursorName(name); }
+    )
+    { return statement; }
 }
 
 SessionStatement SessionStatement():

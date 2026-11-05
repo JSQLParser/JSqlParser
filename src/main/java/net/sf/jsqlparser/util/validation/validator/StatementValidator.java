@@ -174,6 +174,9 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
@@ -966,6 +969,27 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(BackupLockStatement backupLock, S context) {
         validateFeature(Feature.backupLock);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        validateFeature(Feature.declareCursor);
+        if (declareCursor.getQuery() != null) {
+            visit(declareCursor.getQuery(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        validateFeature(Feature.fetchCursor);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
+        validateFeature(Feature.closeCursor);
         return null;
     }
 

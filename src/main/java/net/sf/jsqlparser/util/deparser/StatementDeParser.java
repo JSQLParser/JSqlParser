@@ -166,6 +166,9 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
@@ -883,6 +886,22 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(BackupLockStatement backupLock, S context) {
         return backupLock.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(DeclareCursorStatement declareCursor, S context) {
+        return declareCursor.appendTo(builder,
+                query -> query.accept((SelectVisitor<?>) selectDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(FetchCursorStatement fetchCursor, S context) {
+        return fetchCursor.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CloseCursorStatement closeCursor, S context) {
+        return closeCursor.appendTo(builder);
     }
 
     @Override

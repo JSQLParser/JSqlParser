@@ -85,6 +85,9 @@ import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
@@ -1081,6 +1084,33 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             analysis.possible(StmtFeature.MODIFIES_SCHEMA);
         }
         return null;
+    }
+
+    @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        // opens a cursor of the session over its query, which reads as the cursor is fetched
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        if (declareCursor.getQuery() != null) {
+            declareCursor.getQuery().accept(analysis.selects, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        // moves the cursor and runs its query that far; only FETCH returns the rows
+        if (analysis.claimTopLevel() && fetchCursor.getKind() == FetchCursorStatement.Kind.FETCH) {
+            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+        }
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        analysis.possible(StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
+        return sessionOnly();
     }
 
     @Override
