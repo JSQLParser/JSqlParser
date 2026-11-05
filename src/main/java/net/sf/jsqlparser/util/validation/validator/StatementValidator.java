@@ -11,7 +11,9 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -173,9 +175,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateTrigger createTrigger, S context) {
-        if (createTrigger.getRoutine() != null) {
-            validateFeature(Feature.createTrigger);
-        }
+        validateFeature(Feature.createTrigger);
         createTrigger.visit(this::validateOptionalFromItem,
                 this::validateOptionalExpression);
         if (createTrigger.getBody() != null) {
@@ -261,6 +261,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(SessionStatement sessionStatement, S context) {
+        validateFeature(Feature.session);
         return null;
     }
 
@@ -323,6 +324,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(AlterEvent alterEvent, S context) {
+        validateFeature(Feature.alterEvent);
         if (alterEvent.getBody() != null) {
             alterEvent.getBody().accept(this, context);
         }
@@ -534,6 +536,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateUser createUser, S context) {
+        validateFeature(Feature.createUser);
         return null;
     }
 
@@ -570,6 +573,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateEvent createEvent, S context) {
+        validateFeature(Feature.createEvent);
         if (createEvent.getBody() != null) {
             createEvent.getBody().accept(this, context);
         }
@@ -641,12 +645,13 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(SavepointStatement savepointStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.savepoint);
         return null;
     }
 
     @Override
     public <S> Void visit(RollbackStatement rollbackStatement, S context) {
+        validateFeature(Feature.rollback);
         if (rollbackStatement.getChain() != null) {
             validateFeature(Feature.transactionChain);
         }
@@ -655,7 +660,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(AlterSession alterSession, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.alterSession);
         return null;
     }
 
@@ -669,127 +674,131 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     public <S> Void visit(RenameTableStatement renameTableStatement, S context) {
-        // TODO: not yet implemented
+        // the same operation as ALTER TABLE ... RENAME TO
+        validateFeature(Feature.alterTable);
         return null;
     }
 
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.pragma);
         return null;
     }
 
     @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.assertStatement);
         return null;
     }
 
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(extensionStatement.getOperation() == ExtensionStatement.Operation.LOAD
+                ? Feature.loadExtension
+                : Feature.installExtension);
         return null;
     }
 
     @Override
     public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.export);
         return null;
     }
 
     @Override
     public <S> Void visit(AttachStatement attachStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.attach);
         return null;
     }
 
     @Override
     public <S> Void visit(DetachStatement detachStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.detach);
         return null;
     }
 
     @Override
     public <S> Void visit(ConnectStatement connectStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.connect);
         return null;
     }
 
     @Override
     public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.disconnect);
         return null;
     }
 
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.prepare);
         return null;
     }
 
     @Override
     public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.deallocate);
         return null;
     }
 
     @Override
     public <S> Void visit(CopyStatement copyStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.copy);
         return null;
     }
 
     @Override
     public <S> Void visit(CreateMacro createMacro, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.createMacro);
         return null;
     }
 
     @Override
     public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.createExtensionRepository);
         return null;
     }
 
     @Override
     public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.loadData);
         return null;
     }
 
     @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.purge);
         return null;
     }
 
     @Override
     public <S> Void visit(AlterSystemStatement alterSystemStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.alterSystem);
         return null;
     }
 
     @Override
     public <S> Void visit(UnsupportedStatement unsupportedStatement, S context) {
-
+        // its tokens are not modelled, so nothing inside it can be validated
+        validateFeature(Feature.allowUnsupportedStatements);
         return null;
     }
 
     @Override
     public <S> Void visit(Import imprt, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.imprt);
         return null;
     }
 
     @Override
     public <S> Void visit(Export export, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.export);
         return null;
     }
 
     @Override
     public <S> Void visit(LockStatement lock, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.lock);
         return null;
     }
 
@@ -1090,6 +1099,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
+        validateFeature(Feature.createPolicy);
         validateOptionalFromItem(createPolicy.getTable());
         validateOptionalExpression(createPolicy.getUsingExpression());
         validateOptionalExpression(createPolicy.getWithCheckExpression());
@@ -1401,7 +1411,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(AlterTablespaceMove statement, S context) {
+        validateFeature(Feature.alterTablespace);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterPolicy statement, S context) {
+        validateFeature(Feature.alterPolicy);
         validateOptionalFromItem(statement.getTable());
         if (statement.getNewName() == null) {
             statement.getOptions().visitExpressions(this::validateOptionalExpression);
@@ -1418,8 +1435,15 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateStatistics statement, S context) {
+        validateFeature(Feature.createStatistics);
         validateOptionalFromItem(statement.getTable());
         validateOptionalExpression(statement.getExpressions());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterStatistics statement, S context) {
+        validateFeature(Feature.alterStatistics);
         return null;
     }
 

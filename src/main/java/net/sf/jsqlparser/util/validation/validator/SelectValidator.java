@@ -505,7 +505,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     @Override
     public <S> Void visit(Import imprt, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.imprt);
         return null;
     }
 

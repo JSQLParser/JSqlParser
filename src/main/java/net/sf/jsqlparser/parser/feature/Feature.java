@@ -511,6 +511,13 @@ public enum Feature {
 
     executeUsing,
     /**
+     * "PREPARE" and "DEALLOCATE" of a prepared statement are allowed
+     *
+     * @see net.sf.jsqlparser.statement.PrepareStatement
+     * @see net.sf.jsqlparser.statement.DeallocateStatement
+     */
+    prepare, deallocate,
+    /**
      * SQL "REPLACE" statement is allowed
      */
     @Deprecated
@@ -521,6 +528,12 @@ public enum Feature {
      * @see Drop
      */
     drop, dropTable, dropIndex, dropView, dropSchema, dropSequence, dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
+    /**
+     * Oracle "PURGE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.PurgeStatement
+     */
+    purge,
     /**
      * PostgreSQL "REASSIGN OWNED BY ... TO ..." statement is allowed
      *
@@ -540,6 +553,13 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.alter.database.AlterDatabase
      */
     alterDatabase,
+    /**
+     * "ALTER SESSION" and "ALTER SYSTEM" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterSession
+     * @see net.sf.jsqlparser.statement.alter.AlterSystemStatement
+     */
+    alterSession, alterSystem,
     /**
      * SQL "CREATE SCHEMA" statement is allowed
      *
@@ -629,6 +649,11 @@ public enum Feature {
      */
     createType, alterType, createDomain, alterDomain, createExtension, alterExtension,
     /**
+     * PostgreSQL "CREATE POLICY", "ALTER POLICY", "CREATE STATISTICS" and "ALTER STATISTICS"
+     * statements are allowed
+     */
+    createPolicy, alterPolicy, createStatistics, alterStatistics,
+    /**
      * SQL "CREATE SYNONYM" statement is allowed
      *
      * @see CreateSynonym
@@ -638,6 +663,13 @@ public enum Feature {
      * SQL "CREATE TRIGGER" statement is allowed
      */
     createTrigger,
+    /**
+     * MySQL/MariaDB "CREATE EVENT" and "ALTER EVENT" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.event.CreateEvent
+     * @see net.sf.jsqlparser.statement.create.event.AlterEvent
+     */
+    createEvent, alterEvent,
     /**
      * PostgreSQL "CREATE EVENT TRIGGER" and "ALTER EVENT TRIGGER" statements are allowed
      *
@@ -664,8 +696,12 @@ public enum Feature {
      * @see Commit
      */
     commit,
+    /** SQL "ROLLBACK" statement is allowed */
+    rollback,
     /** START TRANSACTION and dialect-specific BEGIN transaction statements. */
     startTransaction,
+    /** SAVEPOINT statements. */
+    savepoint,
     /** RELEASE [SAVEPOINT] statements. */
     releaseSavepoint,
     /** Explicit AND [NO] CHAIN transaction completion. */
@@ -676,6 +712,12 @@ public enum Feature {
     transactionDeferrable,
     /** MySQL WITH CONSISTENT SNAPSHOT transaction characteristic. */
     transactionConsistentSnapshot,
+    /**
+     * SQL "LOCK TABLE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.lock.LockStatement
+     */
+    lock,
     /**
      * SQL "COMMENT ON" statement is allowed
      *
@@ -784,16 +826,17 @@ public enum Feature {
      */
     grant, revoke, createRole, alterRole, alterDefaultPrivileges,
     /**
-     * MySQL/MariaDB account management: "ALTER USER", "RENAME USER", "SET ROLE", "SET DEFAULT ROLE"
-     * and "SET PASSWORD"
+     * MySQL/MariaDB account management: "CREATE USER", "ALTER USER", "RENAME USER", "SET ROLE",
+     * "SET DEFAULT ROLE" and "SET PASSWORD"
      *
+     * @see net.sf.jsqlparser.statement.create.user.CreateUser
      * @see net.sf.jsqlparser.statement.alter.AlterUser
      * @see net.sf.jsqlparser.statement.alter.RenameUser
      * @see net.sf.jsqlparser.statement.SetRoleStatement
      * @see net.sf.jsqlparser.statement.SetDefaultRoleStatement
      * @see net.sf.jsqlparser.statement.SetPasswordStatement
      */
-    alterUser, renameUser, setRole, setDefaultRole, setPassword,
+    createUser, alterUser, renameUser, setRole, setDefaultRole, setPassword,
     /**
      * @see Function
      */
@@ -1041,9 +1084,37 @@ public enum Feature {
     imprt,
 
     /**
-     * "EXPORT"
+     * "EXPORT" and BigQuery "EXPORT DATA"
      */
     export,
+
+    /**
+     * PostgreSQL and DuckDB "COPY" and BigQuery "LOAD DATA" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.CopyStatement
+     * @see net.sf.jsqlparser.statement.load.LoadDataStatement
+     */
+    copy, loadData,
+
+    /**
+     * DuckDB "ATTACH", "DETACH", "CONNECT", "DISCONNECT", "PRAGMA", "INSTALL", "LOAD", "CREATE
+     * MACRO" and "CREATE EXTENSION REPOSITORY" statements are allowed
+     */
+    attach, detach, connect, disconnect, pragma, installExtension, loadExtension, createMacro, createExtensionRepository,
+
+    /**
+     * BigQuery "ASSERT" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.AssertStatement
+     */
+    assertStatement,
+
+    /**
+     * "SESSION" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.SessionStatement
+     */
+    session,
 
     /**
      * MySQL allows a ',' as a separator between key and value entries. We allow that by default,

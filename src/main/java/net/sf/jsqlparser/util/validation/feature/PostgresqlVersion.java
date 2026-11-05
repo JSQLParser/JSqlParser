@@ -141,6 +141,19 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-alterdatabase.html
                     Feature.createDatabase, Feature.alterDatabase,
 
+                    // https://www.postgresql.org/docs/current/sql-altersystem.html
+                    Feature.alterSystem,
+
+                    // https://www.postgresql.org/docs/current/sql-createpolicy.html
+                    // https://www.postgresql.org/docs/current/sql-createstatistics.html
+                    Feature.createPolicy, Feature.alterPolicy, Feature.createStatistics,
+                    Feature.alterStatistics,
+
+                    // https://www.postgresql.org/docs/current/sql-copy.html
+                    // https://www.postgresql.org/docs/current/sql-prepare.html
+                    // https://www.postgresql.org/docs/current/sql-lock.html
+                    Feature.copy, Feature.prepare, Feature.deallocate, Feature.lock,
+
                     // https://www.postgresql.org/docs/current/sql-alterfunction.html
                     // https://www.postgresql.org/docs/current/sql-alterprocedure.html
                     // https://www.postgresql.org/docs/current/sql-alterroutine.html
@@ -190,7 +203,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.securityLabel, // https://www.postgresql.org/docs/current/sql-set.html
                     Feature.set, Feature.setAssignmentTo, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
-                    Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
+                    Feature.commit, Feature.rollback, Feature.startTransaction,
+                    Feature.savepoint, Feature.releaseSavepoint,
                     Feature.transactionIsolationLevel, Feature.transactionDeferrable)), V11("11",
                             V10.copy().getFeatures()), V12("12",
                                     V11.copy()
