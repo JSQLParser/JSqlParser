@@ -363,6 +363,9 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(DoStatement statement, S context) {
         validateFeature(Feature.doStatement);
+        if (statement.getSelectItems() != null) {
+            statement.visitExpressions(this::validateOptionalExpression);
+        }
         return null;
     }
 
@@ -824,6 +827,7 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
         validateFeature(Feature.prepare);
+        validateOptionalExpression(prepareStatement.getSource());
         return null;
     }
 

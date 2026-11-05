@@ -539,6 +539,11 @@ public enum Feature {
      */
     executeStatementImmediate,
 
+    /**
+     * MySQL "EXECUTE name USING @variable, ..." of a prepared statement is allowed
+     *
+     * @see Execute#getUsingVariables()
+     */
     executeUsing,
     /**
      * "PREPARE" and "DEALLOCATE" of a prepared statement are allowed

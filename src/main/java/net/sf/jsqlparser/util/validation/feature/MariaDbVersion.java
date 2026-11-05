@@ -94,8 +94,15 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/call/
                     Feature.execute, Feature.executeCall,
 
+                    // https://mariadb.com/kb/en/prepare-statement/
+                    // https://mariadb.com/kb/en/execute-statement/
+                    Feature.prepare, Feature.executeExecute, Feature.executeUsing,
+
                     // https://mariadb.com/kb/en/deallocate-drop-prepare/
                     Feature.deallocate,
+
+                    // https://mariadb.com/kb/en/do/
+                    Feature.doStatement,
 
                     // https://mariadb.com/kb/en/drop/
                     Feature.drop, // https://mariadb.com/kb/en/drop-index/
