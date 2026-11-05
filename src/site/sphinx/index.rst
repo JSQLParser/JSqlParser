@@ -168,6 +168,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
     * - **PostgreSQL session statements**
       - ``DISCARD`` · ``LISTEN`` · ``UNLISTEN`` · ``SHOW``/``RESET TIME ZONE``/``TRANSACTION ISOLATION LEVEL``/``SESSION AUTHORIZATION`` · ``COPY`` options from before 9.0
+    * - **MySQL server administration**
+      - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

@@ -199,6 +199,9 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -1750,6 +1753,35 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        flush.getTables().forEach(table -> visit(table, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        if (kill.getProcesslistId() != null) {
+            kill.getProcesslistId().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        if (handler.getAction() == HandlerStatement.Action.OPEN) {
+            visit(handler.getTable(), context);
+        }
+        // READ and CLOSE name a handler, which may be an alias that OPEN gave the table
+        if (handler.getKeyValues() != null) {
+            handler.getKeyValues().accept(this, context);
+        }
+        if (handler.getWhere() != null) {
+            handler.getWhere().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(VacuumStatement vacuum, S context) {
         // the column lists name columns of these tables, not tables
         vacuum.getTargets().forEach(target -> visit(target.getTable(), context));
@@ -2057,7 +2089,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ResetStatement reset, S context) {
-        throwUnsupported(reset);
+        // RESET names a configuration parameter or a system variable, never a table
         return null;
     }
 
