@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class UpdateSet implements Serializable {
     protected ExpressionList<Column> columns = new ExpressionList<>();
@@ -44,6 +45,46 @@ public class UpdateSet implements Serializable {
             j++;
         }
         return builder;
+    }
+
+    /**
+     * Appends {@code columns = values, ...}, letting a deparser visit each column and value. With
+     * {@code builder::append} as the renderer the output equals
+     * {@link #appendUpdateSetsTo(StringBuilder, Collection)}.
+     */
+    public static StringBuilder appendUpdateSetsTo(StringBuilder builder,
+            Collection<UpdateSet> updateSets, Consumer<Expression> expressionRenderer) {
+        if (updateSets == null) {
+            return builder;
+        }
+        int j = 0;
+        for (UpdateSet updateSet : updateSets) {
+            if (j++ > 0) {
+                builder.append(", ");
+            }
+            appendListTo(builder, updateSet.getColumns(), expressionRenderer);
+            builder.append(" = ");
+            appendListTo(builder, updateSet.getValues(), expressionRenderer);
+        }
+        return builder;
+    }
+
+    /** Appends {@code a, b} or {@code (a, b)}, as {@code Select.getStringList} does. */
+    private static void appendListTo(StringBuilder builder, ExpressionList<?> list,
+            Consumer<Expression> expressionRenderer) {
+        boolean parenthesed = list instanceof ParenthesedExpressionList;
+        if (parenthesed) {
+            builder.append("(");
+        }
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            expressionRenderer.accept(list.get(i));
+        }
+        if (parenthesed) {
+            builder.append(")");
+        }
     }
 
     public ExpressionList<Column> getColumns() {

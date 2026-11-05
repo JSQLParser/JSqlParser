@@ -59,8 +59,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             builder.append(" IGNORE");
         }
         if (delete.getTables() != null && !delete.getTables().isEmpty()) {
+            // with their aliases, as in Delete.toString()
             builder.append(
-                    delete.getTables().stream().map(Table::getFullyQualifiedName)
+                    delete.getTables().stream().map(Table::toString)
                             .collect(joining(", ", " ", "")));
         }
 
@@ -74,8 +75,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         builder.append(" ").append(delete.getTable().toString());
         deparseForPortionClause(delete.getForPortionClause(), expressionVisitor);
 
-        sources.deparseUsing(delete.getUsingFromItemList());
+        // the target's joins come before USING, as in the grammar
         sources.deparseJoins(delete.getJoins());
+        sources.deparseUsing(delete.getUsingFromItemList(), delete.getUsingJoins());
 
         deparseWhereClause(delete);
 
