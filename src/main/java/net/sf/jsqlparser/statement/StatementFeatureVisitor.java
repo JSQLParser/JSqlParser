@@ -25,6 +25,8 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.TranscodingFunction;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -170,6 +172,16 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
+
+    /**
+     * ALTER TABLE actions that delete, swap or replace the rows of a table or partition. Like
+     * TRUNCATE and DROP they carry MODIFIES_DATA as well as MODIFIES_SCHEMA.
+     */
+    private static final Set<AlterOperation> ALTER_ACTIONS_MODIFYING_DATA =
+            EnumSet.of(AlterOperation.DROP_PARTITION, AlterOperation.TRUNCATE_PARTITION,
+                    AlterOperation.EXCHANGE_PARTITION, AlterOperation.DISCARD_PARTITION,
+                    AlterOperation.DISCARD_TABLESPACE, AlterOperation.IMPORT_PARTITION,
+                    AlterOperation.IMPORT_TABLESPACE);
 
     private final Analysis analysis;
 
@@ -672,7 +684,25 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(Alter alter, S context) {
-        return schemaOnly();
+        schemaOnly();
+        if (alter.getAlterExpressions() == null) {
+            return null;
+        }
+        for (AlterExpression action : alter.getAlterExpressions()) {
+            AlterOperation operation = action.getOperation();
+            if (ALTER_ACTIONS_MODIFYING_DATA.contains(operation)) {
+                analysis.certain(StmtFeature.MODIFIES_DATA);
+            } else if (operation == AlterOperation.REPAIR_PARTITION) {
+                // like REPAIR TABLE, it may rewrite or discard rows
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+            } else if (operation == AlterOperation.UNSPECIFIC) {
+                // an action the grammar does not model is kept as raw tokens and may write
+                // rows, e.g. ClickHouse's ALTER TABLE t DELETE WHERE ..
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+                analysis.unresolved("unsupported");
+            }
+        }
+        return null;
     }
 
     @Override
