@@ -232,6 +232,32 @@ The fastest way to learn the object model is to look at it. Paste your SQL into 
 Read that as a map: each line is a getter away. ``select.getSelectItems()``, ``select.getFromItem()``, ``select.getWhere()``. Once the tree gets deeper than a couple of levels, stop casting by hand and use :ref:`Use the Visitor Patterns`.
 
 
+MySQL index hints, insert sources and DELETE ... USING
+------------------------------------------------------
+
+A table reference keeps every MySQL index hint in ``Table.getIndexHints()``, in
+source order, for example ``t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2)``.
+``MySQLIndexHint.getScope()`` returns ``JOIN``, ``ORDER_BY`` or ``GROUP_BY`` for a
+``FOR`` clause and ``null`` without one. ``USE INDEX ()`` has an empty index list;
+``IGNORE`` and ``FORCE`` require at least one index. ``getIndexHint()`` still returns
+the first hint, and ``setHint()`` replaces all hints with one.
+
+``WEIGHT_STRING(str AS CHAR(n))`` and ``WEIGHT_STRING(str AS BINARY(n))`` keep the cast
+in ``Function.getCastType()``, a ``ColDataType`` as in ``CAST``.
+
+``INSERT INTO t VALUES ROW(1, 2), ROW(3, 4)`` and ``INSERT INTO t TABLE s`` use the same
+``Values`` and ``TableStatement`` models as the queries ``VALUES ROW(...)`` and
+``TABLE s``. ``INSERT INTO t () VALUES ()`` has an empty, non-null
+``getColumns()``; REPLACE accepts the same forms. ``toString()`` and
+``InsertDeParser`` both render through ``Insert.appendTo``, which writes ``PARTITION``
+before the column list.
+
+``DELETE FROM t1 USING t1 JOIN t2 ON t1.id = t2.id`` keeps the joins of the USING
+clause in ``Delete.getUsingJoins()``, after ``getUsingFromItemList()``. PostgreSQL's
+``DELETE FROM t USING s JOIN u ON ...`` uses the same properties. ``getJoins()``
+holds the joins of the target, as in ``DELETE FROM t1, t2 USING ...``, and is
+rendered before USING.
+
 PostgreSQL CHECK inheritance
 ----------------------------
 

@@ -149,7 +149,18 @@ public class ASTNodeCoverageTest {
                 "CHECKPOINT",
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
-                "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u"}) {
+                "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
+                "SELECT a FROM t AS x USE KEY (i1) FORCE INDEX FOR JOIN (i2, i3) WHERE a = 1",
+                "SELECT a FROM t USE INDEX () JOIN s IGNORE INDEX FOR ORDER BY (i1) ON t.a = s.a",
+                "UPDATE t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2) SET a = 1",
+                "SELECT WEIGHT_STRING('x' AS CHAR(3)), WEIGHT_STRING(a AS BINARY(4))",
+                "INSERT INTO t (a, b) VALUES ROW(1, 2), ROW(3, 4)",
+                "INSERT INTO t PARTITION (p0) (a) TABLE s",
+                "INSERT INTO t () VALUES ()",
+                "REPLACE INTO t () VALUES ()",
+                "REPLACE INTO t (a, b) VALUES ROW(1, 2)",
+                "DELETE FROM t1, t2 USING t1 INNER JOIN t2 INNER JOIN t3 WHERE t1.id = t2.id",
+                "DELETE FROM t USING s JOIN u ON s.id = u.id, v WHERE t.id = s.id"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String block = "BEGIN x := 1; NULL; foo(1); END;";

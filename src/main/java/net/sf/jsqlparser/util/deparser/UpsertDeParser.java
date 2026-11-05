@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
@@ -67,6 +66,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
             deparseUpdateSets(upsert.getUpdateSets(), builder, expressionVisitor);
         } else {
             if (upsert.getColumns() != null) {
+                builder.append(" ");
                 upsert.getColumns().accept(expressionVisitor, null);
             }
 
@@ -78,16 +78,12 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
                 builder.append(" ");
                 upsert.getSelect().accept((SelectVisitor<StringBuilder>) selectVisitor, null);
             }
+        }
 
-            if (upsert.getDuplicateAction() != null) {
-                builder.append(" ON DUPLICATE KEY UPDATE ");
-                if (ConflictActionType.DO_UPDATE
-                        .equals(upsert.getDuplicateAction().getConflictActionType())) {
-                    deparseUpdateSets(upsert.getDuplicateUpdateSets(), builder, expressionVisitor);
-                } else {
-                    upsert.getDuplicateAction().appendTo(builder);
-                }
-            }
+        if (upsert.getDuplicateAction() != null) {
+            builder.append(" ON DUPLICATE KEY UPDATE ");
+            upsert.getDuplicateAction().appendTo(builder,
+                    expression -> expression.accept(expressionVisitor, null));
         }
     }
 

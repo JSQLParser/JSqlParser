@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
@@ -101,18 +102,26 @@ public class InsertConflictAction implements Serializable {
         return this;
     }
 
-    @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    /**
+     * Appends {@code " DO NOTHING"} or {@code " DO UPDATE SET ... [WHERE ...]"}, letting a deparser
+     * visit the expressions.
+     */
+    @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
         switch (conflictActionType) {
             case DO_NOTHING:
                 builder.append(" DO NOTHING");
                 break;
             case DO_UPDATE:
                 builder.append(" DO UPDATE SET ");
-                UpdateSet.appendUpdateSetsTo(builder, updateSets);
-
+                UpdateSet.appendUpdateSetsTo(builder, updateSets, expressionRenderer);
                 if (whereExpression != null) {
-                    builder.append(" WHERE ").append(whereExpression);
+                    builder.append(" WHERE ");
+                    expressionRenderer.accept(whereExpression);
                 }
                 break;
         }

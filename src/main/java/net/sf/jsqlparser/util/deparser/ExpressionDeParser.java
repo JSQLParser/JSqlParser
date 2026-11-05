@@ -967,6 +967,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getParameters() != null) {
                 function.getParameters().accept(this, context);
             }
+            function.appendCastTypeTo(builder);
 
             Function.HavingClause havingClause = function.getHavingClause();
             if (havingClause != null) {
