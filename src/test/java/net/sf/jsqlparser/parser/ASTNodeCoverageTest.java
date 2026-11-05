@@ -149,7 +149,12 @@ public class ASTNodeCoverageTest {
                 "CHECKPOINT",
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
-                "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u"}) {
+                "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
+                "DECLARE c BINARY NO SCROLL CURSOR WITH HOLD FOR WITH x AS (SELECT a FROM t) "
+                        + "SELECT a FROM x",
+                "FETCH FORWARD -2 FROM c",
+                "MOVE ALL IN c",
+                "CLOSE ALL"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String block = "BEGIN x := 1; NULL; foo(1); END;";
