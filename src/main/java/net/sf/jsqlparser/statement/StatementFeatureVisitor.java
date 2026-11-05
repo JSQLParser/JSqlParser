@@ -105,6 +105,7 @@ import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
@@ -979,6 +980,21 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(DeclareStatement declareStatement, S context) {
         return sessionOnly();
+    }
+
+    @Override
+    public <S> Void visit(ListenStatement listen, S context) {
+        return sessionOnly();
+    }
+
+    @Override
+    public <S> Void visit(DiscardStatement discard, S context) {
+        sessionOnly();
+        if (discard.isDroppingTemporaryTables()) {
+            // the temporary tables of the session, if it has any
+            analysis.possible(StmtFeature.MODIFIES_SCHEMA);
+        }
+        return null;
     }
 
     @Override

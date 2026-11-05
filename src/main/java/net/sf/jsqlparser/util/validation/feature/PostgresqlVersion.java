@@ -154,6 +154,12 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-lock.html
                     Feature.copy, Feature.prepare, Feature.deallocate, Feature.lock,
 
+                    // https://www.postgresql.org/docs/current/sql-show.html
+                    // https://www.postgresql.org/docs/current/sql-discard.html
+                    // https://www.postgresql.org/docs/current/sql-listen.html
+                    // https://www.postgresql.org/docs/current/sql-unlisten.html
+                    Feature.show, Feature.discard, Feature.listen,
+
                     // https://www.postgresql.org/docs/current/sql-alterfunction.html
                     // https://www.postgresql.org/docs/current/sql-alterprocedure.html
                     // https://www.postgresql.org/docs/current/sql-alterroutine.html
