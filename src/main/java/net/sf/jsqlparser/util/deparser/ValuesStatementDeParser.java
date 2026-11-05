@@ -40,7 +40,8 @@ public class ValuesStatementDeParser extends AbstractDeParser<Values> {
         builder.append("VALUES ");
         values.getExpressions().accept(expressionVisitor, context);
         if (values.getAlias() != null) {
-            builder.append(" ").append(values.getAlias());
+            // the alias renders its own leading space, as in Values.toString()
+            builder.append(values.getAlias());
         }
     }
 }

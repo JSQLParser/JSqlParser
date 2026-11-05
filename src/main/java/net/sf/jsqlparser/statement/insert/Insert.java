@@ -11,10 +11,11 @@ package net.sf.jsqlparser.statement.insert;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -27,6 +28,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -47,7 +49,6 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
     }
 
     private OverridingMode overridingMode = OverridingMode.NONE;
-    private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
     private boolean overwrite = false;
@@ -66,10 +67,7 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
     private List<OracleMultiInsertBranch> oracleMultiInsertBranches;
 
     public List<UpdateSet> getDuplicateUpdateSets() {
-        if (duplicateAction != null) {
-            return duplicateAction.getUpdateSets();
-        }
-        return duplicateUpdateSets;
+        return duplicateAction != null ? duplicateAction.getUpdateSets() : null;
     }
 
     public List<UpdateSet> getSetUpdateSets() {
@@ -356,139 +354,176 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
-        StringBuilder sql = new StringBuilder();
-        appendWithItems(sql);
-        appendInsertPrefix(sql);
-        if (appendOracleMultiInsert(sql)) {
-            return sql.toString();
-        }
-        appendInsertTargetAndValues(sql);
-        appendInsertActions(sql);
-        return sql.toString();
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append, builder::append, builder::append,
+                builder::append).toString();
     }
 
-    private void appendWithItems(StringBuilder sql) {
+    /**
+     * Appends the statement in clause order. {@link #toString()} renders every part as text, while
+     * {@code InsertDeParser} passes renderers that visit the WITH items, queries, expressions and
+     * RETURNING items, so both produce the same SQL.
+     *
+     * @param builder the target
+     * @param withItemRenderer renders one WITH item
+     * @param selectRenderer renders the source query and the queries of Oracle's multi-table insert
+     * @param expressionRenderer renders expressions, including the assignment lists
+     * @param selectItemRenderer renders one RETURNING item
+     * @return the builder
+     */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<WithItem<?>> withItemRenderer,
+            Consumer<Select> selectRenderer, Consumer<Expression> expressionRenderer,
+            Consumer<SelectItem<?>> selectItemRenderer) {
+        appendWithItems(builder, withItemRenderer);
+        appendInsertPrefix(builder);
+        if (oracleMultiInsert) {
+            appendOracleMultiInsert(builder, selectRenderer, expressionRenderer);
+            return builder;
+        }
+        appendTarget(builder);
+        appendSource(builder, selectRenderer, expressionRenderer);
+        appendActions(builder, expressionRenderer);
+        if (returningClause != null) {
+            returningClause.appendTo(builder, selectItemRenderer);
+        }
+        return builder;
+    }
+
+    private void appendWithItems(StringBuilder builder, Consumer<WithItem<?>> withItemRenderer) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            sql.append("WITH ");
-            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem<?> withItem = iter.next();
-                sql.append(withItem);
-                if (iter.hasNext()) {
-                    sql.append(",");
+            builder.append("WITH ");
+            for (int i = 0; i < withItemsList.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
                 }
-                sql.append(" ");
+                withItemRenderer.accept(withItemsList.get(i));
             }
+            builder.append(" ");
         }
     }
 
-    private void appendInsertPrefix(StringBuilder sql) {
-        sql.append("INSERT ");
+    private void appendInsertPrefix(StringBuilder builder) {
+        builder.append("INSERT");
         if (oracleHint != null) {
-            sql.append(oracleHint).append(" ");
+            builder.append(" ").append(oracleHint);
         }
         if (modifierPriority != null) {
-            sql.append(modifierPriority.name()).append(" ");
+            builder.append(" ").append(modifierPriority.name());
         }
         if (modifierIgnore) {
-            sql.append("IGNORE ");
+            builder.append(" IGNORE");
         }
     }
 
-    private boolean appendOracleMultiInsert(StringBuilder sql) {
-        if (!oracleMultiInsert) {
-            return false;
-        }
-
-        sql.append(oracleMultiInsertFirst ? "FIRST" : "ALL");
-        if (oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()) {
+    private void appendOracleMultiInsert(StringBuilder builder, Consumer<Select> selectRenderer,
+            Consumer<Expression> expressionRenderer) {
+        builder.append(oracleMultiInsertFirst ? " FIRST" : " ALL");
+        if (oracleMultiInsertBranches != null) {
             for (OracleMultiInsertBranch branch : oracleMultiInsertBranches) {
-                appendOracleMultiInsertBranch(sql, branch);
+                appendOracleMultiInsertBranch(builder, branch, selectRenderer, expressionRenderer);
             }
         }
         if (select != null) {
-            sql.append(" ").append(select);
+            builder.append(" ");
+            selectRenderer.accept(select);
         }
-        return true;
     }
 
-    private void appendInsertTargetAndValues(StringBuilder sql) {
-        if (overwrite) {
-            sql.append("OVERWRITE ");
-        } else {
-            sql.append("INTO ");
+    private static void appendOracleMultiInsertBranch(StringBuilder builder,
+            OracleMultiInsertBranch branch, Consumer<Select> selectRenderer,
+            Consumer<Expression> expressionRenderer) {
+        if (branch == null || branch.getClauses() == null || branch.getClauses().isEmpty()) {
+            return;
         }
+        if (branch.getWhenExpression() != null) {
+            builder.append(" WHEN ");
+            expressionRenderer.accept(branch.getWhenExpression());
+            builder.append(" THEN");
+        } else if (branch.isElseClause()) {
+            builder.append(" ELSE");
+        }
+        for (OracleMultiInsertClause clause : branch.getClauses()) {
+            builder.append(" ");
+            clause.appendTo(builder, selectRenderer);
+        }
+    }
+
+    /** The target: table, partitions, columns and the options before the source. */
+    private void appendTarget(StringBuilder builder) {
+        builder.append(overwrite ? " OVERWRITE" : " INTO");
         if (tableKeyword) {
-            sql.append("TABLE ");
+            builder.append(" TABLE");
         }
-        sql.append(table).append(" ");
-
-        if (onlyDefaultValues) {
-            sql.append("DEFAULT VALUES");
-        }
-
-        if (columns != null) {
-            sql.append("(");
-            for (int i = 0; i < columns.size(); i++) {
-                if (i > 0) {
-                    sql.append(", ");
-                }
-                // only plain names, but not fully qualified names allowed
-                sql.append(columns.get(i).getColumnName());
-            }
-            sql.append(") ");
-        }
-
-        if (columnMatching != null) {
-            sql.append(columnMatching).append(" ");
-        }
-
-        if (isOverriding()) {
-            sql.append("OVERRIDING ").append(overridingMode).append(" VALUE ");
-        }
-
+        builder.append(" ").append(table);
+        // MySQL and Hive write the partitions right after the table, before the columns
         if (partitions != null) {
-            sql.append(" PARTITION (");
-            Partition.appendPartitionsTo(sql, partitions);
-            sql.append(") ");
+            builder.append(" PARTITION (");
+            Partition.appendPartitionsTo(builder, partitions);
+            builder.append(")");
         }
-
+        if (columns != null) {
+            builder.append(" ");
+            appendColumnNamesTo(builder, columns);
+        }
+        if (columnMatching != null) {
+            builder.append(" ").append(columnMatching);
+        }
+        if (isOverriding()) {
+            builder.append(" OVERRIDING ").append(overridingMode).append(" VALUE");
+        }
         if (outputClause != null) {
-            sql.append(outputClause);
-        }
-
-        if (select != null) {
-            sql.append(select);
+            outputClause.appendTo(builder);
+            // OUTPUT ends with a space; the source adds its own separator
+            if (builder.charAt(builder.length() - 1) == ' ') {
+                builder.setLength(builder.length() - 1);
+            }
         }
     }
 
-    private void appendInsertActions(StringBuilder sql) {
+    /** {@code DEFAULT VALUES}, the query, or MySQL's {@code SET} assignments. */
+    private void appendSource(StringBuilder builder, Consumer<Select> selectRenderer,
+            Consumer<Expression> expressionRenderer) {
+        if (onlyDefaultValues) {
+            builder.append(" DEFAULT VALUES");
+        }
+        if (select != null) {
+            builder.append(" ");
+            selectRenderer.accept(select);
+        }
         if (setUpdateSets != null && !setUpdateSets.isEmpty()) {
-            sql.append("SET ");
-            UpdateSet.appendUpdateSetsTo(sql, setUpdateSets);
+            builder.append(" SET ");
+            UpdateSet.appendUpdateSetsTo(builder, setUpdateSets, expressionRenderer);
             if (rowAlias != null) {
-                sql.append(" ").append(rowAlias);
+                builder.append(rowAlias);
             }
         }
+    }
 
+    private void appendActions(StringBuilder builder, Consumer<Expression> expressionRenderer) {
         if (duplicateAction != null) {
-            sql.append(" ON DUPLICATE KEY UPDATE ");
-            duplicateAction.appendTo(sql);
+            builder.append(" ON DUPLICATE KEY UPDATE ");
+            duplicateAction.appendTo(builder, expressionRenderer);
         }
-
         if (conflictAction != null) {
-            sql.append(" ON CONFLICT");
-
+            builder.append(" ON CONFLICT");
             if (conflictTarget != null) {
-                conflictTarget.appendTo(sql);
+                conflictTarget.appendTo(builder, expressionRenderer);
             }
-            conflictAction.appendTo(sql);
+            conflictAction.appendTo(builder, expressionRenderer);
         }
+    }
 
-        if (returningClause != null) {
-            returningClause.appendTo(sql);
+    /** Appends {@code (a, b)} with the plain column names, as INSERT column lists allow. */
+    static StringBuilder appendColumnNamesTo(StringBuilder builder, List<Column> columns) {
+        builder.append("(");
+        for (int i = 0; i < columns.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(columns.get(i).getColumnName());
         }
+        return builder.append(")");
     }
 
     public Insert withWithItemsList(List<WithItem<?>> withList) {
@@ -562,22 +597,5 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
             List<OracleMultiInsertBranch> oracleMultiInsertBranches) {
         this.setOracleMultiInsertBranches(oracleMultiInsertBranches);
         return this;
-    }
-
-    private void appendOracleMultiInsertBranch(StringBuilder sql,
-            OracleMultiInsertBranch branch) {
-        if (branch == null || branch.getClauses() == null || branch.getClauses().isEmpty()) {
-            return;
-        }
-
-        if (branch.getWhenExpression() != null) {
-            sql.append(" WHEN ").append(branch.getWhenExpression()).append(" THEN");
-        } else if (branch.isElseClause()) {
-            sql.append(" ELSE");
-        }
-
-        for (OracleMultiInsertClause clause : branch.getClauses()) {
-            sql.append(" ").append(clause);
-        }
     }
 }

@@ -105,6 +105,7 @@ import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -257,8 +258,14 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         fromItemVisitor.visitTables(delete.getTables(), context);
         selectVisitor.visitOutputClause(delete.getOutputClause(), context);
         fromItemVisitor.visitFromItem(delete.getTable(), context);
-        fromItemVisitor.visitTables(delete.getUsingList(), context);
         fromItemVisitor.visitJoins(delete.getJoins(), context);
+        // USING may name subqueries, so visit the items rather than getUsingList()'s tables
+        if (delete.getUsingFromItemList() != null) {
+            for (FromItem usingFromItem : delete.getUsingFromItemList()) {
+                fromItemVisitor.visitFromItem(usingFromItem, context);
+            }
+        }
+        fromItemVisitor.visitJoins(delete.getUsingJoins(), context);
         expressionVisitor.visitExpression(delete.getWhere(), context);
 
         expressionVisitor.visitPreferringClause(delete.getPreferringClause(), context);

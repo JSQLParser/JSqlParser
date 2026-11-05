@@ -21,7 +21,6 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
@@ -647,10 +646,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (unpivot != null) {
             unpivot.accept(this, context);
         }
-        MySQLIndexHint indexHint = table.getIndexHint();
-        if (indexHint != null) {
-            builder.append(indexHint);
-        }
+        table.appendIndexHintsTo(builder);
         SQLServerHints sqlServerHints = table.getSqlServerHints();
         if (sqlServerHints != null) {
             builder.append(sqlServerHints);

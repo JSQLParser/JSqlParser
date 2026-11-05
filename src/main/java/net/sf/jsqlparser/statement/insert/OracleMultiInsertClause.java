@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.statement.insert;
 
 import java.io.Serializable;
-import java.util.Iterator;
+import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -48,26 +48,22 @@ public class OracleMultiInsertClause implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sql = new StringBuilder("INTO ");
-        sql.append(table);
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
+    }
 
+    /** Appends {@code INTO table [(columns)] query}, letting a deparser visit the query. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Select> selectRenderer) {
+        builder.append("INTO ").append(table);
         if (columns != null && !columns.isEmpty()) {
-            sql.append(" (");
-            for (Iterator<Column> iter = columns.iterator(); iter.hasNext();) {
-                Column column = iter.next();
-                sql.append(column.getColumnName());
-                if (iter.hasNext()) {
-                    sql.append(", ");
-                }
-            }
-            sql.append(")");
+            builder.append(" ");
+            Insert.appendColumnNamesTo(builder, columns);
         }
-
         if (select != null) {
-            sql.append(" ").append(select);
+            builder.append(" ");
+            selectRenderer.accept(select);
         }
-
-        return sql.toString();
+        return builder;
     }
 
     public OracleMultiInsertClause withTable(Table table) {

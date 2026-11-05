@@ -1539,6 +1539,7 @@ public class TablesNamesFinder<Void>
                 usingFromItem.accept(this, context);
             }
         }
+        visitJoins(delete.getUsingJoins(), context);
 
         visitJoins(delete.getJoins(), context);
 

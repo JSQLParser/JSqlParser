@@ -45,6 +45,7 @@ public class Delete extends ASTNodeAccessImpl implements Statement {
     private OracleHint oracleHint = null;
     private List<Table> tables;
     private List<FromItem> usingFromItemList;
+    private List<Join> usingJoins;
     private List<Join> joins;
     private Expression where;
     private PreferringClause preferringClause;
@@ -281,21 +282,14 @@ public class Delete extends ASTNodeAccessImpl implements Statement {
             b.append(' ').append(forPortionClause);
         }
 
+        appendJoinsTo(b, joins);
+
         if (usingFromItemList != null && !usingFromItemList.isEmpty()) {
             b.append(" USING ");
             b.append(usingFromItemList.stream()
                     .map(Object::toString)
                     .collect(joining(", ")));
-        }
-
-        if (joins != null) {
-            for (Join join : joins) {
-                if (join.isSimple()) {
-                    b.append(", ").append(join);
-                } else {
-                    b.append(" ").append(join);
-                }
-            }
+            appendJoinsTo(b, usingJoins);
         }
 
         if (where != null) {
@@ -541,5 +535,43 @@ public class Delete extends ASTNodeAccessImpl implements Statement {
      */
     public void setUsingFromItemList(List<FromItem> usingFromItemList) {
         this.usingFromItemList = usingFromItemList;
+    }
+
+    /**
+     * Returns the joins after the USING items, as in MySQL's
+     * {@code DELETE FROM t1 USING t1 JOIN t2 ON t1.id = t2.id} or PostgreSQL's
+     * {@code DELETE FROM t USING s JOIN u ON s.id = u.id WHERE ...}, or {@code null}. They are
+     * rendered only when {@link #getUsingFromItemList()} is not empty. {@link #getJoins()} holds
+     * the joins of the target table, written before USING.
+     */
+    public List<Join> getUsingJoins() {
+        return usingJoins;
+    }
+
+    public void setUsingJoins(List<Join> usingJoins) {
+        this.usingJoins = usingJoins;
+    }
+
+    public Delete withUsingJoins(List<Join> usingJoins) {
+        setUsingJoins(usingJoins);
+        return this;
+    }
+
+    public Delete addUsingJoins(Join... usingJoins) {
+        List<Join> collection = Optional.ofNullable(getUsingJoins()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, usingJoins);
+        return this.withUsingJoins(collection);
+    }
+
+    private static void appendJoinsTo(StringBuilder b, List<Join> joins) {
+        if (joins != null) {
+            for (Join join : joins) {
+                if (join.isSimple()) {
+                    b.append(", ").append(join);
+                } else {
+                    b.append(" ").append(join);
+                }
+            }
+        }
     }
 }

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -59,6 +60,12 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      */
     private List<KeywordArgument> keywordArguments = null;
 
+    /**
+     * The {@code AS type} cast of the argument, as in MySQL's {@code WEIGHT_STRING(str AS CHAR(3))}
+     * or {@code WEIGHT_STRING(str AS BINARY(4))}.
+     */
+    private ColDataType castType;
+
     /** Column definitions supplied for a record-returning function inside ROWS FROM. */
     public List<ColumnDefinition> getResultColumnDefinitions() {
         return resultColumnDefinitions;
@@ -81,6 +88,31 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function(String name, Expression... parameters) {
         this.nameparts = Collections.singletonList(name);
         this.parameters = new ExpressionList<>(parameters);
+    }
+
+    /**
+     * Returns the {@code AS type} cast written after the argument, as in MySQL's
+     * {@code WEIGHT_STRING(str AS CHAR(3))}, or {@code null}.
+     */
+    public ColDataType getCastType() {
+        return castType;
+    }
+
+    public void setCastType(ColDataType castType) {
+        this.castType = castType;
+    }
+
+    public Function withCastType(ColDataType castType) {
+        setCastType(castType);
+        return this;
+    }
+
+    /** Appends {@code " AS type"} when the argument has a {@link #getCastType() cast type}. */
+    public StringBuilder appendCastTypeTo(StringBuilder builder) {
+        if (castType != null) {
+            builder.append(" AS ").append(castType);
+        }
+        return builder;
     }
 
     @Override
@@ -385,6 +417,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                 }
 
                 b.append(parameters);
+                appendCastTypeTo(b);
 
                 if (havingClause != null) {
                     havingClause.appendTo(b);
