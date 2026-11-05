@@ -48,6 +48,7 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
+import net.sf.jsqlparser.statement.maintenance.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.create.fdw.*;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
@@ -171,6 +172,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return "LABEL".equalsIgnoreCase(getToken(2).image);
             case K_REINDEX:
                 return isReindexAhead();
+            case K_VACUUM: case K_ANALYSE: case K_CLUSTER: case K_CHECKPOINT:
+                return isPostgreSqlMaintenanceAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -2539,6 +2542,124 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || next == K_SYSTEM || "(".equals(getToken(2).image);
     }
 
+    /** The PostgreSQL forms of VACUUM, ANALYZE and CLUSTER: with that dialect or without one. */
+    private boolean isPostgreSqlMaintenanceDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
+    /**
+     * PostgreSQL 18's reserved keywords. Its grammar takes none of them as the name or the word
+     * value of a utility option, except ANALYZE and ANALYSE as names.
+     */
+    private static final Set<String> POSTGRESQL_RESERVED_KEYWORDS = new HashSet<String>(Arrays.asList(
+            "ALL", "ANALYSE", "ANALYZE", "AND", "ANY", "ARRAY", "AS", "ASC", "ASYMMETRIC", "BOTH",
+            "CASE", "CAST", "CHECK", "COLLATE", "COLUMN", "CONSTRAINT", "CREATE", "CURRENT_CATALOG",
+            "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER",
+            "DEFAULT", "DEFERRABLE", "DESC", "DISTINCT", "DO", "ELSE", "END", "EXCEPT", "FALSE",
+            "FETCH", "FOR", "FOREIGN", "FROM", "GRANT", "GROUP", "HAVING", "IN", "INITIALLY",
+            "INTERSECT", "INTO", "LATERAL", "LEADING", "LIMIT", "LOCALTIME", "LOCALTIMESTAMP", "NOT",
+            "NULL", "OFFSET", "ON", "ONLY", "OR", "ORDER", "PLACING", "PRIMARY", "REFERENCES",
+            "RETURNING", "SELECT", "SESSION_USER", "SOME", "SYMMETRIC", "SYSTEM_USER", "TABLE", "THEN",
+            "TO", "TRAILING", "TRUE", "UNION", "UNIQUE", "USER", "USING", "VARIADIC", "WHEN", "WHERE",
+            "WINDOW", "WITH"));
+
+    /** Rejects an unquoted utility option name or word value that PostgreSQL reserves. */
+    private void requireUtilityOptionWord(String word, boolean name) throws ParseException {
+        String upper = word.toUpperCase(Locale.ROOT);
+        requireDdlSyntax(!POSTGRESQL_RESERVED_KEYWORDS.contains(upper)
+                || name && ("ANALYZE".equals(upper) || "ANALYSE".equals(upper)),
+                "PostgreSQL reserves " + word + " in utility options");
+    }
+
+    /** Whether a PostgreSQL identifier in double quotes follows, not one in brackets or backticks. */
+    private boolean isDoubleQuotedIdentifierAhead() {
+        Token token = getToken(1);
+        return token.kind == S_QUOTED_IDENTIFIER && token.image.startsWith("\"");
+    }
+
+    /**
+     * Whether a PostgreSQL VACUUM, CLUSTER or CHECKPOINT statement, or ANALYZE spelled ANALYSE,
+     * starts here. The PostgreSQL dialect always reads these words as statements, and other
+     * dialects never do. Without a dialect the next tokens must take the PostgreSQL form, so that
+     * other products' variants such as SQLite's VACUUM INTO or SQL Server's CHECKPOINT 10 stay
+     * unsupported statements.
+     */
+    private boolean isPostgreSqlMaintenanceAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_VACUUM && kind != K_ANALYSE && kind != K_CLUSTER && kind != K_CHECKPOINT
+                || !isPostgreSqlMaintenanceDialect()) {
+            return false;
+        }
+        Token next = getToken(2);
+        if (getAsString(Feature.dialect) != null || next.kind == EOF || next.kind == ST_SEMICOLON) {
+            return true;
+        }
+        return kind != K_CHECKPOINT && isPostgreSqlMaintenanceFormAhead(kind, next);
+    }
+
+    /** Whether the token after VACUUM, ANALYSE or CLUSTER starts the PostgreSQL form. */
+    private boolean isPostgreSqlMaintenanceFormAhead(int kind, Token next) {
+        if (next.kind == OPENING_BRACKET || next.kind == K_VERBOSE) {
+            return true;
+        }
+        boolean targets = kind != K_CLUSTER;
+        if (targets && next.kind == K_ONLY) {
+            return true;
+        }
+        if (kind == K_VACUUM && (next.kind == K_FULL || next.kind == K_ANALYZE
+                || next.kind == K_ANALYSE || "FREEZE".equalsIgnoreCase(next.image))) {
+            return true;
+        }
+        return isIdentifierishNameToken(next) && isMaintenanceTableEnd(getToken(3), targets);
+    }
+
+    /**
+     * Whether the token can follow the first part of a VACUUM, ANALYZE or CLUSTER table name, or
+     * the index name of CLUSTER index ON table.
+     */
+    private static boolean isMaintenanceTableEnd(Token token, boolean withColumns) {
+        if (token.kind == EOF || token.kind == ST_SEMICOLON || ".".equals(token.image)) {
+            return true;
+        }
+        return withColumns ? token.kind == OPENING_BRACKET || ",".equals(token.image)
+                || "*".equals(token.image) : token.kind == K_USING || token.kind == K_ON;
+    }
+
+    /**
+     * Whether VERBOSE is the PostgreSQL option of ANALYZE. Without a dialect a table name must
+     * follow, so ANALYZE verbose still analyzes a table named verbose; other dialects keep that
+     * reading.
+     */
+    private boolean isAnalyzeVerboseAhead() {
+        if (getToken(1).kind != K_VERBOSE || !isPostgreSqlMaintenanceDialect()) {
+            return false;
+        }
+        Token next = getToken(2);
+        return getAsString(Feature.dialect) != null || next.kind == K_ONLY
+                || isIdentifierishNameToken(next) && isMaintenanceTableEnd(getToken(3), true);
+    }
+
+    /**
+     * MySQL's modifier, TABLE keyword and histogram clause, which carries the bucket count, the
+     * update mode and the JSON data, require tables and exclude the PostgreSQL options and target
+     * forms; other dialects require tables.
+     */
+    private void requireAnalyzeForm(Analyze analyze) throws ParseException {
+        boolean mySqlForm = analyze.getModifier() != null || analyze.isTableKeyword()
+                || analyze.getHistogramAction() != null;
+        requireDdlSyntax(!mySqlForm || analyze.getCommand() == Analyze.Command.ANALYZE,
+                "MySQL ANALYZE clauses require the ANALYZE spelling");
+        requireDdlSyntax(!analyze.getTargets().isEmpty()
+                || !mySqlForm && isPostgreSqlMaintenanceDialect(), "ANALYZE requires a table");
+        boolean postgreSqlForm = !analyze.getOptions().isEmpty();
+        for (MaintenanceTarget target : analyze.getTargets()) {
+            postgreSqlForm |= !target.isPlainTable();
+        }
+        requireDdlSyntax(!mySqlForm || !postgreSqlForm,
+                "MySQL ANALYZE clauses cannot be combined with PostgreSQL options or targets");
+    }
+
     /** Whether the next tokens spell an option accepted by this table maintenance operation. */
     private boolean isTableMaintenanceOptionAhead(TableMaintenanceStatement.Operation operation) {
         Token token = getToken(1);
@@ -4037,6 +4158,7 @@ String NonReservedWordPart1() :
       | tk=<K_CHAR:"CHAR">
       | tk=<K_CLOSE:"CLOSE">
       | tk=<K_CLOUD:"CLOUD">
+      | tk=<K_CLUSTER:"CLUSTER">
       | tk=<K_COALESCE:"COALESCE">
       | tk=<K_CLONE: "CLONE">
       | tk=<K_COLLATE:"COLLATE">
@@ -4395,6 +4517,7 @@ String NonReservedWordPart2() :
       | tk=<K_SIGNED:"SIGNED">
       | tk=<K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
       | tk=<K_UNSIGNED:"UNSIGNED">
+      | tk=<K_VACUUM:"VACUUM">
       | tk=<K_VALIDATE : "VALIDATE">
       | tk=<K_VALIDATION: "VALIDATION">
       | tk=<K_VERBOSE: "VERBOSE">
@@ -5010,7 +5133,11 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_REASSIGN && "OWNED".equalsIgnoreCase(getToken(2).image) })
             stm = ReassignOwned()
             |
+            LOOKAHEAD({ getToken(1).kind == K_ANALYZE
+                    || getToken(1).kind == K_ANALYSE && isPostgreSqlMaintenanceAhead() })
             stm = Analyze()
+            |
+            LOOKAHEAD({ isPostgreSqlMaintenanceAhead() }) stm = PostgreSqlMaintenance()
             |
             LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
             |
@@ -7186,21 +7313,16 @@ List<ExplainStatement.Option> PostgresqlExplainOptions():
     { return options; }
 }
 
+/** An element of the shared utility option list, kept in the EXPLAIN option model. */
 ExplainStatement.Option PostgresqlExplainOption():
 {
-    Token name;
-    Token value = null;
+    UtilityOption option;
 }
 {
-    ( name = <K_ANALYZE> | name = <K_VERBOSE> | name = <K_COSTS>
-      | name = <K_BUFFERS> | name = <K_FORMAT> | name = <K_SETTINGS>
-      | name = <S_IDENTIFIER> )
-    [ ( value = <K_TRUE> | value = <K_FALSE> | value = <K_ON> | value = <K_OFF>
-      | value = <K_XML> | value = <K_JSON> | value = <K_YAML> | value = <K_TEXT_LITERAL>
-      | value = <K_NONE> | value = <K_BINARY> | value = <S_LONG> | value = <S_IDENTIFIER> ) ]
+    option = UtilityOption()
     {
-        return new ExplainStatement.Option(postgresqlExplainOptionType(name.image))
-                .withValue(value == null ? null : value.image);
+        return new ExplainStatement.Option(postgresqlExplainOptionType(option.getName()))
+                .withValue(option.getValue());
     }
 }
 
@@ -19616,26 +19738,43 @@ TableMaintenanceStatement TableMaintenanceStatement():
     }
 }
 
+/**
+ * MySQL ANALYZE [NO_WRITE_TO_BINLOG | LOCAL] TABLE t, ... [histogram] and, with the PostgreSQL
+ * dialect or without a dialect, PostgreSQL {ANALYZE | ANALYSE} [(options) | VERBOSE] [target, ...].
+ * SingleStatement chooses the ANALYSE spelling only by isPostgreSqlMaintenanceAhead().
+ */
 Analyze Analyze():
 {
     Analyze analyze = new Analyze();
-    Table table = null;
+    List<UtilityOption> options;
+    List<MaintenanceTarget> targets;
     Column column = null;
+    Token token = null;
     Token modifier = null;
     Token histogramAction = null;
     Token bucketCount = null;
     Token data;
 }
 {
-    <K_ANALYZE>
+    ( <K_ANALYZE> | <K_ANALYSE> { analyze.setCommand(Analyze.Command.ANALYSE); } )
     [
         LOOKAHEAD(2)
         (modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL>)
         { analyze.setModifier(Analyze.Modifier.valueOf(modifier.image.toUpperCase(Locale.ROOT))); }
     ]
+    [
+        LOOKAHEAD({ getToken(1).kind == OPENING_BRACKET && isPostgreSqlMaintenanceDialect() })
+        options=UtilityOptionList()
+        {
+            analyze.setOptions(options);
+            analyze.setParenthesizedOptions(true);
+        }
+        |
+        LOOKAHEAD({ isAnalyzeVerboseAhead() })
+        token=<K_VERBOSE> { analyze.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+    ]
     [ LOOKAHEAD(2) <K_TABLE> { analyze.setTableKeyword(true); } ]
-    table=Table() { analyze.addTables(table); }
-    ( "," table=Table() { analyze.addTables(table); } )*
+    [ LOOKAHEAD(1) targets=MaintenanceTargetList() { analyze.setTargets(targets); } ]
     [
         LOOKAHEAD(2)
         (histogramAction=<K_UPDATE> | histogramAction=<K_DROP>)
@@ -19669,10 +19808,242 @@ Analyze Analyze():
             ]
         )
     ]
-
     {
+        requireAnalyzeForm(analyze);
         return analyze;
     }
+}
+
+/**
+ * PostgreSQL VACUUM, CLUSTER and CHECKPOINT, chosen by isPostgreSqlMaintenanceAhead(). The ANALYSE
+ * spelling, which that check accepts too, is routed to Analyze() before.
+ */
+Statement PostgreSqlMaintenance():
+{
+    Statement statement;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == K_CHECKPOINT }) <K_CHECKPOINT>
+        { statement = new CheckpointStatement(); }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_VACUUM }) statement=Vacuum()
+        |
+        statement=Cluster()
+    )
+    { return statement; }
+}
+
+/**
+ * PostgreSQL VACUUM [(options)] [target, ...] and VACUUM [FULL] [FREEZE] [VERBOSE] [ANALYZE]
+ * [target, ...]. As in PostgreSQL, the four words are always options here, never table names.
+ */
+VacuumStatement Vacuum():
+{
+    VacuumStatement statement = new VacuumStatement();
+    List<UtilityOption> options;
+    List<MaintenanceTarget> targets;
+    Token token;
+}
+{
+    <K_VACUUM>
+    (
+        LOOKAHEAD({ getToken(1).kind == OPENING_BRACKET })
+        options=UtilityOptionList()
+        {
+            statement.setOptions(options);
+            statement.setParenthesizedOptions(true);
+        }
+        |
+        [
+            // FULL can name a table elsewhere, but directly after VACUUM it is the option
+            LOOKAHEAD({ getToken(1).kind == K_FULL })
+            token=<K_FULL> { statement.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+        ]
+        [
+            LOOKAHEAD({ isKeywordAhead("FREEZE") })
+            token=<S_IDENTIFIER> { statement.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+        ]
+        [
+            LOOKAHEAD({ getToken(1).kind == K_VERBOSE })
+            token=<K_VERBOSE> { statement.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+        ]
+        [
+            LOOKAHEAD({ getToken(1).kind == K_ANALYZE || getToken(1).kind == K_ANALYSE })
+            ( token=<K_ANALYZE> | token=<K_ANALYSE> )
+            { statement.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+        ]
+    )
+    [ LOOKAHEAD(1) targets=MaintenanceTargetList() { statement.setTargets(targets); } ]
+    { return statement; }
+}
+
+/**
+ * PostgreSQL CLUSTER (options) [table [USING index]], CLUSTER [VERBOSE] [table [USING index]] and
+ * the pre-8.3 form CLUSTER [VERBOSE] index ON table, which takes no option list.
+ */
+ClusterStatement Cluster():
+{
+    ClusterStatement statement = new ClusterStatement();
+    List<UtilityOption> options;
+    Table table;
+    String index;
+    Token token;
+}
+{
+    <K_CLUSTER>
+    (
+        LOOKAHEAD({ getToken(1).kind == OPENING_BRACKET })
+        options=UtilityOptionList()
+        {
+            statement.setOptions(options);
+            statement.setParenthesizedOptions(true);
+        }
+        [ LOOKAHEAD(1) ClusterTable(statement) ]
+        |
+        [
+            LOOKAHEAD({ getToken(1).kind == K_VERBOSE })
+            token=<K_VERBOSE> { statement.addOptions(linkToLastToken(new UtilityOption(token.image))); }
+        ]
+        [
+            LOOKAHEAD({ getToken(2).kind == K_ON && isIdentifierishNameToken(getToken(1)) })
+            index=RelObjectName() <K_ON> table=Table()
+            {
+                statement.setTable(table);
+                statement.setIndexName(index);
+                statement.setIndexSyntax(ClusterStatement.IndexSyntax.ON);
+            }
+            |
+            LOOKAHEAD(1) ClusterTable(statement)
+        ]
+    )
+    { return statement; }
+}
+
+/** The table [USING index] of CLUSTER. */
+void ClusterTable(ClusterStatement statement):
+{
+    Table table;
+    String index;
+}
+{
+    table=Table() { statement.setTable(table); }
+    [ <K_USING> index=RelObjectName() { statement.setIndexName(index); } ]
+}
+
+/** The tables of PostgreSQL VACUUM and ANALYZE, separated by commas. */
+List<MaintenanceTarget> MaintenanceTargetList():
+{
+    List<MaintenanceTarget> targets = new ArrayList<MaintenanceTarget>();
+    MaintenanceTarget target;
+}
+{
+    target=MaintenanceTarget() { targets.add(target); }
+    ( "," target=MaintenanceTarget() { targets.add(target); } )*
+    { return targets; }
+}
+
+/**
+ * [ONLY] table [*] [(column, ...)], reusing the relation target of LOCK and TRUNCATE. Only the
+ * PostgreSQL dialect and no dialect accept more than a table name.
+ */
+MaintenanceTarget MaintenanceTarget():
+{
+    Token first = getToken(1);
+    TableReference reference;
+    MaintenanceTarget target;
+    String column;
+}
+{
+    reference=RelationTarget() { target = new MaintenanceTarget(reference); }
+    [
+        LOOKAHEAD({ getToken(1).kind == OPENING_BRACKET && isPostgreSqlMaintenanceDialect() })
+        "(" column=RelObjectName() { target.addColumns(linkToLastToken(new Column(column))); }
+        ( "," column=RelObjectName() { target.addColumns(linkToLastToken(new Column(column))); } )*
+        ")"
+    ]
+    {
+        requireDdlSyntax(target.isPlainTable() || isPostgreSqlMaintenanceDialect(),
+                "ONLY, * and column lists require the PostgreSQL dialect");
+        return linked(target, first);
+    }
+}
+
+/**
+ * PostgreSQL utility_option_list, shared by VACUUM, ANALYZE and CLUSTER: (name [value], ...).
+ * As in PostgreSQL's grammar any name and value is accepted; the server checks them when it runs
+ * the statement. EXPLAIN reads its options through UtilityOption() and maps them to its own model.
+ */
+List<UtilityOption> UtilityOptionList():
+{
+    List<UtilityOption> options = new ArrayList<UtilityOption>();
+    UtilityOption option;
+}
+{
+    "(" option=UtilityOption() { options.add(option); }
+    ( "," option=UtilityOption() { options.add(option); } )*
+    ")"
+    { return options; }
+}
+
+UtilityOption UtilityOption():
+{
+    Token first = getToken(1);
+    Token token;
+    String name;
+    UtilityOption option;
+}
+{
+    (
+        LOOKAHEAD({ isDoubleQuotedIdentifierAhead() }) token=<S_QUOTED_IDENTIFIER> { name = token.image; }
+        |
+        (
+            token=<S_IDENTIFIER> { name = token.image; }
+            | token=<K_FULL> { name = token.image; }
+            | name=NonReservedWord()
+        )
+        { requireUtilityOptionWord(name, true); }
+    )
+    { option = new UtilityOption(name); }
+    [ UtilityOptionArgument(option) ]
+    { return linked(option, first); }
+}
+
+/**
+ * The value of a utility option, as PostgreSQL's utility_option_arg: a Boolean word, a signed
+ * number, a string, or another word or double-quoted identifier. Names and words are identifiers
+ * and JSqlParser's non-reserved words, which PostgreSQL does not reserve.
+ */
+void UtilityOptionArgument(UtilityOption option):
+{
+    Token token;
+    Token sign = null;
+    String word;
+}
+{
+    (
+        ( token=<K_TRUE> | token=<K_FALSE> | token=<K_ON> )
+        { option.setValue(UtilityOption.ValueType.BOOLEAN, token.image); }
+        |
+        [ sign="+" | sign="-" ] ( token=<S_LONG> | token=<S_DOUBLE> )
+        {
+            option.setValue(UtilityOption.ValueType.NUMBER,
+                    sign == null ? token.image : sign.image + token.image);
+        }
+        |
+        token=<S_CHAR_LITERAL> { option.setValue(UtilityOption.ValueType.STRING, token.image); }
+        |
+        LOOKAHEAD({ isDoubleQuotedIdentifierAhead() })
+        token=<S_QUOTED_IDENTIFIER> { option.setValue(UtilityOption.ValueType.WORD, token.image); }
+        |
+        ( token=<S_IDENTIFIER> { word = token.image; } | token=<K_FULL> { word = token.image; }
+          | word=NonReservedWord() )
+        {
+            requireUtilityOptionWord(word, false);
+            option.setValue(UtilityOption.isBooleanWord(word) ? UtilityOption.ValueType.BOOLEAN
+                    : UtilityOption.ValueType.WORD, word);
+        }
+    )
 }
 
 /** Parses PostgreSQL REINDEX; only DATABASE and SYSTEM may omit the name. */
@@ -20229,6 +20600,8 @@ List<String> CreateParameter():
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
             | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED> | tk=<K_SAMPLE> | tk=<K_ALWAYS>
             | tk=<K_VISIBLE> | tk=<K_INVISIBLE>
+            // BigQuery CLUSTER BY; CLUSTER became a token for the PostgreSQL statement
+            | tk=<K_CLUSTER>
             // MySQL index_option / algorithm_option / lock_option keywords, e.g. the trailing
             // "KEY_BLOCK_SIZE = 8 ALGORITHM = INPLACE LOCK = NONE" of CREATE INDEX, the
             // "WITH PARSER" option, and the FULLTEXT / SPATIAL index types of CREATE INDEX.
@@ -22530,7 +22903,7 @@ RelationAlterAction PostgreSqlRelationAction():
 }
 {
     (
-        LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER") <K_ON> name=RelObjectName()
+        LOOKAHEAD({ isKeywordAhead("CLUSTER") }) <K_CLUSTER> <K_ON> name=RelObjectName()
         { action.setKind(RelationAlterAction.Kind.CLUSTER_ON); action.setValue(name); }
         |
         <K_OF> name=AccessQualifiedName()
@@ -22574,7 +22947,7 @@ RelationAlterAction PostgreSqlRelationAction():
         <K_SET>
         (
             <K_WITHOUT>
-            ( LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER")
+            ( LOOKAHEAD({ isKeywordAhead("CLUSTER") }) <K_CLUSTER>
               { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_CLUSTER); }
               | ContextualKeyword("OIDS") { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_OIDS); } )
             | <K_UNLOGGED> { action.setKind(RelationAlterAction.Kind.SET_UNLOGGED); }

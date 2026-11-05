@@ -32,6 +32,9 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -484,6 +487,27 @@ public enum Feature {
      * @see TableMaintenanceStatement
      */
     tableMaintenance,
+
+    /**
+     * PostgreSQL "VACUUM" statement is allowed
+     *
+     * @see VacuumStatement
+     */
+    vacuum,
+
+    /**
+     * PostgreSQL "CLUSTER" statement is allowed
+     *
+     * @see ClusterStatement
+     */
+    cluster,
+
+    /**
+     * PostgreSQL "CHECKPOINT" statement is allowed
+     *
+     * @see CheckpointStatement
+     */
+    checkpoint,
 
     /**
      * SQL "TRUNCATE" statement is allowed

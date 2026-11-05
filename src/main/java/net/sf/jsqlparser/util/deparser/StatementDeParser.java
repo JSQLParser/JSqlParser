@@ -122,6 +122,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -377,15 +380,30 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         return builder;
     }
 
+    @Override
     public <S> StringBuilder visit(Analyze analyzer, S context) {
-        builder.append(analyzer);
-        return builder;
+        return analyzer.appendTo(builder);
     }
 
     @Override
     public <S> StringBuilder visit(TableMaintenanceStatement statement, S context) {
         builder.append(statement);
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(VacuumStatement vacuum, S context) {
+        return vacuum.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(ClusterStatement cluster, S context) {
+        return cluster.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CheckpointStatement checkpoint, S context) {
+        return checkpoint.appendTo(builder);
     }
 
     @Override

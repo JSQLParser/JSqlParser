@@ -137,7 +137,16 @@ public class ASTNodeCoverageTest {
                 "CREATE TABLE t AS EXECUTE p",
                 "ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO r",
                 "IF a = 1 SELECT 1;",
-                "BEGIN SELECT 1; END;"}) {
+                "BEGIN SELECT 1; END;",
+                "VACUUM (VERBOSE, PARALLEL 2) ONLY s.t (a, b), u *",
+                "VACUUM FULL FREEZE VERBOSE ANALYZE t",
+                "ANALYZE VERBOSE t (a)",
+                "ANALYZE (SKIP_LOCKED false)",
+                "ANALYZE TABLE t UPDATE HISTOGRAM ON c WITH 8 BUCKETS AUTO UPDATE",
+                "CLUSTER (VERBOSE) t USING i",
+                "CLUSTER VERBOSE i ON t",
+                "ANALYSE (\"verbose\", PARALLEL -1) t",
+                "CHECKPOINT"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String block = "BEGIN x := 1; NULL; foo(1); END;";

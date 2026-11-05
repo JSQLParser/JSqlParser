@@ -148,6 +148,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **Oracle vector types** | `VECTOR(*, *)` · `VECTOR(*, FLOAT32)` · `VECTOR(3, *)`, including dense and sparse storage formats |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
+| **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |

@@ -195,6 +195,9 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeDelete;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
@@ -1725,6 +1728,41 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(TableMaintenanceStatement statement) {
         StatementVisitor.super.visit(statement);
+    }
+
+    @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        // the column lists name columns of these tables, not tables
+        vacuum.getTargets().forEach(target -> visit(target.getTable(), context));
+        return null;
+    }
+
+    @Override
+    public void visit(VacuumStatement vacuum) {
+        StatementVisitor.super.visit(vacuum);
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        if (cluster.getTable() != null) {
+            visit(cluster.getTable(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(ClusterStatement cluster) {
+        StatementVisitor.super.visit(cluster);
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        return null;
+    }
+
+    @Override
+    public void visit(CheckpointStatement checkpoint) {
+        StatementVisitor.super.visit(checkpoint);
     }
 
     @Override

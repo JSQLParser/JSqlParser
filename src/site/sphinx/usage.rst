@@ -2493,6 +2493,71 @@ report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
 ``StringValue``). ``USING DATA`` excludes the other two options, and ``DROP HISTOGRAM``
 takes none of them.
 
+PostgreSQL maintenance statements
+---------------------------------
+
+With ``Dialect.POSTGRESQL`` and without a dialect, PostgreSQL's maintenance statements parse
+to typed statements:
+
+* ``VACUUM [(option [value], ...)] [target, ...]`` and
+  ``VACUUM [FULL] [FREEZE] [VERBOSE] [ANALYZE] [target, ...]`` parse to ``VacuumStatement``.
+* ``ANALYZE [(option [value], ...)] [target, ...]`` and ``ANALYZE [VERBOSE] [target, ...]``
+  extend ``Analyze``, which keeps the MySQL ``ANALYZE TABLE`` form and its histogram clause. A
+  statement takes one form: options, or targets with ``ONLY``, ``*`` or columns, cannot be
+  combined with ``NO_WRITE_TO_BINLOG``, ``LOCAL``, ``TABLE`` or ``UPDATE``/``DROP HISTOGRAM``.
+  The PostgreSQL form can be spelled ``ANALYSE``, which ``getCommand()`` keeps.
+* ``CLUSTER [(option [value], ...)] [table [USING index]]``,
+  ``CLUSTER [VERBOSE] [table [USING index]]`` and the pre-8.3 ``CLUSTER [VERBOSE] index ON table``
+  parse to ``ClusterStatement``; ``getIndexSyntax()`` tells ``USING`` and ``ON`` apart.
+* ``CHECKPOINT`` parses to ``CheckpointStatement``.
+
+The three option lists share ``UtilityOption``: ``getName()`` keeps the name as written, and
+``getValueType()`` tells whether the value is a Boolean word, a number, a string or another word.
+``getBooleanValue()``, ``getLongValue()``, ``getStringValue()`` and ``getEnumValue(Class)`` read
+it, and ``getKind(Class)`` maps the name to ``VacuumStatement.OptionKind``,
+``Analyze.OptionKind`` or ``ClusterStatement.OptionKind``. The unparenthesized keywords are
+options too: ``VACUUM FULL t`` holds the option ``FULL`` like ``VACUUM (FULL) t``, and
+``isParenthesizedOptions()`` tells the forms apart. As in PostgreSQL's grammar, an option list
+takes any name and any Boolean word, number, string or word as its value, as long as an unquoted
+name or word is not one that PostgreSQL reserves (``ANALYZE`` and ``ANALYSE`` are names);
+PostgreSQL checks the names and values when it runs the statement. ``getKind(Class)`` is null for a name the statement does not know,
+such as ``VACUUM (FOO) t``, and the typed readers are null for a value of another type, such as
+``PARALLEL 1.5``. A double-quoted name keeps its case, as in PostgreSQL: ``"verbose"`` is
+``VERBOSE``, and ``"VERBOSE"`` is an unknown option. ``EXPLAIN (...)`` reads its options
+through the same production but keeps ``ExplainStatement.Option``, and accepts only the names
+and values it accepted before.
+
+A ``MaintenanceTarget`` of VACUUM and ANALYZE is ``[ONLY] table [*] [(column, ...)]``: its
+``getReference()`` is the ``TableReference`` of ``LOCK`` and ``TRUNCATE``, and
+``getColumns()`` lists the columns. ``Analyze.getTargets()`` holds the tables of both forms;
+``getTable()`` and ``getTables()`` are derived from it, and ``getTables()`` now returns a
+read-only snapshot.
+
+.. code-block:: java
+
+    VacuumStatement vacuum = (VacuumStatement) CCJSqlParserUtil.parse(
+        "VACUUM (PARALLEL 2, INDEX_CLEANUP OFF) t (a)",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    vacuum.getOptions().get(0).getLongValue();       // 2
+    vacuum.getOptions().get(1).getBooleanValue();    // false
+    vacuum.getTargets().get(0).getColumns();         // [a]
+
+``VACUUM``, ``CLUSTER``, ``FREEZE``, ``CHECKPOINT`` and ``ANALYSE`` remain identifiers elsewhere. As in
+PostgreSQL, ``FULL``, ``FREEZE``, ``VERBOSE`` and ``ANALYZE`` directly after ``VACUUM`` are
+options, never table names. With ``Dialect.POSTGRESQL``, ``ANALYZE verbose`` now means the
+``VERBOSE`` option; without a dialect it is still a table named ``verbose`` unless a table
+name follows, and other dialects keep that reading. Without a dialect, a statement starting
+with one of these words is a PostgreSQL statement only when its next tokens take the
+PostgreSQL form, so other products' variants such as ``VACUUM INTO 'file'`` remain
+unsupported statements. Other dialects do not parse these statements, nor ``ANALYSE``.
+
+Table visitors report the tables of the targets and the CLUSTER table, but not the column
+lists or the index. Validators report the ``analyze``, ``vacuum``, ``cluster`` and
+``checkpoint`` features, which the PostgreSQL capabilities enable; the MySQL and MariaDB
+capabilities now enable ``analyze`` as well. Feature analysis reports ``MODIFIES_SCHEMA`` and
+``READS_DATA`` for VACUUM and CLUSTER, as for ANALYZE, and ``MODIFIES_SESSION`` for
+CHECKPOINT, a server operation like ``ALTER SYSTEM CHECKPOINT``.
+
 MySQL account management statements
 -----------------------------------
 
