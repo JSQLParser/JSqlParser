@@ -98,6 +98,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -781,6 +784,40 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             }
         }
         return null;
+    }
+
+    @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        // a server operation like ALTER SYSTEM FLUSH; WITH READ LOCK and FOR EXPORT also lock
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        if (flush.getTableLock() != null) {
+            analysis.certain(StmtFeature.MODIFIES_TRANSACTION);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        // ends another session or its statement, like ALTER SYSTEM KILL SESSION
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        if (handler.getAction() != HandlerStatement.Action.READ) {
+            // OPEN and CLOSE change the handlers of the session
+            analysis.claimTopLevel();
+            analysis.certain(StmtFeature.MODIFIES_SESSION);
+            return null;
+        }
+        if (analysis.claimTopLevel()) {
+            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+        }
+        analysis.certain(StmtFeature.READS_DATA);
+        return super.visit(handler, context);
     }
 
     @Override

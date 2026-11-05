@@ -79,6 +79,14 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
                     Feature.analyze, Feature.tableMaintenance,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/flush.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/kill.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/reset-persist.html
+                    Feature.flush, Feature.kill, Feature.resetPersist,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/handler.html
+                    Feature.handler,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html
                     Feature.lock, Feature.unlockTables,
 

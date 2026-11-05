@@ -164,6 +164,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``VACUUM`` · ``ANALYZE`` · ``CLUSTER`` · ``CHECKPOINT``
     * - **MySQL locks**
       - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
+    * - **MySQL server administration**
+      - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

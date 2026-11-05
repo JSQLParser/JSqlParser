@@ -213,4 +213,16 @@ class TableMaintenanceStatementTest {
         assertThat(repair.getCertain()).contains(StmtFeature.MODIFIES_SCHEMA);
         assertThat(repair.getUncertain()).contains(StmtFeature.MODIFIES_DATA);
     }
+
+    @Test
+    void isAStatementStartForUnsupportedStatements() throws JSQLParserException {
+        Statements statements = CCJSqlParserUtil.parseStatements(
+                "FOO; CHECK TABLE t; OPTIMIZE TABLE t; CHECKSUM TABLE t; REPAIR TABLE t; CHECK x",
+                parser -> parser.withUnsupportedStatements(true));
+        assertEquals(List.of("UnsupportedStatement", "TableMaintenanceStatement",
+                "TableMaintenanceStatement", "TableMaintenanceStatement",
+                "TableMaintenanceStatement", "UnsupportedStatement"),
+                statements.stream().map(statement -> statement.getClass().getSimpleName())
+                        .collect(Collectors.toList()));
+    }
 }

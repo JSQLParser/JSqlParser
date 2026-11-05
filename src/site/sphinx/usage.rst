@@ -2484,7 +2484,8 @@ records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in 
 order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
 ``CHANGED``; CHECKSUM accepts one of ``QUICK`` and ``EXTENDED``; REPAIR accepts ``QUICK``,
 ``EXTENDED`` and ``USE_FRM``. Other combinations are rejected, and the option words and
-``CHECKSUM`` remain ordinary identifiers elsewhere.
+``CHECKSUM`` remain ordinary identifiers elsewhere. With unsupported statements enabled, these
+statements are parsed rather than captured as unsupported statements.
 
 .. code-block:: java
 
@@ -2605,6 +2606,70 @@ Table visitors report the locked tables but not their aliases. Validators report
 ``lock``, ``unlockTables`` and ``backupLock`` features; the MySQL capabilities enable all
 three, MariaDB the first two, and PostgreSQL and Oracle ``lock``. Feature analysis reports
 ``MODIFIES_TRANSACTION``.
+
+MySQL server administration statements
+--------------------------------------
+
+With ``Dialect.MYSQL`` and without a dialect, these MySQL 8.4 statements parse to typed
+statements:
+
+* `FLUSH <https://dev.mysql.com/doc/refman/8.4/en/flush.html>`_ parses to
+  ``FlushStatement``. ``getModifier()`` returns ``NO_WRITE_TO_BINLOG`` or ``LOCAL``, the
+  ``TableMaintenanceStatement.Modifier`` of OPTIMIZE, REPAIR and the partition operations.
+  ``getOptions()`` keeps the flush options in source order. Each is a ``FlushOption`` whose
+  ``getKind()`` is one of MySQL 8.4's options, from ``BINARY_LOGS`` to ``USER_RESOURCES``,
+  and whose ``getChannel()`` holds the string literal of ``RELAY LOGS FOR CHANNEL 'name'``.
+  Without options the statement is
+  ``FLUSH {TABLE | TABLES} [tbl_name, ...] [WITH READ LOCK | FOR EXPORT]``
+  (``isFlushTables()``), with ``getTables()``, ``isTablesKeyword()`` and ``getTableLock()``.
+  As in MySQL, that form takes no flush option, ``FOR EXPORT`` requires a table list, only
+  ``RELAY LOGS`` names a channel, and ``FLUSH HOSTS``, which MySQL 8.4 removed, is rejected;
+  with unsupported statements enabled it remains an ``UnsupportedStatement``.
+* `KILL [CONNECTION | QUERY] processlist_id
+  <https://dev.mysql.com/doc/refman/8.4/en/kill.html>`_ parses to ``KillStatement``.
+  ``getKind()`` is ``CONNECTION``, ``QUERY`` or null when neither is given, and
+  ``getProcesslistId()`` is an expression, since MySQL accepts ``@id`` or ``1 + 2`` there.
+* `RESET PERSIST [[IF EXISTS] system_var_name]
+  <https://dev.mysql.com/doc/refman/8.4/en/reset-persist.html>`_ extends ``ResetStatement``
+  with ``isPersist()`` and ``isIfExists()``; ``getName()`` is the variable as written, with
+  a component or ``DEFAULT`` prefix such as ``validate_password.length``, or null when the
+  statement names none. Without a dialect only a variable name or ``IF EXISTS`` after
+  ``PERSIST`` selects this form, so a bare ``RESET PERSIST`` still resets a parameter named
+  ``persist``, as it does in the other dialects.
+* `HANDLER <https://dev.mysql.com/doc/refman/8.4/en/handler.html>`_ parses to
+  ``HandlerStatement``, whose ``getAction()`` is ``OPEN``, ``READ`` or ``CLOSE``.
+  ``getTable()`` is the table that OPEN opens, with the handler name as its alias, or the
+  unqualified handler name that READ and CLOSE take; ``getHandlerName()`` returns the name in
+  both cases. A READ has ``getIndexName()`` and either ``getKeyComparison()`` (``=``,
+  ``<=``, ``>=``, ``<`` or ``>``) with ``getKeyValues()``, or ``getDirection()``
+  (``FIRST``, ``NEXT``, ``PREV`` or ``LAST``, and only ``FIRST`` or ``NEXT`` without an
+  index), followed by ``getWhere()``, ``getLimit()`` and ``getOffset()``. As in MySQL, a
+  READ takes no subquery.
+
+.. code-block:: java
+
+    FlushStatement flush = (FlushStatement) CCJSqlParserUtil.parse(
+        "FLUSH LOCAL TABLES t1, t2 WITH READ LOCK");
+    flush.getTables();         // [t1, t2]
+    flush.getTableLock();      // WITH_READ_LOCK
+
+    HandlerStatement read = (HandlerStatement) CCJSqlParserUtil.parse(
+        "HANDLER h READ i1 >= (1, 2) WHERE a > 0 LIMIT 3");
+    read.getKeyComparison();   // GREATER_THAN_OR_EQUALS
+    read.getKeyValues();       // (1, 2)
+
+Other dialects keep rejecting these statements. ``HANDLER`` becomes a non-reserved keyword
+and remains usable as a name, like ``FLUSH``, ``KILL`` and the option words.
+
+Table visitors report the tables of ``FLUSH TABLES`` and the table that ``HANDLER ... OPEN``
+opens, but not the handler name of READ and CLOSE, which may be an alias. They find the
+tables of subqueries in the KILL expression, and they now return no table for every
+``RESET`` statement instead of throwing. Validators report the
+``flush``, ``kill``, ``handler`` and ``resetPersist`` features, which the MySQL capabilities
+enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
+``MODIFIES_SESSION`` for FLUSH, KILL and HANDLER OPEN and CLOSE, adds
+``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
+``RETURNS_RESULT_SET`` for HANDLER READ.
 
 MySQL account management statements
 -----------------------------------

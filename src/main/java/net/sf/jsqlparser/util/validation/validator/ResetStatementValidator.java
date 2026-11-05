@@ -18,7 +18,7 @@ public class ResetStatementValidator extends AbstractValidator<ResetStatement> {
     @Override
     public void validate(ResetStatement reset) {
         for (ValidationCapability c : getCapabilities()) {
-            validateFeature(c, Feature.reset);
+            validateFeature(c, reset.isPersist() ? Feature.resetPersist : Feature.reset);
         }
     }
 }

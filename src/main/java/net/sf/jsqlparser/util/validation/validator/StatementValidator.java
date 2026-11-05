@@ -125,6 +125,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -646,6 +649,35 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(TableMaintenanceStatement statement, S context) {
         getValidator(TableMaintenanceValidator.class).validate(statement);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        validateFeature(Feature.flush);
+        for (Table table : flush.getTables()) {
+            validateName(NamedObject.table, table.getFullyQualifiedName());
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        validateFeature(Feature.kill);
+        validateOptionalExpression(kill.getProcesslistId());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        validateFeature(Feature.handler);
+        if (handler.getAction() == HandlerStatement.Action.OPEN) {
+            Table table = handler.getTable();
+            validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
+                    ValidationUtil.getAlias(table.getAlias()));
+        }
+        validateOptionalExpression(handler.getKeyValues());
+        validateOptionalExpression(handler.getWhere());
         return null;
     }
 
