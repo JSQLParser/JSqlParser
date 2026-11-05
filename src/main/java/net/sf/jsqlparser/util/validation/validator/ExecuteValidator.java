@@ -31,10 +31,12 @@ public class ExecuteValidator extends AbstractValidator<Execute> {
                     Feature.executeExecute);
             validateFeature(c, ExecType.EXEC.equals(execute.getExecType()), Feature.executeExec);
             validateFeature(c, ExecType.CALL.equals(execute.getExecType()), Feature.executeCall);
+            validateFeature(c, execute.getUsingVariables() != null, Feature.executeUsing);
             validateName(NamedObject.procedure, execute.getName());
         }
 
         validateOptionalExpression(execute.getExprList());
+        validateOptionalExpression(execute.getUsingVariables());
     }
 
 }

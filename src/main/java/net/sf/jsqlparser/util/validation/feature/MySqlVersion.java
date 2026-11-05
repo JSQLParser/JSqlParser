@@ -87,8 +87,14 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
+                    // https://dev.mysql.com/doc/refman/8.4/en/sql-prepared-statements.html
+                    Feature.prepare, Feature.executeExecute, Feature.executeUsing,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/deallocate-prepare.html
                     Feature.deallocate,
+
+                    // https://dev.mysql.com/doc/refman/8.4/en/do.html
+                    Feature.doStatement,
 
                     Feature.drop, // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
                     Feature.dropTable, // https://dev.mysql.com/doc/refman/8.0/en/drop-index.html

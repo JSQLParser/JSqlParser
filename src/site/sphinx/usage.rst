@@ -2850,3 +2850,58 @@ and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until n
 table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
 features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
 ``RETURNS_RESULT_SET``.
+
+MySQL EXPLAIN, prepared statements and DO
+=========================================
+
+The MySQL forms of these utility statements extend the existing models. They are read with
+``Dialect.MYSQL`` and ``Dialect.MARIADB`` and, unless noted, without a dialect; other dialects
+are unchanged.
+
+* `EXPLAIN <https://dev.mysql.com/doc/refman/8.4/en/explain.html>`_,
+  ``DESCRIBE`` and ``DESC`` take ``ANALYZE [FORMAT = name]`` or
+  ``[FORMAT = name] [INTO @variable]``, then ``FOR CONNECTION id`` or
+  ``[FOR {SCHEMA | DATABASE} name]`` and a ``SELECT``, ``TABLE``, ``VALUES``, ``INSERT``,
+  ``REPLACE``, ``UPDATE`` or ``DELETE`` statement. They parse to ``ExplainStatement``, whose
+  ``getKeyword()`` keeps the spelling. ``ANALYZE`` and ``FORMAT`` are ``Option`` values like
+  PostgreSQL's options; ``Option.isUseEqual()`` marks MySQL's ``FORMAT = name``, and
+  ``getFormat()`` reads the format as ``ExplainStatement.Format``. A format other than
+  ``TRADITIONAL``, ``JSON`` or ``TREE`` is rejected, as MySQL rejects it while it parses.
+  ``getIntoVariable()``, ``getConnectionId()``, ``getSchemaName()`` and ``isSchemaKeyword()``
+  hold the other clauses, and ``getTargetKind()`` tells a statement, a table and a connection
+  apart. ``EXPLAIN SELECT``, ``EXPLAIN ANALYZE SELECT`` and ``DESCRIBE SELECT`` keep their
+  readings, and ``DESCRIBE TABLE t`` needs the MySQL dialect.
+* ``{DESCRIBE | DESC | EXPLAIN} table {column | 'pattern'}`` keeps ``DescribeStatement`` and
+  ``ExplainStatement``; ``getColumnPattern()`` is the ``Column`` or the ``StringValue``. It
+  needs the MySQL dialect, since ``DESCRIBE x y`` names an object kind in Snowflake.
+* `PREPARE name FROM {'text' | @variable} <https://dev.mysql.com/doc/refman/8.4/en/prepare.html>`_
+  extends ``PrepareStatement``: ``getSource()`` is the ``StringValue`` or ``UserVariable`` and
+  ``getStatement()`` is null. The statement text is not parsed.
+* `EXECUTE name USING @a, @b <https://dev.mysql.com/doc/refman/8.4/en/execute.html>`_ fills
+  ``Execute.getUsingVariables()``.
+* `DROP PREPARE name <https://dev.mysql.com/doc/refman/8.4/en/deallocate-prepare.html>`_ parses
+  to ``DeallocateStatement`` with ``getKeyword()`` ``DROP``.
+* `DO expr [, expr] ... <https://dev.mysql.com/doc/refman/8.4/en/do.html>`_ extends
+  ``DoStatement``: ``getSelectItems()`` holds the expressions, which MySQL reads as a select list,
+  and ``getCode()`` is null. Without a dialect, ``DO`` before a string or ``LANGUAGE`` remains
+  PostgreSQL's code block, which needs ``Dialect.POSTGRESQL``.
+
+.. code-block:: java
+
+    ExplainStatement explain = (ExplainStatement) CCJSqlParserUtil.parse(
+        "EXPLAIN ANALYZE FORMAT = TREE SELECT * FROM t",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    explain.getFormat();                                    // TREE
+    explain.getOption(ExplainStatement.OptionType.ANALYZE); // present
+
+    Execute execute = (Execute) CCJSqlParserUtil.parse("EXECUTE s USING @a, @b");
+    execute.getUsingVariables().size();                     // 2
+
+Table visitors report the tables of the explained statement, of ``EXPLAIN table`` (until now
+none) and of subqueries in MySQL's ``DO``. ``PREPARE ... FROM`` raises
+``UnsupportedOperationException``, like ``EXECUTE`` and PostgreSQL's ``DO``, because the tables
+of the statement text are unknown. Validators report ``explain``, ``prepare``,
+``executeUsing``, ``deallocate`` and ``doStatement``; the MySQL and MariaDB capabilities now
+include ``prepare``, ``executeExecute``, ``executeUsing`` and ``doStatement``. Feature analysis
+reports ``MODIFIES_SESSION`` instead of ``RETURNS_RESULT_SET`` for ``EXPLAIN ... INTO``, and reads
+the expressions of MySQL's ``DO`` instead of reporting ``OPAQUE``.

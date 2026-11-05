@@ -532,12 +532,13 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(Execute execute, S context) {
         expressionVisitor.visitExpression(execute.getExprList(), context);
+        expressionVisitor.visitExpression(execute.getUsingVariables(), context);
         return null;
     }
 
     @Override
     public <S> T visit(DoStatement statement, S context) {
-        expressionVisitor.visitExpression(statement.getCode(), context);
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
         return null;
     }
 
@@ -800,6 +801,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(PrepareStatement prepareStatement, S context) {
+        expressionVisitor.visitExpression(prepareStatement.getSource(), context);
         return null;
     }
 
