@@ -22,9 +22,12 @@ import java.util.stream.Collectors;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.CascadeBehavior;
+import net.sf.jsqlparser.statement.CastSignature;
+import net.sf.jsqlparser.statement.OperatorSignature;
 import net.sf.jsqlparser.statement.RoutineReference;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.TransformSignature;
 import net.sf.jsqlparser.statement.create.index.AlgorithmOrLockOption;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -32,7 +35,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, CAST, OPERATOR, TRANSFORM, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -60,6 +63,9 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
     private final List<Table> names = new ArrayList<>();
     private final List<RoutineReference> routines = new ArrayList<>();
     private final List<UserAccount> accounts = new ArrayList<>();
+    private final List<OperatorSignature> operators = new ArrayList<>();
+    private CastSignature cast;
+    private TransformSignature transform;
     private List<String> parameters;
     private Table table;
     private int tablePosition;
@@ -121,8 +127,9 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
     }
 
     /**
-     * Returns the dropped object names. Routine and account targets return a read-only snapshot of
-     * their names; edit {@link #getRoutines()} or {@link #getAccounts()} to change them.
+     * Returns the dropped object names. Routine, account and operator targets return a read-only
+     * snapshot of their names; edit {@link #getRoutines()}, {@link #getAccounts()} or
+     * {@link #getOperators()} to change them. A cast or transform has no name.
      */
     public List<Table> getNames() {
         if (!routines.isEmpty()) {
@@ -134,6 +141,13 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         if (!accounts.isEmpty()) {
             return Collections.unmodifiableList(accounts.stream()
                     .map(account -> new Table(account.toString(), false))
+                    .collect(Collectors.toList()));
+        }
+        if (!operators.isEmpty()) {
+            return Collections.unmodifiableList(operators.stream()
+                    .map(operator -> operator.getOperator() == null ? new Table()
+                            : new Table(operator.getOperator().getSchemaName(),
+                                    operator.getOperator().getName()))
                     .collect(Collectors.toList()));
         }
         return Collections.unmodifiableList(names);
@@ -204,27 +218,97 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    /**
+     * PostgreSQL DROP OPERATOR targets, each an operator with its operand types. Oracle's
+     * {@code DROP OPERATOR name} keeps a plain name instead.
+     */
+    public List<OperatorSignature> getOperators() {
+        return Collections.unmodifiableList(operators);
+    }
+
+    /** Replaces the targets with operators, discarding all other targets. */
+    public void setOperators(Collection<? extends OperatorSignature> operators) {
+        clearTargets();
+        if (operators != null) {
+            this.operators.addAll(operators);
+        }
+    }
+
+    public Drop withOperators(Collection<? extends OperatorSignature> operators) {
+        setOperators(operators);
+        return this;
+    }
+
+    /** Appends operator targets. Other targets are discarded first. */
+    public Drop addOperators(OperatorSignature... operators) {
+        if (operators.length > 0 && this.operators.isEmpty()) {
+            clearTargets();
+        }
+        Collections.addAll(this.operators, operators);
+        return this;
+    }
+
+    /** The target of PostgreSQL DROP CAST, or null for other object types. */
+    public CastSignature getCast() {
+        return cast;
+    }
+
+    /** Replaces the targets with a cast, discarding all other targets. */
+    public void setCast(CastSignature cast) {
+        clearTargets();
+        this.cast = cast;
+    }
+
+    public Drop withCast(CastSignature cast) {
+        setCast(cast);
+        return this;
+    }
+
+    /** The target of PostgreSQL DROP TRANSFORM, or null for other object types. */
+    public TransformSignature getTransform() {
+        return transform;
+    }
+
+    /** Replaces the targets with a transform, discarding all other targets. */
+    public void setTransform(TransformSignature transform) {
+        clearTargets();
+        this.transform = transform;
+    }
+
+    public Drop withTransform(TransformSignature transform) {
+        setTransform(transform);
+        return this;
+    }
+
     private void clearTargets() {
         names.clear();
         routines.clear();
         accounts.clear();
+        operators.clear();
+        cast = null;
+        transform = null;
         typeToParameters = new HashMap<>();
     }
 
+    private boolean hasTypedTargets() {
+        return !routines.isEmpty() || !accounts.isEmpty() || !operators.isEmpty() || cast != null
+                || transform != null;
+    }
+
     /**
-     * Converts routine or account targets to the legacy representation before a legacy edit: the
-     * names, and the last routine's argument declarations as the single legacy signature.
+     * Converts typed targets to the legacy representation before a legacy edit: the names, and the
+     * last routine's argument declarations as the single legacy signature. A cast or transform
+     * leaves no name.
      */
     private void useNameTargets() {
-        if (routines.isEmpty() && accounts.isEmpty()) {
+        if (!hasTypedTargets()) {
             return;
         }
-        List<Table> legacyNames = getNames();
+        List<Table> legacyNames = new ArrayList<>(getNames());
         Map<String, List<String>> legacyParameters = new HashMap<>();
         getTypeToParameters().forEach((key, value) -> legacyParameters.put(key,
                 value == null ? null : new ArrayList<>(value)));
-        routines.clear();
-        accounts.clear();
+        clearTargets();
         names.addAll(legacyNames);
         typeToParameters = legacyParameters;
     }
@@ -572,6 +656,17 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         } else if (!accounts.isEmpty()) {
             builder.append(accounts.stream().map(Object::toString)
                     .collect(Collectors.joining(", ")));
+        } else if (!operators.isEmpty()) {
+            for (int i = 0; i < operators.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                operators.get(i).appendTo(builder);
+            }
+        } else if (cast != null) {
+            cast.appendTo(builder);
+        } else if (transform != null) {
+            transform.appendTo(builder);
         } else {
             appendNames(builder, tablePrinter);
             if ("FUNCTION".equals(type)) {

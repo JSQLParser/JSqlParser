@@ -3622,6 +3622,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                         && (first.kind == K_WITH && "(".equals(second.image) && third.kind == K_FORCE
                             || "(".equals(first.image) && second.kind == K_FORCE);
         }
+
+        /**
+         * A PostgreSQL operator, possibly after a schema and a dot, is spelled with the characters
+         * of PostgreSQL's operator tokens, unlike the name of an Oracle operator.
+         */
+        static boolean isOperatorAhead(Token first, Token second, Token third) {
+            return isOperatorSymbol(first) || ".".equals(second.image) && isOperatorSymbol(third);
+        }
+
+        // an identifier such as #tmp may start with an operator character too
+        private static boolean isOperatorSymbol(Token token) {
+            return token.kind != S_IDENTIFIER && token.kind != S_QUOTED_IDENTIFIER
+                    && token.image != null && !token.image.isEmpty()
+                    && "+-*/<>=~!@#%^&|?".indexOf(token.image.charAt(0)) >= 0;
+        }
+
+        /** The targets are a cast, a transform or operators, named by their types. */
+        static boolean hasSignatureTargets(Drop drop) {
+            return drop.getCast() != null || drop.getTransform() != null
+                    || !drop.getOperators().isEmpty();
+        }
     }
 
     /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
@@ -20741,6 +20762,9 @@ void DropTargets(Drop drop):
     boolean aggregate = drop.getObjectType() == Drop.ObjectType.AGGREGATE;
     RoutineReference routine;
     UserAccount account;
+    CastSignature cast;
+    TransformSignature transform;
+    OperatorSignature operator;
     Table name;
 }
 {
@@ -20758,9 +20782,77 @@ void DropTargets(Drop drop):
             }
         }
         |
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.CAST })
+        cast=CastSignature() { drop.setCast(cast); }
+        |
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.TRANSFORM && getToken(1).kind == K_FOR })
+        transform=TransformSignature() { drop.setTransform(transform); }
+        |
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.OPERATOR
+                && DropLookahead.isOperatorAhead(getToken(1), getToken(2), getToken(3)) })
+        operator=OperatorSignature() { drop.addOperators(operator); }
+        ( "," operator=OperatorSignature() { drop.addOperators(operator); } )*
+        |
         name=DropObjectName() { drop.addNames(name); }
         ( "," name=DropObjectName() { drop.addNames(name); } )*
+        {
+            // PostgreSQL names an operator by its symbol and operand types and a transform by its
+            // type and language; Oracle's DROP OPERATOR name keeps the name
+            requireDdlSyntax(!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                    || drop.getObjectType() != Drop.ObjectType.OPERATOR
+                        && drop.getObjectType() != Drop.ObjectType.TRANSFORM,
+                    "DROP " + drop.getType() + " requires a signature in PostgreSQL");
+        }
     )
+}
+
+/** PostgreSQL ( source_type AS target_type ), naming a cast. */
+CastSignature CastSignature():
+{
+    Token first = getToken(1);
+    CastSignature result = new CastSignature();
+    ColDataType type;
+}
+{
+    "(" type=ColDataType() { result.setSourceType(type); }
+    <K_AS> type=ColDataType() { result.setTargetType(type); } ")"
+    { return linked(result, first); }
+}
+
+/** PostgreSQL FOR type_name LANGUAGE lang_name, naming a transform. */
+TransformSignature TransformSignature():
+{
+    Token first = getToken(1);
+    TransformSignature result = new TransformSignature();
+    ColDataType type;
+    String language;
+}
+{
+    <K_FOR> type=ColDataType() { result.setDataType(type); }
+    ContextualKeyword("LANGUAGE") language=RelObjectName() { result.setLanguage(language); }
+    { return linked(result, first); }
+}
+
+/**
+ * PostgreSQL [ schema. ] operator ( { left_type | NONE }, { right_type | NONE } ), naming an
+ * operator. NONE marks a missing operand, but one operand type is required.
+ */
+OperatorSignature OperatorSignature():
+{
+    Token first = getToken(1);
+    OperatorSignature result = new OperatorSignature();
+    ExclusionOperator operator;
+    ColDataType type;
+}
+{
+    operator=PostgreSqlOperatorReference() { result.setOperator(operator); }
+    "(" type=ExtensionOperatorType() { result.setLeftType(type); }
+    "," type=ExtensionOperatorType() { result.setRightType(type); } ")"
+    {
+        requireTypeDdlSyntax(result.getLeftType() != null || result.getRightType() != null,
+                "An operator signature needs an operand type");
+        return linked(result, first);
+    }
 }
 
 Drop Drop():
@@ -20849,6 +20941,9 @@ Drop Drop():
         |
         tk=<K_AGGREGATE>
         |
+        // PostgreSQL DROP CAST ( source_type AS target_type )
+        tk=<K_CAST>
+        |
         // PostgreSQL DROP EVENT TRIGGER and MySQL DROP EVENT (TRIGGER cannot name a MySQL event)
         tk=<K_EVENT> [ LOOKAHEAD(1) <K_TRIGGER> { eventTrigger = true; } ]
         |
@@ -20918,6 +21013,10 @@ Drop Drop():
     )*
     [ <K_CASCADE> { behavior = CascadeBehavior.CASCADE; } | <K_RESTRICT> { behavior = CascadeBehavior.RESTRICT; } ]
     {
+        // a cast, transform or operator signature is followed by CASCADE or RESTRICT only
+        requireDdlSyntax(!DropLookahead.hasSignatureTargets(drop)
+                || dropArgs.isEmpty() && indexTable == null && indexOptions.isEmpty(),
+                "Unexpected clause after DROP " + drop.getType());
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
         }

@@ -274,10 +274,20 @@ typed properties:
 * ``getAccessMethod()`` holds the index access method of PostgreSQL
   ``DROP OPERATOR CLASS|FAMILY name USING method``, which takes one name.
   ``isProcedural()`` records the ``PROCEDURAL LANGUAGE`` spelling.
+* PostgreSQL names casts, operators and transforms by types. ``getCast()`` is the
+  ``CastSignature`` of ``DROP CAST (source_type AS target_type)``.
+  ``getOperators()`` holds an ``OperatorSignature`` per target of
+  ``DROP OPERATOR [schema.]op ({left_type | NONE}, {right_type | NONE}) [, ...]``;
+  its operator is the ``ExclusionOperator`` reference that COMMENT ON OPERATOR
+  uses, and a null operand type stands for NONE. ``getTransform()`` is the
+  ``TransformSignature`` of ``DROP TRANSFORM FOR type_name LANGUAGE lang_name``.
+  Oracle's ``DROP OPERATOR name`` keeps a plain name, which the PostgreSQL
+  dialect rejects.
 
 TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
-object types, and so are PostgreSQL's ACCESS METHOD, LANGUAGE, OPERATOR CLASS,
-OPERATOR FAMILY and TEXT SEARCH CONFIGURATION, DICTIONARY, PARSER and TEMPLATE.
+object types, and so are PostgreSQL's ACCESS METHOD, CAST, LANGUAGE, OPERATOR,
+OPERATOR CLASS, OPERATOR FAMILY, TRANSFORM and TEXT SEARCH CONFIGURATION,
+DICTIONARY, PARSER and TEMPLATE.
 ``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
 parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
@@ -292,8 +302,9 @@ parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 The legacy accessors remain and are derived from these properties:
 
-* ``getName()`` and ``getNames()`` return read-only snapshots of routine and
-  account names. Edit ``getRoutines()`` or ``getAccounts()`` to change them.
+* ``getName()`` and ``getNames()`` return read-only snapshots of routine,
+  account and operator names. Edit ``getRoutines()``, ``getAccounts()`` or
+  ``getOperators()`` to change them. A cast or transform has no name.
 * ``getTypeToParameters()`` and ``getParamsByType()`` return a read-only map with
   the argument declarations of the last routine, where the legacy
   single-signature form kept them. The map now also covers PROCEDURE, ROUTINE

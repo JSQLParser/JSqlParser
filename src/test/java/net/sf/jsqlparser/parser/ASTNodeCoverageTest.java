@@ -146,7 +146,10 @@ public class ASTNodeCoverageTest {
                 "CLUSTER (VERBOSE) t USING i",
                 "CLUSTER VERBOSE i ON t",
                 "ANALYSE (\"verbose\", PARALLEL -1) t",
-                "CHECKPOINT"}) {
+                "CHECKPOINT",
+                "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
+                "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
+                "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String block = "BEGIN x := 1; NULL; foo(1); END;";

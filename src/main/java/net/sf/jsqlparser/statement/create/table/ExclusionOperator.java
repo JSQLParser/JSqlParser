@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 /**
  * An exclusion operator, optionally qualified and enclosed in PostgreSQL OPERATOR(...). COMMENT ON
- * OPERATOR uses the same reference without the OPERATOR keyword.
+ * OPERATOR and DROP OPERATOR use the same reference without the OPERATOR keyword.
  */
 public class ExclusionOperator implements Serializable {
     private String schemaName;
