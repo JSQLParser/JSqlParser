@@ -1202,7 +1202,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (k2 == K_TABLE && isTableQueryAhead(2)) return false;
             // ( ( SELECT ) UNION ( SELECT ) ) → isNestedSetOperationAhead handles it
             // Other (( patterns: ( (SELECT...) JOIN ... ) or ( (table) ) → ParenthesedFromItem
-            if (k2 == K_LATERAL) return false; // handled by LateralSubSelect
             if (k2 == CLOSING_BRACKET) return false; // empty "()" is not valid
             // EXASOL: ( IMPORT ... ) is a SubImport; handled at the outer FromItem level
             // by LOOKAHEAD(2, Dialect.EXASOL...) SubImport() - must NOT go into ParenthesedFromItem
