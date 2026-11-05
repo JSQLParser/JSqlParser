@@ -90,7 +90,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
@@ -700,6 +702,22 @@ public interface StatementVisitor<T> {
 
     default void visit(LockStatement lock) {
         this.visit(lock, null);
+    }
+
+    default <S> T visit(UnlockStatement unlock, S context) {
+        return null;
+    }
+
+    default void visit(UnlockStatement unlock) {
+        visit(unlock, null);
+    }
+
+    default <S> T visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    default void visit(BackupLockStatement backupLock) {
+        visit(backupLock, null);
     }
 
     <S> T visit(CreatePolicy createPolicy, S context);

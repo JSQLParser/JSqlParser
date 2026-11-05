@@ -174,6 +174,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isReindexAhead();
             case K_VACUUM: case K_ANALYSE: case K_CLUSTER: case K_CHECKPOINT:
                 return isPostgreSqlMaintenanceAhead();
+            case K_UNLOCK:
+                return isUnlockTablesAhead() || isBackupLockAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -2518,6 +2520,56 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return table == K_TABLE || table == K_TABLES;
     }
 
+    /** MySQL's table and backup locks parse without a dialect and in the dialects that have them. */
+    private boolean isMySqlLockDialect(boolean mariaDb) {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.MYSQL.name().equals(dialect)
+                || mariaDb && Dialect.MARIADB.name().equals(dialect);
+    }
+
+    /**
+     * Whether the words after LOCK are MySQL's TABLE or TABLES, a table name, an optional alias and
+     * a lock type. No PostgreSQL or Oracle LOCK continues a table name with an alias or with READ,
+     * WRITE or LOW_PRIORITY, so their readings, including a table named tables and ONLY t, stay
+     * unchanged. MySQL has no ONLY keyword here, so ONLY counts as a name.
+     */
+    private boolean isMySqlLockTablesAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_TABLE && kind != K_TABLES || !isMySqlLockDialect(true)) {
+            return false;
+        }
+        int offset = 2;
+        while (isIdentifierishNameToken(getToken(offset)) && ".".equals(getToken(offset + 1).image)) {
+            offset += 2;
+        }
+        if (!isIdentifierishNameToken(getToken(offset))) {
+            return false;
+        }
+        Token next = getToken(offset + 1);
+        return next.kind == K_AS || isMySqlLockTypeAhead(offset + 1)
+                || isIdentifierishNameToken(next) && isMySqlLockTypeAhead(offset + 2);
+    }
+
+    private boolean isMySqlLockTypeAhead(int offset) {
+        Token token = getToken(offset);
+        return token.kind == K_READ || token.kind == K_LOW_PRIORITY
+                || token.kind == S_IDENTIFIER && "WRITE".equalsIgnoreCase(token.image);
+    }
+
+    private boolean isUnlockTablesAhead() {
+        int kind = getToken(2).kind;
+        return getToken(1).kind == K_UNLOCK && (kind == K_TABLE || kind == K_TABLES)
+                && isMySqlLockDialect(true);
+    }
+
+    /** MySQL's LOCK INSTANCE FOR BACKUP or UNLOCK INSTANCE, which MariaDB does not have. */
+    private boolean isBackupLockAhead() {
+        int kind = getToken(1).kind;
+        boolean instance = getToken(2).kind == S_IDENTIFIER && "INSTANCE".equalsIgnoreCase(getToken(2).image);
+        return instance && (kind == K_UNLOCK || kind == K_LOCK && getToken(3).kind == K_FOR)
+                && isMySqlLockDialect(false);
+    }
+
     /**
      * Whether NO_WRITE_TO_BINLOG or LOCAL modifies a MySQL partition operation. Followed by a
      * comma, INTO or the end of the statement, the word remains a partition name.
@@ -4509,6 +4561,7 @@ String NonReservedWordPart2() :
       | tk=<K_UNBOUNDED: "UNBOUNDED">
       | tk=<K_UNKNOWN: "UNKNOWN">
       | tk=<K_UNLIMITED: "UNLIMITED">
+      | tk=<K_UNLOCK: "UNLOCK">
       | tk=<K_UNLOGGED: "UNLOGGED">
       | tk=<K_UPDATE:"UPDATE">
       | tk=<K_UPSERT:"UPSERT">
@@ -5248,6 +5301,10 @@ Statement SingleStatement() :
             |
             stm = SessionStatement()
             |
+            LOOKAHEAD({ isBackupLockAhead() }) stm = BackupLockStatement()
+            |
+            LOOKAHEAD({ isUnlockTablesAhead() }) stm = UnlockStatement()
+            |
             stm = LockStatement()
             |
             LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
@@ -5581,16 +5638,97 @@ LockStatement LockStatement(): {
     LockStatement statement = new LockStatement();
     LockStatement.Target target;
     LockMode mode;
-    Token waitSeconds;
 } {
     <K_LOCK>
-    { statement.setUseTableKeyword(false); }
-    [ LOOKAHEAD(1, <K_TABLE>) <K_TABLE> { statement.setUseTableKeyword(true); } ]
-    target=LockTarget() { statement.getTargets().add(target); }
-    ( "," target=LockTarget() { statement.getTargets().add(target); } )*
-    [ <K_IN> mode=TableLockMode() <K_MODE> { statement.setLockMode(mode); } ]
-    [ <K_NOWAIT> { statement.setNoWait(true); }
-        | <K_WAIT> waitSeconds=<S_LONG> { statement.setWaitSeconds(Long.valueOf(waitSeconds.image)); } ]
+    (
+        // https://dev.mysql.com/doc/refman/8.4/en/lock-tables.html
+        LOOKAHEAD({ isMySqlLockTablesAhead() })
+        ( <K_TABLE> | <K_TABLES> { statement.setTablesKeyword(true); } )
+        target=MySqlLockTarget() { statement.getTargets().add(target); }
+        ( "," target=MySqlLockTarget() { statement.getTargets().add(target); } )*
+        // https://mariadb.com/kb/en/lock-tables/
+        [
+            LOOKAHEAD({ Dialect.MARIADB.name().equals(getAsString(Feature.dialect))
+                    && (getToken(1).kind == K_NOWAIT || getToken(1).kind == K_WAIT) })
+            LockWait(statement)
+        ]
+        |
+        { statement.setUseTableKeyword(false); }
+        [ LOOKAHEAD(1, <K_TABLE>) <K_TABLE> { statement.setUseTableKeyword(true); } ]
+        target=LockTarget() { statement.getTargets().add(target); }
+        ( "," target=LockTarget() { statement.getTargets().add(target); } )*
+        [ <K_IN> mode=TableLockMode() <K_MODE> { statement.setLockMode(mode); } ]
+        [ LockWait(statement) ]
+    )
+    { return statement; }
+}
+
+void LockWait(LockStatement statement):
+{ Token waitSeconds; }
+{
+    <K_NOWAIT> { statement.setNoWait(true); }
+    | <K_WAIT> waitSeconds=<S_LONG> { statement.setWaitSeconds(Long.valueOf(waitSeconds.image)); }
+}
+
+/** A MySQL LOCK TABLES target: tbl_name [[AS] alias] lock_type. */
+LockStatement.Target MySqlLockTarget():
+{
+    Table table;
+    Token only;
+    Alias alias;
+    TableLockType lockType;
+}
+{
+    (
+        // MySQL has no ONLY here, so it names a table, as in SELECT * FROM only
+        LOOKAHEAD({ getToken(1).kind == K_ONLY && !".".equals(getToken(2).image) })
+        only=<K_ONLY> { table = linkToLastToken(createTable(Arrays.asList(only.image))); }
+        |
+        table=Table()
+    )
+    [
+        LOOKAHEAD({ getToken(1).kind == K_AS || !isMySqlLockTypeAhead(1) && isMySqlLockTypeAhead(2) })
+        alias=Alias() { table.setAlias(alias); }
+    ]
+    lockType=MySqlTableLockType()
+    { return new LockStatement.Target(table).withLockType(lockType); }
+}
+
+TableLockType MySqlTableLockType():
+{ TableLockType lockType; }
+{
+    (
+        <K_READ> { lockType = TableLockType.READ; } [ <K_LOCAL> { lockType = TableLockType.READ_LOCAL; } ]
+        |
+        <K_LOW_PRIORITY> ContextualKeyword("WRITE") { lockType = TableLockType.LOW_PRIORITY_WRITE; }
+        |
+        ContextualKeyword("WRITE") { lockType = TableLockType.WRITE; }
+        [
+            LOOKAHEAD({ Dialect.MARIADB.name().equals(getAsString(Feature.dialect))
+                    && isKeywordAhead("CONCURRENT") })
+            ContextualKeyword("CONCURRENT") { lockType = TableLockType.WRITE_CONCURRENT; }
+        ]
+    )
+    { return lockType; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/lock-tables.html
+UnlockStatement UnlockStatement():
+{ UnlockStatement statement = new UnlockStatement(); }
+{
+    <K_UNLOCK> ( <K_TABLE> { statement.setTablesKeyword(false); } | <K_TABLES> )
+    { return statement; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/lock-instance-for-backup.html
+BackupLockStatement BackupLockStatement():
+{ BackupLockStatement statement = new BackupLockStatement(); }
+{
+    (
+        <K_LOCK> ContextualKeyword("INSTANCE") <K_FOR> ContextualKeyword("BACKUP")
+        |
+        <K_UNLOCK> ContextualKeyword("INSTANCE") { statement.setAction(BackupLockStatement.Action.UNLOCK); }
+    )
     { return statement; }
 }
 
@@ -17497,7 +17635,7 @@ PasswordLockOption MySqlPasswordLockOption():
         (
             <K_LOCK> { option = new PasswordLockOption(PasswordLockOption.Kind.ACCOUNT_LOCK); }
             |
-            ContextualKeyword("UNLOCK")
+            <K_UNLOCK>
             { option = new PasswordLockOption(PasswordLockOption.Kind.ACCOUNT_UNLOCK); }
         )
         |

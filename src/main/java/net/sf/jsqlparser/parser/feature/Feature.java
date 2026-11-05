@@ -51,6 +51,8 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -742,6 +744,18 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.lock.LockStatement
      */
     lock,
+    /**
+     * MySQL/MariaDB "UNLOCK TABLES" statement is allowed
+     *
+     * @see UnlockStatement
+     */
+    unlockTables,
+    /**
+     * MySQL "LOCK INSTANCE FOR BACKUP" and "UNLOCK INSTANCE" statements are allowed
+     *
+     * @see BackupLockStatement
+     */
+    backupLock,
     /**
      * SQL "COMMENT ON" statement is allowed
      *
