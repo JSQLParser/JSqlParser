@@ -1805,7 +1805,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DoStatement statement, S context) {
-        throwUnsupported(statement);
+        // a code block's table accesses are unknown; MySQL's expressions are visible
+        if (statement.getSelectItems() == null) {
+            throwUnsupported(statement);
+        } else {
+            statement.visitExpressions(expression -> expression.accept(this, context));
+        }
         return null;
     }
 
@@ -2373,6 +2378,9 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(ExplainStatement explainStatement, S context) {
         if (explainStatement.getStatement() != null) {
             explainStatement.getStatement().accept((StatementVisitor<?>) this, context);
+        } else if (explainStatement.getTable() != null) {
+            // EXPLAIN table describes it, as DESCRIBE table does
+            explainStatement.getTable().accept(this, context);
         }
         return null;
     }
@@ -2939,7 +2947,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.getStatement().accept(this, context);
+        Statement statement = prepareStatement.getStatement();
+        if (statement == null) {
+            // the tables of a statement held in a string or a variable are unknown
+            throwUnsupported(prepareStatement);
+        } else {
+            statement.accept(this, context);
+        }
         return null;
     }
 

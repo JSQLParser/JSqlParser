@@ -146,9 +146,17 @@ public class ASTNodeCoverageTest {
                 "CLUSTER (VERBOSE) t USING i",
                 "CLUSTER VERBOSE i ON t",
                 "ANALYSE (\"verbose\", PARALLEL -1) t",
-                "CHECKPOINT"}) {
+                "CHECKPOINT",
+                "EXPLAIN ANALYZE FORMAT = TREE FOR SCHEMA s SELECT a FROM t",
+                "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
+                "DESC FOR CONNECTION 0x1F",
+                "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
+        String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";
+        new Walk(describe, describe, problems).check(CCJSqlParserUtil.parseStatements(describe,
+                parser -> parser.withDialect(AbstractJSqlParser.Dialect.MYSQL)));
         String block = "BEGIN x := 1; NULL; foo(1); END;";
         new Walk(block, block, problems).check(CCJSqlParserUtil.parseStatements(block,
                 parser -> parser.withDialect(AbstractJSqlParser.Dialect.ORACLE)));

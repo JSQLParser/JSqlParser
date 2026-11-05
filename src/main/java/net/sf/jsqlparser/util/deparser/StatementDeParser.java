@@ -215,7 +215,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(DoStatement statement, S context) {
-        return statement.appendTo(builder, code -> code.accept(expressionDeParser, context));
+        return statement.appendTo(builder, code -> code.accept(expressionDeParser, context),
+                item -> item.accept(selectDeParser, context));
     }
 
     @Override
@@ -548,28 +549,14 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(DescribeStatement describe, S context) {
-        builder.append(describe.getDescribeType());
-        builder.append(" ");
-        if (describe.getSelect() != null) {
-            describe.getSelect().accept(this, context);
-        } else {
-            builder.append(describe.getTable());
-        }
-        return builder;
+        return describe.appendTo(builder, select -> select.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ExplainStatement explainStatement, S context) {
-        builder.append(explainStatement.getKeyword());
-        if (explainStatement.getTable() != null) {
-            builder.append(" ").append(explainStatement.getTable());
-        } else {
-            explainStatement.appendOptionsTo(builder).append(" ");
-        }
-        if (explainStatement.getStatement() != null) {
-            explainStatement.getStatement().accept(this, context);
-        }
-        return builder;
+        return explainStatement.appendTo(builder, statement -> statement.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
@@ -744,7 +731,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.appendTo(builder, statement -> statement.accept(this, context));
+        prepareStatement.appendTo(builder, statement -> statement.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
     }
 
