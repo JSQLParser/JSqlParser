@@ -25,24 +25,35 @@
 
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import java.util.Objects;
 
 /**
+ * ROLLBACK, or its PostgreSQL spelling ABORT.
+ *
  * @author are
  */
-public class RollbackStatement extends ASTNodeAccessImpl implements Statement {
-    private TransactionKeyword keyword;
-    private TransactionChain chain;
+public class RollbackStatement extends TransactionCompletionStatement {
+    /** The keyword that starts the statement; ABORT has no savepoint or FORCE form. */
+    public enum Command {
+        ROLLBACK, ABORT
+    }
+
+    private Command command = Command.ROLLBACK;
     private boolean usingSavepointKeyword = false;
     private String savepointName = null;
     private String forceDistributedTransactionIdentifier = null;
 
-    public TransactionKeyword getKeyword() {
-        return keyword;
+    public Command getCommand() {
+        return command;
     }
 
-    public void setKeyword(TransactionKeyword keyword) {
-        this.keyword = keyword;
+    public void setCommand(Command command) {
+        this.command = Objects.requireNonNull(command, "command");
+    }
+
+    public RollbackStatement withCommand(Command command) {
+        setCommand(command);
+        return this;
     }
 
     public RollbackStatement withKeyword(TransactionKeyword keyword) {
@@ -50,28 +61,25 @@ public class RollbackStatement extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
-    public TransactionChain getChain() {
-        return chain;
-    }
-
-    public void setChain(TransactionChain chain) {
-        this.chain = chain;
-    }
-
     public RollbackStatement withChain(TransactionChain chain) {
         setChain(chain);
         return this;
     }
 
+    public RollbackStatement withRelease(TransactionRelease release) {
+        setRelease(release);
+        return this;
+    }
+
     public boolean isUsingWorkKeyword() {
-        return keyword == TransactionKeyword.WORK;
+        return getKeyword() == TransactionKeyword.WORK;
     }
 
     public void setUsingWorkKeyword(boolean usingWorkKeyword) {
         if (usingWorkKeyword) {
-            keyword = TransactionKeyword.WORK;
-        } else if (keyword == TransactionKeyword.WORK) {
-            keyword = null;
+            setKeyword(TransactionKeyword.WORK);
+        } else if (getKeyword() == TransactionKeyword.WORK) {
+            setKeyword(null);
         }
     }
 
@@ -121,11 +129,15 @@ public class RollbackStatement extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    @Override
+    public boolean isPostgresSpelling() {
+        return command == Command.ABORT;
+    }
+
+    @Override
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("ROLLBACK");
-        if (keyword != null) {
-            builder.append(' ').append(keyword);
-        }
+        builder.append(command);
+        appendKeyword(builder);
         if (savepointName != null && !savepointName.trim().isEmpty()) {
             builder.append(" TO ").append(usingSavepointKeyword ? "SAVEPOINT " : "")
                     .append(savepointName);
@@ -133,15 +145,7 @@ public class RollbackStatement extends ASTNodeAccessImpl implements Statement {
                 && !forceDistributedTransactionIdentifier.trim().isEmpty()) {
             builder.append(" FORCE ").append(forceDistributedTransactionIdentifier);
         }
-        if (chain != null) {
-            builder.append(' ').append(chain);
-        }
-        return builder;
-    }
-
-    @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
+        return appendCompletion(builder);
     }
 
     @Override

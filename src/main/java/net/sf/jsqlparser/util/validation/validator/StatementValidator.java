@@ -74,10 +74,12 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -86,7 +88,10 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.SetScope;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
+import net.sf.jsqlparser.statement.TransactionCompletionStatement;
+import net.sf.jsqlparser.statement.TransactionMode;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
@@ -161,6 +166,8 @@ import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+
+import java.util.List;
 
 /**
  * @author gitmotte
@@ -382,26 +389,27 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(StartTransaction statement, S context) {
         validateFeature(Feature.startTransaction);
-        for (StartTransaction.Mode mode : statement.getModes()) {
-            switch (mode) {
-                case ISOLATION_LEVEL_SERIALIZABLE:
-                case ISOLATION_LEVEL_REPEATABLE_READ:
-                case ISOLATION_LEVEL_READ_COMMITTED:
-                case ISOLATION_LEVEL_READ_UNCOMMITTED:
+        validateTransactionModes(statement.getModes(), statement.getModeContext());
+        return null;
+    }
+
+    /**
+     * Checks the mode features of BEGIN, START TRANSACTION and SET TRANSACTION. An isolation level
+     * is a feature of BEGIN and START TRANSACTION only, since SET TRANSACTION exists to set it.
+     */
+    private void validateTransactionModes(List<TransactionMode> modes,
+            TransactionMode.Context context) {
+        for (TransactionMode mode : modes) {
+            if (mode.isIsolationLevel()) {
+                if (context != TransactionMode.Context.SET_TRANSACTION) {
                     validateFeature(Feature.transactionIsolationLevel);
-                    break;
-                case DEFERRABLE:
-                case NOT_DEFERRABLE:
-                    validateFeature(Feature.transactionDeferrable);
-                    break;
-                case WITH_CONSISTENT_SNAPSHOT:
-                    validateFeature(Feature.transactionConsistentSnapshot);
-                    break;
-                default:
-                    break;
+                }
+            } else if (mode.isDeferrability()) {
+                validateFeature(Feature.transactionDeferrable);
+            } else if (mode == TransactionMode.WITH_CONSISTENT_SNAPSHOT) {
+                validateFeature(Feature.transactionConsistentSnapshot);
             }
         }
-        return null;
     }
 
     @Override
@@ -411,12 +419,48 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        validateFeature(Feature.setTransaction);
+        if (statement.getScope() == SetScope.GLOBAL) {
+            validateFeature(Feature.setTransactionGlobal);
+        } else if (statement.getScope() == SetScope.PERSIST
+                || statement.getScope() == SetScope.PERSIST_ONLY) {
+            validateFeature(Feature.setTransactionPersist);
+        }
+        if (statement.isSessionCharacteristics()) {
+            validateFeature(Feature.setTransactionSessionCharacteristics);
+        }
+        if (statement.getSnapshotId() != null) {
+            validateFeature(Feature.setTransactionSnapshot);
+        }
+        validateTransactionModes(statement.getModes(), TransactionMode.Context.SET_TRANSACTION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        validateFeature(Feature.setConstraints);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
-        if (commit.getChain() != null) {
+        validateTransactionCompletion(commit);
+        return null;
+    }
+
+    /** Checks the clauses shared by COMMIT and ROLLBACK and their END and ABORT spellings. */
+    private void validateTransactionCompletion(TransactionCompletionStatement statement) {
+        if (statement.isPostgresSpelling()) {
+            validateFeature(Feature.transactionEndAbort);
+        }
+        if (statement.getChain() != null) {
             validateFeature(Feature.transactionChain);
         }
-        return null;
+        if (statement.getRelease() != null) {
+            validateFeature(Feature.transactionRelease);
+        }
     }
 
     @Override
@@ -676,9 +720,10 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(RollbackStatement rollbackStatement, S context) {
         validateFeature(Feature.rollback);
-        if (rollbackStatement.getChain() != null) {
-            validateFeature(Feature.transactionChain);
+        if (rollbackStatement.getSavepointName() != null) {
+            validateFeature(Feature.savepoint);
         }
+        validateTransactionCompletion(rollbackStatement);
         return null;
     }
 

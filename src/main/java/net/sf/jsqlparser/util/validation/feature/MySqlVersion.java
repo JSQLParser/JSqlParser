@@ -150,7 +150,10 @@ public enum MySqlVersion implements Version {
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
                     Feature.commit, Feature.rollback, Feature.startTransaction,
                     Feature.savepoint, Feature.releaseSavepoint,
-                    Feature.transactionChain, Feature.transactionConsistentSnapshot, //
+                    Feature.transactionChain, Feature.transactionConsistentSnapshot,
+                    Feature.transactionRelease, // https://dev.mysql.com/doc/refman/8.4/en/set-transaction.html
+                    Feature.setTransaction, Feature.setTransactionGlobal,
+                    Feature.setTransactionPersist, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));

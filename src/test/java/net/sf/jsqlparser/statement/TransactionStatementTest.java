@@ -14,14 +14,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.ASTNodeAccess;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.parser.StreamProvider;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
@@ -31,15 +35,27 @@ import net.sf.jsqlparser.util.validation.feature.MySqlVersion;
 import net.sf.jsqlparser.util.validation.feature.PostgresqlVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class TransactionStatementTest {
     private Statement parse(String sql, Dialect dialect) throws JSQLParserException {
-        return CCJSqlParserUtil.parse(sql, p -> p.withDialect(dialect));
+        return dialect == null ? CCJSqlParserUtil.parse(sql)
+                : CCJSqlParserUtil.parse(sql, p -> p.withDialect(dialect));
+    }
+
+    /** Asserts that the object's node spans {@code expected} within {@code source}. */
+    static void assertSpans(String expected, String source, ASTNodeAccess access) {
+        Node node = access.getASTNode();
+        assertNotNull(node, expected);
+        assertEquals(expected, source.substring(node.jjtGetFirstToken().absoluteBegin - 1,
+                node.jjtGetLastToken().absoluteEnd - 1));
     }
 
     private Statement roundTrip(String sql, Dialect dialect) throws Exception {
         Statement statement = parse(sql, dialect);
+        assertSpans(sql, sql, (ASTNodeAccess) statement);
         StringBuilder output = new StringBuilder();
         statement.accept(new StatementDeParser(output), null);
         assertEquals(statement.toString(), output.toString());
@@ -91,9 +107,9 @@ class TransactionStatementTest {
                 () -> parse(sql.replace(", ", ", WITH CONSISTENT SNAPSHOT, "), Dialect.MYSQL));
         StartTransaction postgres = assertInstanceOf(StartTransaction.class,
                 roundTrip(sql, Dialect.POSTGRESQL));
-        List<StartTransaction.Mode> expected = sql.endsWith("READ WRITE")
-                ? List.of(StartTransaction.Mode.READ_ONLY, StartTransaction.Mode.READ_WRITE)
-                : List.of(StartTransaction.Mode.READ_WRITE, StartTransaction.Mode.READ_ONLY);
+        List<TransactionMode> expected = sql.endsWith("READ WRITE")
+                ? List.of(TransactionMode.READ_ONLY, TransactionMode.READ_WRITE)
+                : List.of(TransactionMode.READ_WRITE, TransactionMode.READ_ONLY);
         assertEquals(expected, postgres.getModes());
         assertEquals(sql, postgres.toString());
         StartTransaction permissive = assertInstanceOf(StartTransaction.class,
@@ -108,9 +124,9 @@ class TransactionStatementTest {
     void mysqlRepeatedAccessModesArePreserved(String sql) throws Exception {
         StartTransaction statement = assertInstanceOf(StartTransaction.class,
                 roundTrip(sql, Dialect.MYSQL));
-        StartTransaction.Mode mode = sql.endsWith("READ ONLY")
-                ? StartTransaction.Mode.READ_ONLY
-                : StartTransaction.Mode.READ_WRITE;
+        TransactionMode mode = sql.endsWith("READ ONLY")
+                ? TransactionMode.READ_ONLY
+                : TransactionMode.READ_WRITE;
         assertEquals(List.of(mode, mode), statement.getModes());
         assertEquals(sql, statement.toString());
     }
@@ -170,12 +186,12 @@ class TransactionStatementTest {
         StartTransaction statement = assertInstanceOf(StartTransaction.class, parse(
                 "BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY NOT DEFERRABLE",
                 Dialect.POSTGRESQL));
-        assertEquals(List.of(StartTransaction.Mode.ISOLATION_LEVEL_REPEATABLE_READ,
-                StartTransaction.Mode.READ_ONLY, StartTransaction.Mode.NOT_DEFERRABLE),
+        assertEquals(List.of(TransactionMode.ISOLATION_LEVEL_REPEATABLE_READ,
+                TransactionMode.READ_ONLY, TransactionMode.NOT_DEFERRABLE),
                 statement.getModes());
         statement.withCommand(StartTransaction.Command.START_TRANSACTION).withKeyword(null);
-        statement.getModes().set(1, StartTransaction.Mode.READ_WRITE);
-        statement.addMode(StartTransaction.Mode.DEFERRABLE);
+        statement.getModes().set(1, TransactionMode.READ_WRITE);
+        statement.addMode(TransactionMode.DEFERRABLE);
         String sql =
                 "START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, NOT DEFERRABLE, DEFERRABLE";
         assertEquals(sql, statement.toString());
@@ -308,5 +324,242 @@ class TransactionStatementTest {
         assertFalse(new Validation(pg, List.of(MySqlVersion.V8_0),
                 "START TRANSACTION ISOLATION LEVEL SERIALIZABLE DEFERRABLE")
                 .validate().isEmpty());
+    }
+
+    static Stream<Arguments> mysqlReleaseForms() {
+        return Stream.of(
+                Arguments.of("COMMIT AND NO CHAIN NO RELEASE", false,
+                        null, TransactionChain.NO_CHAIN, TransactionRelease.NO_RELEASE),
+                Arguments.of("COMMIT RELEASE", false, null, null, TransactionRelease.RELEASE),
+                Arguments.of("COMMIT WORK NO RELEASE", false, TransactionKeyword.WORK, null,
+                        TransactionRelease.NO_RELEASE),
+                Arguments.of("COMMIT AND NO CHAIN RELEASE", false, null,
+                        TransactionChain.NO_CHAIN, TransactionRelease.RELEASE),
+                Arguments.of("ROLLBACK WORK AND CHAIN NO RELEASE", true, TransactionKeyword.WORK,
+                        TransactionChain.CHAIN, TransactionRelease.NO_RELEASE),
+                Arguments.of("ROLLBACK RELEASE", true, null, null, TransactionRelease.RELEASE),
+                Arguments.of("ROLLBACK AND NO CHAIN RELEASE", true, null,
+                        TransactionChain.NO_CHAIN, TransactionRelease.RELEASE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("mysqlReleaseForms")
+    void mysqlCompletionRetainsRelease(String sql, boolean rollback, TransactionKeyword keyword,
+            TransactionChain chain, TransactionRelease release) throws Exception {
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, Dialect.MARIADB}) {
+            Class<? extends TransactionCompletionStatement> type =
+                    rollback ? RollbackStatement.class : Commit.class;
+            TransactionCompletionStatement statement =
+                    assertInstanceOf(type, roundTrip(sql, dialect));
+            assertEquals(sql, statement.toString());
+            assertEquals(keyword, statement.getKeyword());
+            assertEquals(chain, statement.getChain());
+            assertEquals(release, statement.getRelease());
+            assertFalse(statement.isPostgresSpelling());
+        }
+        assertEquals(sql, CCJSqlParserUtil.parse(sql).toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COMMIT AND CHAIN RELEASE", "ROLLBACK WORK AND CHAIN RELEASE",
+            "COMMIT RELEASE RELEASE", "COMMIT NO", "ROLLBACK TO SAVEPOINT sp RELEASE",
+            "ROLLBACK RELEASE AND CHAIN"})
+    void contradictoryOrMisplacedReleaseIsRejected(String sql) {
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, null}) {
+            assertThrows(JSQLParserException.class, () -> parse(sql, dialect), sql);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COMMIT RELEASE", "COMMIT AND NO CHAIN NO RELEASE",
+            "ROLLBACK NO RELEASE", "END RELEASE", "ABORT NO RELEASE"})
+    void postgresRejectsRelease(String sql) {
+        assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.POSTGRESQL));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"END", "END WORK", "END TRANSACTION", "END AND CHAIN",
+            "END WORK AND NO CHAIN", "ABORT", "ABORT WORK", "ABORT TRANSACTION AND CHAIN",
+            "ABORT AND NO CHAIN"})
+    void postgresEndAndAbortAreCommitAndRollback(String sql) throws Exception {
+        TransactionCompletionStatement statement =
+                assertInstanceOf(TransactionCompletionStatement.class,
+                        roundTrip(sql, Dialect.POSTGRESQL));
+        assertTrue(statement.isPostgresSpelling());
+        if (sql.startsWith("END")) {
+            assertEquals(Commit.Command.END,
+                    assertInstanceOf(Commit.class, statement).getCommand());
+        } else {
+            RollbackStatement rollback = assertInstanceOf(RollbackStatement.class, statement);
+            assertEquals(RollbackStatement.Command.ABORT, rollback.getCommand());
+            assertNull(rollback.getSavepointName());
+        }
+        assertEquals(sql.contains("WORK") ? TransactionKeyword.WORK
+                : sql.contains("TRANSACTION") ? TransactionKeyword.TRANSACTION : null,
+                statement.getKeyword());
+        assertEquals(sql.endsWith("NO CHAIN") ? TransactionChain.NO_CHAIN
+                : sql.endsWith("CHAIN") ? TransactionChain.CHAIN : null, statement.getChain());
+    }
+
+    @Test
+    void abortIsUnambiguousWithoutADialectButEndIsNot() throws Exception {
+        assertInstanceOf(RollbackStatement.class, CCJSqlParserUtil.parse("ABORT WORK"));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse("END"));
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, Dialect.MARIADB, Dialect.ORACLE,
+                Dialect.SQLSERVER}) {
+            assertThrows(JSQLParserException.class, () -> parse("ABORT", dialect));
+            assertThrows(JSQLParserException.class, () -> parse("END", dialect));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ABORT TO SAVEPOINT sp", "ABORT TO sp", "ABORT FORCE '1.2.3'",
+            "END TO SAVEPOINT sp", "END PREPARED 'x'", "END AND", "ABORT AND",
+            "END garbage", "ABORT garbage"})
+    void postgresSpellingsTakeOnlyTheCompletionClauses(String sql) {
+        assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.POSTGRESQL));
+    }
+
+    @Test
+    void endStillClosesBlocksAndCaseExpressions() throws Exception {
+        for (Dialect dialect : new Dialect[] {Dialect.POSTGRESQL, Dialect.MYSQL, null}) {
+            assertInstanceOf(Block.class,
+                    dialect == null ? CCJSqlParserUtil.parse("BEGIN SELECT 1; SELECT 2; END")
+                            : parse("BEGIN SELECT 1; SELECT 2; END", dialect));
+        }
+        Statements script = CCJSqlParserUtil.parseStatements(
+                "BEGIN; SELECT CASE WHEN a THEN 1 END AS \"end\" FROM t; END; ABORT",
+                p -> p.withDialect(Dialect.POSTGRESQL));
+        assertEquals(4, script.size());
+        assertInstanceOf(StartTransaction.class, script.get(0));
+        assertEquals(Commit.Command.END, ((Commit) script.get(2)).getCommand());
+        assertEquals(RollbackStatement.Command.ABORT,
+                ((RollbackStatement) script.get(3)).getCommand());
+        assertInstanceOf(IfElseStatement.class,
+                CCJSqlParserUtil.parse("IF 1 = 1 BEGIN SELECT 1; END ELSE SELECT 2"));
+        assertInstanceOf(CreateFunction.class,
+                parse("CREATE FUNCTION f() RETURNS int LANGUAGE sql BEGIN ATOMIC SELECT 1; END",
+                        Dialect.POSTGRESQL));
+        for (String sql : List.of("SELECT abort FROM abort", "CREATE TABLE abort (abort INT)",
+                "SELECT 1 AS \"end\"")) {
+            assertEquals(sql, parse(sql, Dialect.POSTGRESQL).toString());
+            assertEquals(sql, CCJSqlParserUtil.parse(sql).toString());
+        }
+    }
+
+    static Stream<Arguments> newStatementStarts() {
+        return Stream.of(
+                Arguments.of(Dialect.POSTGRESQL, "END", Commit.class),
+                Arguments.of(Dialect.POSTGRESQL, "END WORK AND CHAIN", Commit.class),
+                Arguments.of(Dialect.POSTGRESQL, "ABORT", RollbackStatement.class),
+                Arguments.of(null, "ABORT TRANSACTION", RollbackStatement.class),
+                Arguments.of(Dialect.MYSQL, "COMMIT AND NO CHAIN NO RELEASE", Commit.class),
+                Arguments.of(Dialect.MYSQL, "ROLLBACK RELEASE", RollbackStatement.class),
+                Arguments.of(Dialect.MYSQL, "SET GLOBAL TRANSACTION READ WRITE",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.POSTGRESQL, "SET TRANSACTION SNAPSHOT '1'",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.POSTGRESQL,
+                        "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.MYSQL,
+                        "SET PERSIST_ONLY TRANSACTION ISOLATION LEVEL READ COMMITTED",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.POSTGRESQL, "SET LOCAL TRANSACTION SNAPSHOT '1'",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.POSTGRESQL,
+                        "SET LOCAL SESSION CHARACTERISTICS AS TRANSACTION READ ONLY",
+                        SetTransactionStatement.class),
+                Arguments.of(Dialect.POSTGRESQL, "SET CONSTRAINTS ALL DEFERRED",
+                        SetConstraintsStatement.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource("newStatementStarts")
+    void newStatementStartsEndThePreviousStatement(Dialect dialect, String sql,
+            Class<? extends Statement> type) throws Exception {
+        // COMMIT on its own line is closed by the next statement start rather than a semicolon
+        String script = "SELECT 1;\nCOMMIT\n" + sql + "\n;SAVEPOINT sp";
+        for (boolean opaque : new boolean[] {false, true}) {
+            Statements statements = CCJSqlParserUtil.parseStatements(script, p -> {
+                if (dialect != null) {
+                    p.withDialect(dialect);
+                }
+                p.withUnsupportedStatements(opaque);
+            });
+            assertEquals(4, statements.size(), script);
+            assertEquals("COMMIT", statements.get(1).toString());
+            assertInstanceOf(type, statements.get(2));
+            assertEquals(sql, statements.get(2).toString());
+            assertSpans("COMMIT", script, (ASTNodeAccess) statements.get(1));
+            assertSpans(sql, script, (ASTNodeAccess) statements.get(2));
+            assertInstanceOf(SavepointStatement.class, statements.get(3));
+        }
+    }
+
+    @Test
+    void completionModelIsSharedAndMutable() {
+        Commit commit = new Commit().withCommand(Commit.Command.END)
+                .withKeyword(TransactionKeyword.TRANSACTION).withChain(TransactionChain.CHAIN);
+        assertEquals("END TRANSACTION AND CHAIN", commit.toString());
+        commit.withCommand(Commit.Command.COMMIT).withKeyword(null).withChain(null)
+                .withRelease(TransactionRelease.RELEASE);
+        assertEquals("COMMIT RELEASE", commit.toString());
+        RollbackStatement rollback = new RollbackStatement()
+                .withCommand(RollbackStatement.Command.ABORT).withUsingWorkKeyword(true);
+        assertEquals("ABORT WORK", rollback.toString());
+        rollback.withCommand(RollbackStatement.Command.ROLLBACK)
+                .withChain(TransactionChain.NO_CHAIN).withRelease(TransactionRelease.NO_RELEASE);
+        assertEquals("ROLLBACK WORK AND NO CHAIN NO RELEASE", rollback.toString());
+        StringBuilder output = new StringBuilder("x: ");
+        rollback.accept(new StatementDeParser(output), null);
+        assertEquals("x: ROLLBACK WORK AND NO CHAIN NO RELEASE", output.toString());
+        assertThrows(NullPointerException.class, () -> commit.setCommand(null));
+        assertThrows(NullPointerException.class, () -> rollback.setCommand(null));
+    }
+
+    @Test
+    void validatesRollbackSavepointReleaseAndPostgresSpellings() {
+        FeatureConfiguration pg = new FeatureConfiguration().setValue(Feature.dialect,
+                Dialect.POSTGRESQL.name());
+        FeatureConfiguration mysql = new FeatureConfiguration().setValue(Feature.dialect,
+                Dialect.MYSQL.name());
+        assertTrue(new Validation(pg, List.of(PostgresqlVersion.V12),
+                "SAVEPOINT sp; ROLLBACK TO SAVEPOINT sp; ROLLBACK; END AND CHAIN; ABORT")
+                .validate().isEmpty());
+        assertTrue(new Validation(mysql, List.of(MySqlVersion.V8_0),
+                "SAVEPOINT sp; ROLLBACK TO sp; COMMIT AND NO CHAIN NO RELEASE; ROLLBACK RELEASE")
+                .validate().isEmpty());
+        assertFalse(new Validation(new FeatureConfiguration(), List.of(MySqlVersion.V8_0),
+                "ABORT").validate().isEmpty());
+        assertFalse(new Validation(new FeatureConfiguration(), List.of(PostgresqlVersion.V12),
+                "COMMIT RELEASE").validate().isEmpty());
+        assertFalse(new Validation(pg, List.of(new FeaturesAllowed(Feature.rollback)),
+                "ROLLBACK TO sp").validate().isEmpty());
+        assertTrue(new Validation(pg,
+                List.of(new FeaturesAllowed(Feature.rollback, Feature.savepoint)),
+                "SAVEPOINT sp; ROLLBACK TO sp").validate().isEmpty());
+        assertFalse(new Validation(pg, List.of(new FeaturesAllowed(Feature.commit)),
+                "ROLLBACK").validate().isEmpty());
+        assertTrue(new Validation(new FeatureConfiguration(),
+                List.of(net.sf.jsqlparser.util.validation.feature.SqlServerVersion.V2019),
+                "COMMIT; ROLLBACK").validate().isEmpty());
+    }
+
+    @Test
+    void visitorDispatchCoversCompletionSpellings() throws Exception {
+        StatementVisitorAdapter<String> visitor = new StatementVisitorAdapter<>() {
+            @Override
+            public <S> String visit(Commit commit, S context) {
+                return context + ":" + commit.getCommand();
+            }
+
+            @Override
+            public <S> String visit(RollbackStatement rollback, S context) {
+                return context + ":" + rollback.getCommand();
+            }
+        };
+        assertEquals("ctx:END", parse("END", Dialect.POSTGRESQL).accept(visitor, "ctx"));
+        assertEquals("ctx:ABORT", parse("ABORT", Dialect.POSTGRESQL).accept(visitor, "ctx"));
     }
 }

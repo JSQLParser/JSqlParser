@@ -906,6 +906,16 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return transactionOnly();
     }

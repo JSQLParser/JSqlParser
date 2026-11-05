@@ -241,6 +241,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetConstraintsStatement statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(Commit commit, S context) {
 
         return null;

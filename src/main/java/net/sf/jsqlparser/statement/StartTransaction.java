@@ -20,32 +20,9 @@ public class StartTransaction extends ASTNodeAccessImpl implements Statement {
         START_TRANSACTION, BEGIN
     }
 
-    public enum Mode {
-        ISOLATION_LEVEL_SERIALIZABLE(
-                "ISOLATION LEVEL SERIALIZABLE"), ISOLATION_LEVEL_REPEATABLE_READ(
-                        "ISOLATION LEVEL REPEATABLE READ"), ISOLATION_LEVEL_READ_COMMITTED(
-                                "ISOLATION LEVEL READ COMMITTED"), ISOLATION_LEVEL_READ_UNCOMMITTED(
-                                        "ISOLATION LEVEL READ UNCOMMITTED"), READ_WRITE(
-                                                "READ WRITE"), READ_ONLY("READ ONLY"), DEFERRABLE(
-                                                        "DEFERRABLE"), NOT_DEFERRABLE(
-                                                                "NOT DEFERRABLE"), WITH_CONSISTENT_SNAPSHOT(
-                                                                        "WITH CONSISTENT SNAPSHOT");
-
-        private final String sql;
-
-        Mode(String sql) {
-            this.sql = sql;
-        }
-
-        @Override
-        public String toString() {
-            return sql;
-        }
-    }
-
+    private final List<TransactionMode> modes = new ArrayList<>();
     private Command command = Command.START_TRANSACTION;
     private TransactionKeyword keyword;
-    private final List<Mode> modes = new ArrayList<>();
 
     public Command getCommand() {
         return command;
@@ -58,6 +35,12 @@ public class StartTransaction extends ASTNodeAccessImpl implements Statement {
     public StartTransaction withCommand(Command command) {
         setCommand(command);
         return this;
+    }
+
+    /** The statement context of the modes, which decides the modes each dialect accepts. */
+    public TransactionMode.Context getModeContext() {
+        return command == Command.BEGIN ? TransactionMode.Context.BEGIN
+                : TransactionMode.Context.START_TRANSACTION;
     }
 
     public TransactionKeyword getKeyword() {
@@ -74,11 +57,11 @@ public class StartTransaction extends ASTNodeAccessImpl implements Statement {
     }
 
     /** Mutable, ordered transaction characteristics. */
-    public List<Mode> getModes() {
+    public List<TransactionMode> getModes() {
         return modes;
     }
 
-    public StartTransaction addMode(Mode mode) {
+    public StartTransaction addMode(TransactionMode mode) {
         modes.add(Objects.requireNonNull(mode, "mode"));
         return this;
     }
