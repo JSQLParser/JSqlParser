@@ -1646,6 +1646,12 @@ or ``FeatureConfiguration``. Other dialects retain their comment behavior.
 Nested executable comments are rejected; nested-comment acceptance in other
 dialects is not a guarantee that the same SQL is valid on MySQL.
 
+``Dialect.MARIADB`` follows the same rules, with ``withMySqlServerVersion``
+taking the MariaDB version (``110402`` for 11.4.2). As on the server,
+``/*M! ... */`` and ``/*M!###### ... */`` are executable there too, a sixth
+version digit is always part of the version, and ``/*!50700`` through
+``/*!99999`` (MySQL 5.7 and later) are skipped.
+
 ALTER column names
 ~~~~~~~~~~~~~~~~~~
 
