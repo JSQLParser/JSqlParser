@@ -7985,11 +7985,15 @@ Update Update():
     Token tk = null;
     UpdateModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
+    String algorithm;
 
     OutputClause outputClause = null;
 }
 {
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
+    // SQLite: UPDATE OR <algorithm>; ABORT and FAIL are not keywords of the parser
+    [ <K_OR> algorithm=RelObjectName()
+        { update.setConflictAlgorithm(updateOrAlgorithm(algorithm)); } ]
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
     table=TableWithAliasAndMysqlIndexHint()

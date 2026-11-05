@@ -11,6 +11,7 @@ package net.sf.jsqlparser.parser;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.statement.update.UpdateConflictAlgorithm;
 import net.sf.jsqlparser.statement.upsert.UpsertType;
 
 import java.util.ArrayList;
@@ -282,6 +283,18 @@ public abstract class AbstractJSqlParser<P> {
             default:
                 throw new ParseException("Expected ABORT, FAIL, IGNORE, REPLACE or ROLLBACK");
         }
+    }
+
+    protected UpdateConflictAlgorithm updateOrAlgorithm(String algorithm) throws ParseException {
+        if (!Dialect.SQLITE.name().equals(getAsString(Feature.dialect))) {
+            throw new ParseException("UPDATE OR " + algorithm + " needs Dialect.SQLITE");
+        }
+        for (UpdateConflictAlgorithm conflictAlgorithm : UpdateConflictAlgorithm.values()) {
+            if (conflictAlgorithm.name().equalsIgnoreCase(algorithm)) {
+                return conflictAlgorithm;
+            }
+        }
+        throw new ParseException("Expected ABORT, FAIL, IGNORE, REPLACE or ROLLBACK");
     }
 
     public String getAsString(Feature f) {
