@@ -1198,6 +1198,25 @@ public class TablesNamesFinderTest {
                 "MY_TABLE2");
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT TOP ((SELECT count(*) FROM secrets)) a FROM t",
+            "SELECT TOP ((SELECT count(*) FROM secrets)) PERCENT a FROM t",
+            "SELECT * REPLACE ((SELECT max(pw) FROM secrets) AS a) FROM t",
+            "SELECT * EXCLUDE (b) REPLACE ((SELECT max(pw) FROM secrets) AS a) FROM t",
+            "SELECT t.* REPLACE ((SELECT max(pw) FROM secrets) AS a) FROM t"})
+    void testSubqueryInTopOrStarReplaceIsFound(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("t", "secrets");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "DECLARE @x INT = (SELECT max(pw) FROM secrets)",
+            "DECLARE @x INT = 1, @y VARCHAR(10) = (SELECT max(pw) FROM secrets)"})
+    void testSubqueryInDeclareIsFound(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("secrets");
+    }
+
     @Test
     void testManyDerivedNamesDoNotScaleQuadratically() {
         // Every plain table reference used to be matched against the CTE aliases with
