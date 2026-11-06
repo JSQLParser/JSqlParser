@@ -147,6 +147,13 @@ public class ASTNodeCoverageTest {
                 "CLUSTER VERBOSE i ON t",
                 "ANALYSE (\"verbose\", PARALLEL -1) t",
                 "CHECKPOINT",
+                "FLUSH LOCAL TABLES db1.t, s WITH READ LOCK",
+                "FLUSH ERROR LOGS, RELAY LOGS FOR CHANNEL 'c1', STATUS",
+                "KILL QUERY 1 + 2",
+                "HANDLER db1.t OPEN AS h",
+                "HANDLER h READ i1 >= (1, 2) WHERE a > 0 LIMIT 3 OFFSET 1",
+                "HANDLER h CLOSE",
+                "RESET PERSIST IF EXISTS max_connections",
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
                 "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u"}) {

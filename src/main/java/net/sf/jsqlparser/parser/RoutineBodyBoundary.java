@@ -248,7 +248,7 @@ final class RoutineBodyBoundary {
         if (statementStart) {
             statementKind = kind;
         }
-        if (statementKind == K_DECLARE && keyword(token, "HANDLER")) {
+        if (statementKind == K_DECLARE && token.kind == K_HANDLER) {
             handlerAction = true;
         }
         statementStart = false;
