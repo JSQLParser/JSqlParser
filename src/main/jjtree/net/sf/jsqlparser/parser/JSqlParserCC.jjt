@@ -19156,9 +19156,16 @@ TableOption CreateTableOption():
           option = new TableOption(); option.setStorageParameters(storageParameters);
       }
       |
+      LOOKAHEAD({ getToken(1).kind == K_WITHOUT && "ROWID".equalsIgnoreCase(getToken(2).image) })
+      <K_WITHOUT> ContextualKeyword("ROWID") {
+          option = new TableOption(TableOption.Kind.WITHOUT_ROWID, "WITHOUT ROWID", null, false);
+      }
+      |
       LOOKAHEAD(<K_WITHOUT> <S_IDENTIFIER>) <K_WITHOUT> ContextualKeyword("OIDS") {
           option = new TableOption(TableOption.Kind.WITHOUT_OIDS, "WITHOUT OIDS", null, false);
       }
+      |
+      <K_STRICT> { option = new TableOption(TableOption.Kind.STRICT, "STRICT", null, false); }
       |
       LOOKAHEAD(<K_ON> <K_COMMIT>) option=OnCommitTableOption()
       |
