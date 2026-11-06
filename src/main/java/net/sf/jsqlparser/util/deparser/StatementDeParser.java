@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -65,6 +66,7 @@ import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DiscardStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
@@ -1065,6 +1067,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(NotifyStatement statement, S context) {
         return statement.appendTo(builder,
                 expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ListenStatement listen, S context) {
+        return listen.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(DiscardStatement discard, S context) {
+        return discard.appendTo(builder);
     }
 
     @Override

@@ -67,7 +67,8 @@ class CheckpointStatementTest {
                 "SHOW search_path; CHECKPOINT\nCHECKPOINT;CHECKPOINT", POSTGRESQL);
         assertEquals(4, statements.size());
 
-        Statements afterUnsupported = CCJSqlParserUtil.parseStatements("LISTEN ch; CHECKPOINT",
+        Statements afterUnsupported = CCJSqlParserUtil.parseStatements(
+                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; CHECKPOINT",
                 parser -> parser.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(true));
         assertEquals(2, afterUnsupported.size());
         assertInstanceOf(UnsupportedStatement.class, afterUnsupported.get(0));

@@ -57,6 +57,7 @@ import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -172,6 +173,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return "LABEL".equalsIgnoreCase(getToken(2).image);
             case K_REINDEX:
                 return isReindexAhead();
+            case K_DISCARD:
+                return isDiscardAhead();
+            case K_LISTEN: case K_UNLISTEN:
+                return isListenAhead();
             case K_VACUUM: case K_ANALYSE: case K_CLUSTER: case K_CHECKPOINT:
                 return isPostgreSqlMaintenanceAhead();
             case K_UNLOCK:
@@ -2601,6 +2606,113 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * PostgreSQL's utility forms that other products lack, such as DISCARD, LISTEN, the SHOW and
+     * RESET names of several words and COPY's option syntax from before 9.0: read with that
+     * dialect and without one, never with another dialect.
+     */
+    private boolean isPostgreSqlUtilityDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether PostgreSQL's DISCARD starts here. The PostgreSQL dialect always reads DISCARD as the
+     * statement; without a dialect one of its targets must follow, so that other uses of the word
+     * stay unsupported statements.
+     */
+    private boolean isDiscardAhead() {
+        if (getToken(1).kind != K_DISCARD || !isPostgreSqlUtilityDialect()) {
+            return false;
+        }
+        Token target = getToken(2);
+        return getAsString(Feature.dialect) != null || target.kind == K_ALL
+                || target.kind == K_TEMP || target.kind == K_TEMPORARY
+                || "PLANS".equalsIgnoreCase(target.image) || "SEQUENCES".equalsIgnoreCase(target.image);
+    }
+
+    /**
+     * Whether PostgreSQL's LISTEN or UNLISTEN starts here. The PostgreSQL dialect always reads the
+     * words as the statements; without a dialect a channel, or * after UNLISTEN, must follow.
+     */
+    private boolean isListenAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_LISTEN && kind != K_UNLISTEN || !isPostgreSqlUtilityDialect()) {
+            return false;
+        }
+        Token channel = getToken(2);
+        return getAsString(Feature.dialect) != null || isIdentifierishNameToken(channel)
+                || kind == K_UNLISTEN && "*".equals(channel.image);
+    }
+
+    /** The name SET, RESET and SHOW give the configuration parameter written TIME ZONE. */
+    private static final String TIME_ZONE_PARAMETER = "Time Zone";
+
+    /** Whether TIME ZONE follows, the configuration parameter SET, RESET and SHOW name in two words. */
+    private boolean isTimeZoneParameterAhead() {
+        Token time = getToken(1);
+        return time.kind == K_DATETIMELITERAL && "TIME".equalsIgnoreCase(time.image)
+                && getToken(2).kind == K_ZONE;
+    }
+
+    /**
+     * Whether TRANSACTION ISOLATION LEVEL follows, PostgreSQL's name in RESET and SHOW for the
+     * parameter transaction_isolation. Other dialects do not read it.
+     */
+    private boolean isTransactionIsolationLevelParameterAhead() {
+        Token transaction = getToken(1);
+        return transaction.kind == S_IDENTIFIER && "TRANSACTION".equalsIgnoreCase(transaction.image)
+                && "ISOLATION".equalsIgnoreCase(getToken(2).image) && getToken(3).kind == K_LEVEL
+                && isPostgreSqlUtilityDialect();
+    }
+
+    /**
+     * Whether SESSION AUTHORIZATION follows, PostgreSQL's name in RESET and SHOW for the parameter
+     * session_authorization. Other dialects do not read it.
+     */
+    private boolean isSessionAuthorizationParameterAhead() {
+        return getToken(1).kind == K_SESSION && getToken(2).kind == K_AUTHORIZATION
+                && isPostgreSqlUtilityDialect();
+    }
+
+    /** Whether a configuration parameter named in several words follows. */
+    private boolean isConfigurationParameterPhraseAhead() {
+        return isTimeZoneParameterAhead() || isTransactionIsolationLevelParameterAhead()
+                || isSessionAuthorizationParameterAhead();
+    }
+
+    /**
+     * Whether BINARY starts PostgreSQL's COPY BINARY table, its spelling from before 7.3, rather
+     * than naming a table called binary.
+     */
+    private boolean isCopyBinaryAhead() {
+        Token next = getToken(2);
+        return getToken(1).kind == K_BINARY && isPostgreSqlUtilityDialect()
+                && next.kind != K_FROM && next.kind != K_TO && isIdentifierishNameToken(next);
+    }
+
+    /** Whether an option of PostgreSQL's COPY syntax from before 9.0, as copy_opt_item, follows. */
+    private boolean isCopyLegacyOptionAhead() {
+        if (!isPostgreSqlUtilityDialect()) {
+            return false;
+        }
+        Token token = getToken(1);
+        switch (token.kind) {
+            case K_BINARY: case K_DELIMITER: case K_NULL: case K_CSV: case K_ESCAPE: case K_ENCODING:
+                return true;
+            case K_FORCE:
+                Token next = getToken(2);
+                return next.kind == K_NOT || next.kind == K_NULL || isCopyLegacyWord(next, "QUOTE");
+            default:
+                return isCopyLegacyWord(token, "FREEZE") || isCopyLegacyWord(token, "HEADER")
+                        || isCopyLegacyWord(token, "QUOTE");
+        }
+    }
+
+    private static boolean isCopyLegacyWord(Token token, String word) {
+        return token.kind == S_IDENTIFIER && word.equalsIgnoreCase(token.image);
+    }
+
+    /**
      * PostgreSQL 18's reserved keywords. Its grammar takes none of them as the name or the word
      * value of a utility option, except ANALYZE and ANALYSE as names.
      */
@@ -2616,12 +2728,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             "TO", "TRAILING", "TRUE", "UNION", "UNIQUE", "USER", "USING", "VARIADIC", "WHEN", "WHERE",
             "WINDOW", "WITH"));
 
+    /**
+     * PostgreSQL 18's type and function name keywords. Like its reserved keywords, its grammar
+     * takes none of them as a column identifier (ColId).
+     */
+    private static final Set<String> POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS = new HashSet<String>(Arrays.asList(
+            "AUTHORIZATION", "BINARY", "COLLATION", "CONCURRENTLY", "CROSS", "CURRENT_SCHEMA",
+            "FREEZE", "FULL", "ILIKE", "INNER", "IS", "ISNULL", "JOIN", "LEFT", "LIKE", "NATURAL",
+            "NOTNULL", "OUTER", "OVERLAPS", "RIGHT", "SIMILAR", "TABLESAMPLE", "VERBOSE"));
+
     /** Rejects an unquoted utility option name or word value that PostgreSQL reserves. */
     private void requireUtilityOptionWord(String word, boolean name) throws ParseException {
         String upper = word.toUpperCase(Locale.ROOT);
         requireDdlSyntax(!POSTGRESQL_RESERVED_KEYWORDS.contains(upper)
                 || name && ("ANALYZE".equals(upper) || "ANALYSE".equals(upper)),
                 "PostgreSQL reserves " + word + " in utility options");
+    }
+
+    /** Rejects an unquoted name that PostgreSQL does not take as a column or channel name. */
+    private void requirePostgreSqlColId(String name) throws ParseException {
+        String upper = name.toUpperCase(Locale.ROOT);
+        requireDdlSyntax(!POSTGRESQL_RESERVED_KEYWORDS.contains(upper)
+                && !POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS.contains(upper),
+                "PostgreSQL does not take " + name + " as a name here");
     }
 
     /** Whether a PostgreSQL identifier in double quotes follows, not one in brackets or backticks. */
@@ -4374,6 +4503,7 @@ String NonReservedWordPart1() :
       | tk=<K_LINEAR:"LINEAR">
       | tk=<K_LINES:"LINES">
       | tk=<K_LIST:"LIST">
+      | tk=<K_LISTEN:"LISTEN">
       | tk=<K_LOAD: "LOAD">
       | tk=<K_LOCAL:"LOCAL">
       | tk=<K_LOCK:"LOCK">
@@ -4582,6 +4712,7 @@ String NonReservedWordPart2() :
       | tk=<K_UNBOUNDED: "UNBOUNDED">
       | tk=<K_UNKNOWN: "UNKNOWN">
       | tk=<K_UNLIMITED: "UNLIMITED">
+      | tk=<K_UNLISTEN: "UNLISTEN">
       | tk=<K_UNLOCK: "UNLOCK">
       | tk=<K_UNLOGGED: "UNLOGGED">
       | tk=<K_UPDATE:"UPDATE">
@@ -5276,6 +5407,10 @@ Statement SingleStatement() :
             stm = Commit()
             |
             stm = Comment()
+            |
+            LOOKAHEAD({ isListenAhead() }) stm = ListenStatement()
+            |
+            LOOKAHEAD({ isDiscardAhead() }) stm = DiscardStatement()
             |
             LOOKAHEAD({ isKeywordAhead("NOTIFY") }) stm = NotifyStatement()
             |
@@ -6817,7 +6952,7 @@ void SetAssignment(SetStatement set):
             || (isKeywordAhead("CHARSET") && !"=".equals(getToken(2).image)
                 && !":=".equals(getToken(2).image)) }) SetCharacterSet(set)
     |
-    ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; }
+    ( LOOKAHEAD({ isTimeZoneParameterAhead() }) name=ConfigurationParameterName()
       | name=UserVariable()
       | name=IdentifierChain() )
     [ "=" { operator = SetStatement.AssignmentOperator.EQUALS; }
@@ -6828,7 +6963,7 @@ void SetAssignment(SetStatement set):
     expression=SetAssignmentValue()
     {
         if (operator == SetStatement.AssignmentOperator.TO
-                && (name instanceof UserVariable || "Time Zone".equals(name))) {
+                && (name instanceof UserVariable || TIME_ZONE_PARAMETER.equals(name))) {
             throw new ParseException("SET TO requires a configuration parameter name");
         }
         set.add(name, linkElements(new ExpressionList<Expression>(expression)), operator);
@@ -6906,8 +7041,34 @@ ResetStatement Reset(): {
     Token all;
 }
 {
-    <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
+    <K_RESET> ( name = ConfigurationParameterName() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name);   return reset; }
+}
+
+/**
+ * A configuration parameter as SET, RESET and SHOW name it. TIME ZONE is the parameter "Time Zone".
+ * PostgreSQL's RESET and SHOW also take the SQL standard's TRANSACTION ISOLATION LEVEL and SESSION
+ * AUTHORIZATION, which are read with Dialect.POSTGRESQL and without a dialect. SET enters this
+ * production only for TIME ZONE, since its other phrases set a transaction mode or the session
+ * user instead of a parameter.
+ */
+String ConfigurationParameterName():
+{ String name; }
+{
+    (
+        LOOKAHEAD({ isTimeZoneParameterAhead() })
+        <K_DATETIMELITERAL> <K_ZONE> { name = TIME_ZONE_PARAMETER; }
+        |
+        LOOKAHEAD({ isTransactionIsolationLevelParameterAhead() })
+        ContextualKeyword("TRANSACTION") ContextualKeyword("ISOLATION") <K_LEVEL>
+        { name = "TRANSACTION ISOLATION LEVEL"; }
+        |
+        LOOKAHEAD({ isSessionAuthorizationParameterAhead() })
+        <K_SESSION> <K_AUTHORIZATION> { name = "SESSION AUTHORIZATION"; }
+        |
+        name = RelObjectName()
+    )
+    { return name; }
 }
 
 RenameTableStatement RenameTableStatement(): {
@@ -7015,8 +7176,91 @@ CreateMacro.Parameter MacroParameter():
 }
 
 /**
+ * One option of PostgreSQL's COPY syntax from before 9.0, as copy_opt_item in its grammar. The
+ * options follow each other without commas, in any order.
+ */
+CopyLegacyOption CopyLegacyOption():
+{
+    Token first = getToken(1);
+    CopyLegacyOption option;
+}
+{
+    (
+        <K_BINARY> { option = new CopyLegacyOption(CopyLegacyOption.Kind.BINARY); }
+        |
+        <K_CSV> { option = new CopyLegacyOption(CopyLegacyOption.Kind.CSV); }
+        |
+        LOOKAHEAD({ isKeywordAhead("FREEZE") }) ContextualKeyword("FREEZE")
+        { option = new CopyLegacyOption(CopyLegacyOption.Kind.FREEZE); }
+        |
+        LOOKAHEAD({ isKeywordAhead("HEADER") }) ContextualKeyword("HEADER")
+        { option = new CopyLegacyOption(CopyLegacyOption.Kind.HEADER); }
+        |
+        <K_DELIMITER> { option = new CopyLegacyOption(CopyLegacyOption.Kind.DELIMITER); }
+        CopyLegacyOptionString(option)
+        |
+        <K_NULL> { option = new CopyLegacyOption(CopyLegacyOption.Kind.NULL); }
+        CopyLegacyOptionString(option)
+        |
+        LOOKAHEAD({ isKeywordAhead("QUOTE") }) ContextualKeyword("QUOTE")
+        { option = new CopyLegacyOption(CopyLegacyOption.Kind.QUOTE); }
+        CopyLegacyOptionString(option)
+        |
+        <K_ESCAPE> { option = new CopyLegacyOption(CopyLegacyOption.Kind.ESCAPE); }
+        CopyLegacyOptionString(option)
+        |
+        <K_ENCODING> { option = new CopyLegacyOption(CopyLegacyOption.Kind.ENCODING); }
+        CopyLegacyOptionString(option)
+        |
+        <K_FORCE>
+        (
+            LOOKAHEAD({ isKeywordAhead("QUOTE") }) ContextualKeyword("QUOTE")
+            { option = new CopyLegacyOption(CopyLegacyOption.Kind.FORCE_QUOTE); }
+            |
+            <K_NOT> <K_NULL> { option = new CopyLegacyOption(CopyLegacyOption.Kind.FORCE_NOT_NULL); }
+            |
+            <K_NULL> { option = new CopyLegacyOption(CopyLegacyOption.Kind.FORCE_NULL); }
+        )
+        CopyLegacyOptionColumns(option)
+    )
+    { return linked(option, first); }
+}
+
+/** The string of a COPY option from before 9.0; AS may precede it except after ENCODING. */
+void CopyLegacyOptionString(CopyLegacyOption option):
+{ Token token; }
+{
+    [ <K_AS> { option.setAsKeyword(true); } ]
+    token=<S_CHAR_LITERAL>
+    {
+        requireDdlSyntax(!option.isAsKeyword() || option.getKind().allowsAsKeyword(),
+                option.getKind().getKeyword() + " takes no AS");
+        option.setValue(stringValue(token));
+    }
+}
+
+/** The columns of COPY's FORCE QUOTE, FORCE NOT NULL and FORCE NULL from before 9.0: names or *. */
+void CopyLegacyOptionColumns(CopyLegacyOption option):
+{ String column; }
+{
+    "*" { option.setAllColumns(true); }
+    |
+    column=CopyLegacyColumnName() { option.addColumns(linkToLastToken(new Column(column))); }
+    ( "," column=CopyLegacyColumnName() { option.addColumns(linkToLastToken(new Column(column))); } )*
+}
+
+/** A column of a COPY FORCE option, a PostgreSQL ColId without qualifier. */
+String CopyLegacyColumnName():
+{ String name; }
+{
+    name=RelObjectName() { requirePostgreSqlColId(name); return name; }
+}
+
+/**
  * DuckDB's COPY table [(columns)] FROM path [(options)] and
- * COPY {table | (query)} TO path [(options)].
+ * COPY {table | (query)} TO path [(options)]. PostgreSQL's COPY [BINARY] table and its options
+ * from before 9.0, written without parentheses, are read with Dialect.POSTGRESQL and without a
+ * dialect.
  */
 CopyStatement CopyStatement() #CopyStatement:
 {
@@ -7024,6 +7268,7 @@ CopyStatement CopyStatement() #CopyStatement:
     ExpressionList<Column> columns = null;
     List<String> options = new ArrayList<String>();
     String option;
+    CopyLegacyOption legacyOption;
     Select select;
     Table table;
     Token token;
@@ -7033,6 +7278,7 @@ CopyStatement CopyStatement() #CopyStatement:
     (
         LOOKAHEAD(2) "(" select=Select() ")" { copyStatement.setSelect(select); }
         |
+        [ LOOKAHEAD({ isCopyBinaryAhead() }) <K_BINARY> { copyStatement.setBinary(true); } ]
         table=Table() { copyStatement.setTable(table); }
         [ LOOKAHEAD(2) "(" columns=ColumnList() ")" { copyStatement.setColumns(columns); } ]
     )
@@ -7048,7 +7294,7 @@ CopyStatement CopyStatement() #CopyStatement:
     )
     [ LOOKAHEAD({ getToken(1).kind == K_WITH })
         <K_WITH> { copyStatement.setWithKeyword(true); } ]
-    [
+    (
         LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
         ( "," option=DatabaseOption() { options.add(option); } )*
         ")" {
@@ -7058,7 +7304,10 @@ CopyStatement CopyStatement() #CopyStatement:
             }
             copyStatement.setOptions(options);
         }
-    ]
+        |
+        ( LOOKAHEAD({ isCopyLegacyOptionAhead() })
+          legacyOption=CopyLegacyOption() { copyStatement.addLegacyOptions(legacyOption); } )*
+    )
     { return copyStatement; }
 }
 
@@ -7614,6 +7863,7 @@ Statement Show():
 {
     Statement statement;
     List<String> captureRest;
+    String name;
 }
 {
     <K_SHOW>
@@ -7631,6 +7881,11 @@ Statement Show():
         statement = ShowTableStatus()
         |
         LOOKAHEAD(ShowCreate() ShowStatementEnd()) statement = ShowCreate()
+        |
+        // PostgreSQL's SHOW TIME ZONE, TRANSACTION ISOLATION LEVEL and SESSION AUTHORIZATION
+        LOOKAHEAD(ConfigurationParameterName() ShowStatementEnd(),
+                { isConfigurationParameterPhraseAhead() && isPostgreSqlUtilityDialect() })
+        name = ConfigurationParameterName() { statement = new ShowStatement(name); }
         |
         // any of the RDBMS specific SHOW syntax
         captureRest = captureRest()
@@ -26474,6 +26729,48 @@ NotifyStatement NotifyStatement():
     <K_NOTIFY> channel=RelObjectName() { statement.setChannel(channel); }
     [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(stringValue(payload)); } ]
     { return statement; }
+}
+
+/**
+ * PostgreSQL's DISCARD {ALL | PLANS | SEQUENCES | TEMP | TEMPORARY}.
+ */
+DiscardStatement DiscardStatement():
+{ DiscardStatement statement = new DiscardStatement(); }
+{
+    <K_DISCARD>
+    (
+        <K_ALL> { statement.setTarget(DiscardStatement.Target.ALL); }
+        |
+        <K_TEMP> { statement.setTarget(DiscardStatement.Target.TEMP); }
+        |
+        <K_TEMPORARY> { statement.setTarget(DiscardStatement.Target.TEMPORARY); }
+        |
+        LOOKAHEAD({ isKeywordAhead("PLANS") }) ContextualKeyword("PLANS")
+        { statement.setTarget(DiscardStatement.Target.PLANS); }
+        |
+        ContextualKeyword("SEQUENCES") { statement.setTarget(DiscardStatement.Target.SEQUENCES); }
+    )
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's LISTEN channel and UNLISTEN {channel | *}.
+ */
+ListenStatement ListenStatement():
+{ ListenStatement statement = new ListenStatement(); String channel; }
+{
+    (
+        <K_LISTEN> channel=RelObjectName() { statement.setChannel(channel); }
+        |
+        <K_UNLISTEN> { statement.setAction(ListenStatement.Action.UNLISTEN); }
+        ( "*" | channel=RelObjectName() { statement.setChannel(channel); } )
+    )
+    {
+        if (statement.getChannel() != null) {
+            requirePostgreSqlColId(statement.getChannel());
+        }
+        return statement;
+    }
 }
 
 CreateCollation CreateCollation():

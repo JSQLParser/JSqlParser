@@ -143,7 +143,8 @@ class ClusterStatementTest {
 
     @Test
     void endsAnUnsupportedStatement() throws JSQLParserException {
-        Statements statements = CCJSqlParserUtil.parseStatements("LISTEN ch; CLUSTER t",
+        Statements statements = CCJSqlParserUtil.parseStatements(
+                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; CLUSTER t",
                 parser -> parser.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(true));
 
         assertEquals(2, statements.size());

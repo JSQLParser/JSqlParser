@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -67,6 +68,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DiscardStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.PurgeStatement;
@@ -1399,6 +1401,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(NotifyStatement statement, S context) {
         validateFeature(Feature.notifyStatement);
         statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ListenStatement listen, S context) {
+        validateFeature(Feature.listen);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DiscardStatement discard, S context) {
+        validateFeature(Feature.discard);
         return null;
     }
 
