@@ -9,18 +9,28 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import java.util.Objects;
 
-public class Commit extends ASTNodeAccessImpl implements Statement {
-    private TransactionKeyword keyword;
-    private TransactionChain chain;
-
-    public TransactionKeyword getKeyword() {
-        return keyword;
+/** COMMIT, or its PostgreSQL spelling END. */
+public class Commit extends TransactionCompletionStatement {
+    /** The keyword that starts the statement; both commit the current transaction. */
+    public enum Command {
+        COMMIT, END
     }
 
-    public void setKeyword(TransactionKeyword keyword) {
-        this.keyword = keyword;
+    private Command command = Command.COMMIT;
+
+    public Command getCommand() {
+        return command;
+    }
+
+    public void setCommand(Command command) {
+        this.command = Objects.requireNonNull(command, "command");
+    }
+
+    public Commit withCommand(Command command) {
+        setCommand(command);
+        return this;
     }
 
     public Commit withKeyword(TransactionKeyword keyword) {
@@ -28,38 +38,30 @@ public class Commit extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
-    public TransactionChain getChain() {
-        return chain;
-    }
-
-    public void setChain(TransactionChain chain) {
-        this.chain = chain;
-    }
-
     public Commit withChain(TransactionChain chain) {
         setChain(chain);
         return this;
     }
 
+    public Commit withRelease(TransactionRelease release) {
+        setRelease(release);
+        return this;
+    }
+
+    @Override
+    public boolean isPostgresSpelling() {
+        return command == Command.END;
+    }
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
     }
 
-    public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("COMMIT");
-        if (keyword != null) {
-            builder.append(' ').append(keyword);
-        }
-        if (chain != null) {
-            builder.append(' ').append(chain);
-        }
-        return builder;
-    }
-
     @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append(command);
+        appendKeyword(builder);
+        return appendCompletion(builder);
     }
 }

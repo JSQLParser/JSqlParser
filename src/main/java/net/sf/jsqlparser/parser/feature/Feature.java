@@ -23,7 +23,9 @@ import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
@@ -738,6 +740,30 @@ public enum Feature {
     transactionDeferrable,
     /** MySQL WITH CONSISTENT SNAPSHOT transaction characteristic. */
     transactionConsistentSnapshot,
+    /** MySQL [NO] RELEASE after COMMIT or ROLLBACK. */
+    transactionRelease,
+    /** PostgreSQL END and ABORT, the alternative spellings of COMMIT and ROLLBACK. */
+    transactionEndAbort,
+    /**
+     * SET TRANSACTION characteristics
+     *
+     * @see SetTransactionStatement
+     */
+    setTransaction,
+    /** MySQL SET GLOBAL TRANSACTION. */
+    setTransactionGlobal,
+    /** MySQL SET PERSIST TRANSACTION and SET PERSIST_ONLY TRANSACTION. */
+    setTransactionPersist,
+    /** PostgreSQL SET SESSION CHARACTERISTICS AS TRANSACTION. */
+    setTransactionSessionCharacteristics,
+    /** PostgreSQL SET TRANSACTION SNAPSHOT. */
+    setTransactionSnapshot,
+    /**
+     * SET CONSTRAINTS {ALL | names} {DEFERRED | IMMEDIATE}
+     *
+     * @see SetConstraintsStatement
+     */
+    setConstraints,
     /**
      * SQL "LOCK TABLE" statement is allowed
      *
