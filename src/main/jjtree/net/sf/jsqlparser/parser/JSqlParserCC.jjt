@@ -1533,6 +1533,39 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Whether MySQL's {@code TABLE name} follows an INSERT target, so that TABLE starts the
+     * source query instead of naming an alias of the target.
+     */
+    private boolean isInsertTableSourceAhead() {
+        if (getToken(1).kind != K_TABLE) {
+            return false;
+        }
+        int kind = getToken(2).kind;
+        if (kind == S_IDENTIFIER || kind == S_QUOTED_IDENTIFIER) {
+            return true;
+        }
+        return kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD
+                && kind != K_OVERRIDING && kind != K_BY && kind != K_TABLE;
+    }
+
+    /** Whether {@code AS CHAR(} or {@code AS BINARY(} follows a function argument. */
+    private boolean isFunctionCastTypeAhead() {
+        int type = getToken(2).kind;
+        return getToken(1).kind == K_AS && (type == K_CHAR || type == K_BINARY)
+                && getToken(3).kind == OPENING_BRACKET;
+    }
+
+    /**
+     * Whether a function takes MySQL's {@code AS CHAR(n)} or {@code AS BINARY(n)} cast: only
+     * {@code WEIGHT_STRING} does, after its single argument.
+     */
+    private static boolean isWeightStringCall(Function function, ExpressionList<?> arguments) {
+        return "WEIGHT_STRING".equalsIgnoreCase(function.getName()) && arguments != null
+                && arguments.size() == 1 && !function.isDistinct() && !function.isAllColumns()
+                && !function.isUnique();
+    }
+
     private boolean isKeywordArgumentAhead() {
         Token t = getToken(1);
         if (t.kind == EOF || t.image.equals(")")) return false;
@@ -1827,9 +1860,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_NEXTVAL:  return nextKind != K_VALUE;
 
             // IGNORE: blocks NULLS (IGNORE NULLS), FROM (DELETE IGNORE FROM),
-            // INDEX (IGNORE INDEX hint)
+            // INDEX and KEY (IGNORE INDEX and IGNORE KEY hints)
             case K_IGNORE:   return nextKind != K_NULLS && nextKind != K_FROM
-                                    && nextKind != K_INDEX;
+                                    && nextKind != K_INDEX && nextKind != K_KEY;
 
             // GLOBAL: blocks IN (GLOBAL IN), TEMPORARY, JOIN (GLOBAL JOIN)
             case K_GLOBAL:   return nextKind != K_IN && nextKind != K_TEMPORARY
@@ -1840,10 +1873,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_LIMIT: case K_OFFSET:
                 return false;
 
-            // VALUE/VALUES: safe as alias when not starting VALUES(...)
+            // VALUE/VALUES: safe as alias when not starting VALUES(...), nor MySQL's
+            // VALUES ROW(...), which only VALUES starts
             case K_VALUE: case K_VALUES:
                 return nextKind != OPENING_BRACKET && nextKind != S_IDENTIFIER
-                    && nextKind != S_QUOTED_IDENTIFIER && nextKind != S_CHAR_LITERAL;
+                    && nextKind != S_QUOTED_IDENTIFIER && nextKind != S_CHAR_LITERAL
+                    && !(kind == K_VALUES && nextKind == K_ROW
+                        && getToken(3).kind == OPENING_BRACKET);
 
             default:
                 return false;
@@ -2448,6 +2484,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
 
         return false;
+    }
+
+    private static void requireSyntax(boolean valid, String message) throws ParseException {
+        if (!valid) { throw new ParseException(message); }
     }
 
     private static void requireTypeDdlSyntax(boolean valid, String message) throws ParseException {
@@ -8416,7 +8456,7 @@ Insert Insert():
     Table table = null;
     List<WithItem<?>> with = null;
     Column tableColumn = null;
-    ExpressionList<Column> columns = new ExpressionList<Column>();
+    ExpressionList<Column> columns = null;
     List<Partition> partitions = new ArrayList<Partition>();
     Expression exp = null;
     ReturningClause returningClause;
@@ -8510,12 +8550,12 @@ Insert Insert():
             ]   table=TableReference()
             [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
 
-            [ LOOKAHEAD({ isAliasAhead() && !isColumnMatchingAhead()
+            [ LOOKAHEAD({ isAliasAhead() && !isColumnMatchingAhead() && !isInsertTableSourceAhead()
                     && !(getToken(1).kind == K_OVERRIDING
                     && (getToken(2).kind == K_SYSTEM || getToken(2).kind == K_USER)) })
                 [<K_AS> { useAs = true; } ] name=RelObjectName() { table.setAlias(new Alias(name,useAs)); }]
 
-            [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
+            [ LOOKAHEAD(2) columns=InsertColumnList() ]
 
             // DuckDB: INSERT INTO tbl BY NAME|POSITION SELECT ...
             [
@@ -8569,7 +8609,7 @@ Insert Insert():
     )
 
     {
-        if (!columns.isEmpty()) {
+        if (columns != null) {
             insert.setColumns(columns);
         }
         if (!partitions.isEmpty()) {
@@ -8580,6 +8620,36 @@ Insert Insert():
               .withTable(table)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
+    }
+}
+
+/**
+ * The target column list of INSERT and REPLACE, without its parentheses. MySQL accepts an empty
+ * list, as in INSERT INTO t () VALUES ().
+ */
+ExpressionList<Column> InsertColumnList():
+{
+    ExpressionList<Column> columns = new ExpressionList<Column>();
+}
+{
+    "(" [ columns = ColumnList() ] ")"
+    {
+        return columns;
+    }
+}
+
+/** {@link #InsertColumnList()} with its parentheses, as REPLACE keeps it. */
+ParenthesedExpressionList<Column> ParenthesedInsertColumnList():
+{
+    ExpressionList<Column> columns;
+    Token first = getToken(1);
+}
+{
+    columns = InsertColumnList()
+    {
+        ParenthesedExpressionList<Column> result = new ParenthesedExpressionList<Column>(columns);
+        linkAST(result, first);
+        return result;
     }
 }
 
@@ -8795,7 +8865,7 @@ Upsert Upsert():
 
     table=Table() { upsert.setTable(table); }
 
-    [ LOOKAHEAD(2) columns = ParenthesedColumnList() { upsert.setColumns(columns); } ]
+    [ LOOKAHEAD(2) columns = ParenthesedInsertColumnList() { upsert.setColumns(columns); } ]
     (
         (
             <K_SET>
@@ -8836,6 +8906,7 @@ Delete Delete():
     List<WithItem<?>> with = null;
     FromItem usingFromItem = null;
     List<FromItem> usingFromItemList = new ArrayList<FromItem>();
+    List<Join> usingJoins = null;
     List<Join> joins = null;
     Expression where = null;
     PreferringClause preferringClause = null;
@@ -8865,7 +8936,10 @@ Delete Delete():
         [ forPortionClause=ForPortionClause() { delete.setForPortionClause(forPortionClause); } ]
         [ LOOKAHEAD(2) joins=JoinsList() ] ]
     [ <K_USING> usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); }
-          ("," usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); } )*]
+          ( LOOKAHEAD(2) "," usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); } )*
+          // MySQL's table references and PostgreSQL's from items may join further tables
+          [ LOOKAHEAD(2) usingJoins=JoinsList() { delete.setUsingJoins(usingJoins); } ]
+    ]
     [where=WhereClause() { delete.setWhere(where); } ]
     [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
@@ -9228,11 +9302,11 @@ Table TableWithAlias():
 Table TableWithAliasAndMysqlIndexHint():
 {
     Table table = null;
-    MySQLIndexHint indexHint = null;
+    List<MySQLIndexHint> indexHints = null;
 }
 {
     table=TableWithAlias()
-    [ LOOKAHEAD(2) indexHint=MySQLIndexHint() { table.setHint(indexHint); } ]
+    [ LOOKAHEAD(2) indexHints=MySQLIndexHints() { table.setIndexHints(indexHints); } ]
     { return table; }
 }
 
@@ -11025,6 +11099,7 @@ MySQLIndexHint MySQLIndexHint():
 {
 	Token actionToken = null;
 	Token indexToken = null;
+	MySQLIndexHint.Scope scope = null;
 	String indexName = null;
 	List<String> indexNameList = new ArrayList<String>();
 }
@@ -11041,12 +11116,39 @@ MySQLIndexHint MySQLIndexHint():
 	| indexToken = <K_KEY>
 	)
 
+	[
+	<K_FOR>
+	(
+	<K_JOIN> { scope = MySQLIndexHint.Scope.JOIN; }
+	| <K_ORDER> <K_BY> { scope = MySQLIndexHint.Scope.ORDER_BY; }
+	| <K_GROUP> <K_BY> { scope = MySQLIndexHint.Scope.GROUP_BY; }
+	)
+	]
+
 	"("
+	[
 	indexName = RelObjectName() { indexNameList.add(indexName); }
 	("," indexName= RelObjectName() { indexNameList.add(indexName); })*
+	]
 	")"
 	{
-		return new MySQLIndexHint(actionToken.image, indexToken.image, indexNameList);
+		// only USE INDEX () may name no index
+		requireSyntax(!indexNameList.isEmpty() || actionToken.kind == K_USE,
+				actionToken.image + " " + indexToken.image + " requires at least one index name");
+		return new MySQLIndexHint(actionToken.image, indexToken.image, scope, indexNameList);
+	}
+}
+
+List<MySQLIndexHint> MySQLIndexHints():
+{
+	List<MySQLIndexHint> hints = new ArrayList<MySQLIndexHint>();
+	MySQLIndexHint hint;
+}
+{
+	hint = MySQLIndexHint() { hints.add(hint); }
+	( LOOKAHEAD(2) hint = MySQLIndexHint() { hints.add(hint); } )*
+	{
+		return hints;
 	}
 }
 
@@ -11469,7 +11571,7 @@ FromItem FromItem() #FromItem:
     Pivot pivot = null;
     UnPivot unpivot = null;
     Alias alias = null;
-    MySQLIndexHint indexHint = null;
+    List<MySQLIndexHint> indexHints = null;
     SQLServerHints sqlServerHints = null;
     Select select;
 
@@ -11549,9 +11651,9 @@ FromItem FromItem() #FromItem:
     [
         LOOKAHEAD(2)
         (
-            indexHint = MySQLIndexHint() {
+            indexHints = MySQLIndexHints() {
                 if (fromItem instanceof Table)
-                    ((Table) fromItem).setHint(indexHint);
+                    ((Table) fromItem).setIndexHints(indexHints);
             }
             |
             sqlServerHints = SQLServerHints() {
@@ -16075,6 +16177,7 @@ Function InternalFunction(boolean escaped):
     Limit limit;
     List<OrderByElement> orderByList = null;
     List<Function.KeywordArgument> keywordArgs = null;
+    ColDataType castType = null;
 }
 {
     [ LOOKAHEAD(2) prefixToken = <K_APPROXIMATE> ]
@@ -16103,6 +16206,16 @@ Function InternalFunction(boolean escaped):
             |
             LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = linkElements(new ExpressionList(expr)); }
         )
+    ]
+
+    // MySQL: WEIGHT_STRING(str AS CHAR(n)) and WEIGHT_STRING(str AS BINARY(n))
+    [
+        LOOKAHEAD({ isFunctionCastTypeAhead() }) <K_AS> castType = WeightStringCastType()
+        {
+            requireSyntax(isWeightStringCall(retval, expressionList),
+                    "AS " + castType + " is only supported after the argument of WEIGHT_STRING");
+            retval.setCastType(castType);
+        }
     ]
 
     [
@@ -19763,6 +19876,24 @@ String SignedIntegerTypeArgument():
 {
     [ sign="-" ] number=<S_LONG>
     { return (sign == null ? "" : sign.image) + number.image; }
+}
+
+/**
+ * The type of MySQL's WEIGHT_STRING(str AS {CHAR | BINARY}(n)): one of the two type names and a
+ * length, which the server requires and allows nothing else with. It is built like the same type
+ * in CAST.
+ */
+ColDataType WeightStringCastType():
+{
+    Token type;
+    Token length;
+    Token first = getToken(1);
+}
+{
+    ( type=<K_CHAR> | type=<K_BINARY> ) "(" length=<S_LONG> ")"
+    {
+        return linked(ColDataType.fromTypeParameters(type.image, length.image, null), first);
+    }
 }
 
 ColDataType ColDataType():

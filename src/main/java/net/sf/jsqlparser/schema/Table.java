@@ -60,7 +60,7 @@ public class Table extends ASTNodeAccessImpl
 
     private UnPivot unpivot;
 
-    private MySQLIndexHint mysqlHints;
+    private List<MySQLIndexHint> mysqlIndexHints;
 
     private SQLServerHints sqlServerHints;
 
@@ -411,8 +411,13 @@ public class Table extends ASTNodeAccessImpl
         this.unpivot = unpivot;
     }
 
+    /**
+     * Returns the first MySQL index hint, or {@code null}. Use {@link #getIndexHints()} for a table
+     * with several hints.
+     */
     public MySQLIndexHint getIndexHint() {
-        return mysqlHints;
+        return mysqlIndexHints == null || mysqlIndexHints.isEmpty() ? null
+                : mysqlIndexHints.get(0);
     }
 
     public Table withHint(MySQLIndexHint hint) {
@@ -420,8 +425,46 @@ public class Table extends ASTNodeAccessImpl
         return this;
     }
 
+    /**
+     * Replaces the MySQL index hints with the given hint, or removes them for {@code null}.
+     */
     public void setHint(MySQLIndexHint hint) {
-        this.mysqlHints = hint;
+        this.mysqlIndexHints = hint == null ? null : new ArrayList<>(Collections.singleton(hint));
+    }
+
+    /**
+     * Returns the MySQL index hints in their order, for example
+     * {@code USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2)}, or {@code null} when there are none.
+     */
+    public List<MySQLIndexHint> getIndexHints() {
+        return mysqlIndexHints;
+    }
+
+    public void setIndexHints(List<MySQLIndexHint> indexHints) {
+        this.mysqlIndexHints = indexHints;
+    }
+
+    public Table withIndexHints(List<MySQLIndexHint> indexHints) {
+        setIndexHints(indexHints);
+        return this;
+    }
+
+    public Table addIndexHint(MySQLIndexHint hint) {
+        if (mysqlIndexHints == null) {
+            mysqlIndexHints = new ArrayList<>();
+        }
+        mysqlIndexHints.add(hint);
+        return this;
+    }
+
+    /** Appends the MySQL index hints, each with a leading space, in their order. */
+    public StringBuilder appendIndexHintsTo(StringBuilder builder) {
+        if (mysqlIndexHints != null) {
+            for (MySQLIndexHint hint : mysqlIndexHints) {
+                hint.appendTo(builder);
+            }
+        }
+        return builder;
     }
 
     public SQLServerHints getSqlServerHints() {
@@ -468,9 +511,7 @@ public class Table extends ASTNodeAccessImpl
             builder.append(" ").append(unpivot);
         }
 
-        if (mysqlHints != null) {
-            builder.append(mysqlHints);
-        }
+        appendIndexHintsTo(builder);
 
         if (sqlServerHints != null) {
             builder.append(sqlServerHints);
