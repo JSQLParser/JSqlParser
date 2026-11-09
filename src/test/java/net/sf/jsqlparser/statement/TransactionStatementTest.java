@@ -286,7 +286,7 @@ class TransactionStatementTest {
             "COMMIT AND", "COMMIT AND NO", "COMMIT AND CHAIN AND CHAIN",
             "ROLLBACK AND", "ROLLBACK TO SAVEPOINT sp AND CHAIN", "ROLLBACK AND CHAIN TO sp",
             "RELEASE", "RELEASE SAVEPOINT", "RELEASE SAVEPOINT sp garbage",
-            "COMMIT PREPARED 'id'", "ROLLBACK PREPARED 'id'", "XA START 'id'",
+            "COMMIT PREPARED", "ROLLBACK PREPARED 'id' AND CHAIN", "XA START 'id'",
             "START TRANSACTION WITH CONSISTENT SNAPSHOT"})
     void malformedAndDeferredPostgresSyntaxIsRejected(String sql) {
         assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.POSTGRESQL));

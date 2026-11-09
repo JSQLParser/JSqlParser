@@ -9,17 +9,31 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * The clauses shared by {@link Commit} and {@link RollbackStatement}:
- * {@code [WORK | TRANSACTION] ... [AND [NO] CHAIN] [[NO] RELEASE]}. Null fields are omitted.
+ * {@code [WORK | TRANSACTION] ... [AND [NO] CHAIN] [[NO] RELEASE]}, or the identifier of a prepared
+ * transaction that the statement completes instead of the current one. Null fields are omitted.
  */
 public abstract class TransactionCompletionStatement extends ASTNodeAccessImpl
         implements Statement {
+    /** The keyword before the identifier of a prepared transaction. */
+    public enum PreparedTransactionKeyword {
+        /** PostgreSQL {@code COMMIT PREPARED 'id'} and {@code ROLLBACK PREPARED 'id'}. */
+        PREPARED,
+        /**
+         * Oracle {@code ROLLBACK [WORK] FORCE 'id'}, naming an in-doubt distributed transaction.
+         */
+        FORCE
+    }
+
     private TransactionKeyword keyword;
     private TransactionChain chain;
     private TransactionRelease release;
+    private PreparedTransactionKeyword preparedTransactionKeyword;
+    private TransactionId preparedTransactionId;
 
     public TransactionKeyword getKeyword() {
         return keyword;
@@ -45,6 +59,31 @@ public abstract class TransactionCompletionStatement extends ASTNodeAccessImpl
         this.release = release;
     }
 
+    /** {@code PREPARED} or {@code FORCE} when a prepared transaction is named, otherwise null. */
+    public PreparedTransactionKeyword getPreparedTransactionKeyword() {
+        return preparedTransactionKeyword;
+    }
+
+    /**
+     * The identifier of the prepared transaction to complete, written after
+     * {@link #getPreparedTransactionKeyword()}, or null when the current transaction completes.
+     */
+    public TransactionId getPreparedTransactionId() {
+        return preparedTransactionId;
+    }
+
+    /**
+     * Names the prepared transaction to complete. A null identifier completes the current
+     * transaction and clears the keyword.
+     *
+     * @throws NullPointerException if an identifier is given without a keyword
+     */
+    public void setPreparedTransaction(PreparedTransactionKeyword keyword, TransactionId id) {
+        this.preparedTransactionKeyword =
+                id == null ? null : Objects.requireNonNull(keyword, "keyword");
+        this.preparedTransactionId = id;
+    }
+
     /** Whether the statement is spelled END or ABORT, PostgreSQL's names of COMMIT and ROLLBACK. */
     public abstract boolean isPostgresSpelling();
 
@@ -53,6 +92,15 @@ public abstract class TransactionCompletionStatement extends ASTNodeAccessImpl
     /** Appends {@code WORK} or {@code TRANSACTION} after the command. */
     protected StringBuilder appendKeyword(StringBuilder builder) {
         return keyword == null ? builder : builder.append(' ').append(keyword);
+    }
+
+    /** Appends {@code PREPARED 'id'} or {@code FORCE 'id'} when a prepared transaction is named. */
+    protected StringBuilder appendPreparedTransaction(StringBuilder builder) {
+        if (preparedTransactionId != null) {
+            builder.append(' ').append(preparedTransactionKeyword).append(' ');
+            preparedTransactionId.appendTo(builder);
+        }
+        return builder;
     }
 
     /** Appends {@code AND [NO] CHAIN} and {@code [NO] RELEASE}, which end the statement. */

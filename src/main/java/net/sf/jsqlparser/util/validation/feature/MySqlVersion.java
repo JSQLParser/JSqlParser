@@ -153,7 +153,8 @@ public enum MySqlVersion implements Version {
                     Feature.transactionChain, Feature.transactionConsistentSnapshot,
                     Feature.transactionRelease, // https://dev.mysql.com/doc/refman/8.4/en/set-transaction.html
                     Feature.setTransaction, Feature.setTransactionGlobal,
-                    Feature.setTransactionPersist, //
+                    Feature.setTransactionPersist, // https://dev.mysql.com/doc/refman/8.4/en/xa-statements.html
+                    Feature.xa, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));

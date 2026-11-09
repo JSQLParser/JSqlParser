@@ -191,7 +191,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || "REASSIGN".equalsIgnoreCase(next.image)
                     || "REVOKE".equalsIgnoreCase(next.image)
                     || "RELEASE".equalsIgnoreCase(next.image)
-                    || isAbortTransactionAhead();
+                    || isAbortTransactionAhead() || isXaStatementAhead();
         }
     }
 
@@ -3600,6 +3600,89 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && isTransactionCompletionTailAt(2);
     }
 
+    /**
+     * Whether PostgreSQL PREPARE TRANSACTION 'id' starts here; read with the PostgreSQL dialect or
+     * none. The string literal tells it from PREPARE transaction AS statement, which prepares a
+     * statement named transaction.
+     */
+    private boolean isPrepareTransactionAhead() {
+        return getToken(1).kind == K_PREPARE && isWordAt(2, "TRANSACTION")
+                && getToken(3).kind == S_CHAR_LITERAL && isPostgreSqlTwoPhaseDialect();
+    }
+
+    /** Whether PostgreSQL's PREPARED 'id' follows COMMIT or ROLLBACK. */
+    private boolean isPreparedTransactionAhead() {
+        return isWordAt(1, "PREPARED") && isPostgreSqlTwoPhaseDialect();
+    }
+
+    private boolean isPostgreSqlTwoPhaseDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether a MySQL XA statement starts here: XA followed by its action. Read with the MySQL and
+     * MariaDB dialects or none; XA stays an identifier elsewhere.
+     */
+    private boolean isXaStatementAhead() {
+        if (!isWordAt(1, "XA") || getAsString(Feature.dialect) != null && !isMySqlDialect()) {
+            return false;
+        }
+        int action = getToken(2).kind;
+        return action == K_START || action == K_BEGIN || action == K_END || action == K_PREPARE
+                || action == K_COMMIT || action == K_ROLLBACK || isWordAt(2, "RECOVER");
+    }
+
+    /**
+     * Whether PostgreSQL reads the literal as a string constant: '...', E'...', U&'...' or a
+     * dollar-quoted string, not N'...', B'...' or another product's prefix.
+     */
+    private static boolean isPostgreSqlStringConstant(StringValue value) {
+        String prefix = value.getPrefix();
+        return !"\"".equals(value.getQuoteStr()) && (prefix == null
+                || "E".equalsIgnoreCase(prefix) || "U&".equalsIgnoreCase(prefix));
+    }
+
+    /**
+     * Whether a MySQL XA gtrid or bqual string is a text_string: a quoted string without a prefix,
+     * or a bit-value literal B'0101'. MySQL rejects N'...', _charset'...' and the others.
+     */
+    private static boolean isXaStringPart(StringValue value) {
+        String prefix = value.getPrefix();
+        String quote = value.getQuoteStr();
+        if (prefix == null) {
+            return "'".equals(quote) || "\"".equals(quote);
+        }
+        return "B".equalsIgnoreCase(prefix) && value.getValue().matches("[01]*");
+    }
+
+    /**
+     * Whether a hexadecimal literal is one MySQL reads: X'...' with whole bytes, or 0x... with a
+     * lower-case x.
+     */
+    private static boolean isXaHexPart(String image) {
+        return image.matches("[Xx]'([0-9A-Fa-f]{2})*'") || image.matches("0x[0-9A-Fa-f]+");
+    }
+
+    /**
+     * The unsigned formatID of an XA xid. MySQL's grammar rejects a value above LONG_MAX, MariaDB's
+     * one above INT32_MAX.
+     */
+    private long xaFormatId(Token token) throws ParseException {
+        long limit = Dialect.MARIADB.name().equals(getAsString(Feature.dialect))
+                ? Integer.MAX_VALUE
+                : Long.MAX_VALUE;
+        try {
+            long formatId = Long.parseLong(token.image);
+            if (formatId <= limit) {
+                return formatId;
+            }
+        } catch (NumberFormatException e) {
+            // out of range, reported below
+        }
+        throw new ParseException("XA formatID out of range: " + token.image);
+    }
+
     private boolean isTransactionCompletionTailAt(int offset) {
         Token token = getToken(offset);
         return token.kind == EOF || token.kind == ST_SEMICOLON || token.kind == K_WORK
@@ -3628,6 +3711,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 "END and ABORT do not accept RELEASE");
         requireDdlSyntax(statement.getChain() != TransactionChain.CHAIN
                 || release != TransactionRelease.RELEASE, "AND CHAIN cannot be combined with RELEASE");
+        requireDdlSyntax(statement.getPreparedTransactionKeyword()
+                != TransactionCompletionStatement.PreparedTransactionKeyword.PREPARED
+                || !statement.isPostgresSpelling(), "END and ABORT do not accept PREPARED");
     }
 
     /**
@@ -5618,6 +5704,10 @@ Statement SingleStatement() :
             LOOKAHEAD({ isKeywordAhead("RELEASE") }) stm = ReleaseSavepointStatement()
             |
             stm = SavepointStatement()
+            |
+            LOOKAHEAD({ isPrepareTransactionAhead() }) stm = PrepareTransactionStatement()
+            |
+            LOOKAHEAD({ isXaStatementAhead() }) stm = XaStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_ROLLBACK || isAbortTransactionAhead() })
             stm = RollbackStatement()
@@ -24210,7 +24300,7 @@ RollbackStatement RollbackStatement():
     TransactionChain chain;
     TransactionRelease release;
     String name;
-    Token identifier;
+    TransactionId id;
 }
 {
     (
@@ -24220,40 +24310,59 @@ RollbackStatement RollbackStatement():
         LOOKAHEAD({ isWordAt(1, "ABORT") }) { statement.setCommand(RollbackStatement.Command.ABORT); }
         consumeTransactionWord()
     )
-    [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
-        keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
-    // FORCE INSTALL starts a new statement, whereas FORCE 'id' belongs here.
-    [
-        LOOKAHEAD(2)
-        (
-            <K_TO> [ LOOKAHEAD({ getToken(1).kind == K_SAVEPOINT }) <K_SAVEPOINT> { statement.setUsingSavepointKeyword(true); } ]
-                name=RelObjectName() { statement.setSavepointName(name); }
-            |
-            <K_FORCE> identifier=<S_CHAR_LITERAL> { statement.setForceDistributedTransactionIdentifier(identifier.image); }
-            |
-            chain=TransactionChain() { statement.setChain(chain); }
-        )
-    ]
-    [ LOOKAHEAD({ statement.getSavepointName() == null
-            && statement.getForceDistributedTransactionIdentifier() == null && isTransactionReleaseAhead() })
-        release=TransactionRelease() { statement.setRelease(release); } ]
+    (
+        // PostgreSQL ROLLBACK PREPARED 'id' takes no other clause.
+        LOOKAHEAD({ isPreparedTransactionAhead() }) ContextualKeyword("PREPARED") id=StringTransactionId(true)
+        { statement.setPreparedTransaction(TransactionCompletionStatement.PreparedTransactionKeyword.PREPARED, id); }
+        |
+        [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
+            keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
+        // FORCE INSTALL starts a new statement, whereas FORCE 'id' belongs here.
+        [
+            LOOKAHEAD(2)
+            (
+                <K_TO> [ LOOKAHEAD({ getToken(1).kind == K_SAVEPOINT }) <K_SAVEPOINT> { statement.setUsingSavepointKeyword(true); } ]
+                    name=RelObjectName() { statement.setSavepointName(name); }
+                |
+                <K_FORCE> id=StringTransactionId(false)
+                { statement.setPreparedTransaction(TransactionCompletionStatement.PreparedTransactionKeyword.FORCE, id); }
+                |
+                chain=TransactionChain() { statement.setChain(chain); }
+            )
+        ]
+        [ LOOKAHEAD({ statement.getSavepointName() == null
+                && statement.getPreparedTransactionId() == null && isTransactionReleaseAhead() })
+            release=TransactionRelease() { statement.setRelease(release); } ]
+    )
     {
         requireDdlSyntax(statement.getCommand() != RollbackStatement.Command.ABORT
-                || statement.getSavepointName() == null && statement.getForceDistributedTransactionIdentifier() == null,
-                "ABORT does not accept TO SAVEPOINT or FORCE");
+                || statement.getSavepointName() == null && statement.getPreparedTransactionId() == null,
+                "ABORT does not accept TO SAVEPOINT, FORCE or PREPARED");
         requireTransactionCompletionSyntax(statement);
         return statement;
     }
 }
 
 Commit Commit():
-{ Commit commit = new Commit(); TransactionKeyword keyword; TransactionChain chain; TransactionRelease release; }
+{
+    Commit commit = new Commit();
+    TransactionKeyword keyword;
+    TransactionChain chain;
+    TransactionRelease release;
+    TransactionId id;
+}
 {
     ( <K_COMMIT> | <K_END> { commit.setCommand(Commit.Command.END); } )
-    [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
-        keyword=TransactionKeyword() { commit.setKeyword(keyword); } ]
-    [ chain=TransactionChain() { commit.setChain(chain); } ]
-    [ LOOKAHEAD({ isTransactionReleaseAhead() }) release=TransactionRelease() { commit.setRelease(release); } ]
+    (
+        // PostgreSQL COMMIT PREPARED 'id' takes no other clause.
+        LOOKAHEAD({ isPreparedTransactionAhead() }) ContextualKeyword("PREPARED") id=StringTransactionId(true)
+        { commit.setPreparedTransaction(TransactionCompletionStatement.PreparedTransactionKeyword.PREPARED, id); }
+        |
+        [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
+            keyword=TransactionKeyword() { commit.setKeyword(keyword); } ]
+        [ chain=TransactionChain() { commit.setChain(chain); } ]
+        [ LOOKAHEAD({ isTransactionReleaseAhead() }) release=TransactionRelease() { commit.setRelease(release); } ]
+    )
     {
         requireTransactionCompletionSyntax(commit);
         return commit;
@@ -24267,6 +24376,95 @@ Commit Commit():
 JAVACODE
 void consumeTransactionWord() {
     getNextToken();
+}
+
+/**
+ * A transaction identifier written as one string literal: the identifier of PostgreSQL's PREPARE
+ * TRANSACTION, COMMIT PREPARED and ROLLBACK PREPARED, which must be a PostgreSQL string constant,
+ * or of Oracle's ROLLBACK FORCE.
+ */
+TransactionId StringTransactionId(boolean postgreSql):
+{ Token token; StringValue value; }
+{
+    token=<S_CHAR_LITERAL>
+    {
+        value = stringValue(token);
+        requireDdlSyntax(!postgreSql || isPostgreSqlStringConstant(value),
+                "PostgreSQL expects a string constant: " + token.image);
+        return linkToLastToken(new TransactionId(value));
+    }
+}
+
+/**
+ * PostgreSQL PREPARE TRANSACTION 'id'. isPrepareTransactionAhead() tells it from
+ * PREPARE name AS statement.
+ */
+PrepareTransactionStatement PrepareTransactionStatement():
+{ TransactionId id; }
+{
+    <K_PREPARE> ContextualKeyword("TRANSACTION") id=StringTransactionId(true)
+    { return new PrepareTransactionStatement(id); }
+}
+
+/**
+ * MySQL XA {START | BEGIN} xid [JOIN | RESUME], XA END xid [SUSPEND [FOR MIGRATE]],
+ * XA PREPARE xid, XA COMMIT xid [ONE PHASE], XA ROLLBACK xid and XA RECOVER [CONVERT XID].
+ * XA is not a token; isXaStatementAhead() routes here. MariaDB has no CONVERT XID.
+ */
+XaStatement XaStatement():
+{ XaStatement.Action action; TransactionId xid = null; XaStatement.Option option = null; }
+{
+    // The action keeps the JAVACODE call from being the production's first unit.
+    { } consumeTransactionWord()
+    (
+        ( <K_START> { action = XaStatement.Action.START; } | <K_BEGIN> { action = XaStatement.Action.BEGIN; } )
+        xid=XaTransactionId()
+        [ <K_JOIN> { option = XaStatement.Option.JOIN; } | <K_RESUME> { option = XaStatement.Option.RESUME; } ]
+        |
+        <K_END> { action = XaStatement.Action.END; } xid=XaTransactionId()
+        [ <K_SUSPEND> { option = XaStatement.Option.SUSPEND; }
+            [ <K_FOR> ContextualKeyword("MIGRATE") { option = XaStatement.Option.SUSPEND_FOR_MIGRATE; } ] ]
+        |
+        <K_PREPARE> { action = XaStatement.Action.PREPARE; } xid=XaTransactionId()
+        |
+        <K_COMMIT> { action = XaStatement.Action.COMMIT; } xid=XaTransactionId()
+        [ LOOKAHEAD({ isKeywordAhead("ONE") }) ContextualKeyword("ONE") ContextualKeyword("PHASE")
+            { option = XaStatement.Option.ONE_PHASE; } ]
+        |
+        <K_ROLLBACK> { action = XaStatement.Action.ROLLBACK; } xid=XaTransactionId()
+        |
+        ContextualKeyword("RECOVER") { action = XaStatement.Action.RECOVER; }
+        [ <K_CONVERT> ContextualKeyword("XID") { option = XaStatement.Option.CONVERT_XID;
+            requireDdlSyntax(!Dialect.MARIADB.name().equals(getAsString(Feature.dialect)),
+                    "MariaDB does not accept XA RECOVER CONVERT XID"); } ]
+    )
+    { return new XaStatement(action, xid).withOption(option); }
+}
+
+/** The xid of the MySQL XA statements: gtrid [, bqual [, formatID]]. */
+TransactionId XaTransactionId():
+{ Token first = getToken(1); TransactionId xid; Expression part; Token formatId; }
+{
+    part=XaTransactionIdPart() { xid = new TransactionId(part); }
+    [ "," part=XaTransactionIdPart() { xid.setBranchQualifier(part); }
+        [ "," formatId=<S_LONG> { xid.setFormatId(xaFormatId(formatId)); } ] ]
+    { return linked(xid, first); }
+}
+
+/** A gtrid or bqual: a string, hexadecimal or bit-value literal. */
+Expression XaTransactionIdPart():
+{ Token token; Expression part; }
+{
+    (
+        token=<S_CHAR_LITERAL>
+        { part = stringValue(token);
+          requireDdlSyntax(isXaStringPart((StringValue) part), "XA expects a string, hexadecimal or bit-value literal: " + token.image); }
+        |
+        token=<S_HEX>
+        { requireDdlSyntax(isXaHexPart(token.image), "Invalid hexadecimal literal: " + token.image);
+          part = linkToLastToken(new HexValue(token.image)); }
+    )
+    { return part; }
 }
 
 /**

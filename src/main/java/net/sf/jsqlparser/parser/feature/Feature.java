@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
@@ -30,6 +31,7 @@ import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -764,6 +766,18 @@ public enum Feature {
      * @see SetConstraintsStatement
      */
     setConstraints,
+    /**
+     * PostgreSQL two-phase commit: PREPARE TRANSACTION, COMMIT PREPARED and ROLLBACK PREPARED
+     *
+     * @see PrepareTransactionStatement
+     */
+    twoPhaseCommit,
+    /**
+     * MySQL and MariaDB XA statements: XA START, END, PREPARE, COMMIT, ROLLBACK and RECOVER
+     *
+     * @see XaStatement
+     */
+    xa,
     /**
      * SQL "LOCK TABLE" statement is allowed
      *

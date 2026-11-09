@@ -2972,8 +2972,43 @@ feature analysis. The validator checks ``rollback``, ``savepoint``, ``setTransac
 ``setTransactionPersist``, ``setTransactionSessionCharacteristics``,
 ``setTransactionSnapshot``) against the MySQL and PostgreSQL capability sets.
 PostgreSQL ``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
-This support does not include PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED`` or
-XA commands.
+
+Two-phase commit
+----------------
+
+The two-phase commit statements share one ``TransactionId``: a global transaction
+identifier, and for MySQL's xid an optional branch qualifier and format ID
+(``gtrid [, bqual [, formatID]]``). The identifier parts are the literals as written, a
+``StringValue`` or a ``HexValue``.
+
+PostgreSQL ``PREPARE TRANSACTION 'id'`` produces a ``PrepareTransactionStatement``; it is
+read before ``PREPARE name AS statement``, which keeps producing ``PrepareStatement``.
+``COMMIT PREPARED 'id'`` and ``ROLLBACK PREPARED 'id'`` produce a ``Commit`` and a
+``RollbackStatement`` whose ``getPreparedTransactionKeyword()`` is ``PREPARED`` and whose
+``getPreparedTransactionId()`` names the transaction. Oracle's ``ROLLBACK FORCE 'id'``
+uses the same pair with the keyword ``FORCE``; ``getForceDistributedTransactionIdentifier()``
+still returns the identifier as written. The PostgreSQL forms are read with the PostgreSQL
+dialect or without one, and take a PostgreSQL string constant.
+
+MySQL ``XA {START | BEGIN} xid [JOIN | RESUME]``, ``XA END xid [SUSPEND [FOR MIGRATE]]``,
+``XA PREPARE xid``, ``XA COMMIT xid [ONE PHASE]``, ``XA ROLLBACK xid`` and
+``XA RECOVER [CONVERT XID]`` produce an ``XaStatement`` with an ``Action`` and an
+optional ``Option``. They are read with the MySQL and MariaDB dialects or without one;
+MariaDB does not accept ``CONVERT XID``. The gtrid and bqual are string, hexadecimal or
+bit-value literals, and the formatID is an unsigned integer.
+
+.. code-block:: java
+
+    XaStatement xa = (XaStatement) CCJSqlParserUtil.parse("XA START X'0a', 'b', 1 JOIN",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    TransactionId xid = xa.getTransactionId();
+    // START, X'0a', 'b', 1, JOIN
+    String parts = xa.getAction() + ", " + xid.getGlobalTransactionId() + ", "
+        + xid.getBranchQualifier() + ", " + xid.getFormatId() + ", " + xa.getOption();
+
+The validator checks ``twoPhaseCommit`` (PostgreSQL) and ``xa`` (MySQL and MariaDB).
+Feature analysis reports ``XA RECOVER`` as returning a result set and the other
+statements as transaction control.
 
 MySQL SHOW statements
 =====================

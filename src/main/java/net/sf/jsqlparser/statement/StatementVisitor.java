@@ -181,6 +181,22 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+    default <S> T visit(PrepareTransactionStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(PrepareTransactionStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(XaStatement statement) {
+        visit(statement, null);
+    }
+
     <S> T visit(Commit commit, S context);
 
     default void visit(Commit commit) {

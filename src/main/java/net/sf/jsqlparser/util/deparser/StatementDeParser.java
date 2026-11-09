@@ -88,6 +88,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -153,6 +154,7 @@ import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
@@ -488,6 +490,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(SetConstraintsStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(PrepareTransactionStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(XaStatement statement, S context) {
         return statement.appendTo(builder);
     }
 
