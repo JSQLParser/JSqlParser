@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.load;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
@@ -18,6 +19,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * BigQuery's {@code LOAD DATA {INTO | OVERWRITE} table [(column_definitions)] [OPTIONS
@@ -128,19 +130,37 @@ public class LoadDataStatement extends ASTNodeAccessImpl implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    /** Renders the options and file options through the caller's expression visitor. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
         builder.append("LOAD DATA ").append(overwrite ? "OVERWRITE " : "INTO ").append(table);
         if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             builder.append(" ").append(PlainSelect.getStringList(columnDefinitions, true, true));
         }
         if (options != null) {
-            builder.append(" OPTIONS (").append(options).append(")");
+            appendOptions(builder.append(" OPTIONS ("), options, expressionRenderer).append(")");
         }
-        builder.append(" FROM FILES (").append(fileOptions).append(")");
+        appendOptions(builder.append(" FROM FILES ("), fileOptions, expressionRenderer).append(")");
         if (withPartitionColumns) {
             builder.append(" WITH PARTITION COLUMNS");
         }
         if (connectionName != null) {
             builder.append(" WITH CONNECTION ").append(connectionName);
+        }
+        return builder;
+    }
+
+    private static StringBuilder appendOptions(StringBuilder builder, ExpressionList<?> options,
+            Consumer<Expression> expressionRenderer) {
+        if (options != null) {
+            for (int i = 0; i < options.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                expressionRenderer.accept(options.get(i));
+            }
         }
         return builder;
     }

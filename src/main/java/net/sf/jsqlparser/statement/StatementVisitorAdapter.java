@@ -139,6 +139,7 @@ import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -907,6 +908,14 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(LoadDataStatement loadDataStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(MySqlLoadDataStatement loadData, S context) {
+        fromItemVisitor.visitFromItem(loadData.getTable(), context);
+        expressionVisitor.visitExpressions(loadData.getColumns(), context);
+        expressionVisitor.visitUpdateSets(loadData.getUpdateSets(), context);
         return null;
     }
 

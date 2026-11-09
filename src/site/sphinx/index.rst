@@ -172,6 +172,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``DISCARD`` · ``LISTEN`` · ``UNLISTEN`` · ``SHOW``/``RESET TIME ZONE``/``TRANSACTION ISOLATION LEVEL``/``SESSION AUTHORIZATION`` · ``COPY`` options from before 9.0
     * - **MySQL server administration**
       - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
+    * - **MySQL data loading**
+      - ``LOAD DATA`` · ``LOAD XML`` · ``SELECT … INTO OUTFILE`` with the same ``FIELDS`` and ``LINES`` clauses
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

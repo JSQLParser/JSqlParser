@@ -169,6 +169,7 @@ import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -827,8 +828,15 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(LoadDataStatement loadDataStatement, S context) {
-        loadDataStatement.appendTo(builder);
+        loadDataStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(MySqlLoadDataStatement loadData, S context) {
+        return loadData.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override

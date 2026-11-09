@@ -187,7 +187,14 @@ public class ASTNodeCoverageTest {
                 "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
-                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "LOAD DATA LOCAL INFILE 'a' REPLACE INTO TABLE db1.t PARTITION (p0) CHARSET latin1"
+                        + " FIELDS TERMINATED BY ',' LINES TERMINATED BY ';' IGNORE 1 LINES"
+                        + " (a, @b) SET c = @b + 1, d = DEFAULT",
+                "LOAD XML INFILE 'a' INTO TABLE t ROWS IDENTIFIED BY '<r>' LINES STARTING BY 'x' ()",
+                "SELECT a INTO OUTFILE '/tmp/o' COLUMNS ESCAPED BY '^' FROM t",
+                "SELECT a FROM t INTO OUTFILE '/tmp/o' CHARACTER SET 'utf8mb4'"
+                        + " LINES TERMINATED BY ';'"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";

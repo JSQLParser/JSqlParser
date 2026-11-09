@@ -30,7 +30,9 @@ class StructuredStatementVisitorTest {
             "ASSERT (1 = 1) AS 'expected'",
             "ASSERT EXISTS (SELECT 7 FROM users WHERE id = 8)",
             "EXPORT DATA OPTIONS(uri='gs://example/*.csv',format='CSV') AS SELECT 7 FROM users",
-            "EXPORT DATA OPTIONS(uri='gs://example/*.csv',format='CSV') AS WITH c AS (SELECT 7 AS id) SELECT id FROM c UNION ALL SELECT 8"
+            "EXPORT DATA OPTIONS(uri='gs://example/*.csv',format='CSV') AS WITH c AS (SELECT 7 AS id) SELECT id FROM c UNION ALL SELECT 8",
+            "LOAD DATA INTO ds.t OPTIONS (description = 'x') FROM FILES (format = 'CSV', skip_leading_rows = 1)",
+            "LOAD DATA INFILE 'a' INTO TABLE t FIELDS TERMINATED BY ',' (a, @b) SET c = @b + 1, d = 'x'"
     })
     void defaultDeparserMatchesStatementOutput(String sql) throws Exception {
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -66,6 +68,23 @@ class StructuredStatementVisitorTest {
                 "EXPORT DATA OPTIONS(uri='gs://example/*.csv',format='CSV') AS SELECT 7 FROM users WHERE id = 8",
                 List.of("gs://example/*.csv", "CSV", "7", "8"),
                 "EXPORT DATA OPTIONS (uri = 'changed', format = 'changed') AS SELECT 107 FROM users WHERE id = 108");
+    }
+
+    @Test
+    void visitsBigQueryLoadOptions() throws Exception {
+        assertVisited(
+                "LOAD DATA INTO ds.t OPTIONS (description = 'x') FROM FILES (format = 'CSV', skip_leading_rows = 1)",
+                List.of("x", "CSV", "1"),
+                "LOAD DATA INTO ds.t OPTIONS (description = 'changed') FROM FILES (format = 'changed', skip_leading_rows = 101)");
+    }
+
+    @Test
+    void visitsMySqlLoadColumnsAndAssignments() throws Exception {
+        // the file name and the separators are literal syntax, as in SELECT ... INTO OUTFILE
+        assertVisited(
+                "LOAD DATA INFILE 'a' INTO TABLE t FIELDS TERMINATED BY ',' (a, @b) SET c = @b + 1, d = 'x'",
+                List.of("1", "x"),
+                "LOAD DATA INFILE 'a' INTO TABLE t FIELDS TERMINATED BY ',' (a, @b) SET c = @b + 101, d = 'changed'");
     }
 
     private void assertVisited(String sql, List<String> expectedVisits, String expectedOutput)

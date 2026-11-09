@@ -1241,10 +1241,12 @@ public enum Feature {
     export,
 
     /**
-     * PostgreSQL and DuckDB "COPY" and BigQuery "LOAD DATA" statements are allowed
+     * PostgreSQL and DuckDB "COPY", BigQuery and MySQL "LOAD DATA" and MySQL "LOAD XML" statements
+     * are allowed
      *
      * @see net.sf.jsqlparser.statement.CopyStatement
      * @see net.sf.jsqlparser.statement.load.LoadDataStatement
+     * @see net.sf.jsqlparser.statement.load.MySqlLoadDataStatement
      */
     copy, loadData,
 
