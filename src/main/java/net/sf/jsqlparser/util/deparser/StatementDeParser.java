@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -65,6 +66,7 @@ import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DiscardStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
@@ -73,10 +75,12 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -84,6 +88,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -121,7 +126,12 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -144,6 +154,7 @@ import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
@@ -377,15 +388,30 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         return builder;
     }
 
+    @Override
     public <S> StringBuilder visit(Analyze analyzer, S context) {
-        builder.append(analyzer);
-        return builder;
+        return analyzer.appendTo(builder);
     }
 
     @Override
     public <S> StringBuilder visit(TableMaintenanceStatement statement, S context) {
         builder.append(statement);
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(VacuumStatement vacuum, S context) {
+        return vacuum.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(ClusterStatement cluster, S context) {
+        return cluster.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CheckpointStatement checkpoint, S context) {
+        return checkpoint.appendTo(builder);
     }
 
     @Override
@@ -444,8 +470,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(RollbackStatement rollbackStatement, S context) {
-        builder.append(rollbackStatement.toString());
-        return builder;
+        return rollbackStatement.appendTo(builder);
     }
 
     @Override
@@ -459,9 +484,28 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(SetTransactionStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetConstraintsStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(PrepareTransactionStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(XaStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(Commit commit, S context) {
-        builder.append(commit.toString());
-        return builder;
+        return commit.appendTo(builder);
     }
 
     @Override
@@ -806,6 +850,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(UnlockStatement unlock, S context) {
+        return unlock.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(BackupLockStatement backupLock, S context) {
+        return backupLock.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(CreatePolicy createPolicy, S context) {
         new CreatePolicyDeParser(expressionDeParser, builder).deParse(createPolicy);
         return builder;
@@ -1035,6 +1089,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(NotifyStatement statement, S context) {
         return statement.appendTo(builder,
                 expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ListenStatement listen, S context) {
+        return listen.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(DiscardStatement discard, S context) {
+        return discard.appendTo(builder);
     }
 
     @Override

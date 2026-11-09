@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.List;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -20,7 +21,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * @see <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm">ALTER
  *      SESSION</a>
  */
-public class AlterSession implements Statement {
+public class AlterSession extends ASTNodeAccessImpl implements Statement {
     private AlterSessionOperation operation;
     private List<String> parameters;
 

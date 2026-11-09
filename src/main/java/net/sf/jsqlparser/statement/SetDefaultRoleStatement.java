@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.user.RoleSelection;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
 
@@ -22,7 +23,7 @@ import net.sf.jsqlparser.statement.create.user.UserAccount;
  * {@code SET DEFAULT ROLE {role | NONE} [FOR user]} is kept with {@link #isForKeyword()}; without
  * accounts the statement applies to the current user.
  */
-public class SetDefaultRoleStatement implements Statement {
+public class SetDefaultRoleStatement extends ASTNodeAccessImpl implements Statement {
 
     private RoleSelection roles;
     private final List<UserAccount> accounts = new ArrayList<>();

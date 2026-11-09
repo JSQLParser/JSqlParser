@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import net.sf.jsqlparser.expression.IntervalQualifier;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +23,7 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
-public class ColDataType implements Serializable {
+public class ColDataType extends ASTNodeAccessImpl {
 
     public enum Signedness {
         SIGNED, UNSIGNED

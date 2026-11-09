@@ -9,11 +9,13 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * DuckDB's {@code CONNECT target [AS alias]}, which routes the session's queries to a remote
  * database.
  */
-public class ConnectStatement implements Statement {
+public class ConnectStatement extends ASTNodeAccessImpl implements Statement {
     private String target;
     private String alias;
 

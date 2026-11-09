@@ -77,14 +77,24 @@ public enum MySqlVersion implements Version {
                     Feature.truncate,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
-                    Feature.tableMaintenance,
+                    Feature.analyze, Feature.tableMaintenance,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html
+                    Feature.lock, Feature.unlockTables,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/lock-instance-for-backup.html
+                    Feature.backupLock,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
-                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
+                    Feature.setRole,
                     Feature.setDefaultRole, Feature.setPassword,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/deallocate-prepare.html
+                    Feature.deallocate,
 
                     Feature.drop, // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
                     Feature.dropTable, // https://dev.mysql.com/doc/refman/8.0/en/drop-index.html
@@ -121,6 +131,10 @@ public enum MySqlVersion implements Version {
                     Feature.createIndex, // https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
                     Feature.createTrigger,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/create-event.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-event.html
+                    Feature.createEvent, Feature.alterEvent,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/describe.html
                     Feature.describe,
                     Feature.desc, // https://dev.mysql.com/doc/refman/8.0/en/explain.html
@@ -134,8 +148,13 @@ public enum MySqlVersion implements Version {
                     Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/revoke.html
                     Feature.revoke, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
-                    Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
-                    Feature.transactionChain, Feature.transactionConsistentSnapshot, //
+                    Feature.commit, Feature.rollback, Feature.startTransaction,
+                    Feature.savepoint, Feature.releaseSavepoint,
+                    Feature.transactionChain, Feature.transactionConsistentSnapshot,
+                    Feature.transactionRelease, // https://dev.mysql.com/doc/refman/8.4/en/set-transaction.html
+                    Feature.setTransaction, Feature.setTransactionGlobal,
+                    Feature.setTransactionPersist, // https://dev.mysql.com/doc/refman/8.4/en/xa-statements.html
+                    Feature.xa, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));

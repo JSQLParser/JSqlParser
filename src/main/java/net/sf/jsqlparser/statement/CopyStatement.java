@@ -10,22 +10,29 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * {@code COPY table [(columns)] FROM path [(options)]} and
  * {@code COPY {table | (query)} TO path [(options)]}, the bulk import and export statement in
- * DuckDB and PostgreSQL.
+ * DuckDB and PostgreSQL. PostgreSQL also accepts its option syntax from before 9.0, options without
+ * parentheses such as {@code CSV HEADER} (see {@link #getLegacyOptions()}), and
+ * {@code COPY BINARY table}.
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/copy">COPY</a>
+ * @see <a href="https://www.postgresql.org/docs/18/sql-copy.html">PostgreSQL COPY</a>
  */
-public class CopyStatement implements Statement {
+public class CopyStatement extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private ExpressionList<Column> columns;
     private Select select;
@@ -33,6 +40,8 @@ public class CopyStatement implements Statement {
     private String path;
     private List<String> options;
     private boolean withKeyword;
+    private boolean binary;
+    private final List<CopyLegacyOption> legacyOptions = new ArrayList<>();
 
     public Table getTable() {
         return table;
@@ -100,6 +109,7 @@ public class CopyStatement implements Statement {
         return this;
     }
 
+    /** The options in parentheses, each as written; null when the statement has none. */
     public List<String> getOptions() {
         return options;
     }
@@ -127,6 +137,47 @@ public class CopyStatement implements Statement {
         return this;
     }
 
+    /** Whether the table is preceded by BINARY, PostgreSQL's spelling from before 7.3. */
+    public boolean isBinary() {
+        return binary;
+    }
+
+    public void setBinary(boolean binary) {
+        this.binary = binary;
+    }
+
+    public CopyStatement withBinary(boolean binary) {
+        setBinary(binary);
+        return this;
+    }
+
+    /**
+     * The options of PostgreSQL's syntax from before 9.0, in source order, such as {@code CSV} and
+     * {@code HEADER} in {@code COPY t TO STDOUT CSV HEADER}; empty when the statement has none. A
+     * statement has either these options or the options in parentheses.
+     */
+    public List<CopyLegacyOption> getLegacyOptions() {
+        return legacyOptions;
+    }
+
+    public void setLegacyOptions(Collection<? extends CopyLegacyOption> legacyOptions) {
+        List<CopyLegacyOption> replacement = legacyOptions == null
+                ? Collections.emptyList()
+                : new ArrayList<>(legacyOptions);
+        this.legacyOptions.clear();
+        this.legacyOptions.addAll(replacement);
+    }
+
+    public CopyStatement addLegacyOptions(CopyLegacyOption... legacyOptions) {
+        Collections.addAll(this.legacyOptions, legacyOptions);
+        return this;
+    }
+
+    public CopyStatement withLegacyOptions(Collection<? extends CopyLegacyOption> legacyOptions) {
+        setLegacyOptions(legacyOptions);
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         return appendTo(builder, builder::append);
     }
@@ -139,6 +190,9 @@ public class CopyStatement implements Statement {
             selectPrinter.accept(select);
             builder.append(')');
         } else {
+            if (binary) {
+                builder.append("BINARY ");
+            }
             builder.append(table);
             if (columns != null && !columns.isEmpty()) {
                 builder.append(" (").append(columns).append(")");
@@ -147,6 +201,9 @@ public class CopyStatement implements Statement {
         builder.append(from ? " FROM " : " TO ").append(path);
         if (withKeyword) {
             builder.append(" WITH");
+        }
+        for (CopyLegacyOption legacyOption : legacyOptions) {
+            legacyOption.appendTo(builder.append(' '));
         }
         if (options != null && !options.isEmpty()) {
             builder.append(" ").append(PlainSelect.getStringList(options, true, true));

@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL extended statistics over columns and parenthesized expressions. */
-public class CreateStatistics implements Statement {
+public class CreateStatistics extends ASTNodeAccessImpl implements Statement {
     public enum Kind {
         NDISTINCT, DEPENDENCIES, MCV
     }

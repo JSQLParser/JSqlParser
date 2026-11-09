@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.RoutineCharacteristic;
 import net.sf.jsqlparser.statement.RoutineReference;
 import net.sf.jsqlparser.statement.Statement;
@@ -27,7 +28,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * Server's routine redefinitions remain
  * {@link net.sf.jsqlparser.statement.CreateFunctionalStatement} nodes.
  */
-public class AlterRoutine implements Statement {
+public class AlterRoutine extends ASTNodeAccessImpl implements Statement {
 
     public enum RoutineType {
         FUNCTION, PROCEDURE, ROUTINE

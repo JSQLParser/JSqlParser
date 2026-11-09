@@ -78,6 +78,15 @@ public class DropValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidationDropSignatureTargets() throws JSQLParserException {
+        String sql = "DROP CAST IF EXISTS (text AS integer) CASCADE;"
+                + " DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint);"
+                + " DROP TRANSFORM FOR hstore LANGUAGE plpython3u";
+        validateNoErrors(sql, 3, DatabaseType.POSTGRESQL);
+        validateNotAllowed(sql, 3, 3, FeaturesAllowed.DML, Feature.drop);
+    }
+
+    @Test
     public void testValidationReassignOwned() throws JSQLParserException {
         String sql = "REASSIGN OWNED BY old_role TO new_role";
         validateNoErrors(sql, 1, PostgresqlVersion.V14, DatabaseType.POSTGRESQL);

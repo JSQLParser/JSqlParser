@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.List;
 import java.util.Objects;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -21,7 +22,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  *      SESSION</a>
  */
 
-public class AlterSystemStatement implements Statement {
+public class AlterSystemStatement extends ASTNodeAccessImpl implements Statement {
     private final AlterSystemOperation operation;
     private final List<String> parameters;
 

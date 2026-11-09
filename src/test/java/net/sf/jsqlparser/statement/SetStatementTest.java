@@ -12,10 +12,14 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import java.lang.reflect.Modifier;
 import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -74,7 +78,8 @@ public class SetStatementTest {
         assertEquals(0, setStatement.getCount());
 
         setStatement.addKeyValuePairs(
-                new SetStatement.NameExpr("test", new ExpressionList<>(new StringValue("1")), false));
+                new SetStatement.NameExpr("test", new ExpressionList<>(new StringValue("1")),
+                        false));
         setStatement.getKeyValuePairs().get(0).setUseEqual(true);
 
         assertEquals("test", setStatement.getKeyValuePairs().get(0).getName());
@@ -98,5 +103,37 @@ public class SetStatementTest {
     public void testMultiPartVariables() throws JSQLParserException {
         String sqlStr = "set a.b.c=false";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testTypedScopeKeepsTheEffectParameterAccessors() throws JSQLParserException {
+        SetStatement set = (SetStatement) CCJSqlParserUtil.parse("set local statement_timeout = 0");
+        assertEquals(SetScope.LOCAL, set.getScope());
+        assertEquals("LOCAL", set.getEffectParameter());
+        // the scope keyword is rendered in upper case
+        assertEquals("SET LOCAL statement_timeout = 0", set.toString());
+        set.setEffectParameter("persist_only");
+        assertEquals(SetScope.PERSIST_ONLY, set.getScope());
+        assertEquals("SET PERSIST_ONLY statement_timeout = 0", set.toString());
+        set.withScope(null);
+        assertEquals(SetScope.NONE, set.getScope());
+        assertNull(set.getEffectParameter());
+        assertEquals("SET statement_timeout = 0", set.toString());
+        assertThrows(IllegalArgumentException.class, () -> set.setEffectParameter("forever"));
+        set.withEffectParameter("Session").clear();
+        assertEquals(SetScope.NONE, set.getScope());
+        assertEquals(SetScope.SESSION,
+                ((SetStatement) CCJSqlParserUtil.parse("SET SESSION x = 1")).getScope());
+    }
+
+    @Test
+    public void testNameExprIsPublic() throws JSQLParserException {
+        assertTrue(Modifier.isPublic(SetStatement.NameExpr.class.getModifiers()));
+        SetStatement set = (SetStatement) CCJSqlParserUtil.parse("SET a = 1, b := 2");
+        SetStatement.NameExpr second = set.getKeyValuePairs().get(1);
+        assertEquals(SetStatement.AssignmentOperator.COLON_EQUALS, second.getAssignmentOperator());
+        second.setAssignmentOperator(SetStatement.AssignmentOperator.EQUALS);
+        assertEquals("SET a = 1, b = 2", set.toString());
+        assertThrows(NullPointerException.class, () -> second.setAssignmentOperator(null));
     }
 }

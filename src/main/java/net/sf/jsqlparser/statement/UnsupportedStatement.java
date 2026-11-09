@@ -13,12 +13,13 @@ package net.sf.jsqlparser.statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
-public class UnsupportedStatement implements Statement {
+public class UnsupportedStatement extends ASTNodeAccessImpl implements Statement {
     private List<String> declarations;
 
     public UnsupportedStatement(List<String> declarations) {

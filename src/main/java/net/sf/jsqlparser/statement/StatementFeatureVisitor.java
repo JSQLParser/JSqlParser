@@ -25,6 +25,8 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.TranscodingFunction;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -96,8 +98,14 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
@@ -170,6 +178,16 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
+
+    /**
+     * ALTER TABLE actions that delete, swap or replace the rows of a table or partition. Like
+     * TRUNCATE and DROP they carry MODIFIES_DATA as well as MODIFIES_SCHEMA.
+     */
+    private static final Set<AlterOperation> ALTER_ACTIONS_MODIFYING_DATA =
+            EnumSet.of(AlterOperation.DROP_PARTITION, AlterOperation.TRUNCATE_PARTITION,
+                    AlterOperation.EXCHANGE_PARTITION, AlterOperation.DISCARD_PARTITION,
+                    AlterOperation.DISCARD_TABLESPACE, AlterOperation.IMPORT_PARTITION,
+                    AlterOperation.IMPORT_TABLESPACE);
 
     private final Analysis analysis;
 
@@ -672,7 +690,25 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(Alter alter, S context) {
-        return schemaOnly();
+        schemaOnly();
+        if (alter.getAlterExpressions() == null) {
+            return null;
+        }
+        for (AlterExpression action : alter.getAlterExpressions()) {
+            AlterOperation operation = action.getOperation();
+            if (ALTER_ACTIONS_MODIFYING_DATA.contains(operation)) {
+                analysis.certain(StmtFeature.MODIFIES_DATA);
+            } else if (operation == AlterOperation.REPAIR_PARTITION) {
+                // like REPAIR TABLE, it may rewrite or discard rows
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+            } else if (operation == AlterOperation.UNSPECIFIC) {
+                // an action the grammar does not model is kept as raw tokens and may write
+                // rows, e.g. ClickHouse's ALTER TABLE t DELETE WHERE ..
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+                analysis.unresolved("unsupported");
+            }
+        }
+        return null;
     }
 
     @Override
@@ -737,13 +773,38 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(TableMaintenanceStatement statement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA, StmtFeature.RETURNS_RESULT_SET);
-        if (statement.getOperation() != TableMaintenanceStatement.Operation.CHECK) {
+        if (statement.getOperation() == TableMaintenanceStatement.Operation.OPTIMIZE
+                || statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {
             // OPTIMIZE rebuilds table storage; REPAIR may also rewrite or discard rows
             analysis.certain(StmtFeature.MODIFIES_SCHEMA);
             if (statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {
                 analysis.possible(StmtFeature.MODIFIES_DATA);
             }
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        // reclaims storage and, with ANALYZE, rewrites statistics; FULL rewrites the tables
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        // rewrites the table in index order
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        // a server operation like ALTER SYSTEM CHECKPOINT; no data or schema changes
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
         return null;
     }
 
@@ -846,6 +907,28 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    /** XA RECOVER lists the prepared transactions; the other actions control a branch. */
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
+        return statement.getAction() == XaStatement.Action.RECOVER ? metadataOnly()
+                : transactionOnly();
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return transactionOnly();
     }
@@ -862,6 +945,16 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(LockStatement lock, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(UnlockStatement unlock, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(BackupLockStatement backupLock, S context) {
         return transactionOnly();
     }
 
@@ -909,6 +1002,21 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(DeclareStatement declareStatement, S context) {
         return sessionOnly();
+    }
+
+    @Override
+    public <S> Void visit(ListenStatement listen, S context) {
+        return sessionOnly();
+    }
+
+    @Override
+    public <S> Void visit(DiscardStatement discard, S context) {
+        sessionOnly();
+        if (discard.isDroppingTemporaryTables()) {
+            // the temporary tables of the session, if it has any
+            analysis.possible(StmtFeature.MODIFIES_SCHEMA);
+        }
+        return null;
     }
 
     @Override

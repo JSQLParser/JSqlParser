@@ -301,9 +301,12 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptional(table.getPivot(), p -> p.accept(this, context));
         validateOptional(table.getUnPivot(), up -> up.accept(this, context));
 
-        MySQLIndexHint indexHint = table.getIndexHint();
-        if (indexHint != null && isNotEmpty(indexHint.getIndexNames())) {
-            indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
+        if (table.getIndexHints() != null) {
+            for (MySQLIndexHint indexHint : table.getIndexHints()) {
+                if (isNotEmpty(indexHint.getIndexNames())) {
+                    indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
+                }
+            }
         }
         SQLServerHints sqlServerHints = table.getSqlServerHints();
         if (sqlServerHints != null) {
@@ -505,7 +508,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     @Override
     public <S> Void visit(Import imprt, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.imprt);
         return null;
     }
 

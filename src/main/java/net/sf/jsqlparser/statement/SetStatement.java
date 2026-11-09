@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,10 +21,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public final class SetStatement implements Statement {
+public final class SetStatement extends ASTNodeAccessImpl implements Statement {
 
     private final List<NameExpr> values = new ArrayList<>();
-    private String effectParameter;
+    private SetScope scope = SetScope.NONE;
     private OnOffOptions onOffOptions;
 
     /** Assignment separator; NONE also supports SET options and PostgreSQL TIME ZONE. */
@@ -210,14 +211,14 @@ public final class SetStatement implements Statement {
     public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
         builder.append("SET ");
         if (onOffOptions != null) {
-            if (!values.isEmpty() || effectParameter != null) {
+            if (!values.isEmpty() || scope != SetScope.NONE) {
                 throw new IllegalStateException(
                         "SET options cannot be combined with assignments or scope");
             }
             return onOffOptions.appendTo(builder);
         }
-        if (effectParameter != null) {
-            builder.append(effectParameter).append(" ");
+        if (scope != SetScope.NONE) {
+            builder.append(scope).append(" ");
         }
         for (int i = 0; i < values.size(); i++) {
             if (i > 0) {
@@ -266,7 +267,7 @@ public final class SetStatement implements Statement {
     public void clear() {
         onOffOptions = null;
         values.clear();
-        effectParameter = null;
+        scope = SetScope.NONE;
     }
 
     @Override
@@ -274,20 +275,42 @@ public final class SetStatement implements Statement {
         return statementVisitor.visit(this, context);
     }
 
-    public String getEffectParameter() {
-        return effectParameter;
+    /** The scope keyword after SET; {@link SetScope#NONE} when there is none. */
+    public SetScope getScope() {
+        return scope;
     }
 
-    public void setEffectParameter(String effectParameter) {
-        this.effectParameter = effectParameter;
+    /** Sets the scope keyword; null means {@link SetScope#NONE}. */
+    public void setScope(SetScope scope) {
+        this.scope = scope == null ? SetScope.NONE : scope;
     }
 
-    public SetStatement withEffectParameter(String effectParameter) {
-        this.effectParameter = effectParameter;
+    public SetStatement withScope(SetScope scope) {
+        setScope(scope);
         return this;
     }
 
-    static class NameExpr implements Serializable {
+    /** The scope keyword in upper case, or null without one; derived from {@link #getScope()}. */
+    public String getEffectParameter() {
+        return scope.getKeyword();
+    }
+
+    /**
+     * Sets the scope by its keyword, ignoring case; null clears it.
+     *
+     * @throws IllegalArgumentException if the keyword is not a {@link SetScope}
+     */
+    public void setEffectParameter(String effectParameter) {
+        setScope(SetScope.fromKeyword(effectParameter));
+    }
+
+    public SetStatement withEffectParameter(String effectParameter) {
+        setEffectParameter(effectParameter);
+        return this;
+    }
+
+    /** One assignment: a name, its operator and its value list. */
+    public static class NameExpr implements Serializable {
         Object name;
         ExpressionList expressions;
         AssignmentOperator operator;
@@ -316,6 +339,14 @@ public final class SetStatement implements Statement {
 
         public void setExpressions(ExpressionList<?> expressions) {
             this.expressions = expressions;
+        }
+
+        public AssignmentOperator getAssignmentOperator() {
+            return operator;
+        }
+
+        public void setAssignmentOperator(AssignmentOperator operator) {
+            this.operator = Objects.requireNonNull(operator, "operator");
         }
 
         public boolean isUseEqual() {

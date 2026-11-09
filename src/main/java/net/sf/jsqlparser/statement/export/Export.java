@@ -10,13 +10,14 @@
 package net.sf.jsqlparser.statement.export;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.*;
 
-public class Export implements Statement {
+public class Export extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private ExpressionList<Column> columns;
     private Select select;

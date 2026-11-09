@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -17,7 +18,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * and rule actions of {@link RelationAlterAction}. Each non-null setter selects its action and
  * discards the values of the other actions.
  */
-public class AlterEventTrigger implements Statement {
+public class AlterEventTrigger extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         STATE, OWNER, RENAME
     }

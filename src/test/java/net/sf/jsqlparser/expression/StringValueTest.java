@@ -15,7 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -24,9 +27,13 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.table.ColumnOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  *
@@ -367,6 +374,51 @@ public class StringValueTest {
 
         sqlStr = "select q'{It's good!}' from dual";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"q'{a}'", "q'(a)'", "q'[a]'", "q''a''", "Q'[a]'"})
+    void testOracleAlternativeQuotingEndsAtFirstDelimiter(String literal)
+            throws JSQLParserException {
+        String sqlStr =
+                "SELECT " + literal + " FROM t WHERE id IN (SELECT id FROM secrets) AND x = "
+                        + literal;
+
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        assertEquals(new HashSet<>(Arrays.asList("t", "secrets")),
+                new TablesNamesFinder<Void>().getTables(statement));
+        assertEquals(3, CCJSqlParserUtil.parseStatements(
+                "SELECT " + literal + " FROM t; DELETE FROM u; SELECT " + literal + " FROM t")
+                .size());
+    }
+
+    @Test
+    void testOracleAlternativeQuotingKeepsOneLiteralPerQuote() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils
+                .assertSqlCanBeParsedAndDeparsed("SELECT q'[a]' || q'[b]' FROM dual", true);
+
+        Concat concat = (Concat) select.getSelectItem(0).getExpression();
+        assertEquals("[a]", ((StringValue) concat.getLeftExpression()).getValue());
+        assertEquals("[b]", ((StringValue) concat.getRightExpression()).getValue());
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', quoteCharacter = '"', value = {
+            "q'[a]b]'|[a]b]",
+            "q'[a]]'|[a]]",
+            "q'[]'|[]",
+            "q'[]]'|[]]",
+            "q'[it's]'|[it's]",
+            "q'(a)b)'|(a)b)",
+            "q'{a}}'|{a}}",
+            "q''a'b''|'a'b'"})
+    void testOracleAlternativeQuotingBody(String literal, String value)
+            throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils
+                .assertSqlCanBeParsedAndDeparsed("SELECT " + literal + " FROM dual", true);
+
+        assertEquals(value, ((StringValue) select.getSelectItem(0).getExpression()).getValue());
     }
 
     @Test

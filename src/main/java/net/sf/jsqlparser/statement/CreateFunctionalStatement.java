@@ -15,13 +15,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.function.FunctionReturnType;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 
 /**
  * A base for the declaration of function like statements
  */
-public abstract class CreateFunctionalStatement implements Statement {
+public abstract class CreateFunctionalStatement extends ASTNodeAccessImpl implements Statement {
 
     private String kind;
     private boolean orReplace = false;

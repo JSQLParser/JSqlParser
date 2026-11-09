@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,6 +83,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DiscardStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.DoStatement;
@@ -91,6 +93,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
@@ -100,10 +103,12 @@ import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
@@ -113,6 +118,7 @@ import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
@@ -193,13 +199,19 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeDelete;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeOperation;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -287,6 +299,9 @@ public class TablesNamesFinder<Void>
     private Set<String> rowPatternVariables = java.util.Collections.emptySet();
 
     private Set<String> otherItemNames;
+    // the WITH items a table reference resolves to at the current position, counted because a
+    // nested WITH may repeat a name of an enclosing one
+    private Map<String, Integer> withItemsInScope;
 
     public static Set<String> findTables(String sqlStr) throws JSQLParserException {
         TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
@@ -317,10 +332,6 @@ public class TablesNamesFinder<Void>
         init(false);
         statement.accept(this, null);
 
-        // @todo: assess this carefully, maybe we want to remove more specifically
-        // only Aliases on WithItems, Parenthesed Selects and Lateral Selects
-        otherItemNames.forEach(tables::remove);
-
         return tables;
     }
 
@@ -336,13 +347,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Select select, S context) {
-        List<WithItem<?>> withItemsList = select.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(select.getWithItemsList(), context);
         select.accept((SelectVisitor<?>) this, context);
+        leaveWithItems(select.getWithItemsList());
         return null;
     }
 
@@ -401,6 +408,56 @@ public class TablesNamesFinder<Void>
         return tables;
     }
 
+    /**
+     * Visits the WITH items of a query and brings their names into scope, which the caller ends
+     * with {@link #leaveWithItems(List)} after the query. An item only sees the items before it, so
+     * a reference to its own or a later name is a table, unless RECURSIVE makes all of them visible
+     * to each other. The parser sets RECURSIVE on the first item, but it covers the list.
+     */
+    @Override
+    public <S> Void visitWithItems(List<WithItem<?>> withItemsList, S context) {
+        if (withItemsList != null) {
+            boolean recursive = withItemsList.stream().anyMatch(WithItem::isRecursive);
+            if (recursive) {
+                withItemsList.forEach(this::enterWithItem);
+            }
+            for (WithItem<?> withItem : withItemsList) {
+                withItem.accept((SelectVisitor<?>) this, context);
+                if (!recursive) {
+                    enterWithItem(withItem);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void enterWithItem(WithItem<?> withItem) {
+        if (withItem.getAlias() != null) {
+            withItemsInScope.merge(withItem.getAlias().getName(), 1, Integer::sum);
+        }
+    }
+
+    private void leaveWithItems(List<WithItem<?>> withItemsList) {
+        if (withItemsList != null) {
+            for (WithItem<?> withItem : withItemsList) {
+                if (withItem.getAlias() != null) {
+                    withItemsInScope.computeIfPresent(withItem.getAlias().getName(),
+                            (name, count) -> count > 1 ? count - 1 : null);
+                }
+            }
+        }
+    }
+
+    /**
+     * The target of a DML statement is a table even if a WITH item in scope has the same name.
+     */
+    private <S> void visitTargetTable(Table table, S context) {
+        Map<String, Integer> scope = withItemsInScope;
+        withItemsInScope = new HashMap<>();
+        visit(table, context);
+        withItemsInScope = scope;
+    }
+
     @Override
     public <S> Void visit(WithItem<?> withItem, S context) {
         if (withItem.getAlias() != null) {
@@ -428,12 +485,7 @@ public class TablesNamesFinder<Void>
         if (select.getAlias() != null) {
             otherItemNames.add(select.getAlias().getName());
         }
-        List<WithItem<?>> withItemsList = select.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(select.getWithItemsList(), context);
         select.getSelect().accept((SelectVisitor<?>) this, context);
         visitOrderBy(select.getOrderByElements(), context);
         if (select.getPivot() != null) {
@@ -449,6 +501,7 @@ public class TablesNamesFinder<Void>
         if (select.getFetch() != null) {
             select.getFetch().getExpression().accept(this, context);
         }
+        leaveWithItems(select.getWithItemsList());
         return null;
     }
 
@@ -472,6 +525,9 @@ public class TablesNamesFinder<Void>
         visitWithItems(plainSelect.getWithItemsList(), context);
         if (plainSelect.getDistinct() != null) {
             visitSelectItems(plainSelect.getDistinct().getOnSelectItems(), context);
+        }
+        if (plainSelect.getTop() != null) {
+            visitExpression(plainSelect.getTop().getExpression(), context);
         }
         visitTables(plainSelect.getIntoTables(), context);
 
@@ -517,6 +573,7 @@ public class TablesNamesFinder<Void>
         visitSelectPagination(plainSelect, context);
         visitUpdateSets(plainSelect.getSettings(), context);
         visitFromItem(plainSelect.getIntoTempTable(), context);
+        leaveWithItems(plainSelect.getWithItemsList());
         return null;
     }
 
@@ -531,6 +588,7 @@ public class TablesNamesFinder<Void>
         visitLimit(pivotQuery.getLimit(), context);
 
         visitSelectPagination(pivotQuery, context);
+        leaveWithItems(pivotQuery.getWithItemsList());
         return null;
     }
 
@@ -540,6 +598,7 @@ public class TablesNamesFinder<Void>
         visitFromItem(unPivotQuery.getFromItem(), context);
         visitExpressions(unPivotQuery.getOnExpressions(), context);
         visitExpressions(unPivotQuery.getValueColumns(), context);
+        leaveWithItems(unPivotQuery.getWithItemsList());
         return null;
     }
 
@@ -617,7 +676,7 @@ public class TablesNamesFinder<Void>
         String tableWholeName = extractTableName(table);
         if (table.isTableVariable()) {
             otherItemNames.add(tableWholeName);
-        } else if (!otherItemNames.contains(tableWholeName)) {
+        } else if (!withItemsInScope.containsKey(table.getFullyQualifiedName())) {
             tables.add(tableWholeName);
         }
         if (table.getPivot() != null) {
@@ -665,6 +724,7 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(Column tableColumn, S context) {
         if (allowColumnProcessing && tableColumn.getTable() != null
                 && tableColumn.getTable().getName() != null
+                && !otherItemNames.contains(extractTableName(tableColumn.getTable()))
                 && !rowPatternVariables.contains(
                         MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
             visit(tableColumn.getTable(), context);
@@ -1108,12 +1168,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetOperationList list, S context) {
-        List<WithItem<?>> withItemsList = list.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(list.getWithItemsList(), context);
         for (Select selectBody : list.getSelects()) {
             selectBody.accept((SelectVisitor<?>) this, context);
         }
@@ -1125,6 +1180,7 @@ public class TablesNamesFinder<Void>
         if (list.getFetch() != null) {
             list.getFetch().getExpression().accept(this, context);
         }
+        leaveWithItems(list.getWithItemsList());
         return null;
     }
 
@@ -1157,7 +1213,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(TableStatement tableStatement, S context) {
+        visitWithItems(tableStatement.getWithItemsList(), context);
         tableStatement.getTable().accept(this, null);
+        leaveWithItems(tableStatement.getWithItemsList());
         return null;
     }
 
@@ -1168,12 +1226,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(FromQuery fromQuery, S context) {
-        List<WithItem<?>> withItemsList = fromQuery.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(fromQuery.getWithItemsList(), context);
         if (fromQuery.getFromItem() != null) {
             fromQuery.getFromItem().accept(this, context);
         }
@@ -1186,6 +1239,7 @@ public class TablesNamesFinder<Void>
         for (PipeOperator pipeOperator : fromQuery.getPipeOperators()) {
             pipeOperator.accept(this, null);
         }
+        leaveWithItems(fromQuery.getWithItemsList());
         return null;
     }
 
@@ -1356,6 +1410,7 @@ public class TablesNamesFinder<Void>
      */
     protected void init(boolean allowColumnProcessing) {
         otherItemNames = new LinkedHashSet<String>();
+        withItemsInScope = new HashMap<>();
         tables = new HashSet<>();
         this.allowColumnProcessing = allowColumnProcessing;
         this.rowPatternVariables = java.util.Collections.emptySet();
@@ -1418,14 +1473,21 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AllColumns allColumns, S context) {
-
+        visitColumnsTransformers(allColumns, context);
         return null;
     }
 
     @Override
     public <S> Void visit(AllTableColumns allTableColumns, S context) {
-
+        visitColumnsTransformers(allTableColumns, context);
         return null;
+    }
+
+    private <S> void visitColumnsTransformers(AllColumns allColumns, S context) {
+        for (ColumnsTransformer transformer : allColumns.getTransformers()) {
+            visitExpression(transformer.getApplyExpression(), context);
+            visitSelectItems(transformer.getReplaceItems(), context);
+        }
     }
 
     @Override
@@ -1485,18 +1547,15 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Delete delete, S context) {
-        if (delete.getWithItemsList() != null) {
-            for (WithItem<?> withItem : delete.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
-        visit(delete.getTable(), context);
+        visitWithItems(delete.getWithItemsList(), context);
+        visitTargetTable(delete.getTable(), context);
 
         if (delete.getUsingFromItemList() != null) {
             for (FromItem usingFromItem : delete.getUsingFromItemList()) {
                 usingFromItem.accept(this, context);
             }
         }
+        visitJoins(delete.getUsingJoins(), context);
 
         visitJoins(delete.getJoins(), context);
 
@@ -1510,6 +1569,7 @@ public class TablesNamesFinder<Void>
         visitLimit(delete.getLimit(), context);
         visitOutputClause(delete.getOutputClause(), context);
         visitReturningClause(delete.getReturningClause(), context);
+        leaveWithItems(delete.getWithItemsList());
         return null;
     }
 
@@ -1530,14 +1590,10 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Update update, S context) {
-        if (update.getWithItemsList() != null) {
-            for (WithItem<?> withItem : update.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(update.getWithItemsList(), context);
 
         if (!update.isTargetTableAlias()) {
-            visit(update.getTable(), context);
+            visitTargetTable(update.getTable(), context);
         }
 
         visitJoins(update.getStartJoins(), context);
@@ -1565,6 +1621,7 @@ public class TablesNamesFinder<Void>
         visitLimit(update.getLimit(), context);
         visitOutputClause(update.getOutputClause(), context);
         visitReturningClause(update.getReturningClause(), context);
+        leaveWithItems(update.getWithItemsList());
         return null;
     }
 
@@ -1589,20 +1646,16 @@ public class TablesNamesFinder<Void>
                     continue;
                 }
                 for (OracleMultiInsertClause clause : branch.getClauses()) {
-                    visit(clause.getTable(), context);
+                    visitTargetTable(clause.getTable(), context);
                     if (clause.getSelect() != null) {
                         visit(clause.getSelect(), context);
                     }
                 }
             }
         } else if (insert.getTable() != null) {
-            visit(insert.getTable(), context);
+            visitTargetTable(insert.getTable(), context);
         }
-        if (insert.getWithItemsList() != null) {
-            for (WithItem<?> withItem : insert.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(insert.getWithItemsList(), context);
         if (insert.getSetUpdateSets() != null) {
             visitUpdateSets(insert.getSetUpdateSets(), context);
         }
@@ -1620,6 +1673,7 @@ public class TablesNamesFinder<Void>
         if (insert.getSelect() != null) {
             visit(insert.getSelect(), context);
         }
+        leaveWithItems(insert.getWithItemsList());
         return null;
     }
 
@@ -1693,6 +1747,41 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(TableMaintenanceStatement statement) {
         StatementVisitor.super.visit(statement);
+    }
+
+    @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        // the column lists name columns of these tables, not tables
+        vacuum.getTargets().forEach(target -> visit(target.getTable(), context));
+        return null;
+    }
+
+    @Override
+    public void visit(VacuumStatement vacuum) {
+        StatementVisitor.super.visit(vacuum);
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        if (cluster.getTable() != null) {
+            visit(cluster.getTable(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(ClusterStatement cluster) {
+        StatementVisitor.super.visit(cluster);
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        return null;
+    }
+
+    @Override
+    public void visit(CheckpointStatement checkpoint) {
+        StatementVisitor.super.visit(checkpoint);
     }
 
     @Override
@@ -2032,12 +2121,8 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Merge merge, S context) {
-        visit(merge.getTable(), context);
-        if (merge.getWithItemsList() != null) {
-            for (WithItem<?> withItem : merge.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitTargetTable(merge.getTable(), context);
+        visitWithItems(merge.getWithItemsList(), context);
 
         if (merge.getFromItem() != null) {
             merge.getFromItem().accept(this, context);
@@ -2054,6 +2139,7 @@ public class TablesNamesFinder<Void>
         }
         visitOutputClause(merge.getOutputClause(), context);
         visitReturningClause(merge.getReturningClause(), context);
+        leaveWithItems(merge.getWithItemsList());
         return null;
     }
 
@@ -2166,6 +2252,27 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        // names constraints, not tables
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return null;
     }
@@ -2266,6 +2373,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Values values, S context) {
+        visitWithItems(values.getWithItemsList(), context);
         values.getExpressions().accept(this, context);
         visitOrderBy(values.getOrderByElements(), context);
         visitLimit(values.getLimit(), context);
@@ -2275,6 +2383,7 @@ public class TablesNamesFinder<Void>
         if (values.getFetch() != null) {
             values.getFetch().getExpression().accept(this, context);
         }
+        leaveWithItems(values.getWithItemsList());
         return null;
     }
 
@@ -2340,6 +2449,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DeclareStatement declareStatement, S context) {
+        for (DeclareStatement.TypeDefExpr typeDefExpr : declareStatement.getTypeDefExprList()) {
+            visitExpression(typeDefExpr.getDefaultExpr(), context);
+        }
         return null;
     }
 
@@ -3011,6 +3123,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(UnlockStatement unlock, S context) {
+        // UNLOCK TABLES releases every table lock of the session without naming a table
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
         if (createPolicy.getTable() != null) {
             visit(createPolicy.getTable(), context);
@@ -3285,6 +3408,18 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(NotifyStatement statement, S context) {
         statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ListenStatement listen, S context) {
+        // a notification channel is no table
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DiscardStatement discard, S context) {
+        // DISCARD TEMP drops the temporary tables of the session without naming one
         return null;
     }
 

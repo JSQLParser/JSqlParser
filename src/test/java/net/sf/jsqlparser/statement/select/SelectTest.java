@@ -2729,6 +2729,13 @@ public class SelectTest {
     }
 
     @Test
+    public void testParenthesedLateral() throws JSQLParserException {
+        String stmt =
+                "SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL FROM ORDERS AS O, (LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID)) AS OL";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testLateralComplex1() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(
                 SelectTest.class.getResourceAsStream("complex-lateral-select-request.txt"),

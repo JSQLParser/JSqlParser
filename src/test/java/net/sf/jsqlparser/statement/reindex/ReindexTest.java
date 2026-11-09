@@ -133,7 +133,7 @@ class ReindexTest {
     @Test
     void startsAStatementAmongUnsupportedStatements() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "VACUUM t; REINDEX TABLE t; REINDEX t",
+                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; REINDEX TABLE t; REINDEX t",
                 parser -> parser.withUnsupportedStatements(true));
 
         assertEquals(3, statements.size());

@@ -232,6 +232,32 @@ The fastest way to learn the object model is to look at it. Paste your SQL into 
 Read that as a map: each line is a getter away. ``select.getSelectItems()``, ``select.getFromItem()``, ``select.getWhere()``. Once the tree gets deeper than a couple of levels, stop casting by hand and use :ref:`Use the Visitor Patterns`.
 
 
+MySQL index hints, insert sources and DELETE ... USING
+------------------------------------------------------
+
+A table reference keeps every MySQL index hint in ``Table.getIndexHints()``, in
+source order, for example ``t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2)``.
+``MySQLIndexHint.getScope()`` returns ``JOIN``, ``ORDER_BY`` or ``GROUP_BY`` for a
+``FOR`` clause and ``null`` without one. ``USE INDEX ()`` has an empty index list;
+``IGNORE`` and ``FORCE`` require at least one index. ``getIndexHint()`` still returns
+the first hint, and ``setHint()`` replaces all hints with one.
+
+``WEIGHT_STRING(str AS CHAR(n))`` and ``WEIGHT_STRING(str AS BINARY(n))`` keep the cast
+in ``Function.getCastType()``, a ``ColDataType`` as in ``CAST``.
+
+``INSERT INTO t VALUES ROW(1, 2), ROW(3, 4)`` and ``INSERT INTO t TABLE s`` use the same
+``Values`` and ``TableStatement`` models as the queries ``VALUES ROW(...)`` and
+``TABLE s``. ``INSERT INTO t () VALUES ()`` has an empty, non-null
+``getColumns()``; REPLACE accepts the same forms. ``toString()`` and
+``InsertDeParser`` both render through ``Insert.appendTo``, which writes ``PARTITION``
+before the column list.
+
+``DELETE FROM t1 USING t1 JOIN t2 ON t1.id = t2.id`` keeps the joins of the USING
+clause in ``Delete.getUsingJoins()``, after ``getUsingFromItemList()``. PostgreSQL's
+``DELETE FROM t USING s JOIN u ON ...`` uses the same properties. ``getJoins()``
+holds the joins of the target, as in ``DELETE FROM t1, t2 USING ...``, and is
+rendered before USING.
+
 PostgreSQL CHECK inheritance
 ----------------------------
 
@@ -271,9 +297,24 @@ typed properties:
   ``DROP [UNDO] TABLESPACE name [ENGINE [=] engine]``. ``isForce()`` covers
   PostgreSQL ``DROP DATABASE name [WITH] (FORCE)``; the optional WITH is
   always rendered.
+* ``getAccessMethod()`` holds the index access method of PostgreSQL
+  ``DROP OPERATOR CLASS|FAMILY name USING method``, which takes one name.
+  ``isProcedural()`` records the ``PROCEDURAL LANGUAGE`` spelling.
+* PostgreSQL names casts, operators and transforms by types. ``getCast()`` is the
+  ``CastSignature`` of ``DROP CAST (source_type AS target_type)``.
+  ``getOperators()`` holds an ``OperatorSignature`` per target of
+  ``DROP OPERATOR [schema.]op ({left_type | NONE}, {right_type | NONE}) [, ...]``;
+  its operator is the ``ExclusionOperator`` reference that COMMENT ON OPERATOR
+  uses, and a null operand type stands for NONE. ``getTransform()`` is the
+  ``TransformSignature`` of ``DROP TRANSFORM FOR type_name LANGUAGE lang_name``.
+  Oracle's ``DROP OPERATOR name`` keeps a plain name, which the PostgreSQL
+  dialect rejects.
 
 TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
-object types. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+object types, and so are PostgreSQL's ACCESS METHOD, CAST, LANGUAGE, OPERATOR,
+OPERATOR CLASS, OPERATOR FAMILY, TRANSFORM and TEXT SEARCH CONFIGURATION,
+DICTIONARY, PARSER and TEMPLATE.
+``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
 parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 .. code-block:: java
@@ -287,8 +328,9 @@ parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 The legacy accessors remain and are derived from these properties:
 
-* ``getName()`` and ``getNames()`` return read-only snapshots of routine and
-  account names. Edit ``getRoutines()`` or ``getAccounts()`` to change them.
+* ``getName()`` and ``getNames()`` return read-only snapshots of routine,
+  account and operator names. Edit ``getRoutines()``, ``getAccounts()`` or
+  ``getOperators()`` to change them. A cast or transform has no name.
 * ``getTypeToParameters()`` and ``getParamsByType()`` return a read-only map with
   the argument declarations of the last routine, where the legacy
   single-signature form kept them. The map now also covers PROCEDURE, ROUTINE
@@ -1204,7 +1246,7 @@ The features
       - ``SELECT``, ``DELETE .. RETURNING``, ``SHOW``, ``DESCRIBE``, ``EXPLAIN``
     * - ``MODIFIES_DATA``
       - rows are written or destroyed
-      - ``INSERT``, ``UPDATE``, ``DELETE``, ``MERGE``, ``UPSERT``, ``TRUNCATE``, ``DROP``
+      - ``INSERT``, ``UPDATE``, ``DELETE``, ``MERGE``, ``UPSERT``, ``TRUNCATE``, ``DROP``, ``ALTER TABLE .. TRUNCATE PARTITION``
     * - ``MODIFIES_SCHEMA``
       - the catalogue changes
       - ``CREATE``, ``ALTER``, ``DROP``, ``TRUNCATE``, ``GRANT``, ``COMMENT``
@@ -1334,6 +1376,8 @@ Find Table Names
      String exprStr = "A.id=B.id and A.age = (select age from C)";
      tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
      assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
+
+A name is left out only where it resolves to a ``WITH`` item in scope. An alias hides no table, and without ``RECURSIVE`` a ``WITH`` item does not see itself or the items after it. The target of a DML statement is always reported. So the result may hold names that are no tables on some databases, such as a ``WITH`` item that recurses without ``RECURSIVE``: check it against the metadata of the database if that matters.
 
 
 Use the Visitor Patterns
@@ -2458,14 +2502,15 @@ MySQL `ALTER FUNCTION <https://dev.mysql.com/doc/refman/8.4/en/alter-function.ht
 MySQL table maintenance statements
 ----------------------------------
 
-``CHECK TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
+``CHECK TABLE``, ``CHECKSUM TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
 ``TableMaintenanceStatement`` in every dialect; ``ANALYZE TABLE`` remains ``Analyze``.
 ``getOperation()`` identifies the statement, ``getModifier()`` returns
 ``NO_WRITE_TO_BINLOG`` or ``LOCAL`` for OPTIMIZE and REPAIR, and ``isTablesKeyword()``
 records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in source
 order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
-``CHANGED``; REPAIR accepts ``QUICK``, ``EXTENDED`` and ``USE_FRM``. Other combinations
-are rejected, and the option words remain ordinary identifiers elsewhere.
+``CHANGED``; CHECKSUM accepts one of ``QUICK`` and ``EXTENDED``; REPAIR accepts ``QUICK``,
+``EXTENDED`` and ``USE_FRM``. Other combinations are rejected, and the option words and
+``CHECKSUM`` remain ordinary identifiers elsewhere.
 
 .. code-block:: java
 
@@ -2478,6 +2523,164 @@ Table visitors and metadata validation use the table list. Validators report the
 ``tableMaintenance`` feature, which the MySQL and MariaDB capabilities enable. Feature
 analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
 report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
+
+``ANALYZE TABLE ... UPDATE HISTOGRAM ON`` keeps ``WITH n BUCKETS``
+(``getHistogramBucketCount()``), MySQL 8.4's ``AUTO UPDATE`` or ``MANUAL UPDATE``
+(``getHistogramUpdateMode()``) and ``USING DATA 'json'`` (``getHistogramData()``, a
+``StringValue``). ``USING DATA`` excludes the other two options, and ``DROP HISTOGRAM``
+takes none of them.
+
+PostgreSQL maintenance statements
+---------------------------------
+
+With ``Dialect.POSTGRESQL`` and without a dialect, PostgreSQL's maintenance statements parse
+to typed statements:
+
+* ``VACUUM [(option [value], ...)] [target, ...]`` and
+  ``VACUUM [FULL] [FREEZE] [VERBOSE] [ANALYZE] [target, ...]`` parse to ``VacuumStatement``.
+* ``ANALYZE [(option [value], ...)] [target, ...]`` and ``ANALYZE [VERBOSE] [target, ...]``
+  extend ``Analyze``, which keeps the MySQL ``ANALYZE TABLE`` form and its histogram clause. A
+  statement takes one form: options, or targets with ``ONLY``, ``*`` or columns, cannot be
+  combined with ``NO_WRITE_TO_BINLOG``, ``LOCAL``, ``TABLE`` or ``UPDATE``/``DROP HISTOGRAM``.
+  The PostgreSQL form can be spelled ``ANALYSE``, which ``getCommand()`` keeps.
+* ``CLUSTER [(option [value], ...)] [table [USING index]]``,
+  ``CLUSTER [VERBOSE] [table [USING index]]`` and the pre-8.3 ``CLUSTER [VERBOSE] index ON table``
+  parse to ``ClusterStatement``; ``getIndexSyntax()`` tells ``USING`` and ``ON`` apart.
+* ``CHECKPOINT`` parses to ``CheckpointStatement``.
+
+The three option lists share ``UtilityOption``: ``getName()`` keeps the name as written, and
+``getValueType()`` tells whether the value is a Boolean word, a number, a string or another word.
+``getBooleanValue()``, ``getLongValue()``, ``getStringValue()`` and ``getEnumValue(Class)`` read
+it, and ``getKind(Class)`` maps the name to ``VacuumStatement.OptionKind``,
+``Analyze.OptionKind`` or ``ClusterStatement.OptionKind``. The unparenthesized keywords are
+options too: ``VACUUM FULL t`` holds the option ``FULL`` like ``VACUUM (FULL) t``, and
+``isParenthesizedOptions()`` tells the forms apart. As in PostgreSQL's grammar, an option list
+takes any name and any Boolean word, number, string or word as its value, as long as an unquoted
+name or word is not one that PostgreSQL reserves (``ANALYZE`` and ``ANALYSE`` are names);
+PostgreSQL checks the names and values when it runs the statement. ``getKind(Class)`` is null for a name the statement does not know,
+such as ``VACUUM (FOO) t``, and the typed readers are null for a value of another type, such as
+``PARALLEL 1.5``. A double-quoted name keeps its case, as in PostgreSQL: ``"verbose"`` is
+``VERBOSE``, and ``"VERBOSE"`` is an unknown option. ``EXPLAIN (...)`` reads its options
+through the same production but keeps ``ExplainStatement.Option``, and accepts only the names
+and values it accepted before.
+
+A ``MaintenanceTarget`` of VACUUM and ANALYZE is ``[ONLY] table [*] [(column, ...)]``: its
+``getReference()`` is the ``TableReference`` of ``LOCK`` and ``TRUNCATE``, and
+``getColumns()`` lists the columns. ``Analyze.getTargets()`` holds the tables of both forms;
+``getTable()`` and ``getTables()`` are derived from it, and ``getTables()`` now returns a
+read-only snapshot.
+
+.. code-block:: java
+
+    VacuumStatement vacuum = (VacuumStatement) CCJSqlParserUtil.parse(
+        "VACUUM (PARALLEL 2, INDEX_CLEANUP OFF) t (a)",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    vacuum.getOptions().get(0).getLongValue();       // 2
+    vacuum.getOptions().get(1).getBooleanValue();    // false
+    vacuum.getTargets().get(0).getColumns();         // [a]
+
+``VACUUM``, ``CLUSTER``, ``FREEZE``, ``CHECKPOINT`` and ``ANALYSE`` remain identifiers elsewhere. As in
+PostgreSQL, ``FULL``, ``FREEZE``, ``VERBOSE`` and ``ANALYZE`` directly after ``VACUUM`` are
+options, never table names. With ``Dialect.POSTGRESQL``, ``ANALYZE verbose`` now means the
+``VERBOSE`` option; without a dialect it is still a table named ``verbose`` unless a table
+name follows, and other dialects keep that reading. Without a dialect, a statement starting
+with one of these words is a PostgreSQL statement only when its next tokens take the
+PostgreSQL form, so other products' variants such as ``VACUUM INTO 'file'`` remain
+unsupported statements. Other dialects do not parse these statements, nor ``ANALYSE``.
+
+Table visitors report the tables of the targets and the CLUSTER table, but not the column
+lists or the index. Validators report the ``analyze``, ``vacuum``, ``cluster`` and
+``checkpoint`` features, which the PostgreSQL capabilities enable; the MySQL and MariaDB
+capabilities now enable ``analyze`` as well. Feature analysis reports ``MODIFIES_SCHEMA`` and
+``READS_DATA`` for VACUUM and CLUSTER, as for ANALYZE, and ``MODIFIES_SESSION`` for
+CHECKPOINT, a server operation like ``ALTER SYSTEM CHECKPOINT``.
+MySQL table and backup locks
+----------------------------
+
+MySQL and MariaDB `LOCK TABLES <https://dev.mysql.com/doc/refman/8.4/en/lock-tables.html>`_
+parses to the ``LockStatement`` of PostgreSQL and Oracle ``LOCK TABLE``. Each entry of
+``getTargets()`` keeps its table, the alias as ``getTable().getAlias()``, and
+``getLockType()``: ``READ``, ``READ_LOCAL``, ``WRITE``, ``LOW_PRIORITY_WRITE`` or MariaDB's
+``WRITE_CONCURRENT``. MySQL 8.4 has only ``READ [LOCAL]`` and ``WRITE``;
+``LOW_PRIORITY WRITE`` is accepted because `MySQL 8.0
+<https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html>`_ (deprecated, without effect)
+and MariaDB accept it. The lock type is null for a PostgreSQL or Oracle target, and
+``isTablesKeyword()`` records the ``TABLES`` spelling. MariaDB's trailing ``WAIT n`` and
+``NOWAIT`` use ``getWaitSeconds()`` and ``isNoWait()``, like PostgreSQL and Oracle.
+``UNLOCK TABLE`` and ``UNLOCK TABLES`` parse to ``UnlockStatement``, and
+`LOCK INSTANCE FOR BACKUP and UNLOCK INSTANCE
+<https://dev.mysql.com/doc/refman/8.4/en/lock-instance-for-backup.html>`_ to
+``BackupLockStatement``, whose ``getAction()`` is ``LOCK`` or ``UNLOCK``.
+
+.. code-block:: java
+
+    LockStatement lock = (LockStatement) CCJSqlParserUtil.parse(
+        "LOCK TABLES t AS a READ LOCAL, u WRITE");
+    lock.getTargets().get(0).getTable().getAlias().getName();   // a
+    lock.getTargets().get(0).getLockType();                    // READ_LOCAL
+
+The MySQL and MariaDB dialects read these forms, and so does the parser without a dialect:
+an alias or a lock type after the first table name tells MySQL's form from PostgreSQL's
+``LOCK [TABLE] name``, so ``LOCK tables NOWAIT`` still locks a table named ``tables``.
+``WRITE CONCURRENT``, ``WAIT`` and ``NOWAIT`` after a MySQL target list require
+``Dialect.MARIADB``, and ``Dialect.MARIADB`` rejects the backup lock statements, which
+MariaDB does not have. PostgreSQL and the other dialects keep rejecting the MySQL forms.
+``UNLOCK``, ``INSTANCE`` and ``BACKUP`` remain ordinary identifiers.
+
+Table visitors report the locked tables but not their aliases. Validators report the
+``lock``, ``unlockTables`` and ``backupLock`` features; the MySQL capabilities enable all
+three, MariaDB the first two, and PostgreSQL and Oracle ``lock``. Feature analysis reports
+``MODIFIES_TRANSACTION``.
+
+PostgreSQL session statements and COPY options
+----------------------------------------------
+
+With ``Dialect.POSTGRESQL`` and without a dialect, PostgreSQL's session statements parse to
+typed statements:
+
+* `DISCARD <https://www.postgresql.org/docs/18/sql-discard.html>`_
+  ``{ALL | PLANS | SEQUENCES | TEMP | TEMPORARY}`` parses to ``DiscardStatement``. ``getTarget()``
+  keeps the target as written; ``TEMP`` and ``TEMPORARY`` name the same state.
+* `LISTEN <https://www.postgresql.org/docs/18/sql-listen.html>`_ ``channel`` and
+  `UNLISTEN <https://www.postgresql.org/docs/18/sql-unlisten.html>`_ ``{channel | *}`` parse to
+  ``ListenStatement``, next to ``NotifyStatement``. ``getAction()`` is ``LISTEN`` or
+  ``UNLISTEN``, and ``getChannel()`` is null for ``UNLISTEN *`` (``isAllChannels()``).
+* `SHOW <https://www.postgresql.org/docs/18/sql-show.html>`_ ``TIME ZONE``,
+  ``SHOW TRANSACTION ISOLATION LEVEL`` and ``SHOW SESSION AUTHORIZATION`` parse to the
+  ``ShowStatement`` of other ``SHOW name`` statements instead of ``UnsupportedStatement``, and
+  `RESET <https://www.postgresql.org/docs/18/sql-reset.html>`_ takes the same names. ``SET``,
+  ``RESET`` and ``SHOW`` read them through one rule: ``getName()`` is ``Time Zone``, as before
+  for ``SET`` and ``RESET``, ``TRANSACTION ISOLATION LEVEL`` or ``SESSION AUTHORIZATION``.
+
+`COPY <https://www.postgresql.org/docs/18/sql-copy.html>`_ also accepts the option syntax that
+PostgreSQL used before 9.0 and still accepts: keywords without parentheses or commas after the file
+name and the optional ``WITH``, in any order (``BINARY``, ``FREEZE``, ``DELIMITER [AS] 'x'``,
+``NULL [AS] 'x'``, ``CSV``, ``HEADER``, ``QUOTE [AS] 'x'``, ``ESCAPE [AS] 'x'``,
+``FORCE QUOTE {column, ... | *}``, ``FORCE NOT NULL {column, ... | *}``,
+``FORCE NULL {column, ... | *}`` and ``ENCODING 'x'``), and ``COPY BINARY table``.
+``CopyStatement.getLegacyOptions()`` holds a ``CopyLegacyOption`` per option, in source order,
+with its ``Kind``, its string (``getValue()``) and whether ``AS`` preceded it, or the columns of a
+``FORCE`` option (``isAllColumns()`` for ``*``). ``isBinary()`` records ``COPY BINARY``. The
+options in parentheses keep their reading through ``getOptions()``; a statement takes one of
+the two forms.
+
+.. code-block:: java
+
+    CopyStatement copy = (CopyStatement) CCJSqlParserUtil.parse(
+        "COPY t TO STDOUT WITH CSV HEADER FORCE QUOTE a, b");
+    copy.getLegacyOptions().get(0).getKind();         // CSV
+    copy.getLegacyOptions().get(2).getColumns();      // [a, b]
+
+Other dialects keep rejecting these forms, and ``SHOW TIME ZONE`` remains an
+``UnsupportedStatement`` there. ``LISTEN`` and ``UNLISTEN`` become non-reserved keywords and,
+like ``DISCARD``, remain usable as names. As in PostgreSQL's grammar, a channel or a ``FORCE``
+column cannot be an unquoted word that PostgreSQL reserves, such as ``ALL``.
+
+Table visitors report the copied table and no table for the session statements. Validators
+report the ``discard`` and ``listen`` features, which the PostgreSQL capabilities enable
+together with ``show``. Feature analysis reports ``MODIFIES_SESSION`` for ``DISCARD``,
+``LISTEN`` and ``UNLISTEN``, and a possible ``MODIFIES_SCHEMA`` for ``DISCARD ALL``, ``TEMP``
+and ``TEMPORARY``, which drop the temporary tables of the session.
 
 MySQL account management statements
 -----------------------------------
@@ -2693,7 +2896,7 @@ Transaction statements
 ======================
 
 ``START TRANSACTION`` produces a ``StartTransaction`` with an ordered list of typed
-transaction modes. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
+``TransactionMode`` values. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
 ``[NOT] DEFERRABLE`` are supported, as is MySQL ``WITH CONSISTENT SNAPSHOT``.
 PostgreSQL accepts mode lists with or without commas; output uses commas.
 The explicit MySQL dialect rejects a transaction containing both ``READ ONLY`` and
@@ -2706,7 +2909,7 @@ Choose the dialect explicitly to parse ``BEGIN`` as a transaction command:
     StartTransaction transaction = (StartTransaction) CCJSqlParserUtil.parse(
         "BEGIN ISOLATION LEVEL SERIALIZABLE READ ONLY",
         parser -> parser.withDialect(Dialect.POSTGRESQL));
-    transaction.getModes().set(1, StartTransaction.Mode.READ_WRITE);
+    transaction.getModes().set(1, TransactionMode.READ_WRITE);
     // BEGIN ISOLATION LEVEL SERIALIZABLE, READ WRITE
     String sql = transaction.toString();
 
@@ -2715,18 +2918,97 @@ MySQL and PostgreSQL dialects distinguish ``BEGIN`` transactions from
 ``BEGIN SELECT ...; END`` blocks by the following tokens. Oracle blocks and opaque
 routine bodies retain their existing handling.
 
-``Commit`` and ``RollbackStatement`` expose optional ``TransactionKeyword``
-(``WORK`` or PostgreSQL ``TRANSACTION``) and ``TransactionChain`` (``CHAIN`` or
-``NO_CHAIN``). A null chain preserves the server's default behavior. The existing
+``Commit`` and ``RollbackStatement`` share ``TransactionCompletionStatement``, which
+exposes the optional ``TransactionKeyword`` (``WORK`` or PostgreSQL ``TRANSACTION``),
+``TransactionChain`` (``CHAIN`` or ``NO_CHAIN``) and MySQL ``TransactionRelease``
+(``RELEASE`` or ``NO_RELEASE``). Null fields preserve the server's default behavior;
+``AND CHAIN`` cannot be combined with ``RELEASE``. The PostgreSQL spellings ``END`` and
+``ABORT`` produce a ``Commit`` and a ``RollbackStatement`` whose ``getCommand()`` is
+``END`` or ``ABORT``, so consumers handle one model per completion:
+
+.. code-block:: java
+
+    Commit end = (Commit) CCJSqlParserUtil.parse("END WORK AND CHAIN",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    // END, WORK, CHAIN
+    String sql = end.getCommand() + ", " + end.getKeyword() + ", " + end.getChain();
+
+``END`` is a statement only with the PostgreSQL dialect, at the start of a statement and
+outside ``BEGIN ... END`` blocks; ``ABORT`` is also read without a dialect. The existing
 rollback work/savepoint/force accessors remain available. ``RELEASE [SAVEPOINT]``
 produces ``ReleaseSavepointStatement``; the MySQL dialect requires ``SAVEPOINT``.
-Savepoint names retain identifier quoting. These statements are traversed by
-statement visitors, deparsers and transaction feature analysis.
+Savepoint names retain identifier quoting.
 
-The validator checks the new statement and mode capabilities. PostgreSQL
-``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
-This support does not include MySQL transaction completion ``[NO] RELEASE``,
-PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED``, or XA commands.
+``SET [scope] TRANSACTION``, PostgreSQL ``SET [scope] SESSION CHARACTERISTICS AS
+TRANSACTION`` and ``SET [scope] TRANSACTION SNAPSHOT 'id'`` produce a
+``SetTransactionStatement``. It reuses ``TransactionMode`` for the characteristics and
+the ``SetScope`` of ``SetStatement`` for the scope keyword written after ``SET``;
+``isSessionCharacteristics()`` marks the PostgreSQL form and ``getSnapshotId()`` returns
+the snapshot as a ``StringValue``. Each dialect accepts the scopes of its server: MySQL
+``GLOBAL``, ``SESSION``, ``LOCAL``, ``PERSIST`` and ``PERSIST_ONLY``, MariaDB ``GLOBAL``,
+``SESSION`` and ``LOCAL``, and PostgreSQL ``SESSION`` and ``LOCAL``, also before
+``SESSION CHARACTERISTICS`` and ``SNAPSHOT``. The MySQL dialect requires commas and
+accepts one isolation level and one access mode. Variable assignments such as
+``SET transaction_isolation = 'READ-COMMITTED'`` remain ``SetStatement``, whose
+``getScope()`` now types the ``getEffectParameter()`` keyword.
+
+``SET CONSTRAINTS {ALL | name [, ...]} {DEFERRED | IMMEDIATE}`` produces a
+``SetConstraintsStatement``. An empty ``getConstraintNames()`` list means ``ALL``, and
+``getTiming()`` reuses ``ConstraintAttributes.Initially``. The MySQL dialect rejects it.
+
+.. code-block:: java
+
+    SetTransactionStatement set = (SetTransactionStatement) CCJSqlParserUtil.parse(
+        "SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    set.setScope(SetScope.GLOBAL);
+    // SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY
+    String sql = set.toString();
+
+These statements are traversed by statement visitors, deparsers and transaction
+feature analysis. The validator checks ``rollback``, ``savepoint``, ``setTransaction``,
+``setConstraints`` and the clause features (``transactionChain``,
+``transactionRelease``, ``transactionEndAbort``, ``setTransactionGlobal``,
+``setTransactionPersist``, ``setTransactionSessionCharacteristics``,
+``setTransactionSnapshot``) against the MySQL and PostgreSQL capability sets.
+PostgreSQL ``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
+
+Two-phase commit
+----------------
+
+The two-phase commit statements share one ``TransactionId``: a global transaction
+identifier, and for MySQL's xid an optional branch qualifier and format ID
+(``gtrid [, bqual [, formatID]]``). The identifier parts are the literals as written, a
+``StringValue`` or a ``HexValue``.
+
+PostgreSQL ``PREPARE TRANSACTION 'id'`` produces a ``PrepareTransactionStatement``; it is
+read before ``PREPARE name AS statement``, which keeps producing ``PrepareStatement``.
+``COMMIT PREPARED 'id'`` and ``ROLLBACK PREPARED 'id'`` produce a ``Commit`` and a
+``RollbackStatement`` whose ``getPreparedTransactionKeyword()`` is ``PREPARED`` and whose
+``getPreparedTransactionId()`` names the transaction. Oracle's ``ROLLBACK FORCE 'id'``
+uses the same pair with the keyword ``FORCE``; ``getForceDistributedTransactionIdentifier()``
+still returns the identifier as written. The PostgreSQL forms are read with the PostgreSQL
+dialect or without one, and take a PostgreSQL string constant.
+
+MySQL ``XA {START | BEGIN} xid [JOIN | RESUME]``, ``XA END xid [SUSPEND [FOR MIGRATE]]``,
+``XA PREPARE xid``, ``XA COMMIT xid [ONE PHASE]``, ``XA ROLLBACK xid`` and
+``XA RECOVER [CONVERT XID]`` produce an ``XaStatement`` with an ``Action`` and an
+optional ``Option``. They are read with the MySQL and MariaDB dialects or without one;
+MariaDB does not accept ``CONVERT XID``. The gtrid and bqual are string, hexadecimal or
+bit-value literals, and the formatID is an unsigned integer.
+
+.. code-block:: java
+
+    XaStatement xa = (XaStatement) CCJSqlParserUtil.parse("XA START X'0a', 'b', 1 JOIN",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    TransactionId xid = xa.getTransactionId();
+    // START, X'0a', 'b', 1, JOIN
+    String parts = xa.getAction() + ", " + xid.getGlobalTransactionId() + ", "
+        + xid.getBranchQualifier() + ", " + xid.getFormatId() + ", " + xa.getOption();
+
+The validator checks ``twoPhaseCommit`` (PostgreSQL) and ``xa`` (MySQL and MariaDB).
+Feature analysis reports ``XA RECOVER`` as returning a result set and the other
+statements as transaction control.
 
 MySQL SHOW statements
 =====================

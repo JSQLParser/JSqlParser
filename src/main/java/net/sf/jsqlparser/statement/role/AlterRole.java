@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.ConfigurationParameterChange;
 import net.sf.jsqlparser.statement.ConfigurationParameterChange.ValueKind;
 import net.sf.jsqlparser.statement.Statement;
@@ -24,7 +25,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * {@code RESET} actions use the shared {@link ConfigurationParameterChange}; the parameter
  * accessors of this class read and edit that change.
  */
-public class AlterRole implements Statement {
+public class AlterRole extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         OPTIONS, RENAME, SET, RESET, ADD_USER, DROP_USER
     }

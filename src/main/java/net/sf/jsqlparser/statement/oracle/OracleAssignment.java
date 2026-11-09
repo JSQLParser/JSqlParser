@@ -11,11 +11,12 @@ package net.sf.jsqlparser.statement.oracle;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** Assignment to an Oracle block variable, record field or bind parameter. */
-public class OracleAssignment implements Statement {
+public class OracleAssignment extends ASTNodeAccessImpl implements Statement {
     private Expression target;
     private Expression value;
 

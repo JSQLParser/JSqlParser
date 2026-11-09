@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.IndexOption;
@@ -29,7 +30,7 @@ import net.sf.jsqlparser.statement.create.table.TableOption;
  * options. MySQL options reuse the {@link TableOption} models of the same name, plus
  * {@link TableOption.Kind#FILE_BLOCK_SIZE}.
  */
-public class CreateTablespace implements Statement {
+public class CreateTablespace extends ASTNodeAccessImpl implements Statement {
     private String name;
     private boolean undo;
     private String owner;

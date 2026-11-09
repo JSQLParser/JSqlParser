@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.load;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -26,7 +27,7 @@ import java.util.List;
  *      "https://cloud.google.com/bigquery/docs/reference/standard-sql/load-statements">Load
  *      statements</a>
  */
-public class LoadDataStatement implements Statement {
+public class LoadDataStatement extends ASTNodeAccessImpl implements Statement {
     private boolean overwrite;
     private Table table;
     private List<ColumnDefinition> columnDefinitions;

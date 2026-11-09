@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.sequence;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -16,7 +17,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 /**
  * A {@code CREATE SEQUENCE} statement
  */
-public class CreateSequence implements Statement {
+public class CreateSequence extends ASTNodeAccessImpl implements Statement {
 
     public enum Persistence {
         TEMP, TEMPORARY, UNLOGGED, LOCAL_TEMP, LOCAL_TEMPORARY, GLOBAL_TEMP, GLOBAL_TEMPORARY

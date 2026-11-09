@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.Index;
 
@@ -21,7 +22,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
  *      "https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9018.htm">Purge</a>
  */
 
-public class PurgeStatement implements Statement {
+public class PurgeStatement extends ASTNodeAccessImpl implements Statement {
     private final PurgeObjectType purgeObjectType;
     private final Object object;
     private String userName;

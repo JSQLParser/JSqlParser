@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.show;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement.SelectionMode;
@@ -20,7 +21,7 @@ import net.sf.jsqlparser.statement.show.ShowTablesStatement.SelectionMode;
  * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/show-table-status.html">MySQL SHOW TABLE
  *      STATUS</a>
  */
-public class ShowTableStatusStatement implements Statement {
+public class ShowTableStatusStatement extends ASTNodeAccessImpl implements Statement {
 
     private SelectionMode selectionMode = SelectionMode.FROM;
     private String dbName;

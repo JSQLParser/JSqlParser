@@ -48,6 +48,9 @@ public class SimpleCharStream {
     protected boolean trackLineColumn = true;
     protected int totalCharsRead = 0;
     protected int absoluteTokenBegin = 0;
+    // line, column and absolute position of each match begun since the last positionSpecialTokens()
+    private int[] matchBegins = new int[24];
+    private int matchBeginCount = 0;
     int bufsize;
     int available;
     int tokenBegin;
@@ -105,6 +108,38 @@ public class SimpleCharStream {
 
     public final int getAbsoluteTokenBegin() {
         return absoluteTokenBegin;
+    }
+
+    /**
+     * Gives the comments in front of {@code token} the positions where their matches began, from
+     * the begins recorded since the last call, and forgets those. Comments come through no token
+     * action, so this is how they get a position. The comments chain backwards from the token while
+     * the begins are recorded forwards, so one backwards pass pairs them.
+     */
+    public final void positionSpecialTokens(Token token) {
+        int i = matchBeginCount - 3;
+        for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
+            while (i >= 0 && (matchBegins[i] != comment.beginLine
+                    || matchBegins[i + 1] != comment.beginColumn)) {
+                i -= 3;
+            }
+            if (i < 0) {
+                break;
+            }
+            comment.absoluteBegin = matchBegins[i + 2];
+            comment.absoluteEnd = comment.absoluteBegin + comment.image.length();
+            i -= 3;
+        }
+        matchBeginCount = 0;
+    }
+
+    private void recordMatchBegin() {
+        if (matchBeginCount + 3 > matchBegins.length) {
+            matchBegins = java.util.Arrays.copyOf(matchBegins, matchBegins.length * 2);
+        }
+        matchBegins[matchBeginCount++] = getBeginLine();
+        matchBegins[matchBeginCount++] = getBeginColumn();
+        matchBegins[matchBeginCount++] = absoluteTokenBegin;
     }
 
     protected void ExpandBuff(boolean wrapAround) {
@@ -200,6 +235,7 @@ public class SimpleCharStream {
         tokenBegin = bufpos;
 
         absoluteTokenBegin = totalCharsRead;
+        recordMatchBegin();
 
         if (c == '#' && featureConfiguration != null
                 && featureConfiguration.getAsBoolean(Feature.allowHashLineComments)) {
@@ -441,6 +477,7 @@ public class SimpleCharStream {
      * Reinitialise.
      */
     public void ReInit(Provider dstream, int startline, int startcolumn, int buffersize) {
+        matchBeginCount = 0;
         inputStream = dstream;
         line = startline;
         column = startcolumn - 1;

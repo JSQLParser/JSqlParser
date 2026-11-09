@@ -70,6 +70,11 @@ final class DmlDeParserSupport {
     }
 
     void deparseUsing(List<FromItem> items) {
+        deparseUsing(items, null);
+    }
+
+    /** Renders {@code USING item, ...} followed by the joins of these items. */
+    void deparseUsing(List<FromItem> items, List<Join> joins) {
         if (items != null && !items.isEmpty()) {
             builder.append(" USING ");
             for (int i = 0; i < items.size(); i++) {
@@ -78,6 +83,7 @@ final class DmlDeParserSupport {
                 }
                 items.get(i).accept(selects, null);
             }
+            deparseJoins(joins);
         }
     }
 

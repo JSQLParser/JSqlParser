@@ -9,12 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.Serializable;
-
 import java.util.Locale;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class OrderByElement implements Serializable {
+public class OrderByElement extends ASTNodeAccessImpl {
 
     private Expression expression;
     // postgres rollup is an ExpressionList

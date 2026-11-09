@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -123,6 +124,92 @@ class DropObjectTypeTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"DROP ACCESS METHOD heptree",
+            "DROP ACCESS METHOD IF EXISTS heptree CASCADE", "DROP PROCEDURAL LANGUAGE plsample",
+            "DROP PROCEDURAL LANGUAGE IF EXISTS plsample RESTRICT",
+            "DROP LANGUAGE IF EXISTS plsample CASCADE",
+            "DROP OPERATOR CLASS IF EXISTS public.myops USING btree CASCADE",
+            "DROP OPERATOR FAMILY myfam USING hash",
+            "DROP TEXT SEARCH CONFIGURATION IF EXISTS my_cfg CASCADE",
+            "DROP TEXT SEARCH DICTIONARY english_stem, public.french_stem",
+            "DROP TEXT SEARCH PARSER my_parser",
+            "DROP TEXT SEARCH TEMPLATE IF EXISTS my_tmpl RESTRICT"})
+    void postgreSqlMultiWordObjectTypes(String sql) throws JSQLParserException {
+        for (Drop drop : roundTrip(sql, Dialect.POSTGRESQL)) {
+            assertEquals(sql, drop.toString());
+            assertNotEquals(Drop.ObjectType.OTHER, drop.getObjectType());
+            assertTrue(new TablesNamesFinder().getTables(drop).isEmpty());
+        }
+        assertEquals(sql, CCJSqlParserUtil.parse(sql).toString());
+        assertEquals(2, CCJSqlParserUtil.parseStatements(sql + "; SELECT 1",
+                parser -> parser.withDialect(Dialect.POSTGRESQL)).size());
+    }
+
+    @Test
+    void multiWordObjectTypeFields() throws JSQLParserException {
+        Drop accessMethod =
+                parse("DROP ACCESS METHOD IF EXISTS heptree CASCADE", Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.ACCESS_METHOD, accessMethod.getObjectType());
+        assertEquals("ACCESS METHOD", accessMethod.getType());
+        assertEquals(List.of("heptree"), names(accessMethod));
+        assertTrue(accessMethod.isIfExists());
+        assertEquals(CascadeBehavior.CASCADE, accessMethod.getBehavior());
+
+        Drop language = parse("DROP PROCEDURAL LANGUAGE plsample", Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.LANGUAGE, language.getObjectType());
+        assertTrue(language.isProcedural());
+        assertEquals(List.of("plsample"), names(language));
+        language.setProcedural(false);
+        assertEquals("DROP LANGUAGE plsample", language.toString());
+        assertFalse(parse("DROP LANGUAGE plsample", Dialect.POSTGRESQL).isProcedural());
+
+        Drop operatorClass = parse("DROP OPERATOR CLASS IF EXISTS public.myops USING btree",
+                Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.OPERATOR_CLASS, operatorClass.getObjectType());
+        assertEquals(List.of("public.myops"), names(operatorClass));
+        assertEquals("btree", operatorClass.getAccessMethod());
+        assertNull(operatorClass.getParameters());
+        operatorClass.setAccessMethod("hash");
+        assertEquals("DROP OPERATOR CLASS IF EXISTS public.myops USING hash",
+                operatorClass.toString());
+        assertEquals(Drop.ObjectType.OPERATOR_FAMILY,
+                parse("DROP OPERATOR FAMILY myfam USING gist", Dialect.POSTGRESQL).getObjectType());
+
+        Drop dictionary = parse("DROP TEXT SEARCH DICTIONARY english_stem, public.french_stem",
+                Dialect.POSTGRESQL);
+        assertEquals(Drop.ObjectType.TEXT_SEARCH_DICTIONARY, dictionary.getObjectType());
+        assertEquals(List.of("english_stem", "public.french_stem"), names(dictionary));
+
+        assertEquals("DROP OPERATOR FAMILY f USING btree CASCADE",
+                new Drop().withObjectType(Drop.ObjectType.OPERATOR_FAMILY)
+                        .withName(new Table("f")).withAccessMethod("btree")
+                        .withBehavior(CascadeBehavior.CASCADE).toString());
+        assertEquals("DROP PROCEDURAL LANGUAGE l", new Drop()
+                .withObjectType(Drop.ObjectType.LANGUAGE).withProcedural(true)
+                .withName(new Table("l")).toString());
+    }
+
+    @Test
+    void multiWordTypeWordsRemainNames() throws JSQLParserException {
+        assertEquals(List.of("procedural"),
+                names(parse("DROP LANGUAGE procedural", Dialect.POSTGRESQL)));
+        assertEquals(List.of("method"),
+                names(parse("DROP ACCESS METHOD method", Dialect.POSTGRESQL)));
+        assertEquals(List.of("access"), names(parse("DROP TABLE access", Dialect.POSTGRESQL)));
+        assertEquals(List.of("family"),
+                names(parse("DROP OPERATOR CLASS family USING btree", Dialect.POSTGRESQL)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP OPERATOR CLASS myops", "DROP OPERATOR FAMILY f1, f2 USING btree",
+            "DROP OPERATOR CLASS myops USING", "DROP ACCESS METHOD",
+            "DROP ACCESS METHOD IF EXISTS", "DROP TEXT SEARCH INDEX x", "DROP TEXT SEARCH",
+            "DROP PROCEDURAL LANGUAGE", "DROP ACCESS METHOD heptree USING btree"})
+    void rejectsIncompleteMultiWordTypes(String sql) {
+        assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.POSTGRESQL), sql);
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"DROP EVENT IF EXISTS ev1", "DROP EVENT db1.ev1", "DROP TABLESPACE ts1",
             "DROP TABLESPACE ts1 ENGINE = InnoDB", "DROP UNDO TABLESPACE ts1",
             "DROP UNDO TABLESPACE ts1 ENGINE InnoDB"})
@@ -185,6 +272,11 @@ class DropObjectTypeTest {
                 "DROP TRIGGER t ON a ON b", "DROP EVENT TRIGGER", "DROP TYPE")) {
             assertThrows(JSQLParserException.class, () -> parse(sql, Dialect.MYSQL), sql);
         }
+    }
+
+    private static List<String> names(Drop drop) {
+        return drop.getNames().stream().map(Table::getFullyQualifiedName)
+                .collect(Collectors.toList());
     }
 
     private static Drop parse(String sql, Dialect dialect) throws JSQLParserException {

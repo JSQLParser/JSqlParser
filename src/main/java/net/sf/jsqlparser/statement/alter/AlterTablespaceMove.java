@@ -11,12 +11,13 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Moves all matching relations from one PostgreSQL tablespace to another. */
-public class AlterTablespaceMove implements Statement {
+public class AlterTablespaceMove extends ASTNodeAccessImpl implements Statement {
     public enum ObjectType {
         TABLE, INDEX, MATERIALIZED_VIEW
     }

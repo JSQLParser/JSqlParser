@@ -14,12 +14,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
 /**
  * An {@code EXPLAIN} statement
  */
-public class ExplainStatement implements Statement {
+public class ExplainStatement extends ASTNodeAccessImpl implements Statement {
     private String keyword;
     private Statement statement;
     private List<Option> options = new ArrayList<>();

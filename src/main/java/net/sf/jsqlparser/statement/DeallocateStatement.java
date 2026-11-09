@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * {@code DEALLOCATE [PREPARE] name}, which drops a statement prepared by {@link PrepareStatement}.
  */
-public class DeallocateStatement implements Statement {
+public class DeallocateStatement extends ASTNodeAccessImpl implements Statement {
     private String name;
     private boolean usingPrepareKeyword;
 

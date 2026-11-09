@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -21,7 +22,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  * @see <a href="https://duckdb.org/docs/stable/sql/query_syntax/prepared_statements">Prepared
  *      statements</a>
  */
-public class PrepareStatement implements Statement {
+public class PrepareStatement extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Statement statement;
     private List<ColDataType> parameterTypes;

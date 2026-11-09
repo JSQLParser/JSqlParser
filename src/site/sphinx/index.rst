@@ -158,8 +158,16 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE …`` · ``ALTER …`` · ``DROP …``
     * - **PostgreSQL ownership**
       - ``DROP OWNED`` · ``REASSIGN OWNED``
+    * - **Two-phase commit**
+      - PostgreSQL ``PREPARE TRANSACTION`` · ``COMMIT PREPARED`` · ``ROLLBACK PREPARED`` · MySQL ``XA START``/``END``/``PREPARE``/``COMMIT``/``ROLLBACK``/``RECOVER``
     * - **MySQL table maintenance**
-      - ``ANALYZE`` · ``CHECK`` · ``OPTIMIZE`` · ``REPAIR TABLE``
+      - ``ANALYZE`` · ``CHECK`` · ``CHECKSUM`` · ``OPTIMIZE`` · ``REPAIR TABLE``
+    * - **PostgreSQL maintenance**
+      - ``VACUUM`` · ``ANALYZE`` · ``CLUSTER`` · ``CHECKPOINT``
+    * - **MySQL locks**
+      - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
+    * - **PostgreSQL session statements**
+      - ``DISCARD`` · ``LISTEN`` · ``UNLISTEN`` · ``SHOW``/``RESET TIME ZONE``/``TRANSACTION ISOLATION LEVEL``/``SESSION AUTHORIZATION`` · ``COPY`` options from before 9.0
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

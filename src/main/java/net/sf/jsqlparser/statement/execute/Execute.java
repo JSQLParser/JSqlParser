@@ -15,12 +15,13 @@ import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.List;
 
-public class Execute implements Statement {
+public class Execute extends ASTNodeAccessImpl implements Statement {
 
     private ExecType execType = ExecType.EXECUTE;
     private String name;

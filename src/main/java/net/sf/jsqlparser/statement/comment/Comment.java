@@ -11,12 +11,13 @@ package net.sf.jsqlparser.statement.comment;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Comment implements Statement {
+public class Comment extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private Column column;

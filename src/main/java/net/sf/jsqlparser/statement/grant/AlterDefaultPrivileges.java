@@ -12,10 +12,11 @@ package net.sf.jsqlparser.statement.grant;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterDefaultPrivileges implements Statement {
+public class AlterDefaultPrivileges extends ASTNodeAccessImpl implements Statement {
     public enum RoleKeyword {
         ROLE, USER
     }

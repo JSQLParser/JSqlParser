@@ -9,12 +9,13 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlterTextSearchConfiguration implements Statement {
+public class AlterTextSearchConfiguration extends ASTNodeAccessImpl implements Statement {
     public enum Action {
         ADD_MAPPING, ALTER_MAPPING, REPLACE_MAPPING, DROP_MAPPING, RENAME, OWNER, SET_SCHEMA
     }

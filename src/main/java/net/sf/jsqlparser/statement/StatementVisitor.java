@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -90,7 +91,12 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -156,6 +162,38 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(ReleaseSavepointStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(SetTransactionStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(SetConstraintsStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(SetConstraintsStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(PrepareTransactionStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(PrepareTransactionStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(XaStatement statement) {
         visit(statement, null);
     }
 
@@ -369,6 +407,30 @@ public interface StatementVisitor<T> {
 
     default void visit(TableMaintenanceStatement statement) {
         this.visit(statement, null);
+    }
+
+    default <S> T visit(VacuumStatement vacuum, S context) {
+        return null;
+    }
+
+    default void visit(VacuumStatement vacuum) {
+        this.visit(vacuum, null);
+    }
+
+    default <S> T visit(ClusterStatement cluster, S context) {
+        return null;
+    }
+
+    default void visit(ClusterStatement cluster) {
+        this.visit(cluster, null);
+    }
+
+    default <S> T visit(CheckpointStatement checkpoint, S context) {
+        return null;
+    }
+
+    default void visit(CheckpointStatement checkpoint) {
+        this.visit(checkpoint, null);
     }
 
     default void visit(Execute execute) {
@@ -673,6 +735,22 @@ public interface StatementVisitor<T> {
 
     default void visit(LockStatement lock) {
         this.visit(lock, null);
+    }
+
+    default <S> T visit(UnlockStatement unlock, S context) {
+        return null;
+    }
+
+    default void visit(UnlockStatement unlock) {
+        visit(unlock, null);
+    }
+
+    default <S> T visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    default void visit(BackupLockStatement backupLock) {
+        visit(backupLock, null);
     }
 
     <S> T visit(CreatePolicy createPolicy, S context);
@@ -992,6 +1070,22 @@ public interface StatementVisitor<T> {
 
     default void visit(NotifyStatement statement) {
         visit(statement, null);
+    }
+
+    default <S> T visit(ListenStatement listen, S context) {
+        return null;
+    }
+
+    default void visit(ListenStatement listen) {
+        visit(listen, null);
+    }
+
+    default <S> T visit(DiscardStatement discard, S context) {
+        return null;
+    }
+
+    default void visit(DiscardStatement discard) {
+        visit(discard, null);
     }
 
     default <S> T visit(CreateCollation statement, S context) {

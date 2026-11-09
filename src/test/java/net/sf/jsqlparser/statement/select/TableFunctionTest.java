@@ -34,6 +34,19 @@ class TableFunctionTest {
     }
 
     /**
+     * A LATERAL item may be wrapped in parentheses, in which case it is a parenthesed FROM item
+     * whose content happens to be lateral, not a bare LateralSubSelect.
+     */
+    @Test
+    void testParenthesedLateralFlat() throws JSQLParserException {
+        String sqlStr = "SELECT DIM, count(value) AS COUNT_\n"
+                + "FROM t a,\n"
+                + "(LATERAL FLATTEN(input => a.user_items)) b\n"
+                + "group by 1";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    /**
      * The SQL keyword "OUTER" is a valid parameter name for Snowflake's FLATTEN table function.
      */
     @Test

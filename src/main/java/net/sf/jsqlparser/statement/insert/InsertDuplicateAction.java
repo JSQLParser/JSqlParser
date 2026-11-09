@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * on duplicate key is one of:
@@ -96,19 +97,22 @@ public class InsertDuplicateAction implements Serializable {
         return this;
     }
 
-    @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
     public StringBuilder appendTo(StringBuilder builder) {
-        switch (conflictActionType) {
-            case NOTHING:
-                builder.append(" NOTHING ");
-                break;
-            default:
-                UpdateSet.appendUpdateSetsTo(builder, updateSets);
+        return appendTo(builder, builder::append);
+    }
 
-                if (whereExpression != null) {
-                    builder.append(" WHERE ").append(whereExpression);
-                }
-                break;
+    /**
+     * Appends the action after {@code ON DUPLICATE KEY UPDATE}: {@code NOTHING}, or the assignments
+     * and an optional {@code WHERE}, letting a deparser visit the expressions.
+     */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
+        if (conflictActionType == ConflictActionType.NOTHING) {
+            return builder.append("NOTHING");
+        }
+        UpdateSet.appendUpdateSetsTo(builder, updateSets, expressionRenderer);
+        if (whereExpression != null) {
+            builder.append(" WHERE ");
+            expressionRenderer.accept(whereExpression);
         }
         return builder;
     }

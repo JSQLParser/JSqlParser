@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create.policy;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -24,7 +25,7 @@ import java.util.List;
  * | INSERT | UPDATE | DELETE } ] [ TO { role_name | PUBLIC | CURRENT_ROLE | CURRENT_USER |
  * SESSION_USER } [, ...] ] [ USING ( using_expression ) ] [ WITH CHECK ( check_expression ) ]
  */
-public class CreatePolicy implements Statement {
+public class CreatePolicy extends ASTNodeAccessImpl implements Statement {
 
     private String policyName;
     private Table table;

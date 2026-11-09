@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -20,7 +21,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /** SQL Server's SQL declaration preceding a separate bulk-load data stream. */
-public class InsertBulk implements Statement {
+public class InsertBulk extends ASTNodeAccessImpl implements Statement {
     private Table table;
     private List<ColumnDefinition> columns = new ArrayList<>();
     private List<Option> options = new ArrayList<>();

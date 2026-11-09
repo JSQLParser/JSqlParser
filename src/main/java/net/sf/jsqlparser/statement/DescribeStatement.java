@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class DescribeStatement implements Statement {
+public class DescribeStatement extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private Select select;

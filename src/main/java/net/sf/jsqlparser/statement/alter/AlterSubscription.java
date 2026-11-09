@@ -14,11 +14,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.subscription.SubscriptionOption;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class AlterSubscription implements Statement {
+public class AlterSubscription extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Action action;
     private StringValue connection;

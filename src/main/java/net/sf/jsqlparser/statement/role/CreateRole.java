@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.user.UserAccount;
@@ -25,7 +26,7 @@ import net.sf.jsqlparser.statement.create.user.UserAccount;
  * MySQL's {@code CREATE ROLE [IF NOT EXISTS] role [, role] ...} keeps its account-style role names
  * in {@link #getRoles()} instead of {@link #getName()}.
  */
-public class CreateRole implements Statement {
+public class CreateRole extends ASTNodeAccessImpl implements Statement {
     public enum Command {
         ROLE, USER, GROUP
     }

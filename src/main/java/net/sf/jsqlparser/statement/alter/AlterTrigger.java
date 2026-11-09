@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -17,7 +18,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * PostgreSQL {@code ALTER TRIGGER name ON table}, which renames the trigger or marks it as
  * dependent on an extension. Names retain SQL identifier quoting.
  */
-public class AlterTrigger implements Statement {
+public class AlterTrigger extends ASTNodeAccessImpl implements Statement {
 
     public enum Action {
         /** {@code RENAME TO}, see {@link #getNewName()}. */

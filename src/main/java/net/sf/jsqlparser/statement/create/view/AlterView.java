@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -21,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class AlterView implements Statement {
+public class AlterView extends ASTNodeAccessImpl implements Statement {
 
     private MySqlViewOptions mySqlOptions;
 

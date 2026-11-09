@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
 
@@ -93,13 +94,19 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.InsertConflictAction;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -236,6 +243,26 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(SetTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetConstraintsStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(PrepareTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(Commit commit, S context) {
 
         return null;
@@ -252,8 +279,14 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         fromItemVisitor.visitTables(delete.getTables(), context);
         selectVisitor.visitOutputClause(delete.getOutputClause(), context);
         fromItemVisitor.visitFromItem(delete.getTable(), context);
-        fromItemVisitor.visitTables(delete.getUsingList(), context);
         fromItemVisitor.visitJoins(delete.getJoins(), context);
+        // USING may name subqueries, so visit the items rather than getUsingList()'s tables
+        if (delete.getUsingFromItemList() != null) {
+            for (FromItem usingFromItem : delete.getUsingFromItemList()) {
+                fromItemVisitor.visitFromItem(usingFromItem, context);
+            }
+        }
+        fromItemVisitor.visitJoins(delete.getUsingJoins(), context);
         expressionVisitor.visitExpression(delete.getWhere(), context);
 
         expressionVisitor.visitPreferringClause(delete.getPreferringClause(), context);
@@ -545,6 +578,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(UnlockStatement unlock, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(CreatePolicy createPolicy, S context) {
         fromItemVisitor.visitFromItem(createPolicy.getTable(), context);
         expressionVisitor.visitExpression(createPolicy.getUsingExpression(), context);
@@ -705,6 +748,21 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(TableMaintenanceStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(VacuumStatement vacuum, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ClusterStatement cluster, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CheckpointStatement checkpoint, S context) {
         return null;
     }
 
@@ -1104,6 +1162,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(NotifyStatement statement, S context) {
         statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ListenStatement listen, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DiscardStatement discard, S context) {
         return null;
     }
 

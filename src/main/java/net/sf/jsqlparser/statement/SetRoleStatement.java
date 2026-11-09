@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.user.RoleSelection;
 
 /**
  * MySQL/MariaDB {@code SET ROLE {DEFAULT | NONE | ALL [EXCEPT role, ...] | role, ...}}. PostgreSQL
  * {@code SET [SESSION | LOCAL] ROLE name} remains a {@link SetStatement}.
  */
-public class SetRoleStatement implements Statement {
+public class SetRoleStatement extends ASTNodeAccessImpl implements Statement {
 
     private RoleSelection roles;
 

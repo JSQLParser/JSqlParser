@@ -12,12 +12,13 @@ package net.sf.jsqlparser.statement.create.collation;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.IndexOption;
 
 /** PostgreSQL collation copy or parameter definition, with mutually exclusive forms. */
-public class CreateCollation implements Statement {
+public class CreateCollation extends ASTNodeAccessImpl implements Statement {
     private String name;
     private boolean ifNotExists;
     private String sourceCollation;

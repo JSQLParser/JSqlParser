@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter.sequence;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -16,7 +17,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 /**
  * An {@code ALTER SEQUENCE} statement
  */
-public class AlterSequence implements Statement {
+public class AlterSequence extends ASTNodeAccessImpl implements Statement {
 
     public enum Action {
         PARAMETERS, RENAME, OWNER, SET_SCHEMA, SET_LOGGED, SET_UNLOGGED

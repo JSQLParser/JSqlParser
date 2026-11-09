@@ -81,14 +81,21 @@ public enum MariaDbVersion implements Version {
                     Feature.truncate,
 
                     // https://mariadb.com/kb/en/table-statements/
-                    Feature.tableMaintenance,
+                    Feature.analyze, Feature.tableMaintenance,
+
+                    // https://mariadb.com/kb/en/lock-tables/
+                    Feature.lock, Feature.unlockTables,
 
                     // https://mariadb.com/kb/en/account-management-sql-statements/
-                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
+                    Feature.setRole,
                     Feature.setDefaultRole, Feature.setPassword,
 
                     // https://mariadb.com/kb/en/call/
                     Feature.execute, Feature.executeCall,
+
+                    // https://mariadb.com/kb/en/deallocate-drop-prepare/
+                    Feature.deallocate,
 
                     // https://mariadb.com/kb/en/drop/
                     Feature.drop, // https://mariadb.com/kb/en/drop-index/
@@ -121,6 +128,10 @@ public enum MariaDbVersion implements Version {
                     Feature.createSchema, // https://mariadb.com/kb/en/create-trigger/
                     Feature.createTrigger,
 
+                    // https://mariadb.com/kb/en/create-event/
+                    // https://mariadb.com/kb/en/alter-event/
+                    Feature.createEvent, Feature.alterEvent,
+
                     // https://mariadb.com/kb/en/create-database/
                     // https://mariadb.com/kb/en/alter-database/
                     Feature.createDatabase, Feature.alterDatabase,
@@ -141,7 +152,10 @@ public enum MariaDbVersion implements Version {
                     Feature.use, // https://mariadb.com/kb/en/grant/
                     Feature.grant, // https://mariadb.com/kb/en/revoke/
                     Feature.revoke, // https://mariadb.com/kb/en/commit/
-                    Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
+                    Feature.commit, // https://mariadb.com/kb/en/rollback/
+                    Feature.rollback, // https://mariadb.com/kb/en/savepoint/
+                    Feature.savepoint, // https://mariadb.com/kb/en/xa-transactions/
+                    Feature.xa, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),

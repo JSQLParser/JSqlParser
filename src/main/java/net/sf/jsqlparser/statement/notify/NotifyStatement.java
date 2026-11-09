@@ -12,11 +12,12 @@ package net.sf.jsqlparser.statement.notify;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /** PostgreSQL NOTIFY, usable independently and in CREATE RULE actions. */
-public class NotifyStatement implements Statement {
+public class NotifyStatement extends ASTNodeAccessImpl implements Statement {
     private String channel;
     private StringValue payload;
 

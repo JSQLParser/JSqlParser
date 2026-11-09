@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import net.sf.jsqlparser.expression.SpannerInterleaveIn;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.LikeClause;
@@ -23,7 +24,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class CreateTable implements Statement {
+public class CreateTable extends ASTNodeAccessImpl implements Statement {
 
     private boolean tableOptionsAfterPartition;
     private net.sf.jsqlparser.statement.execute.Execute execute;

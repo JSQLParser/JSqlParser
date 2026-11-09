@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.merge;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Merge implements Statement {
+public class Merge extends ASTNodeAccessImpl implements Statement {
 
     private List<WithItem<?>> withItemsList;
     private Table table;

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/attach">ATTACH</a>
  */
-public class AttachStatement implements Statement {
+public class AttachStatement extends ASTNodeAccessImpl implements Statement {
     private String databasePath;
     private String alias;
     private boolean usingDatabaseKeyword;

@@ -17,11 +17,12 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.database.DatabaseOption;
 
-public class CreateSchema implements Statement {
+public class CreateSchema extends ASTNodeAccessImpl implements Statement {
 
     private String authorization;
     private String catalogName = null;

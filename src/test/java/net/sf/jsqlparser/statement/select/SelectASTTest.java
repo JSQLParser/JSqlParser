@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.ASTNodeAccess;
@@ -201,6 +202,27 @@ public class SelectASTTest {
             assertEquals(testCase[1], sql.substring(node.jjtGetFirstToken().absoluteBegin - 1,
                     node.jjtGetLastToken().absoluteEnd - 1), sql);
         }
+    }
+
+    @Test
+    public void testOperatorExpressionNodeSpansItsOperands() throws JSQLParserException {
+        String sql = "SELECT a - 1 - 2, 1 + 2 * 3, a | | b FROM t WHERE d > CURRENT_DATE - 7";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
+        BinaryExpression chain = (BinaryExpression) select.getSelectItem(0).getExpression();
+        BinaryExpression precedence = (BinaryExpression) select.getSelectItem(1).getExpression();
+
+        assertEquals("a - 1 - 2", source(sql, chain));
+        assertEquals("a - 1", source(sql, chain.getLeftExpression()));
+        assertEquals("2 * 3", source(sql, precedence.getRightExpression()));
+        assertEquals("a | | b", source(sql, select.getSelectItem(2).getExpression()));
+        assertEquals("CURRENT_DATE - 7",
+                source(sql, ((BinaryExpression) select.getWhere()).getRightExpression()));
+    }
+
+    private static String source(String sql, Expression expression) {
+        Node node = expression.getASTNode();
+        return sql.substring(node.jjtGetFirstToken().absoluteBegin - 1,
+                node.jjtGetLastToken().absoluteEnd - 1);
     }
 
     @Test

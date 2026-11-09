@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.IndexOption;
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  * {@link Action} selects which properties are rendered. Moving all relations of a tablespace with
  * {@code ALTER TABLE ALL IN TABLESPACE} remains {@link AlterTablespaceMove}.
  */
-public class AlterTablespace implements Statement {
+public class AlterTablespace extends ASTNodeAccessImpl implements Statement {
 
     public enum Action {
         /** {@code RENAME TO newName}. */

@@ -11,7 +11,9 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -27,6 +29,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -65,6 +68,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DiscardStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.PurgeStatement;
@@ -72,10 +76,12 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
+import net.sf.jsqlparser.statement.SetConstraintsStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
 import net.sf.jsqlparser.statement.SetPasswordStatement;
 import net.sf.jsqlparser.statement.SetRoleStatement;
+import net.sf.jsqlparser.statement.SetTransactionStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -83,8 +89,12 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.SetScope;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
+import net.sf.jsqlparser.statement.TransactionCompletionStatement;
+import net.sf.jsqlparser.statement.TransactionMode;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
@@ -123,7 +133,12 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
+import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
+import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
+import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
@@ -138,6 +153,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
@@ -146,6 +162,7 @@ import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
@@ -153,6 +170,8 @@ import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+
+import java.util.List;
 
 /**
  * @author gitmotte
@@ -173,9 +192,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateTrigger createTrigger, S context) {
-        if (createTrigger.getRoutine() != null) {
-            validateFeature(Feature.createTrigger);
-        }
+        validateFeature(Feature.createTrigger);
         createTrigger.visit(this::validateOptionalFromItem,
                 this::validateOptionalExpression);
         if (createTrigger.getBody() != null) {
@@ -261,6 +278,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(SessionStatement sessionStatement, S context) {
+        validateFeature(Feature.session);
         return null;
     }
 
@@ -323,6 +341,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(AlterEvent alterEvent, S context) {
+        validateFeature(Feature.alterEvent);
         if (alterEvent.getBody() != null) {
             alterEvent.getBody().accept(this, context);
         }
@@ -374,26 +393,27 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(StartTransaction statement, S context) {
         validateFeature(Feature.startTransaction);
-        for (StartTransaction.Mode mode : statement.getModes()) {
-            switch (mode) {
-                case ISOLATION_LEVEL_SERIALIZABLE:
-                case ISOLATION_LEVEL_REPEATABLE_READ:
-                case ISOLATION_LEVEL_READ_COMMITTED:
-                case ISOLATION_LEVEL_READ_UNCOMMITTED:
+        validateTransactionModes(statement.getModes(), statement.getModeContext());
+        return null;
+    }
+
+    /**
+     * Checks the mode features of BEGIN, START TRANSACTION and SET TRANSACTION. An isolation level
+     * is a feature of BEGIN and START TRANSACTION only, since SET TRANSACTION exists to set it.
+     */
+    private void validateTransactionModes(List<TransactionMode> modes,
+            TransactionMode.Context context) {
+        for (TransactionMode mode : modes) {
+            if (mode.isIsolationLevel()) {
+                if (context != TransactionMode.Context.SET_TRANSACTION) {
                     validateFeature(Feature.transactionIsolationLevel);
-                    break;
-                case DEFERRABLE:
-                case NOT_DEFERRABLE:
-                    validateFeature(Feature.transactionDeferrable);
-                    break;
-                case WITH_CONSISTENT_SNAPSHOT:
-                    validateFeature(Feature.transactionConsistentSnapshot);
-                    break;
-                default:
-                    break;
+                }
+            } else if (mode.isDeferrability()) {
+                validateFeature(Feature.transactionDeferrable);
+            } else if (mode == TransactionMode.WITH_CONSISTENT_SNAPSHOT) {
+                validateFeature(Feature.transactionConsistentSnapshot);
             }
         }
-        return null;
     }
 
     @Override
@@ -403,12 +423,67 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(SetTransactionStatement statement, S context) {
+        validateFeature(Feature.setTransaction);
+        if (statement.getScope() == SetScope.GLOBAL) {
+            validateFeature(Feature.setTransactionGlobal);
+        } else if (statement.getScope() == SetScope.PERSIST
+                || statement.getScope() == SetScope.PERSIST_ONLY) {
+            validateFeature(Feature.setTransactionPersist);
+        }
+        if (statement.isSessionCharacteristics()) {
+            validateFeature(Feature.setTransactionSessionCharacteristics);
+        }
+        if (statement.getSnapshotId() != null) {
+            validateFeature(Feature.setTransactionSnapshot);
+        }
+        validateTransactionModes(statement.getModes(), TransactionMode.Context.SET_TRANSACTION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetConstraintsStatement statement, S context) {
+        validateFeature(Feature.setConstraints);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        validateFeature(Feature.twoPhaseCommit);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
+        validateFeature(Feature.xa);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
-        if (commit.getChain() != null) {
+        validateTransactionCompletion(commit);
+        return null;
+    }
+
+    /**
+     * Checks the clauses shared by COMMIT and ROLLBACK and their END and ABORT spellings. Oracle's
+     * ROLLBACK FORCE has no feature of its own.
+     */
+    private void validateTransactionCompletion(TransactionCompletionStatement statement) {
+        if (statement
+                .getPreparedTransactionKeyword() == TransactionCompletionStatement.PreparedTransactionKeyword.PREPARED) {
+            validateFeature(Feature.twoPhaseCommit);
+        }
+        if (statement.isPostgresSpelling()) {
+            validateFeature(Feature.transactionEndAbort);
+        }
+        if (statement.getChain() != null) {
             validateFeature(Feature.transactionChain);
         }
-        return null;
+        if (statement.getRelease() != null) {
+            validateFeature(Feature.transactionRelease);
+        }
     }
 
     @Override
@@ -534,6 +609,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateUser createUser, S context) {
+        validateFeature(Feature.createUser);
         return null;
     }
 
@@ -570,6 +646,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateEvent createEvent, S context) {
+        validateFeature(Feature.createEvent);
         if (createEvent.getBody() != null) {
             createEvent.getBody().accept(this, context);
         }
@@ -640,22 +717,42 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(VacuumStatement vacuum, S context) {
+        getValidator(VacuumValidator.class).validate(vacuum);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ClusterStatement cluster, S context) {
+        getValidator(ClusterValidator.class).validate(cluster);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CheckpointStatement checkpoint, S context) {
+        validateFeature(Feature.checkpoint);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(SavepointStatement savepointStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.savepoint);
         return null;
     }
 
     @Override
     public <S> Void visit(RollbackStatement rollbackStatement, S context) {
-        if (rollbackStatement.getChain() != null) {
-            validateFeature(Feature.transactionChain);
+        validateFeature(Feature.rollback);
+        if (rollbackStatement.getSavepointName() != null) {
+            validateFeature(Feature.savepoint);
         }
+        validateTransactionCompletion(rollbackStatement);
         return null;
     }
 
     @Override
     public <S> Void visit(AlterSession alterSession, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.alterSession);
         return null;
     }
 
@@ -669,127 +766,148 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     public <S> Void visit(RenameTableStatement renameTableStatement, S context) {
-        // TODO: not yet implemented
+        // the same operation as ALTER TABLE ... RENAME TO
+        validateFeature(Feature.alterTable);
         return null;
     }
 
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.pragma);
         return null;
     }
 
     @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.assertStatement);
         return null;
     }
 
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(extensionStatement.getOperation() == ExtensionStatement.Operation.LOAD
+                ? Feature.loadExtension
+                : Feature.installExtension);
         return null;
     }
 
     @Override
     public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.export);
         return null;
     }
 
     @Override
     public <S> Void visit(AttachStatement attachStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.attach);
         return null;
     }
 
     @Override
     public <S> Void visit(DetachStatement detachStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.detach);
         return null;
     }
 
     @Override
     public <S> Void visit(ConnectStatement connectStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.connect);
         return null;
     }
 
     @Override
     public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.disconnect);
         return null;
     }
 
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.prepare);
         return null;
     }
 
     @Override
     public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.deallocate);
         return null;
     }
 
     @Override
     public <S> Void visit(CopyStatement copyStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.copy);
         return null;
     }
 
     @Override
     public <S> Void visit(CreateMacro createMacro, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.createMacro);
         return null;
     }
 
     @Override
     public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.createExtensionRepository);
         return null;
     }
 
     @Override
     public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.loadData);
         return null;
     }
 
     @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.purge);
         return null;
     }
 
     @Override
     public <S> Void visit(AlterSystemStatement alterSystemStatement, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.alterSystem);
         return null;
     }
 
     @Override
     public <S> Void visit(UnsupportedStatement unsupportedStatement, S context) {
-
+        // its tokens are not modelled, so nothing inside it can be validated
+        validateFeature(Feature.allowUnsupportedStatements);
         return null;
     }
 
     @Override
     public <S> Void visit(Import imprt, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.imprt);
         return null;
     }
 
     @Override
     public <S> Void visit(Export export, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.export);
         return null;
     }
 
     @Override
     public <S> Void visit(LockStatement lock, S context) {
-        // TODO: not yet implemented
+        validateFeature(Feature.lock);
+        for (LockStatement.Target target : lock.getTargets()) {
+            Table table = target.getTable();
+            validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
+                    ValidationUtil.getAlias(table.getAlias()));
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(UnlockStatement unlock, S context) {
+        validateFeature(Feature.unlockTables);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(BackupLockStatement backupLock, S context) {
+        validateFeature(Feature.backupLock);
         return null;
     }
 
@@ -992,6 +1110,21 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(statement, null);
     }
 
+    @Override
+    public void visit(VacuumStatement vacuum) {
+        visit(vacuum, null);
+    }
+
+    @Override
+    public void visit(ClusterStatement cluster) {
+        visit(cluster, null);
+    }
+
+    @Override
+    public void visit(CheckpointStatement checkpoint) {
+        visit(checkpoint, null);
+    }
+
     public void visit(SavepointStatement savepointStatement) {
         visit(savepointStatement, null);
     }
@@ -1090,6 +1223,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
+        validateFeature(Feature.createPolicy);
         validateOptionalFromItem(createPolicy.getTable());
         validateOptionalExpression(createPolicy.getUsingExpression());
         validateOptionalExpression(createPolicy.getWithCheckExpression());
@@ -1337,6 +1471,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(ListenStatement listen, S context) {
+        validateFeature(Feature.listen);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DiscardStatement discard, S context) {
+        validateFeature(Feature.discard);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateCollation statement, S context) {
         validateFeature(Feature.createCollation);
         statement.visitExpressions(this::validateOptionalExpression);
@@ -1401,7 +1547,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(AlterTablespaceMove statement, S context) {
+        validateFeature(Feature.alterTablespace);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterPolicy statement, S context) {
+        validateFeature(Feature.alterPolicy);
         validateOptionalFromItem(statement.getTable());
         if (statement.getNewName() == null) {
             statement.getOptions().visitExpressions(this::validateOptionalExpression);
@@ -1418,8 +1571,15 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateStatistics statement, S context) {
+        validateFeature(Feature.createStatistics);
         validateOptionalFromItem(statement.getTable());
         validateOptionalExpression(statement.getExpressions());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterStatistics statement, S context) {
+        validateFeature(Feature.alterStatistics);
         return null;
     }
 
