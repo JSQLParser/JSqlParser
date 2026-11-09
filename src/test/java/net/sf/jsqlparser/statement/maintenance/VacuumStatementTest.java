@@ -274,7 +274,8 @@ class VacuumStatementTest {
     @Test
     void endsAnUnsupportedStatement() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "LISTEN ch; VACUUM FULL t", parser -> parser.withDialect(Dialect.POSTGRESQL)
+                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; VACUUM FULL t",
+                parser -> parser.withDialect(Dialect.POSTGRESQL)
                         .withUnsupportedStatements(true));
 
         assertEquals(2, statements.size());

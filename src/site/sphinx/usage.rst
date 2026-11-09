@@ -2632,6 +2632,56 @@ Table visitors report the locked tables but not their aliases. Validators report
 three, MariaDB the first two, and PostgreSQL and Oracle ``lock``. Feature analysis reports
 ``MODIFIES_TRANSACTION``.
 
+PostgreSQL session statements and COPY options
+----------------------------------------------
+
+With ``Dialect.POSTGRESQL`` and without a dialect, PostgreSQL's session statements parse to
+typed statements:
+
+* `DISCARD <https://www.postgresql.org/docs/18/sql-discard.html>`_
+  ``{ALL | PLANS | SEQUENCES | TEMP | TEMPORARY}`` parses to ``DiscardStatement``. ``getTarget()``
+  keeps the target as written; ``TEMP`` and ``TEMPORARY`` name the same state.
+* `LISTEN <https://www.postgresql.org/docs/18/sql-listen.html>`_ ``channel`` and
+  `UNLISTEN <https://www.postgresql.org/docs/18/sql-unlisten.html>`_ ``{channel | *}`` parse to
+  ``ListenStatement``, next to ``NotifyStatement``. ``getAction()`` is ``LISTEN`` or
+  ``UNLISTEN``, and ``getChannel()`` is null for ``UNLISTEN *`` (``isAllChannels()``).
+* `SHOW <https://www.postgresql.org/docs/18/sql-show.html>`_ ``TIME ZONE``,
+  ``SHOW TRANSACTION ISOLATION LEVEL`` and ``SHOW SESSION AUTHORIZATION`` parse to the
+  ``ShowStatement`` of other ``SHOW name`` statements instead of ``UnsupportedStatement``, and
+  `RESET <https://www.postgresql.org/docs/18/sql-reset.html>`_ takes the same names. ``SET``,
+  ``RESET`` and ``SHOW`` read them through one rule: ``getName()`` is ``Time Zone``, as before
+  for ``SET`` and ``RESET``, ``TRANSACTION ISOLATION LEVEL`` or ``SESSION AUTHORIZATION``.
+
+`COPY <https://www.postgresql.org/docs/18/sql-copy.html>`_ also accepts the option syntax that
+PostgreSQL used before 9.0 and still accepts: keywords without parentheses or commas after the file
+name and the optional ``WITH``, in any order (``BINARY``, ``FREEZE``, ``DELIMITER [AS] 'x'``,
+``NULL [AS] 'x'``, ``CSV``, ``HEADER``, ``QUOTE [AS] 'x'``, ``ESCAPE [AS] 'x'``,
+``FORCE QUOTE {column, ... | *}``, ``FORCE NOT NULL {column, ... | *}``,
+``FORCE NULL {column, ... | *}`` and ``ENCODING 'x'``), and ``COPY BINARY table``.
+``CopyStatement.getLegacyOptions()`` holds a ``CopyLegacyOption`` per option, in source order,
+with its ``Kind``, its string (``getValue()``) and whether ``AS`` preceded it, or the columns of a
+``FORCE`` option (``isAllColumns()`` for ``*``). ``isBinary()`` records ``COPY BINARY``. The
+options in parentheses keep their reading through ``getOptions()``; a statement takes one of
+the two forms.
+
+.. code-block:: java
+
+    CopyStatement copy = (CopyStatement) CCJSqlParserUtil.parse(
+        "COPY t TO STDOUT WITH CSV HEADER FORCE QUOTE a, b");
+    copy.getLegacyOptions().get(0).getKind();         // CSV
+    copy.getLegacyOptions().get(2).getColumns();      // [a, b]
+
+Other dialects keep rejecting these forms, and ``SHOW TIME ZONE`` remains an
+``UnsupportedStatement`` there. ``LISTEN`` and ``UNLISTEN`` become non-reserved keywords and,
+like ``DISCARD``, remain usable as names. As in PostgreSQL's grammar, a channel or a ``FORCE``
+column cannot be an unquoted word that PostgreSQL reserves, such as ``ALL``.
+
+Table visitors report the copied table and no table for the session statements. Validators
+report the ``discard`` and ``listen`` features, which the PostgreSQL capabilities enable
+together with ``show``. Feature analysis reports ``MODIFIES_SESSION`` for ``DISCARD``,
+``LISTEN`` and ``UNLISTEN``, and a possible ``MODIFIES_SCHEMA`` for ``DISCARD ALL``, ``TEMP``
+and ``TEMPORARY``, which drop the temporary tables of the session.
+
 MySQL account management statements
 -----------------------------------
 

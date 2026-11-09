@@ -957,6 +957,18 @@ public enum Feature {
      */
     reset,
     /**
+     * PostgreSQL "DISCARD" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.DiscardStatement
+     */
+    discard,
+    /**
+     * PostgreSQL "LISTEN" and "UNLISTEN" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.notify.ListenStatement
+     */
+    listen,
+    /**
      * @see Pivot
      */
     pivot,

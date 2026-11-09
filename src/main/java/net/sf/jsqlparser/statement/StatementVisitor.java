@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
@@ -1053,6 +1054,22 @@ public interface StatementVisitor<T> {
 
     default void visit(NotifyStatement statement) {
         visit(statement, null);
+    }
+
+    default <S> T visit(ListenStatement listen, S context) {
+        return null;
+    }
+
+    default void visit(ListenStatement listen) {
+        visit(listen, null);
+    }
+
+    default <S> T visit(DiscardStatement discard, S context) {
+        return null;
+    }
+
+    default void visit(DiscardStatement discard) {
+        visit(discard, null);
     }
 
     default <S> T visit(CreateCollation statement, S context) {

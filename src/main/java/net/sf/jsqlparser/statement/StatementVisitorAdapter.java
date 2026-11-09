@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
 
@@ -1151,6 +1152,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(NotifyStatement statement, S context) {
         statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ListenStatement listen, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DiscardStatement discard, S context) {
         return null;
     }
 
