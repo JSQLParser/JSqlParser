@@ -26,14 +26,16 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+import net.sf.jsqlparser.expression.StringValue;
 
 /**
- * ROLLBACK, or its PostgreSQL spelling ABORT.
+ * ROLLBACK, or its PostgreSQL spelling ABORT. PostgreSQL {@code ROLLBACK PREPARED 'id'} and Oracle
+ * {@code ROLLBACK FORCE 'id'} roll back a prepared transaction instead of the current one.
  *
  * @author are
  */
 public class RollbackStatement extends TransactionCompletionStatement {
-    /** The keyword that starts the statement; ABORT has no savepoint or FORCE form. */
+    /** The keyword that starts the statement; ABORT has no savepoint, FORCE or PREPARED form. */
     public enum Command {
         ROLLBACK, ABORT
     }
@@ -41,7 +43,6 @@ public class RollbackStatement extends TransactionCompletionStatement {
     private Command command = Command.ROLLBACK;
     private boolean usingSavepointKeyword = false;
     private String savepointName = null;
-    private String forceDistributedTransactionIdentifier = null;
 
     public Command getCommand() {
         return command;
@@ -68,6 +69,16 @@ public class RollbackStatement extends TransactionCompletionStatement {
 
     public RollbackStatement withRelease(TransactionRelease release) {
         setRelease(release);
+        return this;
+    }
+
+    /**
+     * Names the prepared transaction of PostgreSQL {@code ROLLBACK PREPARED 'id'} or Oracle
+     * {@code ROLLBACK FORCE 'id'}; a null identifier rolls back the current transaction.
+     */
+    public RollbackStatement withPreparedTransaction(PreparedTransactionKeyword keyword,
+            TransactionId id) {
+        setPreparedTransaction(keyword, id);
         return this;
     }
 
@@ -114,18 +125,43 @@ public class RollbackStatement extends TransactionCompletionStatement {
         return this;
     }
 
+    /**
+     * The identifier of Oracle {@code ROLLBACK FORCE 'id'} as written, with its quotes, or null.
+     * Derived from {@link #getPreparedTransactionId()} when the keyword is
+     * {@link PreparedTransactionKeyword#FORCE}.
+     */
     public String getForceDistributedTransactionIdentifier() {
-        return forceDistributedTransactionIdentifier;
+        return getPreparedTransactionKeyword() == PreparedTransactionKeyword.FORCE
+                ? getPreparedTransactionId().toString()
+                : null;
     }
 
+    /**
+     * Sets the identifier of Oracle {@code ROLLBACK FORCE 'id'} as it is to be written. It is
+     * stored as the {@link StringValue} of {@link #getPreparedTransactionId()}; text that is not a
+     * string literal is kept verbatim. Null or blank removes a FORCE identifier.
+     */
     public void setForceDistributedTransactionIdentifier(
             String forceDistributedTransactionIdentifier) {
-        this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
+        if (forceDistributedTransactionIdentifier != null
+                && !forceDistributedTransactionIdentifier.trim().isEmpty()) {
+            setPreparedTransaction(PreparedTransactionKeyword.FORCE,
+                    new TransactionId(asWritten(forceDistributedTransactionIdentifier)));
+        } else if (getPreparedTransactionKeyword() == PreparedTransactionKeyword.FORCE) {
+            setPreparedTransaction(null, null);
+        }
+    }
+
+    /** The literal {@code text} spells, or the text itself when it is not a string literal. */
+    private static StringValue asWritten(String text) {
+        StringValue literal = new StringValue(text);
+        return literal.toString().equals(text) ? literal
+                : new StringValue().withValue(text).setQuoteStr("");
     }
 
     public RollbackStatement withForceDistributedTransactionIdentifier(
             String forceDistributedTransactionIdentifier) {
-        this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
+        setForceDistributedTransactionIdentifier(forceDistributedTransactionIdentifier);
         return this;
     }
 
@@ -141,9 +177,8 @@ public class RollbackStatement extends TransactionCompletionStatement {
         if (savepointName != null && !savepointName.trim().isEmpty()) {
             builder.append(" TO ").append(usingSavepointKeyword ? "SAVEPOINT " : "")
                     .append(savepointName);
-        } else if (forceDistributedTransactionIdentifier != null
-                && !forceDistributedTransactionIdentifier.trim().isEmpty()) {
-            builder.append(" FORCE ").append(forceDistributedTransactionIdentifier);
+        } else {
+            appendPreparedTransaction(builder);
         }
         return appendCompletion(builder);
     }

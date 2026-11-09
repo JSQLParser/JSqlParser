@@ -916,6 +916,18 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    /** XA RECOVER lists the prepared transactions; the other actions control a branch. */
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
+        return statement.getAction() == XaStatement.Action.RECOVER ? metadataOnly()
+                : transactionOnly();
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return transactionOnly();
     }

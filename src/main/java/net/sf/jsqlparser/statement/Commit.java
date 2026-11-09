@@ -11,7 +11,10 @@ package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
 
-/** COMMIT, or its PostgreSQL spelling END. */
+/**
+ * COMMIT, or its PostgreSQL spelling END. PostgreSQL {@code COMMIT PREPARED 'id'} commits a
+ * prepared transaction instead of the current one.
+ */
 public class Commit extends TransactionCompletionStatement {
     /** The keyword that starts the statement; both commit the current transaction. */
     public enum Command {
@@ -48,6 +51,15 @@ public class Commit extends TransactionCompletionStatement {
         return this;
     }
 
+    /**
+     * Names the prepared transaction of PostgreSQL {@code COMMIT PREPARED 'id'}; null commits the
+     * current transaction.
+     */
+    public Commit withPreparedTransaction(TransactionId id) {
+        setPreparedTransaction(PreparedTransactionKeyword.PREPARED, id);
+        return this;
+    }
+
     @Override
     public boolean isPostgresSpelling() {
         return command == Command.END;
@@ -62,6 +74,7 @@ public class Commit extends TransactionCompletionStatement {
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(command);
         appendKeyword(builder);
+        appendPreparedTransaction(builder);
         return appendCompletion(builder);
     }
 }

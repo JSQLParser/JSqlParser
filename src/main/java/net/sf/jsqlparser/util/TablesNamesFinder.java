@@ -92,6 +92,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
@@ -116,6 +117,7 @@ import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
@@ -2244,6 +2246,16 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(SetConstraintsStatement statement, S context) {
         // names constraints, not tables
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
         return null;
     }
 

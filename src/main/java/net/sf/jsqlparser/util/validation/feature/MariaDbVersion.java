@@ -154,7 +154,8 @@ public enum MariaDbVersion implements Version {
                     Feature.revoke, // https://mariadb.com/kb/en/commit/
                     Feature.commit, // https://mariadb.com/kb/en/rollback/
                     Feature.rollback, // https://mariadb.com/kb/en/savepoint/
-                    Feature.savepoint, // https://mariadb.com/kb/en/optimizer-hints/
+                    Feature.savepoint, // https://mariadb.com/kb/en/xa-transactions/
+                    Feature.xa, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),

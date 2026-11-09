@@ -50,6 +50,8 @@ public class StatementValidatorTest extends ValidationTestAsserts {
                 Arguments.of("DEALLOCATE PREPARE p", Feature.deallocate),
                 Arguments.of("SAVEPOINT s", Feature.savepoint),
                 Arguments.of("ROLLBACK", Feature.rollback),
+                Arguments.of("PREPARE TRANSACTION 'x'", Feature.twoPhaseCommit),
+                Arguments.of("XA RECOVER", Feature.xa),
                 Arguments.of("LOCK TABLE t IN EXCLUSIVE MODE", Feature.lock),
                 Arguments.of("ALTER SESSION SET CURRENT_SCHEMA = other", Feature.alterSession),
                 Arguments.of("ALTER SYSTEM SET archive_command = 'cp %p /tmp/%f'",

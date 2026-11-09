@@ -147,6 +147,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **DDL** | `CREATE …` · `ALTER …` · `DROP …` |
 | **Oracle vector types** | `VECTOR(*, *)` · `VECTOR(*, FLOAT32)` · `VECTOR(3, *)`, including dense and sparse storage formats |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
+| **Two-phase commit** | PostgreSQL `PREPARE TRANSACTION` · `COMMIT PREPARED` · `ROLLBACK PREPARED` · MySQL `XA START`/`END`/`PREPARE`/`COMMIT`/`ROLLBACK`/`RECOVER` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |

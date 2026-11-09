@@ -87,6 +87,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.XaStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.SetScope;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
@@ -159,6 +160,7 @@ import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
@@ -444,14 +446,33 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(PrepareTransactionStatement statement, S context) {
+        validateFeature(Feature.twoPhaseCommit);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(XaStatement statement, S context) {
+        validateFeature(Feature.xa);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
         validateTransactionCompletion(commit);
         return null;
     }
 
-    /** Checks the clauses shared by COMMIT and ROLLBACK and their END and ABORT spellings. */
+    /**
+     * Checks the clauses shared by COMMIT and ROLLBACK and their END and ABORT spellings. Oracle's
+     * ROLLBACK FORCE has no feature of its own.
+     */
     private void validateTransactionCompletion(TransactionCompletionStatement statement) {
+        if (statement
+                .getPreparedTransactionKeyword() == TransactionCompletionStatement.PreparedTransactionKeyword.PREPARED) {
+            validateFeature(Feature.twoPhaseCommit);
+        }
         if (statement.isPostgresSpelling()) {
             validateFeature(Feature.transactionEndAbort);
         }
