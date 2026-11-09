@@ -524,6 +524,9 @@ public class TablesNamesFinder<Void>
         if (plainSelect.getDistinct() != null) {
             visitSelectItems(plainSelect.getDistinct().getOnSelectItems(), context);
         }
+        if (plainSelect.getTop() != null) {
+            visitExpression(plainSelect.getTop().getExpression(), context);
+        }
         visitTables(plainSelect.getIntoTables(), context);
 
         visitSelectItems(plainSelect.getSelectItems(), context);
@@ -1468,14 +1471,21 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AllColumns allColumns, S context) {
-
+        visitColumnsTransformers(allColumns, context);
         return null;
     }
 
     @Override
     public <S> Void visit(AllTableColumns allTableColumns, S context) {
-
+        visitColumnsTransformers(allTableColumns, context);
         return null;
+    }
+
+    private <S> void visitColumnsTransformers(AllColumns allColumns, S context) {
+        for (ColumnsTransformer transformer : allColumns.getTransformers()) {
+            visitExpression(transformer.getApplyExpression(), context);
+            visitSelectItems(transformer.getReplaceItems(), context);
+        }
     }
 
     @Override
@@ -2427,6 +2437,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DeclareStatement declareStatement, S context) {
+        for (DeclareStatement.TypeDefExpr typeDefExpr : declareStatement.getTypeDefExprList()) {
+            visitExpression(typeDefExpr.getDefaultExpr(), context);
+        }
         return null;
     }
 
