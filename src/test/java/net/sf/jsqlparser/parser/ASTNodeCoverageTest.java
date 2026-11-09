@@ -187,7 +187,19 @@ public class ASTNodeCoverageTest {
                 "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
-                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "CHANGE REPLICATION SOURCE TO SOURCE_HOST = 'h', SOURCE_HEARTBEAT_PERIOD = 2.5,"
+                        + " IGNORE_SERVER_IDS = (1, 2), PRIVILEGE_CHECKS_USER = 'u'@'%',"
+                        + " SOURCE_TLS_CIPHERSUITES = NULL, GTID_ONLY = 1,"
+                        + " REQUIRE_TABLE_PRIMARY_KEY_CHECK = OFF FOR CHANNEL 'c'",
+                "CHANGE REPLICATION SOURCE TO IGNORE_SERVER_IDS = ()",
+                "CHANGE REPLICATION FILTER REPLICATE_DO_DB = (d), REPLICATE_DO_TABLE = (d.t),"
+                        + " REPLICATE_WILD_DO_TABLE = ('d.%'), REPLICATE_REWRITE_DB = ((a, b))",
+                "START REPLICA SQL_THREAD UNTIL SOURCE_LOG_FILE = 'b', SOURCE_LOG_POS = 4"
+                        + " USER = 'u' PASSWORD = 'p' FOR CHANNEL 'c'",
+                "STOP REPLICA IO_THREAD, SQL_THREAD FOR CHANNEL 'c'",
+                "RESET REPLICA ALL FOR CHANNEL 'c', BINARY LOGS AND GTIDS TO 5",
+                "PURGE BINARY LOGS BEFORE NOW() - INTERVAL 3 DAY"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";

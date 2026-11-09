@@ -207,6 +207,12 @@ import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement;
+import net.sf.jsqlparser.statement.replication.ReplicationFilter;
+import net.sf.jsqlparser.statement.replication.ResetReplicationStatement;
+import net.sf.jsqlparser.statement.replication.StartReplicaStatement;
+import net.sf.jsqlparser.statement.replication.StopReplicaStatement;
 import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
@@ -3211,6 +3217,35 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ChangeReplicationSourceStatement changeReplicationSource, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ChangeReplicationFilterStatement changeReplicationFilter, S context) {
+        // the tables that REPLICATE_DO_TABLE and REPLICATE_IGNORE_TABLE name
+        for (ReplicationFilter filter : changeReplicationFilter.getFilters()) {
+            filter.getTables().forEach(table -> table.accept(this, context));
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(StartReplicaStatement startReplica, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(StopReplicaStatement stopReplica, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ResetReplicationStatement resetReplication, S context) {
         return null;
     }
 

@@ -597,6 +597,12 @@ public enum Feature {
      */
     purge,
     /**
+     * MySQL/MariaDB "PURGE BINARY LOGS" and MariaDB "PURGE MASTER LOGS" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.PurgeStatement
+     */
+    purgeBinaryLogs,
+    /**
      * PostgreSQL "REASSIGN OWNED BY ... TO ..." statement is allowed
      *
      * @see ReassignOwned
@@ -846,6 +852,36 @@ public enum Feature {
      * @see SetResourceGroup
      */
     setResourceGroup,
+    /**
+     * MySQL "CHANGE REPLICATION SOURCE TO" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement
+     */
+    changeReplicationSource,
+    /**
+     * MySQL "CHANGE REPLICATION FILTER" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement
+     */
+    changeReplicationFilter,
+    /**
+     * MySQL "START REPLICA" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.replication.StartReplicaStatement
+     */
+    startReplica,
+    /**
+     * MySQL "STOP REPLICA" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.replication.StopReplicaStatement
+     */
+    stopReplica,
+    /**
+     * MySQL "RESET BINARY LOGS AND GTIDS" and "RESET REPLICA" statements are allowed
+     *
+     * @see net.sf.jsqlparser.statement.replication.ResetReplicationStatement
+     */
+    resetReplication,
     /**
      * SQL "COMMENT ON" statement is allowed
      *

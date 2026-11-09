@@ -133,6 +133,11 @@ import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement;
+import net.sf.jsqlparser.statement.replication.ResetReplicationStatement;
+import net.sf.jsqlparser.statement.replication.StartReplicaStatement;
+import net.sf.jsqlparser.statement.replication.StopReplicaStatement;
 import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
@@ -833,8 +838,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(PurgeStatement purgeStatement, S context) {
-        purgeStatement.appendTo(builder);
-        return builder;
+        return purgeStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
@@ -883,6 +888,35 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(BackupLockStatement backupLock, S context) {
         return backupLock.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(ChangeReplicationSourceStatement changeReplicationSource,
+            S context) {
+        return changeReplicationSource.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ChangeReplicationFilterStatement changeReplicationFilter,
+            S context) {
+        return changeReplicationFilter.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(StartReplicaStatement startReplica, S context) {
+        return startReplica.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(StopReplicaStatement stopReplica, S context) {
+        return stopReplica.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(ResetReplicationStatement resetReplication, S context) {
+        return resetReplication.appendTo(builder);
     }
 
     @Override

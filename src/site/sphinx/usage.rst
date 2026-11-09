@@ -2772,6 +2772,67 @@ enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
 ``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
 ``RETURNS_RESULT_SET`` for HANDLER READ.
 
+MySQL replication statements
+----------------------------
+
+The MySQL 8.4 replication statements parse with ``Dialect.MYSQL`` and without a dialect, into
+the classes of ``net.sf.jsqlparser.statement.replication``:
+
+- `CHANGE REPLICATION SOURCE TO
+  <https://dev.mysql.com/doc/refman/8.4/en/change-replication-source-to.html>`_ is a
+  ``ChangeReplicationSourceStatement``. Each ``ReplicationSourceOption`` keeps its spelling and
+  ``getKind()``, and ``Kind.getValueType()`` says what the option takes: a string, a number,
+  ``NULL``, ``0`` or ``1``, a keyword such as ``OFF`` (held as a ``Column``, like ``ON`` in
+  PostgreSQL publication options), or the ``ParenthesedExpressionList`` of
+  ``IGNORE_SERVER_IDS``. A value of another type is a parse error, as in MySQL.
+  ``PRIVILEGE_CHECKS_USER`` keeps its account in ``getAccount()``, and
+  ``getPrimaryKeyCheck()`` and ``getGtidAssignment()`` read the keyword options.
+- `CHANGE REPLICATION FILTER
+  <https://dev.mysql.com/doc/refman/8.4/en/change-replication-filter.html>`_ is a
+  ``ChangeReplicationFilterStatement`` of ``ReplicationFilter`` rules. A rule's list, which may
+  be empty, holds database names, ``db.table`` names, quoted patterns or ``(from, to)`` pairs,
+  as ``getDatabases()``, ``getTables()``, ``getPatterns()`` and ``getRewrites()``.
+- `START REPLICA <https://dev.mysql.com/doc/refman/8.4/en/start-replica.html>`_ and
+  `STOP REPLICA <https://dev.mysql.com/doc/refman/8.4/en/stop-replica.html>`_ are
+  ``StartReplicaStatement`` and ``StopReplicaStatement``, with ``getThreads()``
+  (``IO_THREAD``, ``SQL_THREAD``). START keeps its ``UNTIL`` conditions as
+  ``ReplicaUntilOption`` and the ``USER``, ``PASSWORD``, ``DEFAULT_AUTH`` and ``PLUGIN_DIR``
+  strings.
+- `RESET BINARY LOGS AND GTIDS [TO n]
+  <https://dev.mysql.com/doc/refman/8.4/en/reset-binary-logs-and-gtids.html>`_ and
+  `RESET REPLICA [ALL] <https://dev.mysql.com/doc/refman/8.4/en/reset-replica.html>`_, also as
+  the comma list of the `RESET <https://dev.mysql.com/doc/refman/8.4/en/reset.html>`_ statement,
+  are a ``ResetReplicationStatement`` of ``ResetReplicationStatement.Option`` entries.
+- `PURGE BINARY LOGS <https://dev.mysql.com/doc/refman/8.4/en/purge-binary-logs.html>`_
+  extends Oracle's ``PurgeStatement``: ``getPurgeObjectType()`` is ``BINARY_LOGS``,
+  ``getLogBound()`` is ``TO`` or ``BEFORE``, and ``getLogExpression()`` is the log name literal
+  or the point in time. As in MySQL, the ``BEFORE`` expression takes no subquery at any depth.
+  ``Dialect.MARIADB`` reads it as well, and MariaDB's ``PURGE MASTER LOGS`` as
+  ``MASTER_LOGS``.
+
+``FOR CHANNEL 'name'`` takes a string, which ``getChannel()`` returns as a ``StringValue``.
+
+.. code-block:: java
+
+    ChangeReplicationSourceStatement change = (ChangeReplicationSourceStatement)
+        CCJSqlParserUtil.parse("CHANGE REPLICATION SOURCE TO SOURCE_HOST = 'h', "
+            + "IGNORE_SERVER_IDS = (1, 2) FOR CHANNEL 'c1'");
+    change.getOptions().get(0).getKind();          // SOURCE_HOST
+    change.getChannel().getValue();                // c1
+
+MySQL 8.4 removed ``CHANGE MASTER TO``, ``START SLAVE``, ``RESET MASTER`` and the ``MASTER_``
+options, so they stay unsupported. Without a dialect a bare ``RESET REPLICA`` remains the
+PostgreSQL ``ResetStatement`` of a parameter named ``replica``; ``Dialect.MYSQL``, or ``ALL``,
+``FOR CHANNEL`` or a further option after it, makes it MySQL's. PostgreSQL, Oracle and MariaDB
+keep their readings of ``RESET``, ``PURGE`` and ``START``. ``STOP`` becomes a non-reserved
+keyword and remains usable as a name.
+
+Table visitors report the tables of ``REPLICATE_DO_TABLE`` and ``REPLICATE_IGNORE_TABLE``.
+Validators report the ``changeReplicationSource``, ``changeReplicationFilter``,
+``startReplica``, ``stopReplica``, ``resetReplication`` and ``purgeBinaryLogs`` features; the
+MySQL capabilities enable all of them and MariaDB ``purgeBinaryLogs``. Feature analysis reports
+``MODIFIES_SESSION``, as for ``ALTER SYSTEM``.
+
 MySQL account management statements
 -----------------------------------
 
