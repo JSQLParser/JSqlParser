@@ -1649,7 +1649,8 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
     * - ``TERADATA``
       - ``UPDATE target FROM sources SET ...`` with the FROM clause before SET
     * - ``SQLITE``
-      - ``INSERT OR ABORT``, ``INSERT OR FAIL``, ``INSERT OR IGNORE`` and ``INSERT OR ROLLBACK`` conflict clauses
+      - ``INSERT OR ABORT``, ``INSERT OR FAIL``, ``INSERT OR IGNORE`` and ``INSERT OR ROLLBACK`` conflict clauses;
+        ``UPDATE OR`` with any of ``ABORT``, ``FAIL``, ``IGNORE``, ``REPLACE`` and ``ROLLBACK``
 
 Features set explicitly *after* the preset win over it.
 

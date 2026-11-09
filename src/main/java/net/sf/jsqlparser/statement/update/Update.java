@@ -55,6 +55,7 @@ public class Update extends ASTNodeAccessImpl implements Statement {
     private Limit limit;
     private OptionClause option;
     private ReturningClause returningClause;
+    private UpdateConflictAlgorithm conflictAlgorithm;
     private UpdateModifierPriority modifierPriority;
     private boolean modifierIgnore;
 
@@ -344,6 +345,14 @@ public class Update extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    public UpdateConflictAlgorithm getConflictAlgorithm() {
+        return conflictAlgorithm;
+    }
+
+    public void setConflictAlgorithm(UpdateConflictAlgorithm conflictAlgorithm) {
+        this.conflictAlgorithm = conflictAlgorithm;
+    }
+
     public UpdateModifierPriority getModifierPriority() {
         return modifierPriority;
     }
@@ -380,6 +389,9 @@ public class Update extends ASTNodeAccessImpl implements Statement {
         b.append("UPDATE ");
         if (oracleHint != null) {
             b.append(oracleHint).append(" ");
+        }
+        if (conflictAlgorithm != null) {
+            b.append("OR ").append(conflictAlgorithm.name()).append(" ");
         }
         if (modifierPriority != null) {
             b.append(modifierPriority.name()).append(" ");
@@ -502,6 +514,11 @@ public class Update extends ASTNodeAccessImpl implements Statement {
 
     public Update withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
+        return this;
+    }
+
+    public Update withConflictAlgorithm(UpdateConflictAlgorithm conflictAlgorithm) {
+        this.setConflictAlgorithm(conflictAlgorithm);
         return this;
     }
 
