@@ -94,6 +94,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
@@ -2341,6 +2342,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
     }
 
