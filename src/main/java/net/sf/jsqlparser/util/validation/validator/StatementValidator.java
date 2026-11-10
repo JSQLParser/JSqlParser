@@ -142,6 +142,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -456,6 +459,24 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(XaStatement statement, S context) {
         validateFeature(Feature.xa);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        validateFeature(Feature.createResourceGroup);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        validateFeature(Feature.alterResourceGroup);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
+        validateFeature(Feature.setResourceGroup);
         return null;
     }
 

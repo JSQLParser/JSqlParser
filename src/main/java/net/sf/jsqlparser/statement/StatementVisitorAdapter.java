@@ -105,6 +105,9 @@ import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -259,6 +262,21 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetResourceGroup statement, S context) {
         return null;
     }
 

@@ -3011,6 +3011,40 @@ The validator checks ``twoPhaseCommit`` (PostgreSQL) and ``xa`` (MySQL and Maria
 Feature analysis reports ``XA RECOVER`` as returning a result set and the other
 statements as transaction control.
 
+MySQL resource groups
+=====================
+
+MySQL ``CREATE RESOURCE GROUP name TYPE [=] {SYSTEM | USER} [VCPU [=] vcpu_spec [, ...]]
+[THREAD_PRIORITY [=] N] [ENABLE | DISABLE]`` produces a ``CreateResourceGroup`` and
+``ALTER RESOURCE GROUP name [VCPU ...] [THREAD_PRIORITY ...] [ENABLE | DISABLE] [FORCE]``
+an ``AlterResourceGroup``. Both extend ``ResourceGroupDefinition``, which holds the name,
+the VCPU list as ``VcpuRange`` elements (a single CPU or ``start-end``), the thread
+priority and the ``State``. Each option remembers whether it was written with ``=``, ``:=``
+or nothing (``OptionAssignment``); the optional commas of the VCPU list are always printed.
+``SET RESOURCE GROUP name [FOR thread_id [, ...]]`` produces a ``SetResourceGroup`` whose
+thread IDs are the numbers as written (``LongValue`` or ``HexValue``);
+``getThreadIds()`` is null without ``FOR``.
+``DROP RESOURCE GROUP name [FORCE]`` is a ``Drop`` with the object type ``RESOURCE_GROUP``
+and ``isForce()``.
+
+.. code-block:: java
+
+    CreateResourceGroup group = (CreateResourceGroup) CCJSqlParserUtil.parse(
+        "CREATE RESOURCE GROUP rg1 TYPE = USER VCPU = 0-3, 5 THREAD_PRIORITY = 10 ENABLE",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    // USER, [0-3, 5], 10, ENABLE
+    String parts = group.getType() + ", " + group.getVcpus() + ", "
+        + group.getThreadPriority() + ", " + group.getState();
+
+The statements are read with the MySQL dialect or without one and follow MySQL's grammar:
+the options come in the order above, and CPU numbers and the priority are plain integers.
+What MySQL checks when it runs the statement, such as the CPU numbers of the machine or the
+priority range of the group type, is not checked. In other dialects ``CREATE`` and ``ALTER
+RESOURCE GROUP`` stay an ``UnsupportedStatement`` and ``DROP RESOURCE GROUP rg`` keeps the
+generic ``Drop`` reading. The validator checks ``createResourceGroup``,
+``alterResourceGroup`` and ``setResourceGroup`` (MySQL); feature analysis reports
+``SET RESOURCE GROUP`` as a session change and the others as schema changes.
+
 MySQL SHOW statements
 =====================
 

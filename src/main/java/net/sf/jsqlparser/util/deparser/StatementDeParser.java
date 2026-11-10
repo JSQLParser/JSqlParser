@@ -135,6 +135,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -500,6 +503,21 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(XaStatement statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateResourceGroup statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterResourceGroup statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetResourceGroup statement, S context) {
         return statement.appendTo(builder);
     }
 

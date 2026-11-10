@@ -93,6 +93,7 @@ import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.refresh.*;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.*;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
@@ -3621,6 +3622,60 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether the words RESOURCE GROUP of a MySQL resource group statement are at the offset. Read
+     * with the MySQL dialect or none; MariaDB and the other products have no resource groups.
+     */
+    private boolean isResourceGroupAt(int offset) {
+        String dialect = getAsString(Feature.dialect);
+        return isWordAt(offset, "RESOURCE") && getToken(offset + 1).kind == K_GROUP
+                && (dialect == null || Dialect.MYSQL.name().equals(dialect));
+    }
+
+    /**
+     * Whether DROP names a MySQL resource group. Without a dialect, DROP RESOURCE GROUP on its own
+     * keeps dropping an object called GROUP.
+     */
+    private boolean isDropResourceGroupAhead() {
+        int next = getToken(3).kind;
+        return isResourceGroupAt(1)
+                && (getAsString(Feature.dialect) != null || next != EOF && next != ST_SEMICOLON);
+    }
+
+    /** Whether MySQL CREATE, ALTER or SET RESOURCE GROUP starts here. */
+    private boolean isResourceGroupStatementAhead() {
+        int kind = getToken(1).kind;
+        return (kind == K_CREATE || kind == K_ALTER || kind == K_SET) && isResourceGroupAt(2);
+    }
+
+    /** A group name; MySQL reserves FORCE, the word that may follow the name. */
+    private String resourceGroupName(String name) throws ParseException {
+        requireDdlSyntax(!"FORCE".equalsIgnoreCase(name), "Expected a resource group name");
+        return name;
+    }
+
+    /**
+     * A number that MySQL's lexer reads as NUM, as a CPU number and a thread priority must be:
+     * digits up to 2147483647.
+     */
+    private int resourceGroupNumber(Token token) throws ParseException {
+        if (token.image.matches("[0-9]+")) {
+            java.math.BigInteger number = new java.math.BigInteger(token.image);
+            if (number.bitLength() < Integer.SIZE) {
+                return number.intValue();
+            }
+        }
+        throw new ParseException("Expected an integer up to 2147483647 but found " + token.image);
+    }
+
+    /** A thread ID: MySQL takes an unsigned integer of up to 64 bits. */
+    private LongValue resourceGroupThreadId(Token token) throws ParseException {
+        requireDdlSyntax(token.image.matches("[0-9]+")
+                && new java.math.BigInteger(token.image).bitLength() <= Long.SIZE,
+                "Expected a thread ID but found " + token.image);
+        return linkToLastToken(new LongValue(token.image));
+    }
+
+    /**
      * Whether a MySQL XA statement starts here: XA followed by its action. Read with the MySQL and
      * MariaDB dialects or none; XA stays an identifier elsewhere.
      */
@@ -4097,7 +4152,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
 
         static boolean isForceAhead(Drop drop, Token first, Token second, Token third) {
-            return drop.getObjectType() == Drop.ObjectType.SYNONYM && first.kind == K_FORCE
+            return (drop.getObjectType() == Drop.ObjectType.SYNONYM
+                    || drop.getObjectType() == Drop.ObjectType.RESOURCE_GROUP) && first.kind == K_FORCE
                     || drop.getObjectType() == Drop.ObjectType.DATABASE
                         && (first.kind == K_WITH && "(".equals(second.image) && third.kind == K_FORCE
                             || "(".equals(first.image) && second.kind == K_FORCE);
@@ -4116,6 +4172,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return token.kind != S_IDENTIFIER && token.kind != S_QUOTED_IDENTIFIER
                     && token.image != null && !token.image.isEmpty()
                     && "+-*/<>=~!@#%^&|?".indexOf(token.image.charAt(0)) >= 0;
+        }
+
+        /** MySQL DROP RESOURCE GROUP names one group by a plain identifier, without IF EXISTS. */
+        static boolean isResourceGroupTarget(Drop drop) {
+            if (drop.isIfExists() || drop.isMaterialized() || drop.getNames().size() != 1) {
+                return false;
+            }
+            Table name = drop.getNames().get(0);
+            return name.getSchemaName() == null && !name.getName().startsWith("'")
+                    && !"FORCE".equalsIgnoreCase(name.getName());
         }
 
         /** The targets are a cast, a transform or operators, named by their types. */
@@ -5615,6 +5681,8 @@ Statement SingleStatement() :
             stm = Select()
             |
             LOOKAHEAD(3) stm = Upsert()
+            |
+            LOOKAHEAD({ isResourceGroupStatementAhead() }) stm = ResourceGroupStatement()
             |
             LOOKAHEAD(2) stm = Alter()
             |
@@ -21709,6 +21777,9 @@ Drop Drop():
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
         |
+        // MySQL DROP RESOURCE GROUP
+        LOOKAHEAD({ isDropResourceGroupAhead() }) <S_IDENTIFIER> <K_GROUP> { multiWordType = "RESOURCE GROUP"; }
+        |
         // MySQL DROP UNDO TABLESPACE
         LOOKAHEAD({ isKeywordAhead("UNDO") && getToken(2).kind == K_TABLESPACE })
         <S_IDENTIFIER> tk=<K_TABLESPACE> { drop.setUndo(true); }
@@ -21815,6 +21886,10 @@ Drop Drop():
         requireDdlSyntax(!DropLookahead.hasSignatureTargets(drop)
                 || dropArgs.isEmpty() && indexTable == null && indexOptions.isEmpty(),
                 "Unexpected clause after DROP " + drop.getType());
+        requireDdlSyntax(drop.getObjectType() != Drop.ObjectType.RESOURCE_GROUP
+                || DropLookahead.isResourceGroupTarget(drop) && dropArgs.isEmpty()
+                    && indexTable == null && indexOptions.isEmpty() && behavior == null,
+                "DROP RESOURCE GROUP takes one group name and FORCE");
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
         }
@@ -24469,6 +24544,103 @@ Expression XaTransactionIdPart():
           part = linkToLastToken(new HexValue(token.image)); }
     )
     { return part; }
+}
+
+/**
+ * MySQL CREATE, ALTER and SET RESOURCE GROUP. RESOURCE, VCPU and THREAD_PRIORITY are not tokens;
+ * isResourceGroupStatementAhead() routes here. DROP RESOURCE GROUP is read by Drop().
+ */
+Statement ResourceGroupStatement():
+{ Statement statement; }
+{
+    (
+        <K_CREATE> ContextualKeyword("RESOURCE") <K_GROUP> statement=CreateResourceGroup()
+        |
+        <K_ALTER> ContextualKeyword("RESOURCE") <K_GROUP> statement=AlterResourceGroup()
+        |
+        <K_SET> ContextualKeyword("RESOURCE") <K_GROUP> statement=SetResourceGroup()
+    )
+    { return statement; }
+}
+
+CreateResourceGroup CreateResourceGroup():
+{ CreateResourceGroup group = new CreateResourceGroup(); String name; OptionAssignment assignment; }
+{
+    name=RelObjectName() { group.setName(resourceGroupName(name)); }
+    <K_TYPE> assignment=ResourceGroupOptionAssignment() { group.setTypeAssignment(assignment); }
+    ( <K_USER> { group.setType(CreateResourceGroup.Type.USER); }
+      | <K_SYSTEM> { group.setType(CreateResourceGroup.Type.SYSTEM); } )
+    ResourceGroupOptions(group)
+    { return group; }
+}
+
+AlterResourceGroup AlterResourceGroup():
+{ AlterResourceGroup group = new AlterResourceGroup(); String name; }
+{
+    name=RelObjectName() { group.setName(resourceGroupName(name)); }
+    ResourceGroupOptions(group)
+    // FORCE INSTALL starts the next statement
+    [ LOOKAHEAD({ getToken(1).kind == K_FORCE && getToken(2).kind != K_INSTALL })
+        <K_FORCE> { group.setForce(true); } ]
+    { return group; }
+}
+
+/** The optional = or := between a resource group option and its value. */
+OptionAssignment ResourceGroupOptionAssignment():
+{ OptionAssignment assignment = OptionAssignment.NONE; }
+{
+    [ "=" { assignment = OptionAssignment.EQUALS; } | ":=" { assignment = OptionAssignment.COLON_EQUALS; } ]
+    { return assignment; }
+}
+
+/**
+ * [VCPU [=] vcpu_spec [[,] vcpu_spec] ...] [THREAD_PRIORITY [=] [-] N] [ENABLE | DISABLE], in the
+ * order of MySQL's grammar.
+ */
+void ResourceGroupOptions(ResourceGroupDefinition group):
+{ OptionAssignment assignment; VcpuRange range; Token number; boolean negative = false; }
+{
+    [ LOOKAHEAD({ isKeywordAhead("VCPU") }) ContextualKeyword("VCPU")
+        assignment=ResourceGroupOptionAssignment() { group.setVcpuAssignment(assignment); }
+        range=ResourceGroupVcpuRange() { group.addVcpus(range); }
+        ( [ "," ] range=ResourceGroupVcpuRange() { group.addVcpus(range); } )* ]
+    [ LOOKAHEAD({ isKeywordAhead("THREAD_PRIORITY") }) ContextualKeyword("THREAD_PRIORITY")
+        assignment=ResourceGroupOptionAssignment() { group.setThreadPriorityAssignment(assignment); }
+        [ "-" { negative = true; } ] number=<S_LONG>
+        { group.setThreadPriority(negative ? -resourceGroupNumber(number) : resourceGroupNumber(number)); } ]
+    [ <K_ENABLE> { group.setState(ResourceGroupDefinition.State.ENABLE); }
+      | <K_DISABLE> { group.setState(ResourceGroupDefinition.State.DISABLE); } ]
+}
+
+/** A CPU number, or two of them around a minus sign. */
+VcpuRange ResourceGroupVcpuRange():
+{ Token start; Token end = null; }
+{
+    start=<S_LONG> [ "-" end=<S_LONG> ]
+    { return new VcpuRange(resourceGroupNumber(start), end == null ? null : Integer.valueOf(resourceGroupNumber(end))); }
+}
+
+SetResourceGroup SetResourceGroup():
+{ SetResourceGroup statement = new SetResourceGroup(); String name; Expression threadId; }
+{
+    name=RelObjectName() { statement.setName(resourceGroupName(name)); }
+    [ <K_FOR> threadId=ResourceGroupThreadId() { statement.addThreadIds(threadId); }
+        ( [ "," ] threadId=ResourceGroupThreadId() { statement.addThreadIds(threadId); } )* ]
+    { linkElements(statement.getThreadIds()); return statement; }
+}
+
+/** A thread ID: a decimal or hexadecimal number. */
+Expression ResourceGroupThreadId():
+{ Token token; Expression threadId; }
+{
+    (
+        token=<S_LONG> { threadId = resourceGroupThreadId(token); }
+        |
+        token=<S_HEX>
+        { requireDdlSyntax(isXaHexPart(token.image), "Invalid hexadecimal literal: " + token.image);
+          threadId = linkToLastToken(new HexValue(token.image)); }
+    )
+    { return threadId; }
 }
 
 /**
