@@ -119,7 +119,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.createTablespace, Feature.alterTablespace,
                     Feature.createForeignDataWrapper, Feature.alterForeignDataWrapper,
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
-                    Feature.alterUserMapping,
+                    Feature.alterUserMapping, // https://www.postgresql.org/docs/current/sql-importforeignschema.html
+                    Feature.importForeignSchema,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createRule, Feature.notifyStatement,
                     Feature.createCollation, Feature.alterCollation,

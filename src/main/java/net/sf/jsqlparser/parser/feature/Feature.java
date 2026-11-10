@@ -702,6 +702,12 @@ public enum Feature {
     createSequence, createAccessMethod, createAccessMethodTable,
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
+    /**
+     * PostgreSQL "IMPORT FOREIGN SCHEMA" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.foreign.ImportForeignSchema
+     */
+    importForeignSchema,
 
     createRule, notifyStatement, createTextSearchConfiguration, alterTextSearchConfiguration, createCollation, alterCollation,
 

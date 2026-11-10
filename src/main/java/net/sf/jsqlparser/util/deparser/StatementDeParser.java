@@ -122,6 +122,7 @@ import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.export.Export;
+import net.sf.jsqlparser.statement.foreign.ImportForeignSchema;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -1080,6 +1081,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterUserMapping statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ImportForeignSchema statement, S context) {
         return statement.appendTo(builder,
                 expression -> expression.accept(expressionDeParser, context));
     }

@@ -2772,6 +2772,36 @@ enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
 ``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
 ``RETURNS_RESULT_SET`` for HANDLER READ.
 
+PostgreSQL IMPORT FOREIGN SCHEMA
+--------------------------------
+
+With ``Dialect.POSTGRESQL`` and without a dialect,
+`IMPORT FOREIGN SCHEMA <https://www.postgresql.org/docs/18/sql-importforeignschema.html>`_
+``remote_schema [{LIMIT TO | EXCEPT} (table [, ...])] FROM SERVER server INTO local_schema
+[OPTIONS (option 'value' [, ...])]`` parses to ``ImportForeignSchema``, a
+``ForeignDataStatement`` like ``CreateServer`` and ``CreateUserMapping``. ``getRemoteSchema()``,
+``getServer()`` and ``getLocalSchema()`` hold the names. ``getQualification()`` is ``LIMIT_TO``,
+``EXCEPT`` or null when the whole schema is imported, and ``getTables()`` lists the tables as
+``TableReference`` values, the relation targets of ``LOCK`` and ``TRUNCATE``, because
+PostgreSQL's grammar reads the same relation syntax there. ``setTables(qualification, tables)``
+changes both together. ``getOptions()`` holds the ``ForeignDataOption`` values that the other
+foreign-data statements use; ``ADD``, ``SET`` and ``DROP`` are rejected as in their ``CREATE``
+forms.
+
+.. code-block:: java
+
+    ImportForeignSchema imported = (ImportForeignSchema) CCJSqlParserUtil.parse(
+        "IMPORT FOREIGN SCHEMA remote LIMIT TO (t1, t2) FROM SERVER srv INTO local "
+            + "OPTIONS (import_default 'true')");
+    imported.getQualification();                  // LIMIT_TO
+    imported.getTables();                         // [t1, t2]
+    imported.getOptions().get(0).getName();       // import_default
+
+Other dialects keep rejecting the statement, and the EXASOL dialect keeps ``IMPORT`` for its
+own statement. Table visitors report no table: the listed names belong to the remote schema.
+Validators report the ``importForeignSchema`` feature, which the PostgreSQL capabilities and
+``FeaturesAllowed.DDL`` enable. Feature analysis reports ``MODIFIES_SCHEMA``.
+
 MySQL account management statements
 -----------------------------------
 

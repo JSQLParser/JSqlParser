@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
+import net.sf.jsqlparser.statement.foreign.ImportForeignSchema;
 
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 
@@ -1185,6 +1186,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(AlterUserMapping statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(ImportForeignSchema statement, S context) {
         return visitForeignDataStatement(statement, context);
     }
 

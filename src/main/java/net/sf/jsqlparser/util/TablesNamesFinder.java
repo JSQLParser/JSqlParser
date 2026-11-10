@@ -188,6 +188,7 @@ import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.execute.ExecuteArgument;
 import net.sf.jsqlparser.statement.export.Export;
+import net.sf.jsqlparser.statement.foreign.ImportForeignSchema;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
 import net.sf.jsqlparser.statement.grant.Grant;
@@ -3453,6 +3454,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterUserMapping statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ImportForeignSchema statement, S context) {
+        // LIMIT TO and EXCEPT name tables of the remote schema, not relations of this database.
         statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
     }

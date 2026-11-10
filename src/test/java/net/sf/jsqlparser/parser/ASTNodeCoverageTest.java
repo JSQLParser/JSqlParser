@@ -149,6 +149,7 @@ public class ASTNodeCoverageTest {
                 "CREATE TYPE s.box3 (INPUT = s.box3_in, PASSEDBYVALUE, INTERNALLENGTH = - 1, "
                         + "ELEMENT = setof float8[], LIKE = t.a%TYPE, DEFAULT = E'x', x = extended)",
                 "ALTER TYPE box3 SET (SEND = NONE, STORAGE = plain, x = +1.5, y = varchar(3))",
+                "IMPORT FOREIGN SCHEMA r LIMIT TO (ONLY t1, s.t2 *) FROM SERVER s INTO l OPTIONS (a 'b')",
                 "SHOW TRANSACTION ISOLATION LEVEL", "RESET SESSION AUTHORIZATION",
                 "COPY s.t (a) TO STDOUT WITH NULL AS 'x' CSV FORCE QUOTE a, \"B\"",
                 "COPY BINARY t FROM STDIN FREEZE ENCODING 'UTF8'",

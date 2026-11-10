@@ -129,6 +129,7 @@ import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.export.Export;
+import net.sf.jsqlparser.statement.foreign.ImportForeignSchema;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -1481,6 +1482,13 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(AlterUserMapping statement, S context) {
         validateFeature(Feature.alterUserMapping);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ImportForeignSchema statement, S context) {
+        validateFeature(Feature.importForeignSchema);
         statement.visitExpressions(this::validateOptionalExpression);
         return null;
     }
