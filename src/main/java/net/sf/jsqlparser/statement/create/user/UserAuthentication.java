@@ -19,7 +19,9 @@ import net.sf.jsqlparser.expression.StringValue;
  * {@code REPLACE 'current'} and {@code RETAIN CURRENT PASSWORD} to a password assignment, and
  * {@code DISCARD OLD PASSWORD} as a mode of its own. The plugin name keeps its quote character, as
  * in {@code IDENTIFIED WITH 'caching_sha2_password'}, and the hash of {@code AS} may be a
- * hexadecimal literal, as SHOW CREATE USER prints it.
+ * hexadecimal literal, as SHOW CREATE USER prints it. {@code CREATE USER} may give a passwordless
+ * plugin a temporary first factor, {@code IDENTIFIED WITH plugin INITIAL AUTHENTICATION IDENTIFIED
+ * ...}, kept in {@link #getInitialAuthentication()}.
  */
 public class UserAuthentication implements Serializable {
 
@@ -38,6 +40,7 @@ public class UserAuthentication implements Serializable {
     private Expression credential;
     private StringValue currentCredential;
     private boolean retainCurrentPassword;
+    private UserAuthentication initialAuthentication;
 
     public Mode getMode() {
         return mode;
@@ -111,9 +114,26 @@ public class UserAuthentication implements Serializable {
         this.retainCurrentPassword = retainCurrentPassword;
     }
 
+    /**
+     * The authentication after {@code INITIAL AUTHENTICATION}, which registers the device of a
+     * passwordless plugin, or null when omitted. MySQL writes it as {@code IDENTIFIED BY 'auth'},
+     * {@code IDENTIFIED BY RANDOM PASSWORD} or {@code IDENTIFIED WITH plugin AS 'hash'}, after
+     * {@code IDENTIFIED WITH plugin} only.
+     */
+    public UserAuthentication getInitialAuthentication() {
+        return initialAuthentication;
+    }
+
+    public void setInitialAuthentication(UserAuthentication initialAuthentication) {
+        this.initialAuthentication = initialAuthentication;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(modeToString());
+        if (initialAuthentication != null) {
+            builder.append(" INITIAL AUTHENTICATION ").append(initialAuthentication);
+        }
         if (currentCredential != null) {
             builder.append(" REPLACE ").append(currentCredential);
         }
@@ -176,6 +196,12 @@ public class UserAuthentication implements Serializable {
 
     public UserAuthentication withRetainCurrentPassword(boolean retainCurrentPassword) {
         setRetainCurrentPassword(retainCurrentPassword);
+        return this;
+    }
+
+    public UserAuthentication withInitialAuthentication(
+            UserAuthentication initialAuthentication) {
+        setInitialAuthentication(initialAuthentication);
         return this;
     }
 }

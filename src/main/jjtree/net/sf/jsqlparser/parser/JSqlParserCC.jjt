@@ -3234,8 +3234,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
-     * Whether a MySQL CREATE/ALTER USER clause starts at the offset: authentication, DEFAULT ROLE,
-     * REQUIRE, WITH resource limits, password and locking options, COMMENT or ATTRIBUTE. PostgreSQL
+     * Whether a MySQL CREATE/ALTER USER clause starts at the offset: authentication, a further
+     * factor after AND, a factor change or registration step, DEFAULT ROLE, REQUIRE, WITH resource limits, password and locking options, COMMENT or ATTRIBUTE. PostgreSQL
      * role attributes such as WITH LOGIN or PASSWORD 'x' do not match.
      */
     private boolean isMySqlUserOptionAhead(int offset) {
@@ -3244,6 +3244,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_IDENTIFIED:
             case K_DISCARD:
                 return true;
+            case K_AND:
+                return getToken(offset + 1).kind == K_IDENTIFIED;
+            case K_ADD:
+            case K_MODIFY:
+            case K_DROP:
+                return isMySqlFactorAhead(offset + 1);
+            case S_LONG:
+                return isMySqlFactorAhead(offset);
             case K_COMMENT:
                 return getToken(offset + 1).kind == S_CHAR_LITERAL;
             case K_DEFAULT:
@@ -3254,6 +3262,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isMySqlPasswordLockOptionAhead(offset) || token.kind == S_IDENTIFIER
                         && ("REQUIRE".equalsIgnoreCase(token.image)
                             || "ATTRIBUTE".equalsIgnoreCase(token.image));
+        }
+    }
+
+    /** Whether a multi-factor authentication factor, n FACTOR, starts at the offset. */
+    private boolean isMySqlFactorAhead(int offset) {
+        return getToken(offset).kind == S_LONG
+                && "FACTOR".equalsIgnoreCase(getToken(offset + 1).image);
+    }
+
+    /** Whether ADD, MODIFY or DROP of a multi-factor authentication factor is next. */
+    private boolean isMySqlFactorChangeAhead() {
+        int kind = getToken(1).kind;
+        return (kind == K_ADD || kind == K_MODIFY || kind == K_DROP) && isMySqlFactorAhead(2);
+    }
+
+    /** The number of n FACTOR, which the MySQL grammar reads as an integer of at most 31 bits. */
+    private static int factorNumber(Token token) throws ParseException {
+        try {
+            return Integer.parseInt(token.image);
+        } catch (NumberFormatException exception) {
+            throw new ParseException("Invalid authentication factor: " + token.image);
         }
     }
 
@@ -18166,15 +18195,114 @@ UserAuthentication MySqlUserAuthentication():
     { return authentication; }
 }
 
+/**
+ * A CREATE USER account: the first factor, which a plugin without credentials may follow with
+ * INITIAL AUTHENTICATION, and up to two further factors, each written AND IDENTIFIED ...; the
+ * server grammar also accepts the further factors without a first one.
+ */
 UserAccount MySqlUserAccount():
 {
     UserAccount account;
     UserAuthentication authentication = null;
+    UserAuthentication initial = null;
 }
 {
     account=MySqlAccountName()
-    [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
+    [
+        authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); }
+        [
+            LOOKAHEAD({ isKeywordAhead("INITIAL") })
+            ContextualKeyword("INITIAL") ContextualKeyword("AUTHENTICATION")
+            initial=MySqlUserAuthentication()
+            {
+                requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.WITH_PLUGIN,
+                        "INITIAL AUTHENTICATION requires IDENTIFIED WITH plugin");
+                requireAccessSyntax(initial.getMode() == UserAuthentication.Mode.BY_PASSWORD
+                        || initial.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
+                        || initial.getMode() == UserAuthentication.Mode.WITH_PLUGIN_AS_STRING,
+                        "INITIAL AUTHENTICATION accepts IDENTIFIED BY or IDENTIFIED WITH plugin AS");
+                authentication.setInitialAuthentication(initial);
+            }
+        ]
+    ]
+    (
+        <K_AND> authentication=MySqlUserAuthentication()
+        {
+            requireAccessSyntax(initial == null,
+                    "INITIAL AUTHENTICATION cannot be combined with further factors");
+            requireAccessSyntax(account.getAdditionalAuthentications().size() < 2,
+                    "An account has at most three authentication factors");
+            account.addAdditionalAuthentications(authentication);
+        }
+    )*
     { return account; }
+}
+
+/** The factor of a multi-factor authentication clause: 2 FACTOR or 3 FACTOR. */
+int MySqlAuthenticationFactor():
+{
+    Token number;
+}
+{
+    number=<S_LONG> ContextualKeyword("FACTOR")
+    { return factorNumber(number); }
+}
+
+/** ALTER USER: ADD factor IDENTIFIED ..., MODIFY factor IDENTIFIED ... or DROP factor. */
+UserFactorOperation MySqlFactorChange():
+{
+    UserFactorOperation.Operation operation;
+    int factor;
+    UserAuthentication authentication = null;
+}
+{
+    (
+        <K_ADD> { operation = UserFactorOperation.Operation.ADD; }
+        |
+        <K_MODIFY> { operation = UserFactorOperation.Operation.MODIFY; }
+        |
+        <K_DROP> { operation = UserFactorOperation.Operation.DROP; }
+    )
+    factor=MySqlAuthenticationFactor()
+    [ authentication=MySqlUserAuthentication() ]
+    {
+        requireAccessSyntax(operation.hasAuthentication() == (authentication != null),
+                "ADD and MODIFY of a factor require IDENTIFIED, DROP does not accept it");
+        return new UserFactorOperation(operation, factor).withAuthentication(authentication);
+    }
+}
+
+/**
+ * ALTER USER registration of a passwordless device: factor INITIATE REGISTRATION, factor FINISH
+ * REGISTRATION SET CHALLENGE_RESPONSE AS 'response', or factor UNREGISTER.
+ */
+UserFactorOperation MySqlFactorRegistration():
+{
+    UserFactorOperation operation = new UserFactorOperation();
+    int factor;
+    Token response;
+}
+{
+    factor=MySqlAuthenticationFactor() { operation.setFactor(factor); }
+    (
+        LOOKAHEAD({ isKeywordAhead("INITIATE") })
+        ContextualKeyword("INITIATE") ContextualKeyword("REGISTRATION")
+        { operation.setOperation(UserFactorOperation.Operation.INITIATE_REGISTRATION); }
+        |
+        LOOKAHEAD({ isKeywordAhead("FINISH") })
+        ContextualKeyword("FINISH") ContextualKeyword("REGISTRATION")
+        <K_SET> ContextualKeyword("CHALLENGE_RESPONSE") <K_AS>
+        { operation.setOperation(UserFactorOperation.Operation.FINISH_REGISTRATION); }
+        (
+            response=<S_CHAR_LITERAL> { operation.setChallengeResponse(stringValue(response)); }
+            |
+            response=<S_HEX> { operation.setChallengeResponse(new HexValue(response.image)); }
+        )
+        |
+        ContextualKeyword("UNREGISTER")
+        { operation.setOperation(UserFactorOperation.Operation.UNREGISTER); }
+    )
+    { return operation; }
 }
 
 CreateUser CreateUser():
@@ -18403,29 +18531,49 @@ UserAuthentication MySqlAlterUserAuthentication():
     { return authentication; }
 }
 
+/**
+ * An ALTER USER account with an authentication change, or with one or two factor changes of the
+ * same kind: ADD ... [ADD ...], MODIFY ... [MODIFY ...] or DROP ... [DROP ...].
+ */
 UserAccount MySqlAlterUserAccount():
 {
     UserAccount account;
     UserAuthentication authentication;
+    UserFactorOperation change;
+    UserFactorOperation second;
 }
 {
     account=MySqlAccountName()
     [
         LOOKAHEAD({ getToken(1).kind == K_IDENTIFIED || getToken(1).kind == K_DISCARD })
         authentication=MySqlAlterUserAuthentication() { account.setAuthentication(authentication); }
+        |
+        LOOKAHEAD({ isMySqlFactorChangeAhead() })
+        change=MySqlFactorChange() { account.addFactorOperations(change); }
+        [
+            LOOKAHEAD({ isMySqlFactorChangeAhead() })
+            second=MySqlFactorChange()
+            {
+                requireAccessSyntax(second.getOperation() == change.getOperation(),
+                        "Factor changes of one account repeat the same operation");
+                account.addFactorOperations(second);
+            }
+        ]
     ]
     { return account; }
 }
 
 /**
- * MySQL ALTER USER: accounts with authentication changes and the options shared with CREATE USER,
- * USER() with a password change, or one account with DEFAULT ROLE.
+ * MySQL ALTER USER: accounts with authentication or factor changes and the options shared with
+ * CREATE USER, USER() with a password change, one account with DEFAULT ROLE, or one account or
+ * USER() with a registration step of multi-factor authentication.
  */
 AlterUser AlterUser():
 {
     AlterUser alterUser = new AlterUser();
     UserAccount account;
     UserAuthentication authentication;
+    UserFactorOperation registration;
     RoleSelection roles;
 }
 {
@@ -18433,21 +18581,41 @@ AlterUser AlterUser():
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alterUser.setIfExists(true); } ]
     (
         LOOKAHEAD({ getToken(1).kind == K_USER && "(".equals(getToken(2).image) })
-        <K_USER> "(" ")" authentication=MySqlAlterUserAuthentication()
-        {
-            requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.BY_PASSWORD
-                    || authentication.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
-                    || authentication.getMode() == UserAuthentication.Mode.DISCARD_OLD_PASSWORD,
-                    "USER() accepts IDENTIFIED BY or DISCARD OLD PASSWORD");
-            alterUser.withUserFunction(authentication);
-        }
+        <K_USER> "(" ")"
+        (
+            LOOKAHEAD({ isMySqlFactorAhead(1) })
+            registration=MySqlFactorRegistration()
+            {
+                alterUser.withUserFunction(null);
+                alterUser.getAccounts().get(0).addFactorOperations(registration);
+            }
+            |
+            authentication=MySqlAlterUserAuthentication()
+            {
+                requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.BY_PASSWORD
+                        || authentication.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
+                        || authentication.getMode() == UserAuthentication.Mode.DISCARD_OLD_PASSWORD,
+                        "USER() accepts IDENTIFIED BY or DISCARD OLD PASSWORD");
+                alterUser.withUserFunction(authentication);
+            }
+        )
         |
         account=MySqlAlterUserAccount() { alterUser.addAccounts(account); }
         (
+            LOOKAHEAD({ isMySqlFactorAhead(1) })
+            registration=MySqlFactorRegistration()
+            {
+                requireAccessSyntax(account.getAuthentication() == null
+                        && account.getFactorOperations().isEmpty(),
+                        "A registration step cannot follow an authentication change");
+                account.addFactorOperations(registration);
+            }
+            |
             LOOKAHEAD({ getToken(1).kind == K_DEFAULT && "ROLE".equalsIgnoreCase(getToken(2).image) })
             <K_DEFAULT> ContextualKeyword("ROLE") roles=MySqlRoleSelection(false)
             {
-                requireAccessSyntax(account.getAuthentication() == null,
+                requireAccessSyntax(account.getAuthentication() == null
+                        && account.getFactorOperations().isEmpty(),
                         "DEFAULT ROLE cannot follow an authentication change");
                 alterUser.getOptions().setDefaultRoles(roles);
             }

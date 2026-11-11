@@ -2702,6 +2702,28 @@ clauses stay omitted. ``UserAuthentication`` adds ``ALTER USER``'s ``REPLACE 'cu
     alter.getAccounts().get(0).getAuthentication().isRetainCurrentPassword(); // true
     alter.getOptions().getPasswordLockOptions(); // [PASSWORD EXPIRE INTERVAL 90 DAY, ACCOUNT LOCK]
 
+MySQL multi-factor authentication is part of the same model. ``CREATE USER`` keeps the
+second and third factor of ``IDENTIFIED ... AND IDENTIFIED ... [AND IDENTIFIED ...]`` in
+``UserAccount.getAdditionalAuthentications()``, and the temporary first factor of a
+passwordless plugin, ``IDENTIFIED WITH plugin INITIAL AUTHENTICATION IDENTIFIED ...``, in
+``UserAuthentication.getInitialAuthentication()``. ``ALTER USER`` keeps
+``{ADD | MODIFY} n FACTOR IDENTIFIED ...``, ``DROP n FACTOR`` and the registration steps
+``n FACTOR INITIATE REGISTRATION``, ``n FACTOR FINISH REGISTRATION SET CHALLENGE_RESPONSE AS
+'...'`` and ``n FACTOR UNREGISTER`` as ``UserFactorOperation`` objects (operation, factor
+number, authentication or challenge response) in ``UserAccount.getFactorOperations()``. As
+on the server, an account takes one or two changes of the same kind, and the factor number
+is checked only when the statement runs.
+
+.. code-block:: java
+
+    AlterUser factors = (AlterUser) CCJSqlParserUtil.parse(
+        "ALTER USER app ADD 2 FACTOR IDENTIFIED WITH authentication_ldap_sasl AS 'uid=app' "
+            + "ADD 3 FACTOR IDENTIFIED WITH authentication_webauthn");
+    UserFactorOperation second = factors.getAccounts().get(0).getFactorOperations().get(0);
+    second.getOperation();                  // ADD
+    second.getFactor();                     // 2
+    second.getAuthentication().getPlugin(); // authentication_ldap_sasl
+
 ``ALTER USER USER() ...`` keeps ``USER()`` as the unquoted account name, as
 ``DEFINER = CURRENT_USER`` does; ``isUserFunction()`` identifies it.
 ``ALTER USER acct DEFAULT ROLE {NONE | ALL | role, ...}`` stores a ``RoleSelection`` in
