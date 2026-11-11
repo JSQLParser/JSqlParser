@@ -158,6 +158,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **Routine changes** | `ALTER FUNCTION` · `ALTER PROCEDURE` · `ALTER ROUTINE` · PostgreSQL `ALTER TRIGGER` |
 | **MySQL metadata statements** | `SHOW [FULL] COLUMNS`/`FIELDS` · `SHOW TABLE STATUS` · `SHOW CREATE TABLE`/`VIEW`/`PROCEDURE`/`FUNCTION`/`TRIGGER`/`EVENT`/`DATABASE`/`USER` |
 | **PostgreSQL administration** | `CREATE`/`ALTER EVENT TRIGGER` · `REINDEX` · `SECURITY LABEL` |
+| **PostgreSQL types and rules** | `CREATE TYPE` (shell, composite, enum, range and base types) · `ALTER TYPE` · `CREATE RULE` · `ALTER RULE` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |
 | **Salesforce SOQL** | `INCLUDES` · `EXCLUDES` |
 

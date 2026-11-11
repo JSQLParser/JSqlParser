@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
@@ -1193,4 +1194,10 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         return null;
     }
 
+
+    @Override
+    public <S> T visit(AlterRule statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
+        return null;
+    }
 }

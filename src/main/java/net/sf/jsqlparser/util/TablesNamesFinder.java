@@ -129,6 +129,7 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -3442,6 +3443,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterTrigger statement, S context) {
+        visit(statement.getTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRule statement, S context) {
         visit(statement.getTable(), context);
         return null;
     }

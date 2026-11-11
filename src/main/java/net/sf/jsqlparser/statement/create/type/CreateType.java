@@ -41,6 +41,11 @@ public class CreateType extends ASTNodeAccessImpl implements Statement {
 
     @Override
     public String toString() {
-        return "CREATE TYPE " + name + (definition == null ? "" : " AS " + definition);
+        if (definition == null) {
+            return "CREATE TYPE " + name;
+        }
+        // only a base type definition follows the name directly
+        return "CREATE TYPE " + name + (definition instanceof BaseTypeDefinition ? " " : " AS ")
+                + definition;
     }
 }

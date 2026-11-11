@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.CascadeBehavior;
+import net.sf.jsqlparser.statement.DefinitionElement;
 import net.sf.jsqlparser.statement.create.type.TypeAttribute;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -31,6 +32,7 @@ public class AlterType extends ASTNodeAccessImpl implements Statement {
     private boolean ifNotExists;
     private CascadeBehavior behavior;
     private List<AttributeChange> attributeChanges = new ArrayList<>();
+    private List<DefinitionElement> properties = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -120,13 +122,27 @@ public class AlterType extends ASTNodeAccessImpl implements Statement {
         this.attributeChanges = attributeChanges;
     }
 
+    /**
+     * The properties of {@code SET (property = value, ...)}, which changes a base type. PostgreSQL
+     * checks the property names when it runs the statement, so they are not restricted here.
+     *
+     * @return the properties in source order, empty for another action
+     */
+    public List<DefinitionElement> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<DefinitionElement> properties) {
+        this.properties = properties;
+    }
+
     @Override
     public <T, S> T accept(StatementVisitor<T> visitor, S context) {
         return visitor.visit(this, context);
     }
 
     public enum Action {
-        OWNER, RENAME, SET_SCHEMA, RENAME_ATTRIBUTE, ADD_VALUE, RENAME_VALUE, ATTRIBUTES
+        OWNER, RENAME, SET_SCHEMA, RENAME_ATTRIBUTE, ADD_VALUE, RENAME_VALUE, ATTRIBUTES, SET_PROPERTIES
     }
     public enum Position {
         BEFORE, AFTER
@@ -237,6 +253,9 @@ public class AlterType extends ASTNodeAccessImpl implements Statement {
             case ATTRIBUTES:
                 sql.append(attributeChanges.stream().map(Object::toString)
                         .collect(Collectors.joining(", ")));
+                break;
+            case SET_PROPERTIES:
+                sql.append("SET ").append(DefinitionElement.toString(properties));
                 break;
             default:
                 throw new IllegalStateException("Unknown type alteration: " + action);

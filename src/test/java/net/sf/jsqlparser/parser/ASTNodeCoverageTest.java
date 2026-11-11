@@ -142,6 +142,10 @@ public class ASTNodeCoverageTest {
                 "IF a = 1 SELECT 1;",
                 "BEGIN SELECT 1; END;",
                 "DISCARD TEMPORARY", "LISTEN \"Ch 1\"", "UNLISTEN *",
+                "ALTER RULE \"Rule 1\" ON s.t RENAME TO r2",
+                "CREATE TYPE s.box3 (INPUT = s.box3_in, PASSEDBYVALUE, INTERNALLENGTH = - 1, "
+                        + "ELEMENT = setof float8[], LIKE = t.a%TYPE, DEFAULT = E'x', x = extended)",
+                "ALTER TYPE box3 SET (SEND = NONE, STORAGE = plain, x = +1.5, y = varchar(3))",
                 "SHOW TRANSACTION ISOLATION LEVEL", "RESET SESSION AUTHORIZATION",
                 "COPY s.t (a) TO STDOUT WITH NULL AS 'x' CSV FORCE QUOTE a, \"B\"",
                 "COPY BINARY t FROM STDIN FREEZE ENCODING 'UTF8'",

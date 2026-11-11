@@ -121,7 +121,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterTextSearchConfiguration,
-                    Feature.alterCollation,
+                    Feature.alterCollation, Feature.alterRule,
                     Feature.alterTablespace,
                     Feature.alterEventTrigger, Feature.alterEvent,
                     Feature.alterPolicy, Feature.alterStatistics,
