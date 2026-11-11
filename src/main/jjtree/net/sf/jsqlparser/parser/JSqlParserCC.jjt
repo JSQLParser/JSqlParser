@@ -1093,14 +1093,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     private boolean isKeywordJsonPathName() {
         Token colon = getToken(0);
-        Token word = getToken(1);
-        if (colon == null || !":".equals(colon.image) || word.image == null
-                || word.kind == S_IDENTIFIER || word.kind == S_QUOTED_IDENTIFIER
-                || "(".equals(getToken(2).image)) {
+        return colon != null && ":".equals(colon.image) && isKeywordWord(1);
+    }
+
+    /**
+     * Whether the token at the given position is a word that is no identifier token, i.e. a keyword,
+     * and not the name of a function call.
+     */
+    private boolean isKeywordWord(int position) {
+        Token word = getToken(position);
+        if (word.image == null || word.kind == S_IDENTIFIER || word.kind == S_QUOTED_IDENTIFIER
+                || "(".equals(getToken(position + 1).image)) {
             return false;
         }
         String image = word.image;
-        if (!Character.isLetter(image.charAt(0)) && image.charAt(0) != '_') {
+        if (image.isEmpty() || (!Character.isLetter(image.charAt(0)) && image.charAt(0) != '_')) {
             return false;
         }
         for (int i = 1; i < image.length(); i++) {
@@ -1109,6 +1116,51 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
         }
         return true;
+    }
+
+    /**
+     * Whether the path after the ":" of a JSON path, which starts with an identifier, goes on with a
+     * keyword after a ".", e.g. v:a.output or v:a[0].b.from. The expression parser would read such a
+     * path as a qualified column name, which does not take a keyword as a part.
+     */
+    private boolean isJsonPathWithKeywordAfterDot() {
+        Token colon = getToken(0);
+        if (colon == null || !":".equals(colon.image)) {
+            return false;
+        }
+        Token first = getToken(1);
+        if (first.kind != S_IDENTIFIER && first.kind != S_QUOTED_IDENTIFIER) {
+            return false;
+        }
+        int position = 2;
+        while (true) {
+            Token token = getToken(position);
+            if (".".equals(token.image)) {
+                if (isKeywordWord(position + 1)) {
+                    return true;
+                }
+                Token name = getToken(position + 1);
+                if (name.kind != S_IDENTIFIER && name.kind != S_QUOTED_IDENTIFIER) {
+                    return false;
+                }
+                position += 2;
+            } else if ("[".equals(token.image)) {
+                int depth = 0;
+                do {
+                    token = getToken(position);
+                    if ("[".equals(token.image)) {
+                        depth++;
+                    } else if ("]".equals(token.image)) {
+                        depth--;
+                    } else if (token.kind == EOF) {
+                        return false;
+                    }
+                    position++;
+                } while (depth > 0);
+            } else {
+                return false;
+            }
+        }
     }
 
     private boolean isPostgreSqlJsonAccess(Token token) {
@@ -14976,7 +15028,7 @@ Expression JsonPathElement() #void:
 { Expression element; }
 {
     (
-        LOOKAHEAD({ isKeywordJsonPathName() }) element=JsonPathKeyword()
+        LOOKAHEAD({ isKeywordJsonPathName() || isJsonPathWithKeywordAfterDot() }) element=JsonPathKeyword()
         |
         LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) element=Expression()
         |
@@ -15004,20 +15056,37 @@ Expression JsonPathKeyword() #void:
         keyword = getNextToken();
         element = linkToLastToken(new Column(keyword.image));
     }
-    ( LOOKAHEAD(2) { linkASTIfMissing(element, first); } step=NavigationStep(element) { element = step; } )*
+    ( LOOKAHEAD(2) step=JsonPathStep(element) { element = linked(step, first); } )*
     (
-        LOOKAHEAD(2) { linkASTIfMissing(element, first); } "::" type=ColDataType() {
+        LOOKAHEAD(2) "::" type=ColDataType() {
             cast = new CastExpression();
             cast.setUseCastKeyword(false);
             cast.setLeftExpression(element);
             cast.setColDataType(type);
-            element = cast;
+            element = linked(cast, first);
         }
     )*
     {
         int arithFloor = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 2 : 4;
         return prattArithRest(element, first, arithFloor);
     }
+}
+
+/**
+ * A navigation step within a JSON path, where a keyword after a "." names a path element as well:
+ * v:a.output, v:a[0].from.
+ */
+Expression JsonPathStep(Expression base) #void:
+{ Expression step; }
+{
+    (
+        LOOKAHEAD({ ".".equals(getToken(1).image) && isKeywordWord(2) }) "." {
+            step = new RowGetExpression(base, getNextToken().image);
+        }
+        |
+        step=NavigationStep(base)
+    )
+    { return step; }
 }
 
 JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String>> idents) : {

@@ -112,6 +112,36 @@ class JsonExpressionTest {
         assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"select", "from", "where", "join", "union", "and", "or", "not", "case",
+            "when", "else", "as", "is", "like", "having", "distinct", "inner", "into", "with",
+            "outer", "cross", "using", "output", "null", "true", "false", "order", "group"})
+    void testSnowflakeKeywordAfterDotInPath(String keyword) throws JSQLParserException {
+        String sqlStr = "SELECT v:a." + keyword + ", v:a.b." + keyword + "::INT, v:a[0]." + keyword
+                + ".x[1] FROM vartab";
+        PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(i).getExpression());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT v:a.output + 1, \"F\".\"X\":\"a\".from::VARIANT AS y FROM t F",
+            "SELECT * FROM t WHERE v:payload.output::INT = 1 ORDER BY v:payload.from",
+            "SELECT v:a.output FROM t, lateral flatten(input => t.v:a.input.where) f"})
+    void testKeywordAfterDotInPathInContext(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+    }
+
+    @Test
+    void testKeywordAfterDotOutsideJsonPathIsStillRejected() {
+        // a reserved word is not a part of a qualified name, only of a JSON path
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT t.output FROM t",
+                        parser -> parser.withDialect(Dialect.SNOWFLAKE)));
+    }
+
     @Test
     void testKeywordFollowedByParenthesisStaysFunction() throws JSQLParserException {
         // only parsing is asserted: a function behind ":" deparses with "."
