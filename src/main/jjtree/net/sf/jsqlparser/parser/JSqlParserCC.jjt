@@ -73,6 +73,7 @@ import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.macro.*;
+import net.sf.jsqlparser.statement.create.spatial.*;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
@@ -2797,6 +2798,91 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             throw new ParseException("Unknown FLUSH option: " + keyword);
         }
         return kind;
+    }
+
+    /** MySQL statements that MariaDB does not have are read with the MySQL dialect or none. */
+    private boolean isMySqlOnlyStatementDialect(boolean orNone) {
+        String dialect = getAsString(Feature.dialect);
+        return orNone && dialect == null || Dialect.MYSQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether MySQL's SPATIAL REFERENCE SYSTEM follows CREATE or DROP. The MySQL dialect has no
+     * other statement that continues with SPATIAL but CREATE SPATIAL INDEX, so there a misspelled
+     * object type is an error; without a dialect only the three words select the statement.
+     */
+    private boolean isSpatialReferenceSystemAhead() {
+        if (getToken(1).kind != K_SPATIAL) {
+            return false;
+        }
+        return isMySqlOnlyStatementDialect(false) && getToken(2).kind != K_INDEX
+                || isMySqlOnlyStatementDialect(true) && isWordAt(2, "REFERENCE")
+                    && getToken(3).kind == K_SYSTEM;
+    }
+
+    /**
+     * Whether MySQL's ALTER INSTANCE follows ALTER. Without a dialect, one of its actions must
+     * follow; other text stays an unsupported statement.
+     */
+    private boolean isAlterInstanceAhead() {
+        if (!isWordAt(1, "INSTANCE")) {
+            return false;
+        }
+        int action = getToken(2).kind;
+        return isMySqlOnlyStatementDialect(false)
+                || isMySqlOnlyStatementDialect(true) && (action == K_ENABLE || action == K_DISABLE
+                    || isWordAt(2, "ROTATE") || isWordAt(2, "RELOAD"));
+    }
+
+    private boolean isSpatialReferenceSystemAttributeAhead() {
+        return getToken(1).kind == K_NAME || isKeywordAhead("DEFINITION")
+                || isKeywordAhead("ORGANIZATION") || isKeywordAhead("DESCRIPTION");
+    }
+
+    /**
+     * Whether MySQL reads the token as a plain string: quoted with ' or ", without a prefix such
+     * as N or _utf8. A double-quoted token is a string in MySQL's default SQL mode.
+     */
+    private static boolean isMySqlTextString(Token token) {
+        return token.image.startsWith("'") || token.image.startsWith("\"");
+    }
+
+    /**
+     * The number MySQL reads as an SRID or an organization's identifier: an unsigned integer up to
+     * 2^64 - 1, 0x... with a lower-case x, or X'...' with whole bytes. The server checks the range
+     * of the value when it runs the statement.
+     */
+    private Expression spatialReferenceSystemNumber(Token token) throws ParseException {
+        boolean valid;
+        if (token.kind == S_HEX) {
+            valid = token.image.matches("[Xx]'([0-9A-Fa-f]{2})*'|0x[0-9A-Fa-f]+");
+        } else {
+            valid = token.image.matches("[0-9]+")
+                    && new java.math.BigInteger(token.image).bitLength() <= 64;
+        }
+        requireDdlSyntax(valid, "Expected an unsigned integer: " + token.image);
+        Expression number = token.kind == S_HEX ? new HexValue(token.image)
+                : new LongValue(token.image);
+        linkAST((ASTNodeAccess) number, token, token);
+        return number;
+    }
+
+    /**
+     * The word of ALTER INSTANCE that MySQL reads as an identifier and compares with a fixed name:
+     * plain or in backticks, and where {@code text} is set also a string.
+     */
+    private static String alterInstanceWord(Token token, boolean text) throws ParseException {
+        String image = token.image;
+        if (token.kind == S_IDENTIFIER) {
+            return image;
+        }
+        if (image.startsWith("`")) {
+            return image.substring(1, image.length() - 1).replace("``", "`");
+        }
+        if (text && isMySqlTextString(token)) {
+            return new StringValue(image).getValue();
+        }
+        throw new ParseException("Unexpected " + image + " in ALTER INSTANCE");
     }
 
     /**
@@ -6694,6 +6780,147 @@ BackupLockStatement BackupLockStatement():
         <K_UNLOCK> ContextualKeyword("INSTANCE") { statement.setAction(BackupLockStatement.Action.UNLOCK); }
     )
     { return statement; }
+}
+
+/**
+ * MySQL ALTER INSTANCE, after ALTER. MySQL reads INNODB, BINLOG and REDO_LOG as identifiers that
+ * it compares with these names, and the engine of ROTATE also as a string.
+ */
+// https://dev.mysql.com/doc/refman/8.4/en/alter-instance.html
+AlterInstance AlterInstance():
+{
+    AlterInstance statement;
+    Token word;
+    String name;
+    String channel;
+}
+{
+    ContextualKeyword("INSTANCE")
+    (
+        (
+            <K_ENABLE> { statement = new AlterInstance(AlterInstance.Action.ENABLE_INNODB_REDO_LOG); }
+            |
+            <K_DISABLE> { statement = new AlterInstance(AlterInstance.Action.DISABLE_INNODB_REDO_LOG); }
+        )
+        word=AlterInstanceWord()
+        { requireDdlSyntax("INNODB".equalsIgnoreCase(alterInstanceWord(word, false)), "Expected INNODB but found " + word.image); }
+        word=AlterInstanceWord()
+        { requireDdlSyntax("REDO_LOG".equalsIgnoreCase(alterInstanceWord(word, false)), "Expected REDO_LOG but found " + word.image); }
+        |
+        LOOKAHEAD({ isKeywordAhead("ROTATE") }) ContextualKeyword("ROTATE") word=AlterInstanceWord()
+        {
+            name = alterInstanceWord(word, true);
+            requireDdlSyntax("INNODB".equalsIgnoreCase(name) || "BINLOG".equalsIgnoreCase(name),
+                    "Expected INNODB or BINLOG but found " + word.image);
+            statement = new AlterInstance("INNODB".equalsIgnoreCase(name)
+                    ? AlterInstance.Action.ROTATE_INNODB_MASTER_KEY
+                    : AlterInstance.Action.ROTATE_BINLOG_MASTER_KEY);
+        }
+        ContextualKeyword("MASTER") <K_KEY>
+        |
+        ContextualKeyword("RELOAD")
+        (
+            LOOKAHEAD({ isKeywordAhead("KEYRING") }) ContextualKeyword("KEYRING")
+            { statement = new AlterInstance(AlterInstance.Action.RELOAD_KEYRING); }
+            |
+            ContextualKeyword("TLS") { statement = new AlterInstance(AlterInstance.Action.RELOAD_TLS); }
+            [
+                <K_FOR> ContextualKeyword("CHANNEL") channel=RelObjectName()
+                {
+                    // a double-quoted name is a string in MySQL, which takes an identifier here
+                    requireDdlSyntax(!channel.startsWith("\"") && !channel.startsWith("["),
+                            "Expected a channel name but found " + channel);
+                    statement.setChannel(channel);
+                }
+            ]
+            [ <K_NO> <K_ROLLBACK> <K_ON> <K_ERROR> { statement.setNoRollbackOnError(true); } ]
+        )
+    )
+    { return statement; }
+}
+
+Token AlterInstanceWord():
+{ Token token; }
+{
+    ( token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER> | token=<S_CHAR_LITERAL> )
+    { return token; }
+}
+
+/**
+ * MySQL CREATE [OR REPLACE] SPATIAL REFERENCE SYSTEM [IF NOT EXISTS] srid srs_attribute ...,
+ * after CREATE [OR REPLACE]. The attributes come in any order; the server, not its grammar, reports
+ * a repeated or a missing one.
+ */
+// https://dev.mysql.com/doc/refman/8.4/en/create-spatial-reference-system.html
+CreateSpatialReferenceSystem CreateSpatialReferenceSystem(boolean orReplace):
+{
+    CreateSpatialReferenceSystem statement;
+    boolean ifNotExists = false;
+    Expression srid;
+    SpatialReferenceSystemAttribute attribute;
+}
+{
+    <K_SPATIAL> ContextualKeyword("REFERENCE") <K_SYSTEM>
+    [
+        <K_IF> <K_NOT> <K_EXISTS>
+        { requireDdlSyntax(!orReplace, "CREATE OR REPLACE SPATIAL REFERENCE SYSTEM does not take IF NOT EXISTS"); ifNotExists = true; }
+    ]
+    srid=SpatialReferenceSystemNumber()
+    {
+        statement = new CreateSpatialReferenceSystem(srid).withOrReplace(orReplace)
+                .withIfNotExists(ifNotExists);
+    }
+    (
+        LOOKAHEAD({ isSpatialReferenceSystemAttributeAhead() })
+        attribute=SpatialReferenceSystemAttribute() { statement.addAttributes(attribute); }
+    )*
+    { return statement; }
+}
+
+SpatialReferenceSystemAttribute SpatialReferenceSystemAttribute():
+{
+    Token first = getToken(1);
+    SpatialReferenceSystemAttribute attribute;
+    StringValue value;
+    Expression organizationId;
+}
+{
+    (
+        <K_NAME> value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.NAME, value); }
+        |
+        LOOKAHEAD({ isKeywordAhead("DEFINITION") })
+        ContextualKeyword("DEFINITION") value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.DEFINITION, value); }
+        |
+        LOOKAHEAD({ isKeywordAhead("DESCRIPTION") })
+        ContextualKeyword("DESCRIPTION") value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.DESCRIPTION, value); }
+        |
+        ContextualKeyword("ORGANIZATION") value=SpatialReferenceSystemString()
+        <K_IDENTIFIED> <K_BY> organizationId=SpatialReferenceSystemNumber()
+        { attribute = new SpatialReferenceSystemAttribute(value, organizationId); }
+    )
+    { return linked(attribute, first); }
+}
+
+/** A plain MySQL string; the grammar takes no prefix and no adjacent strings here. */
+StringValue SpatialReferenceSystemString():
+{ Token token; }
+{
+    ( token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> )
+    {
+        requireDdlSyntax(isMySqlTextString(token), "Expected a string but found " + token.image);
+        return stringValue(token);
+    }
+}
+
+/** The SRID, or the identifier an organization gives the system, as written. */
+Expression SpatialReferenceSystemNumber():
+{ Token token; }
+{
+    ( token=<S_LONG> | token=<S_HEX> )
+    { return spatialReferenceSystemNumber(token); }
 }
 
 LockStatement.Target LockTarget():
@@ -22770,9 +22997,14 @@ void DropTargets(Drop drop):
     TransformSignature transform;
     OperatorSignature operator;
     Table name;
+    Expression srid;
 }
 {
     (
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.SPATIAL_REFERENCE_SYSTEM })
+        srid=SpatialReferenceSystemNumber()
+        { drop.addNames(linkToLastToken(new Table(srid.toString(), false))); }
+        |
         LOOKAHEAD({ drop.getObjectType().hasRoutineTargets() })
         routine=RoutineReference(aggregate) { drop.addRoutines(routine); }
         ( "," routine=RoutineReference(aggregate) { drop.addRoutines(routine); } )*
@@ -22912,6 +23144,10 @@ Drop Drop():
             | ContextualKeyword("TEMPLATE") { multiWordType = "TEXT SEARCH TEMPLATE"; }
         )
         |
+        // MySQL DROP SPATIAL REFERENCE SYSTEM [IF EXISTS] srid
+        LOOKAHEAD({ isSpatialReferenceSystemAhead() })
+        <K_SPATIAL> ContextualKeyword("REFERENCE") <K_SYSTEM> { multiWordType = "SPATIAL REFERENCE SYSTEM"; }
+        |
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
         |
@@ -23028,6 +23264,11 @@ Drop Drop():
                 || DropLookahead.isResourceGroupTarget(drop) && dropArgs.isEmpty()
                     && indexTable == null && indexOptions.isEmpty() && behavior == null,
                 "DROP RESOURCE GROUP takes one group name and FORCE");
+        // MySQL's DROP SPATIAL REFERENCE SYSTEM ends with the SRID
+        requireDdlSyntax(drop.getObjectType() != Drop.ObjectType.SPATIAL_REFERENCE_SYSTEM
+                || dropArgs.isEmpty() && indexTable == null && indexOptions.isEmpty()
+                    && behavior == null && !drop.isMaterialized(),
+                "Unexpected clause in DROP " + drop.getType());
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
         }
@@ -24704,6 +24945,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD({ isAlterInstanceAhead() }) statement = AlterInstance()
+                |
                 LOOKAHEAD(<K_FOREIGN> <K_DATA>) statement = AlterForeignDataWrapper()
                 |
                 LOOKAHEAD({ isKeywordAhead("SERVER") }) statement = AlterServer()
@@ -26824,6 +27067,9 @@ Statement Create():
         statement = CreateTablespace()
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
+        |
+        LOOKAHEAD({ isSpatialReferenceSystemAhead() })
+        statement = CreateSpatialReferenceSystem(isUsingOrReplace)
         |
         LOOKAHEAD({ isMySqlCreateRoleAhead() }) statement = MySqlCreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }

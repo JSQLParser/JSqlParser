@@ -60,6 +60,7 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -76,6 +77,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
@@ -988,6 +990,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(CreateTablespace statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateSpatialReferenceSystem statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateSpatialReferenceSystem statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterInstance statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterInstance statement) {
         visit(statement, null);
     }
 

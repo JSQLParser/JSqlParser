@@ -483,6 +483,18 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.alter.AlterTablespace
      */
     alterTablespace,
+    /**
+     * MySQL "CREATE SPATIAL REFERENCE SYSTEM" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem
+     */
+    createSpatialReferenceSystem,
+    /**
+     * MySQL "ALTER INSTANCE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterInstance
+     */
+    alterInstance,
 
 
     /**

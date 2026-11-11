@@ -176,6 +176,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**
       - MySQL and PostgreSQL ``CREATE TABLESPACE`` · ``ALTER TABLESPACE``
+    * - **MySQL spatial reference systems and instance**
+      - ``CREATE``/``DROP SPATIAL REFERENCE SYSTEM`` · ``ALTER INSTANCE``
     * - **PostgreSQL RLS**
       - ``CREATE POLICY`` · ``ALTER TABLE … ENABLE``/``DISABLE``/``FORCE``/``NO FORCE ROW LEVEL SECURITY``
     * - **Routine changes**
