@@ -1101,9 +1101,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
             // SELECT .. INTO <table> materialises rows instead of returning them, so the
             // RETURNS_RESULT_SET claimed by the statement visit has to be withdrawn
-            boolean into = plainSelect.getIntoTables() != null
-                    && !plainSelect.getIntoTables().isEmpty()
-                    || plainSelect.getIntoTempTable() != null;
+            boolean into = plainSelect.getIntoClause() != null
+                    && !plainSelect.getIntoClause().getTables().isEmpty();
             if (into) {
                 analysis.certain(StmtFeature.MODIFIES_DATA, StmtFeature.MODIFIES_SCHEMA);
                 analysis.certain.remove(StmtFeature.RETURNS_RESULT_SET);

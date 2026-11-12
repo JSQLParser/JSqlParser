@@ -30,7 +30,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.doStatement,
                     Feature.exprLike,
                     Feature.exprSimilarTo, // https://www.postgresql.org/docs/current/sql-select.html
-                    Feature.select,
+                    Feature.select, // https://www.postgresql.org/docs/current/sql-selectinto.html
+                    Feature.selectInto,
                     Feature.tableStatement,
                     Feature.selectGroupBy, Feature.function, Feature.tableFunction,
                     Feature.lateralSubSelect,
