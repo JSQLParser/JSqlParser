@@ -155,7 +155,8 @@ public enum MariaDbVersion implements Version {
                     Feature.showColumns, // https://mariadb.com/kb/en/show-index/
                     Feature.showIndex, // https://mariadb.com/kb/en/show-table-status/
                     Feature.showTableStatus, // https://mariadb.com/kb/en/show-create-table/
-                    Feature.showCreate, // https://mariadb.com/kb/en/use/
+                    Feature.showCreate, // https://mariadb.com/kb/en/show/
+                    Feature.mySqlShow, // https://mariadb.com/kb/en/use/
                     Feature.use, // https://mariadb.com/kb/en/grant/
                     Feature.grant, // https://mariadb.com/kb/en/revoke/
                     Feature.revoke, // https://mariadb.com/kb/en/commit/

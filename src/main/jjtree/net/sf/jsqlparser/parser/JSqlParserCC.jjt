@@ -2614,6 +2614,79 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
     }
 
+    /** Whether the token at the position is an identifier spelled as one of the words. */
+    private boolean isAnyWordAt(int position, String... words) {
+        Token token = getToken(position);
+        if (token.kind != S_IDENTIFIER) {
+            return false;
+        }
+        for (String word : words) {
+            if (word.equalsIgnoreCase(token.image)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The MySQL server SHOW statements are read with Dialect.MYSQL or MARIADB, or without one. */
+    private boolean isMySqlShowDialect() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * MySQL 8.4 removed SHOW MASTER STATUS, MASTER LOGS, SLAVE STATUS and SLAVE HOSTS, so they are
+     * read with Dialect.MARIADB or without a dialect only.
+     */
+    private boolean isLegacyMySqlShowDialect() {
+        return !Dialect.MYSQL.name().equals(getAsString(Feature.dialect));
+    }
+
+    /** [GLOBAL | SESSION | LOCAL] VARIABLES or STATUS follows. */
+    private boolean isShowVariablesAhead() {
+        int kind = getToken(1).kind;
+        return isAnyWordAt(kind == K_GLOBAL || kind == K_SESSION || kind == K_LOCAL ? 2 : 1,
+                "VARIABLES", "STATUS");
+    }
+
+    /**
+     * A MySQL text string: '...' or "..." without a prefix or introducer. The lexer reads "..." as
+     * a string with a MySQL dialect and as a quoted identifier without one.
+     */
+    private boolean isMySqlTextStringAt(int position) {
+        Token token = getToken(position);
+        char quote = token.image == null || token.image.isEmpty() ? ' ' : token.image.charAt(0);
+        return token.kind == S_CHAR_LITERAL && (quote == '\'' || quote == '"')
+                || token.kind == S_QUOTED_IDENTIFIER && quote == '"';
+    }
+
+    /**
+     * Whether the lookahead of a SHOW statement has scanned the WHERE of its filter: a WHERE lies
+     * between the last consumed token and the scan position.
+     */
+    private boolean isShowWhereScanned() {
+        Token scanned = getToken(1);
+        for (Token t = token.next; t != null && t != scanned; t = t.next) {
+            if (t.kind == K_WHERE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** COUNT(*) with the parenthesis right after COUNT, as the MySQL lexer requires. */
+    private boolean isShowCountAhead() {
+        Token count = getToken(1);
+        Token parenthesis = getToken(2);
+        return count.kind == K_COUNT && "(".equals(parenthesis.image)
+                && parenthesis.beginLine == count.endLine
+                && parenthesis.beginColumn == count.endColumn + 1;
+    }
+
+    /** FOR CHANNEL 'channel' follows. */
+    private boolean isShowChannelAhead() {
+        return getToken(1).kind == K_FOR && isAnyWordAt(2, "CHANNEL") && isMySqlTextStringAt(3);
+    }
+
     /**
      * Whether a MySQL CHECK, CHECKSUM, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or
      * TABLES must follow, so other uses of these words are unaffected.
@@ -8812,15 +8885,16 @@ Statement Show():
     Statement statement;
     List<String> captureRest;
     String name;
+    Token first;
 }
 {
-    <K_SHOW>
+    <K_SHOW> { first = getToken(1); }
     (
         // A typed form must span the whole statement; other dialects' trailing clauses
         // (e.g. Snowflake IN SCHEMA s, ClickHouse FORMAT f) still fall back to captureRest().
         LOOKAHEAD(ShowColumns() ShowStatementEnd()) statement = ShowColumns()
         |
-        LOOKAHEAD(2) statement = ShowIndex()
+        LOOKAHEAD(ShowIndex() ShowStatementEnd()) statement = ShowIndex()
         |
         LOOKAHEAD(2) statement = ShowTables()
         |
@@ -8834,6 +8908,15 @@ Statement Show():
         LOOKAHEAD(ConfigurationParameterName() ShowStatementEnd(),
                 { isConfigurationParameterPhraseAhead() && isPostgreSqlUtilityDialect() })
         name = ConfigurationParameterName() { statement = new ShowStatement(name); }
+        |
+        LOOKAHEAD(MySqlShow() ShowStatementEnd(), { isMySqlShowDialect() })
+        statement = MySqlShow()
+        {
+            if (getAsString(Feature.dialect) == null && token == first) {
+                // without a dialect, a single word stays a ShowStatement as before
+                statement = new ShowStatement(first.image);
+            }
+        }
         |
         // any of the RDBMS specific SHOW syntax
         captureRest = captureRest()
@@ -8853,7 +8936,8 @@ Statement Show():
 /**
  * Only used inside the SHOW lookaheads: a typed SHOW statement ends at a semicolon, the input end,
  * the ELSE or END of an enclosing IF or block, or the start of the next statement, as in
- * Statements().
+ * Statements(). A lookahead that has entered a WHERE filter ends there too: it sees the first
+ * condition only, because prattExpressionRest() reads the rest of the expression.
  */
 void ShowStatementEnd():
 {}
@@ -8866,16 +8950,142 @@ void ShowStatementEnd():
     |
     <K_END>
     |
-    LOOKAHEAD({ getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
+    LOOKAHEAD({ isShowWhereScanned() || getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
             && getToken(1).kind != K_UNPIVOT && isStatementStartAhead() }) {}
+}
+
+/** The {FROM | IN} db clause of the MySQL SHOW statements. */
+ShowDbSelection ShowDbSelection():
+{
+    ShowDbSelection selection = new ShowDbSelection();
+    String name;
+}
+{
+    ( <K_FROM> | <K_IN> { selection.setSelectionMode(ShowTablesStatement.SelectionMode.IN); } )
+    name = RelObjectName() { selection.setName(name); }
+    {
+        return selection;
+    }
+}
+
+/**
+ * The LIKE 'pattern' or WHERE expr filter of the MySQL SHOW statements. MySQL and MariaDB take a
+ * string literal as the pattern; without a dialect any simple expression is read, as before.
+ */
+ShowFilter ShowFilter():
+{
+    ShowFilter filter;
+    Expression expression;
+}
+{
+    (
+        <K_LIKE>
+        (
+            LOOKAHEAD({ isMySqlDialect() }) expression = ShowTextString()
+            |
+            LOOKAHEAD({ !isMySqlDialect() }) expression = SimpleExpression()
+        )
+        { filter = ShowFilter.like(expression); }
+        |
+        <K_WHERE> expression = Expression() { filter = ShowFilter.where(expression); }
+    )
+    {
+        return filter;
+    }
+}
+
+/** A MySQL text string, '...' or "...", where the server takes no other expression. */
+StringValue ShowTextString():
+{
+    Token token;
+    StringValue value;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL && isMySqlTextStringAt(1) })
+        token = <S_CHAR_LITERAL> { value = stringValue(token); }
+        |
+        LOOKAHEAD({ getToken(1).kind == S_QUOTED_IDENTIFIER && isMySqlTextStringAt(1) })
+        token = <S_QUOTED_IDENTIFIER>
+        {
+            value = linkToLastToken(new StringValue()
+                    .withValue(token.image.substring(1, token.image.length() - 1)).setQuoteStr("\""));
+        }
+    )
+    {
+        return value;
+    }
+}
+
+/**
+ * LIMIT [offset,] row_count or LIMIT row_count OFFSET offset of SHOW WARNINGS, ERRORS, PROFILE and
+ * BINLOG or RELAYLOG EVENTS.
+ */
+void ShowLimit(MySqlShowStatement statement):
+{
+    Limit limit = new Limit();
+    Offset offset = null;
+    Token first;
+    Token last;
+    Expression rowCount;
+    Expression second;
+}
+{
+    <K_LIMIT> { first = getToken(0); }
+    rowCount = ShowLimitOption() { limit.setRowCount(rowCount); last = getToken(0); }
+    [
+        "," second = ShowLimitOption()
+        { limit.setOffset(rowCount); limit.setRowCount(second); last = getToken(0); }
+        |
+        <K_OFFSET> second = ShowLimitOption() { offset = new Offset().withOffset(second); }
+    ]
+    {
+        linkAST(limit, first, last);
+        statement.setLimit(limit);
+        statement.setOffset(offset);
+    }
+}
+
+/** A limit value: an unsigned integer, a name (a stored program variable) or a ? parameter. */
+Expression ShowLimitOption():
+{
+    Token token = getToken(1);
+    String name;
+    JdbcParameter parameter;
+    Expression expression;
+}
+{
+    (
+        token = <S_LONG> { expression = linkToLastToken(new LongValue(token.image)); }
+        |
+        parameter = JdbcParameter() { expression = linked(parameter, token); }
+        |
+        LOOKAHEAD({ !isMySqlTextStringAt(1) }) name = RelObjectName()
+        { expression = linkToLastToken(new Column(name)); }
+    )
+    {
+        return expression;
+    }
+}
+
+/** FOR CHANNEL 'channel', checked by the caller's lookahead. */
+StringValue ShowChannel():
+{
+    StringValue channel;
+}
+{
+    <K_FOR> <S_IDENTIFIER> channel = ShowTextString()
+    {
+        return channel;
+    }
 }
 
 // https://dev.mysql.com/doc/refman/8.4/en/show-columns.html
 ShowColumnsStatement ShowColumns(): {
     ShowColumnsStatement statement = new ShowColumnsStatement();
     Table table;
-    String dbName;
-    Expression expression;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
     [ <K_EXTENDED> { statement.setExtended(true); } ]
@@ -8887,20 +9097,8 @@ ShowColumnsStatement ShowColumns(): {
         <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
     )
     table = Table() { statement.setTable(table); }
-    [
-        LOOKAHEAD(2)
-        (
-            <K_FROM>
-            |
-            <K_IN> { statement.setDbSelectionMode(ShowTablesStatement.SelectionMode.IN); }
-        )
-        dbName = RelObjectName() { statement.setDbName(dbName); }
-    ]
-    [
-        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
-        |
-        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
-    ]
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
     {
         return statement;
     }
@@ -8909,25 +9107,13 @@ ShowColumnsStatement ShowColumns(): {
 // https://dev.mysql.com/doc/refman/8.4/en/show-table-status.html
 ShowTableStatusStatement ShowTableStatus(): {
     ShowTableStatusStatement statement = new ShowTableStatusStatement();
-    String dbName;
-    Expression expression;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
     <K_TABLE> ContextualKeyword("STATUS")
-    [
-        LOOKAHEAD(2)
-        (
-            <K_FROM>
-            |
-            <K_IN> { statement.setSelectionMode(ShowTablesStatement.SelectionMode.IN); }
-        )
-        dbName = RelObjectName() { statement.setDbName(dbName); }
-    ]
-    [
-        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
-        |
-        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
-    ]
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
     {
         return statement;
     }
@@ -8982,14 +9168,310 @@ ShowCreateStatement ShowCreate(): {
     }
 }
 
+// https://dev.mysql.com/doc/refman/8.4/en/show-index.html
 ShowIndexStatement ShowIndex(): {
-    String tableName;
+    ShowIndexStatement statement = new ShowIndexStatement();
+    Table table;
+    ShowDbSelection dbSelection;
+    Expression condition;
 }
 {
-    <K_INDEX> <K_FROM> tableName = RelObjectName()
+    [ <K_EXTENDED> { statement.setExtended(true); } ]
+    (
+        <K_INDEX>
+        |
+        <K_KEYS> { statement.setKeyword(ShowIndexStatement.Keyword.KEYS); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "INDEXES") }) <S_IDENTIFIER>
+        { statement.setKeyword(ShowIndexStatement.Keyword.INDEXES); }
+    )
+    (
+        <K_FROM>
+        |
+        <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+    )
+    table = Table() { statement.setTable(table); }
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ <K_WHERE> condition = Expression() { statement.setWhereCondition(condition); } ]
     {
-        return new ShowIndexStatement(tableName);
+        return statement;
     }
+}
+
+/**
+ * The MySQL SHOW statements of MySqlShowStatement. Each alternative is chosen by its leading
+ * keywords, so a SHOW statement of another form fails the caller's lookahead at once.
+ */
+MySqlShowStatement MySqlShow():
+{
+    MySqlShowStatement statement = new MySqlShowStatement();
+    MySqlShowStatement.Scope scope = null;
+    boolean full = false;
+    Token token;
+    StringValue channel;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
+}
+{
+    (
+        // [GLOBAL | SESSION | LOCAL] {VARIABLES | STATUS} [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isShowVariablesAhead() })
+        [
+            <K_GLOBAL> { scope = MySqlShowStatement.Scope.GLOBAL; }
+            |
+            <K_SESSION> { scope = MySqlShowStatement.Scope.SESSION; }
+            |
+            <K_LOCAL> { scope = MySqlShowStatement.Scope.LOCAL; }
+        ]
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); statement.setScope(scope); }
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // [FULL] PROCESSLIST
+        LOOKAHEAD({ isAnyWordAt(getToken(1).kind == K_FULL ? 2 : 1, "PROCESSLIST") })
+        [ <K_FULL> { full = true; } ]
+        <S_IDENTIFIER> { statement.setKeyword("PROCESSLIST"); statement.setFull(full); }
+        |
+        // {DATABASES | SCHEMAS | CHARSET | COLLATION} [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isAnyWordAt(1, "DATABASES", "SCHEMAS", "CHARSET", "COLLATION") })
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); }
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // {CHARACTER | CHAR} SET [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ (getToken(1).kind == K_CHARACTER || "CHAR".equalsIgnoreCase(getToken(1).image))
+                && getToken(2).kind == K_SET })
+        (
+            <K_CHARACTER> { statement.setKeyword("CHARACTER SET"); }
+            |
+            ( <K_CHAR> | <DATA_TYPE> ) { statement.setKeyword("CHAR SET"); }
+        )
+        <K_SET>
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // {PROCEDURE | FUNCTION} STATUS [LIKE 'pattern' | WHERE expr] and {PROCEDURE | FUNCTION} CODE name
+        LOOKAHEAD({ (getToken(1).kind == K_PROCEDURE || getToken(1).kind == K_FUNCTION)
+                && isAnyWordAt(2, "STATUS", "CODE") })
+        ( token = <K_PROCEDURE> | token = <K_FUNCTION> )
+        (
+            LOOKAHEAD({ isAnyWordAt(1, "STATUS") }) <S_IDENTIFIER>
+            { statement.setKeyword(token.image + " STATUS"); }
+            [ filter = ShowFilter() { statement.setFilter(filter); } ]
+            |
+            <S_IDENTIFIER> { statement.setKeyword(token.image + " CODE"); }
+            ShowRoutineName(statement)
+        )
+        |
+        // {[FULL] TRIGGERS | EVENTS | OPEN TABLES} [{FROM | IN} db] [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isAnyWordAt(1, "TRIGGERS", "EVENTS")
+                || getToken(1).kind == K_FULL && isAnyWordAt(2, "TRIGGERS")
+                || getToken(1).kind == K_OPEN && getToken(2).kind == K_TABLES })
+        (
+            <K_OPEN> <K_TABLES> { statement.setKeyword("OPEN TABLES"); }
+            |
+            [ <K_FULL> { full = true; } ]
+            token = <S_IDENTIFIER> { statement.setKeyword(token.image); statement.setFull(full); }
+        )
+        [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // ENGINES, PLUGINS, PRIVILEGES, PROFILES, REPLICAS
+        LOOKAHEAD({ isAnyWordAt(1, "ENGINES", "PLUGINS", "PRIVILEGES", "PROFILES", "REPLICAS") })
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); }
+        |
+        // STORAGE ENGINES
+        LOOKAHEAD({ getToken(1).kind == K_STORAGE && isAnyWordAt(2, "ENGINES") })
+        <K_STORAGE> <S_IDENTIFIER> { statement.setKeyword("STORAGE ENGINES"); }
+        |
+        // BINARY LOGS and BINARY LOG STATUS
+        LOOKAHEAD({ getToken(1).kind == K_BINARY && (isAnyWordAt(2, "LOGS")
+                || getToken(2).kind == K_LOG && isAnyWordAt(3, "STATUS")) })
+        <K_BINARY>
+        (
+            <K_LOG> <S_IDENTIFIER> { statement.setKeyword("BINARY LOG STATUS"); }
+            |
+            <S_IDENTIFIER> { statement.setKeyword("BINARY LOGS"); }
+        )
+        |
+        // MASTER LOGS and MASTER STATUS, the spellings before MySQL 8.4
+        LOOKAHEAD({ isLegacyMySqlShowDialect() && isAnyWordAt(1, "MASTER")
+                && isAnyWordAt(2, "LOGS", "STATUS") })
+        <S_IDENTIFIER> token = <S_IDENTIFIER> { statement.setKeyword("MASTER " + token.image); }
+        |
+        // SLAVE HOSTS, the spelling of REPLICAS before MySQL 8.4
+        LOOKAHEAD({ isLegacyMySqlShowDialect() && getToken(1).kind == K_SLAVE && isAnyWordAt(2, "HOSTS") })
+        <K_SLAVE> <S_IDENTIFIER> { statement.setKeyword("SLAVE HOSTS"); }
+        |
+        // REPLICA STATUS [FOR CHANNEL 'channel']; SLAVE STATUS is the spelling before MySQL 8.4
+        LOOKAHEAD({ (isLegacyMySqlShowDialect() && getToken(1).kind == K_SLAVE || isAnyWordAt(1, "REPLICA"))
+                && isAnyWordAt(2, "STATUS") })
+        ( token = <K_SLAVE> | token = <S_IDENTIFIER> ) <S_IDENTIFIER>
+        { statement.setKeyword(token.image + " STATUS"); }
+        [ LOOKAHEAD({ isShowChannelAhead() }) channel = ShowChannel() { statement.setChannel(channel); } ]
+        |
+        // GRANTS [FOR account [USING role [, role] ...]]
+        LOOKAHEAD({ isAnyWordAt(1, "GRANTS") })
+        <S_IDENTIFIER> { statement.setKeyword("GRANTS"); }
+        [ ShowGrantsAccount(statement) ]
+        |
+        // {WARNINGS | ERRORS} [LIMIT ...]
+        LOOKAHEAD({ getToken(1).kind == K_ERRORS || isAnyWordAt(1, "WARNINGS") })
+        ( <K_ERRORS> { statement.setKeyword("ERRORS"); } | <S_IDENTIFIER> { statement.setKeyword("WARNINGS"); } )
+        [ ShowLimit(statement) ]
+        |
+        // COUNT(*) {WARNINGS | ERRORS}
+        LOOKAHEAD({ isShowCountAhead() })
+        <K_COUNT> "(" "*" ")"
+        (
+            <K_ERRORS> { statement.setKeyword("ERRORS"); }
+            |
+            LOOKAHEAD({ isAnyWordAt(1, "WARNINGS") }) <S_IDENTIFIER> { statement.setKeyword("WARNINGS"); }
+        )
+        { statement.setCount(true); }
+        |
+        // {BINLOG | RELAYLOG} EVENTS [IN 'log_name'] [FROM pos] [LIMIT ...] [FOR CHANNEL 'channel'],
+        // the channel only for RELAYLOG
+        LOOKAHEAD({ isAnyWordAt(1, "BINLOG", "RELAYLOG") && isAnyWordAt(2, "EVENTS") })
+        (
+            LOOKAHEAD({ isAnyWordAt(1, "BINLOG") })
+            <S_IDENTIFIER> <S_IDENTIFIER> { statement.setKeyword("BINLOG EVENTS"); }
+            ShowLogRange(statement)
+            |
+            <S_IDENTIFIER> <S_IDENTIFIER> { statement.setKeyword("RELAYLOG EVENTS"); }
+            ShowLogRange(statement)
+            [ LOOKAHEAD({ isShowChannelAhead() }) channel = ShowChannel() { statement.setChannel(channel); } ]
+        )
+        |
+        // ENGINE {engine_name | ALL} {STATUS | MUTEX | LOGS}
+        LOOKAHEAD({ getToken(1).kind == K_ENGINE })
+        <K_ENGINE> { statement.setKeyword("ENGINE"); }
+        ShowEngine(statement)
+        |
+        // PROFILE [type [, type] ...] [FOR QUERY n] [LIMIT ...]
+        LOOKAHEAD({ isAnyWordAt(1, "PROFILE") })
+        <S_IDENTIFIER> { statement.setKeyword("PROFILE"); }
+        ShowProfile(statement)
+    )
+    {
+        return statement;
+    }
+}
+
+/** The routine of SHOW {PROCEDURE | FUNCTION} CODE: name or db.name. */
+void ShowRoutineName(MySqlShowStatement statement):
+{
+    Token first = getToken(1);
+    String name;
+    String routine = null;
+    Table table;
+}
+{
+    name = RelObjectName() [ "." routine = RelObjectName() ]
+    {
+        table = routine == null ? new Table(name) : new Table(name, routine);
+        linkAST(table, first);
+        statement.setRoutineName(table);
+    }
+}
+
+/** {engine_name | ALL} {STATUS | MUTEX | LOGS} of SHOW ENGINE; the engine is a name or a string. */
+void ShowEngine(MySqlShowStatement statement):
+{
+    Token token;
+    String name;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL && isMySqlTextStringAt(1) })
+        token = <S_CHAR_LITERAL> { name = token.image; }
+        |
+        // RelObjectName() also reads ALL, which shows every engine
+        LOOKAHEAD({ getToken(1).kind != S_CHAR_LITERAL }) name = RelObjectName()
+    )
+    { statement.setEngineName(name); }
+    (
+        LOOKAHEAD({ isAnyWordAt(1, "STATUS") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.STATUS); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "MUTEX") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.MUTEX); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "LOGS") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.LOGS); }
+    )
+}
+
+/** [type [, type] ...] [FOR QUERY n] [LIMIT ...] of SHOW PROFILE. */
+void ShowProfile(MySqlShowStatement statement):
+{
+    List<MySqlShowStatement.ProfileType> types = new ArrayList<MySqlShowStatement.ProfileType>();
+    MySqlShowStatement.ProfileType type;
+    Token token;
+}
+{
+    [
+        type = ShowProfileType() { types.add(type); }
+        ( "," type = ShowProfileType() { types.add(type); } )*
+        { statement.setProfileTypes(types); }
+    ]
+    [
+        LOOKAHEAD(2) <K_FOR> <K_QUERY> token = <S_LONG>
+        { statement.setProfileQuery(linkToLastToken(new LongValue(token.image))); }
+    ]
+    [ ShowLimit(statement) ]
+}
+
+MySqlShowStatement.ProfileType ShowProfileType():
+{
+    Token token;
+    Token second = null;
+}
+{
+    (
+        token = <K_ALL>
+        |
+        LOOKAHEAD({ getToken(1).kind == K_BLOCK && isAnyWordAt(2, "IO") })
+        token = <K_BLOCK> second = <S_IDENTIFIER>
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "CONTEXT") && isAnyWordAt(2, "SWITCHES")
+                || isAnyWordAt(1, "PAGE") && isAnyWordAt(2, "FAULTS") })
+        token = <S_IDENTIFIER> second = <S_IDENTIFIER>
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "CPU", "IPC", "MEMORY", "SOURCE", "SWAPS") })
+        token = <S_IDENTIFIER>
+    )
+    {
+        return MySqlShowStatement.ProfileType
+                .fromKeyword(second == null ? token.image : token.image + " " + second.image);
+    }
+}
+
+/** FOR account [USING role [, role] ...] of SHOW GRANTS, read like the accounts of CREATE USER. */
+void ShowGrantsAccount(MySqlShowStatement statement):
+{
+    UserAccount account;
+    List<UserAccount> roles;
+}
+{
+    <K_FOR> account = MySqlAccountName() { statement.setAccount(account); }
+    [ <K_USING> roles = MySqlAccountNameList() { statement.setUsingRoles(roles); } ]
+}
+
+/** [IN 'log_name'] [FROM pos] [LIMIT ...] of SHOW BINLOG and RELAYLOG EVENTS. */
+void ShowLogRange(MySqlShowStatement statement):
+{
+    Token token;
+    StringValue logName;
+}
+{
+    [ <K_IN> logName = ShowTextString() { statement.setLogName(logName); } ]
+    [
+        LOOKAHEAD(2) <K_FROM>
+        (
+            token = <S_LONG> { statement.setPosition(linkToLastToken(new LongValue(token.image))); }
+            |
+            token = <S_DOUBLE> { statement.setPosition(linkToLastToken(new DoubleValue(token.image))); }
+        )
+    ]
+    [ ShowLimit(statement) ]
 }
 
 Statement RefreshMaterializedView(): {
@@ -9018,37 +9500,22 @@ Statement RefreshMaterializedView(): {
         }
     }
 }
-// https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
+// https://dev.mysql.com/doc/refman/8.4/en/show-tables.html
 ShowTablesStatement ShowTables(): {
-    ShowTablesStatement showTablesStatement;
-    EnumSet<ShowTablesStatement.Modifiers> modifiers =  EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
-    ShowTablesStatement.SelectionMode selectionMode = null;
-    String dbName = null;
-    Expression likeExpression = null;
-    Expression whereCondition = null;
+    ShowTablesStatement statement = new ShowTablesStatement();
+    EnumSet<ShowTablesStatement.Modifiers> modifiers = EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
-  [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
-  [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
-  <K_TABLES>
-  [
-    LOOKAHEAD(2) (
-        <K_FROM> { selectionMode = ShowTablesStatement.SelectionMode.FROM; }
-        |
-        <K_IN> { selectionMode = ShowTablesStatement.SelectionMode.IN; }
-    )
-    dbName = RelObjectName()
-  ]
-  [ (<K_LIKE> likeExpression = SimpleExpression() | <K_WHERE> whereCondition = Expression()) ]
-  {
-    showTablesStatement = new ShowTablesStatement();
-    showTablesStatement.setModifiers(modifiers);
-    showTablesStatement.setSelectionMode(selectionMode);
-    showTablesStatement.setDbName(dbName);
-    showTablesStatement.setLikeExpression(likeExpression);
-    showTablesStatement.setWhereCondition(whereCondition);
-    return showTablesStatement;
-  }
+    [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
+    [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
+    <K_TABLES> { statement.setModifiers(modifiers); }
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
+    {
+        return statement;
+    }
 }
 
 Values Values(): {

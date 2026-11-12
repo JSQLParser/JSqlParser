@@ -3162,21 +3162,71 @@ MySQL SHOW statements
 The MySQL statements that read table, column and object definitions parse to typed
 statements in every dialect:
 
+* ``SHOW [EXTENDED] [FULL] TABLES [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
+  ``ShowTablesStatement``, as before.
 * ``SHOW [EXTENDED] [FULL] {COLUMNS | FIELDS} {FROM | IN} t [{FROM | IN} db]
   [LIKE 'p' | WHERE expr]`` extends ``ShowColumnsStatement``. ``getTable()`` returns the
   ``Table``; ``getTableName()`` and ``setTableName(String)`` remain and are derived from it.
   ``isExtended()``, ``isFull()`` and ``isFieldsKeyword()`` record the modifiers and the
-  ``FIELDS`` spelling, ``getTableSelectionMode()`` and ``getDbSelectionMode()`` the
-  ``FROM``/``IN`` spelling, and ``getDbName()``, ``getLikeExpression()`` and
-  ``getWhereCondition()`` the optional clauses.
+  ``FIELDS`` spelling, and ``getTableSelectionMode()`` the ``FROM``/``IN`` spelling before
+  the table.
+* ``SHOW [EXTENDED] {INDEX | INDEXES | KEYS} {FROM | IN} t [{FROM | IN} db] [WHERE expr]``
+  extends ``ShowIndexStatement`` in the same way: ``getTable()``, ``isExtended()``,
+  ``getKeyword()`` (``INDEX``, ``INDEXES`` or ``KEYS``), ``getTableSelectionMode()``,
+  ``getDbSelection()`` and ``getWhereCondition()``. The ``String`` constructor,
+  ``getTableName()`` and ``setTableName(String)`` remain. ``SHOW INDEX FROM t FROM db``
+  used to fail.
 * ``SHOW TABLE STATUS [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
-  ``ShowTableStatusStatement``, with the same accessors as ``ShowTablesStatement``.
+  ``ShowTableStatusStatement``.
 * ``SHOW CREATE`` parses to ``ShowCreateStatement``. ``getObjectType()`` is ``TABLE``,
   ``VIEW``, ``PROCEDURE``, ``FUNCTION``, ``TRIGGER``, ``EVENT``, ``DATABASE`` or ``USER``.
   The first six name the object with ``getName()``, a ``Table``. ``DATABASE`` uses
   ``getDatabaseName()``, ``isSchemaKeyword()`` and ``isIfNotExists()``. ``USER`` uses
   ``getAccount()``, a ``UserAccount`` without authentication; ``isCurrentUser()`` and
   ``isCurrentUserParentheses()`` describe ``CURRENT_USER`` and ``CURRENT_USER()``.
+
+The ``{FROM | IN} db`` clause is a ``ShowDbSelection`` (``getSelectionMode()`` and
+``getName()``) and the ``LIKE 'p' | WHERE expr`` filter a ``ShowFilter`` (``getKind()`` and
+``getExpression()``). ``ShowTablesStatement``, ``ShowColumnsStatement``,
+``ShowTableStatusStatement`` and ``MySqlShowStatement`` return them from
+``getDbSelection()`` and ``getFilter()``; ``ShowIndexStatement`` has the database clause
+only. The separate accessors remain and read and write these values:
+``getSelectionMode()``/``getDbSelectionMode()``, ``getDbName()``, ``getLikeExpression()``
+and ``getWhereCondition()``. A selection mode set before the database name is kept for it.
+A statement holds one filter, so ``setWhereCondition`` replaces a ``LIKE`` filter and
+``setLikeExpression`` a ``WHERE`` filter; ``ShowTablesStatement`` used to keep and render
+both. ``ShowTablesStatement.toString()`` no longer fails without modifiers or without a
+selection mode.
+
+The other `MySQL 8.4 SHOW statements <https://dev.mysql.com/doc/refman/8.4/en/show.html>`_
+parse to ``MySqlShowStatement``. ``getKind()`` tells which one it is and ``getKeyword()``
+how its keywords were spelled:
+
+* ``VARIABLES`` and ``STATUS`` take a scope and a filter;
+* ``PROCESSLIST`` takes ``FULL``;
+* ``DATABASES`` (also ``SCHEMAS``), ``PROCEDURE_STATUS``, ``FUNCTION_STATUS``,
+  ``CHARACTER_SET`` (also ``CHARSET`` and ``CHAR SET``) and ``COLLATION`` take a filter;
+* ``TRIGGERS`` (with ``FULL``), ``EVENTS`` and ``OPEN_TABLES`` take a database and a filter;
+* ``PROCEDURE_CODE`` and ``FUNCTION_CODE`` take the routine name, and ``ENGINE`` the engine
+  name and ``STATUS``, ``MUTEX`` or ``LOGS``;
+* ``GRANTS`` takes ``FOR account [USING role, ...]``;
+* ``WARNINGS`` and ``ERRORS`` take ``COUNT(*)`` or a limit;
+* ``BINLOG_EVENTS`` takes ``IN 'log'``, ``FROM pos`` and a limit, and ``RELAYLOG_EVENTS``
+  also ``FOR CHANNEL 'c'``;
+* ``REPLICA_STATUS`` takes ``FOR CHANNEL 'c'``;
+* ``PROFILE`` takes types such as ``CPU`` or ``BLOCK IO``, ``FOR QUERY n`` and a limit;
+* ``ENGINES`` (also ``STORAGE ENGINES``), ``PLUGINS``, ``PRIVILEGES``, ``PROFILES``,
+  ``BINARY_LOGS``, ``BINARY_LOG_STATUS`` and ``REPLICAS`` take nothing.
+
+The parts have typed accessors: ``getScope()`` (``GLOBAL``, ``SESSION`` or ``LOCAL``),
+``isFull()``, ``isCount()``, ``getRoutineName()`` (a ``Table``), ``getEngineName()`` and
+``getEngineInfo()``, ``getDbSelection()``, ``getFilter()``, ``getAccount()`` and
+``getUsingRoles()`` (``UserAccount`` values, read like the accounts of ``CREATE USER``),
+``getLogName()``, ``getPosition()``, ``getLimit()`` (``LIMIT [offset,] n``) with
+``getOffset()`` (``LIMIT n OFFSET offset``), ``getChannel()``, ``getProfileTypes()`` and
+``getProfileQuery()``. ``Kind.allows(Part)`` tells which parts a kind takes; setting
+another part throws ``IllegalArgumentException``, and ``setKind`` drops the parts the new
+kind does not take. ``setKeyword("SCHEMAS")`` selects the kind together with its spelling.
 
 .. code-block:: java
 
@@ -3189,16 +3239,47 @@ statements in every dialect:
         "SHOW CREATE USER 'app'@'%'");
     create.getAccount().getHost().getNotExcapedValue();   // %
 
-A typed statement is used only when it covers the whole statement. Other dialects'
-``SHOW`` forms, such as ``SHOW COLUMNS IN SCHEMA s`` or ``SHOW CREATE TABLE t FORMAT f``,
-remain ``UnsupportedStatement``.
+    MySqlShowStatement grants = (MySqlShowStatement) CCJSqlParserUtil.parse(
+        "SHOW GRANTS FOR 'app'@'%' USING 'reader'");
+    grants.getKind();                   // GRANTS
+    grants.getUsingRoles().size();      // 1
 
-Table visitors report the table of ``SHOW COLUMNS`` (qualified by the ``FROM db`` clause)
-and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now
-``SHOW COLUMNS`` raised ``UnsupportedOperationException``. ``SHOW TABLE STATUS`` names no
-table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
-features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
-``RETURNS_RESULT_SET``.
+    MySqlShowStatement events = (MySqlShowStatement) CCJSqlParserUtil.parse(
+        "SHOW BINLOG EVENTS IN 'binlog.000001' FROM 4 LIMIT 10",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    events.getLogName().getValue();     // binlog.000001
+    events.getLimit().getRowCount();    // 10
+
+``MySqlShowStatement`` is read with ``Dialect.MYSQL`` and ``Dialect.MARIADB`` and without
+a dialect; other dialects keep ``UnsupportedStatement``. Without a dialect, a single word
+such as ``SHOW VARIABLES`` or ``SHOW GRANTS`` remains a ``ShowStatement``, as in every
+dialect but MySQL and MariaDB. The spellings MySQL 8.4 removed, ``SHOW MASTER STATUS``,
+``SHOW MASTER LOGS``, ``SHOW SLAVE STATUS`` and ``SHOW SLAVE HOSTS``, are read with
+``Dialect.MARIADB`` and without a dialect.
+
+With ``Dialect.MYSQL`` or ``Dialect.MARIADB`` the ``LIKE`` pattern of every ``SHOW``
+statement is a string literal, as in the server, and parses to a ``StringValue``;
+without a dialect it is any simple expression, as before. Limit values are unsigned
+integers, names or ``?`` parameters, log names and channels are strings, and a log
+position is an unsigned number.
+
+A typed statement is used only when it covers the whole statement. Other forms, such as
+Snowflake's ``SHOW COLUMNS IN SCHEMA s``, ClickHouse's ``SHOW CREATE TABLE t FORMAT f`` or
+``SHOW WARNINGS LIKE 'a'``, remain ``UnsupportedStatement``; ``SHOW INDEX`` forms with
+such trailing clauses used to fail. A ``WHERE`` filter is read to its end, so
+``SHOW COLUMNS FROM t WHERE a = 1 AND b = 2`` no longer becomes an
+``UnsupportedStatement``, and text the expression does not take is a parse error.
+
+``StatementDeParser`` prints the expressions of the filters, limits and log positions with
+its ``ExpressionDeParser``. Table visitors report the table of ``SHOW COLUMNS`` and
+``SHOW INDEX`` (qualified by the ``FROM db`` clause) and the table or view of
+``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now ``SHOW INDEX`` raised
+``UnsupportedOperationException``, as ``SHOW TABLES`` still does. ``SHOW TABLE STATUS``
+and ``MySqlShowStatement`` name no table. Validators report the ``showColumns``,
+``showIndex``, ``showTableStatus``, ``showCreate`` and ``mySqlShow`` features, which the
+MySQL and MariaDB capabilities enable, and look up the database of ``MySqlShowStatement``
+and the procedure of ``SHOW PROCEDURE CODE``. Feature analysis
+reports ``RETURNS_RESULT_SET``.
 
 MySQL EXPLAIN, prepared statements and DO
 =========================================

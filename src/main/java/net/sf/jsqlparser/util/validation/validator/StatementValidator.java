@@ -152,6 +152,7 @@ import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -565,6 +566,12 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(ShowCreateStatement showCreate, S context) {
         getValidator(ShowCreateStatementValidator.class).validate(showCreate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
+        getValidator(MySqlShowStatementValidator.class).validate(mySqlShow);
         return null;
     }
 
@@ -1085,6 +1092,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public void visit(ShowCreateStatement showCreate) {
         visit(showCreate, null);
+    }
+
+    @Override
+    public void visit(MySqlShowStatement mySqlShow) {
+        visit(mySqlShow, null);
     }
 
     public void visit(Block block) {

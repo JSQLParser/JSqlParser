@@ -280,6 +280,7 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -2117,11 +2118,8 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
-        Table table = showColumnsStatement.getTable();
-        if (table != null && showColumnsStatement.getDbName() != null) {
-            // MySQL: the trailing FROM db names the database of the table
-            table = new Table(showColumnsStatement.getDbName(), table.getName());
-        }
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = showColumnsStatement.getQualifiedTable();
         if (table != null) {
             visit(table, context);
         }
@@ -2135,7 +2133,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowIndexStatement showIndex, S context) {
-        throwUnsupported(showIndex);
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = showIndex.getQualifiedTable();
+        if (table != null) {
+            visit(table, context);
+        }
         return null;
     }
 
@@ -2655,6 +2657,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(ShowCreateStatement showCreate) {
         StatementVisitor.super.visit(showCreate);
+    }
+
+    @Override
+    public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
+        // reads server settings, state or object lists, but names no table
+        return null;
+    }
+
+    @Override
+    public void visit(MySqlShowStatement mySqlShow) {
+        StatementVisitor.super.visit(mySqlShow);
     }
 
     @Override

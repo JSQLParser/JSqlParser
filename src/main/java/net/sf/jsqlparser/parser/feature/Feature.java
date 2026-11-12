@@ -944,6 +944,13 @@ public enum Feature {
      */
     showCreate,
     /**
+     * The MySQL/MariaDB "SHOW" statements of server settings, state and object lists, such as "SHOW
+     * VARIABLES", "SHOW GRANTS" or "SHOW BINLOG EVENTS"
+     *
+     * @see MySqlShowStatement
+     */
+    mySqlShow,
+    /**
      * @see UseStatement
      */
     use,

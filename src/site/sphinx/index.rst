@@ -181,7 +181,7 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
     * - **Routine changes**
       - ``ALTER FUNCTION`` · ``ALTER PROCEDURE`` · ``ALTER ROUTINE`` · PostgreSQL ``ALTER TRIGGER``
     * - **MySQL metadata statements**
-      - ``SHOW [FULL] COLUMNS``/``FIELDS`` · ``SHOW TABLE STATUS`` · ``SHOW CREATE TABLE``/``VIEW``/``PROCEDURE``/``FUNCTION``/``TRIGGER``/``EVENT``/``DATABASE``/``USER``
+      - ``SHOW [FULL] COLUMNS``/``FIELDS`` · ``SHOW INDEX``/``INDEXES``/``KEYS`` · ``SHOW TABLE STATUS`` · ``SHOW CREATE TABLE``/``VIEW``/``PROCEDURE``/``FUNCTION``/``TRIGGER``/``EVENT``/``DATABASE``/``USER`` · ``SHOW [GLOBAL | SESSION] VARIABLES``/``STATUS`` · ``SHOW [FULL] PROCESSLIST`` · ``SHOW GRANTS [FOR …]`` · ``SHOW WARNINGS``/``ERRORS`` · ``SHOW BINARY LOGS``/``BINLOG EVENTS``/``RELAYLOG EVENTS`` · ``SHOW ENGINE …`` · ``SHOW PROFILE`` · ``SHOW DATABASES``/``TRIGGERS``/``EVENTS``/``OPEN TABLES``/``CHARACTER SET``/``COLLATION`` · ``SHOW PROCEDURE``/``FUNCTION STATUS``/``CODE`` · ``SHOW REPLICA STATUS``/``REPLICAS``
     * - **MySQL utility statements**
       - ``EXPLAIN``/``DESCRIBE [ANALYZE] FORMAT = …`` · ``EXPLAIN FOR CONNECTION`` · ``DESCRIBE t col`` · ``PREPARE … FROM`` · ``EXECUTE … USING`` · ``DROP PREPARE`` · ``DO``
     * - **PostgreSQL administration**
