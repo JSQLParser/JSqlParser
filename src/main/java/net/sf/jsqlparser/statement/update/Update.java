@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.schema.TableReference;
 import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
@@ -35,15 +36,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update extends ASTNodeAccessImpl implements Statement {
 
     private List<WithItem<?>> withItemsList;
-    private Table table;
+    private TableReference tableReference = new TableReference(null);
     private ForPortionClause forPortionClause;
     private Expression where;
+    private String cursorName;
     private PreferringClause preferringClause;
     private List<UpdateSet> updateSets;
     private FromItem fromItem;
@@ -132,11 +135,46 @@ public class Update extends ASTNodeAccessImpl implements Statement {
     }
 
     public Table getTable() {
-        return table;
+        return tableReference.getTable();
     }
 
+    /** Replaces the target table and keeps the inheritance scope of the target. */
     public void setTable(Table table) {
-        this.table = table;
+        tableReference.setTable(table);
+    }
+
+    /**
+     * The target as PostgreSQL's relation_expr_opt_alias: the table of {@link #getTable()} with its
+     * alias, and whether ONLY or * describes its inheritance scope.
+     */
+    public TableReference getTableReference() {
+        return tableReference;
+    }
+
+    public void setTableReference(TableReference tableReference) {
+        this.tableReference = Objects.requireNonNull(tableReference);
+    }
+
+    public Update withTableReference(TableReference tableReference) {
+        this.setTableReference(tableReference);
+        return this;
+    }
+
+    /**
+     * The cursor of {@code WHERE CURRENT OF cursor}, which is written in place of the condition of
+     * {@link #getWhere()}.
+     */
+    public String getCursorName() {
+        return cursorName;
+    }
+
+    public void setCursorName(String cursorName) {
+        this.cursorName = cursorName;
+    }
+
+    public Update withCursorName(String cursorName) {
+        this.setCursorName(cursorName);
+        return this;
     }
 
     public Expression getWhere() {
@@ -224,6 +262,7 @@ public class Update extends ASTNodeAccessImpl implements Statement {
 
     /** Whether the Teradata target names an alias declared in this UPDATE's FROM clause. */
     public boolean isTargetTableAlias() {
+        Table table = getTable();
         if (!fromBeforeSet || table == null) {
             return false;
         }
@@ -236,7 +275,7 @@ public class Update extends ASTNodeAccessImpl implements Statement {
 
     private boolean matchesTargetAlias(FromItem source) {
         return source != null && source.getAlias() != null
-                && table.getFullyQualifiedName().equalsIgnoreCase(source.getAlias().getName());
+                && getTable().getFullyQualifiedName().equalsIgnoreCase(source.getAlias().getName());
     }
 
     /** Shared FROM rendering for both supported clause positions. */
@@ -399,7 +438,7 @@ public class Update extends ASTNodeAccessImpl implements Statement {
         if (modifierIgnore) {
             b.append("IGNORE ");
         }
-        b.append(table);
+        tableReference.appendWithAliasTo(b);
         if (forPortionClause != null) {
             b.append(' ').append(forPortionClause);
         }
@@ -427,7 +466,9 @@ public class Update extends ASTNodeAccessImpl implements Statement {
             appendFromTo(b);
         }
 
-        if (where != null) {
+        if (cursorName != null) {
+            b.append(" WHERE CURRENT OF ").append(cursorName);
+        } else if (where != null) {
             b.append(" WHERE ");
             b.append(where);
         }

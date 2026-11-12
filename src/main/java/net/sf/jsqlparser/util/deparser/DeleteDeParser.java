@@ -72,7 +72,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         if (delete.isHasFrom()) {
             builder.append(" FROM");
         }
-        builder.append(" ").append(delete.getTable().toString());
+        delete.getTableReference().appendWithAliasTo(builder.append(" "));
         deparseForPortionClause(delete.getForPortionClause(), expressionVisitor);
 
         // the target's joins come before USING, as in the grammar
@@ -100,7 +100,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     }
 
     protected void deparseWhereClause(Delete delete) {
-        if (delete.getWhere() != null) {
+        if (delete.getCursorName() != null) {
+            builder.append(" WHERE CURRENT OF ").append(delete.getCursorName());
+        } else if (delete.getWhere() != null) {
             builder.append(" WHERE ");
             delete.getWhere().accept(expressionVisitor, null);
         }

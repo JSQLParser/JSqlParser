@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -47,7 +48,11 @@ public class MergeDeParser extends AbstractDeParser<Merge>
             builder.append(merge.getOracleHint()).append(" ");
         }
         builder.append("INTO ");
-        merge.getTable().accept(selectDeParser, null);
+        if (merge.getTableReference().hasInheritanceScope()) {
+            merge.getTableReference().appendWithAliasTo(builder);
+        } else {
+            merge.getTable().accept(selectDeParser, null);
+        }
 
         builder.append(" USING ");
         merge.getFromItem().accept(selectDeParser, null);
@@ -79,13 +84,8 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeDelete mergeDelete, S context) {
-        builder.append(mergeDelete.getSide() == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE"
-                : " WHEN MATCHED");
-        if (mergeDelete.getAndPredicate() != null) {
-            builder.append(" AND ");
-            mergeDelete.getAndPredicate().accept(expressionDeParser, context);
-        }
-        builder.append(" THEN DELETE");
+        deparseWhen(mergeDelete.getWhen(), mergeDelete.getAndPredicate(), context)
+                .append("DELETE");
         return builder;
     }
 
@@ -95,13 +95,8 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeUpdate mergeUpdate, S context) {
-        builder.append(mergeUpdate.getSide() == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE"
-                : " WHEN MATCHED");
-        if (mergeUpdate.getAndPredicate() != null) {
-            builder.append(" AND ");
-            mergeUpdate.getAndPredicate().accept(expressionDeParser, context);
-        }
-        builder.append(" THEN UPDATE SET ");
+        deparseWhen(mergeUpdate.getWhen(), mergeUpdate.getAndPredicate(), context)
+                .append("UPDATE SET ");
         deparseUpdateSets(mergeUpdate.getUpdateSets(), builder, expressionDeParser);
 
         if (mergeUpdate.getWhereCondition() != null) {
@@ -123,20 +118,9 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeInsert mergeInsert, S context) {
-        builder.append(" WHEN NOT MATCHED");
-        if (mergeInsert.getSide() == MergeSide.TARGET) {
-            builder.append(" BY TARGET");
-        }
-        if (mergeInsert.getAndPredicate() != null) {
-            builder.append(" AND ");
-            mergeInsert.getAndPredicate().accept(expressionDeParser, context);
-        }
-        builder.append(" THEN INSERT ");
-        if (mergeInsert.getColumns() != null) {
-            mergeInsert.getColumns().accept(expressionDeParser, context);
-        }
-        builder.append(" VALUES ");
-        mergeInsert.getValues().accept(expressionDeParser, context);
+        deparseWhen(mergeInsert.getWhen(), mergeInsert.getAndPredicate(), context);
+        mergeInsert.appendInsertTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
 
         if (mergeInsert.getWhereCondition() != null) {
             builder.append(" WHERE ");
@@ -148,6 +132,17 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     public void visit(MergeInsert mergeInsert) {
         visit(mergeInsert, null);
+    }
+
+    @Override
+    public <S> StringBuilder visit(MergeDoNothing mergeDoNothing, S context) {
+        return deparseWhen(mergeDoNothing.getWhen(), mergeDoNothing.getAndPredicate(), context)
+                .append("DO NOTHING");
+    }
+
+    private <S> StringBuilder deparseWhen(MergeWhen when, Expression andPredicate, S context) {
+        return when.appendTo(builder, andPredicate,
+                predicate -> predicate.accept(expressionDeParser, context));
     }
 
     public ExpressionDeParser getExpressionDeParser() {

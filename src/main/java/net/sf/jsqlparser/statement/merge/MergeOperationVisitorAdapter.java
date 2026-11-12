@@ -52,4 +52,10 @@ public class MergeOperationVisitorAdapter<T> implements MergeOperationVisitor<T>
         expressionVisitor.visitExpression(mergeInsert.getWhereCondition(), context);
         return null;
     }
+
+    @Override
+    public <S> T visit(MergeDoNothing mergeDoNothing, S context) {
+        expressionVisitor.visitExpression(mergeDoNothing.getAndPredicate(), context);
+        return null;
+    }
 }

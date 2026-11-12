@@ -19,6 +19,11 @@ public interface MergeOperationVisitor<T> {
 
     <S> T visit(MergeInsert mergeInsert, S context);
 
+    /** PostgreSQL's DO NOTHING action; existing visitors skip it. */
+    default <S> T visit(MergeDoNothing mergeDoNothing, S context) {
+        return null;
+    }
+
     default <S> T visit(Collection<MergeOperation> mergeOperations, S context) {
         if (mergeOperations != null) {
             mergeOperations.forEach(operation -> operation.accept(this, context));
