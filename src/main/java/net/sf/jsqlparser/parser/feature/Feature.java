@@ -1254,8 +1254,8 @@ public enum Feature {
     /**
      * Target MySQL version for executable comments, encoded as major * 10000 + minor * 100 + patch.
      * A negative value leaves the version unspecified: conditional comments then fail instead of
-     * silently discarding SQL. Only used with the MYSQL dialect; unversioned comments need no
-     * value.
+     * silently discarding SQL. Only used with the MYSQL and MARIADB dialects (with MARIADB, the
+     * MariaDB version); unversioned comments need no value.
      */
     mySqlServerVersion(-1),
 
