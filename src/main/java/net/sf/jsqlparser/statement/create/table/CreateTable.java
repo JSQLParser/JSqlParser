@@ -570,9 +570,14 @@ public class CreateTable extends ASTNodeAccessImpl implements Statement {
     public void appendTableOptionsTo(StringBuilder builder,
             java.util.function.Consumer<net.sf.jsqlparser.expression.Expression> expressionPrinter) {
         if (tableOptions != null) {
+            TableOption previous = null;
             for (TableOption option : tableOptions) {
-                builder.append(' ');
+                // SQLite requires a comma between WITHOUT ROWID and STRICT
+                builder.append(isSqliteTableOption(previous) && isSqliteTableOption(option)
+                        ? ", "
+                        : " ");
                 option.appendTo(builder, expressionPrinter);
+                previous = option;
             }
         } else {
             String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
@@ -580,6 +585,11 @@ public class CreateTable extends ASTNodeAccessImpl implements Statement {
                 builder.append(' ').append(options);
             }
         }
+    }
+
+    private static boolean isSqliteTableOption(TableOption option) {
+        return option != null && (option.getKind() == TableOption.Kind.WITHOUT_ROWID
+                || option.getKind() == TableOption.Kind.STRICT);
     }
 
     private void appendTableOptions(StringBuilder b) {
