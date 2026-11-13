@@ -188,6 +188,23 @@ public class ASTNodeCoverageTest {
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
                 "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
+                "CREATE OPERATOR public.=== (FUNCTION = s.f, LEFTARG = int[], COMMUTATOR = <==>, "
+                        + "NEGATOR = OPERATOR(s.!==), HASHES)",
+                "ALTER OPERATOR s.@#@ (NONE, varchar(3)) SET (RESTRICT = NONE, JOIN = s.f, x = 1)",
+                "ALTER OPERATOR + (int, int) OWNER TO u",
+                "CREATE OPERATOR CLASS s.oc DEFAULT FOR TYPE varchar(3) USING gist FAMILY s.fam AS "
+                        + "OPERATOR 1 s.< (int, int[]) FOR ORDER BY s.float_ops, OPERATOR 2 <=, "
+                        + "FUNCTION 1 (int, text) s.f(IN a int, text), STORAGE double precision",
+                "ALTER OPERATOR CLASS s.oc USING btree SET SCHEMA t",
+                "CREATE OPERATOR FAMILY s.fam USING btree",
+                "ALTER OPERATOR FAMILY s.fam USING btree ADD OPERATOR 1 < (int4, int2) FOR SEARCH, "
+                        + "FUNCTION 1 (int4) cmp(int4, int2)",
+                "ALTER OPERATOR FAMILY s.fam USING btree DROP OPERATOR 1 (int4, int2), "
+                        + "FUNCTION 1 (varchar(3))",
+                "CREATE OR REPLACE AGGREGATE s.agg (a int, VARIADIC b text[] ORDER BY c numeric(3, 1)) "
+                        + "(SFUNC = s.f, STYPE = int[], SORTOP = <, INITCOND = '0', MSSPACE = 8)",
+                "CREATE AGGREGATE agg (BASETYPE = varchar(3), SFUNC = f, STYPE = int)",
+                "ALTER AGGREGATE s.agg (int, varchar(3)) RENAME TO agg2",
                 "SELECT a FROM t AS x USE KEY (i1) FORCE INDEX FOR JOIN (i2, i3) WHERE a = 1",
                 "SELECT a FROM t USE INDEX () JOIN s IGNORE INDEX FOR ORDER BY (i1) ON t.a = s.a",
                 "UPDATE t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2) SET a = 1",

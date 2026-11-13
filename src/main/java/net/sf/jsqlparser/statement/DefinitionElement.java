@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 /**
  * One element of a PostgreSQL definition list, {@code name [= value]}, as in
- * {@code CREATE TYPE name (INPUT = fn, PASSEDBYVALUE)} or
- * {@code ALTER TYPE name SET (SEND = NONE)}. The name keeps its spelling and quoting.
+ * {@code CREATE TYPE name (INPUT = fn, PASSEDBYVALUE)}, {@code ALTER TYPE name SET (SEND = NONE)},
+ * {@code CREATE OPERATOR} or {@code CREATE AGGREGATE}. The name keeps its spelling and quoting.
  */
 public class DefinitionElement implements Serializable {
     private String name;
@@ -60,6 +60,18 @@ public class DefinitionElement implements Serializable {
      */
     public static String toString(List<DefinitionElement> elements) {
         return elements.stream().map(Object::toString).collect(Collectors.joining(", ", "(", ")"));
+    }
+
+    /**
+     * Finds an element of a definition list by its name, ignoring case.
+     *
+     * @param elements the elements
+     * @param name the name, such as {@code INPUT}
+     * @return the first element of that name, or {@code null}
+     */
+    public static DefinitionElement find(List<DefinitionElement> elements, String name) {
+        return elements.stream().filter(element -> name.equalsIgnoreCase(element.getName()))
+                .findFirst().orElse(null);
     }
 
     @Override

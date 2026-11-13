@@ -122,7 +122,14 @@ public enum PostgresqlVersion implements Version {
                     Feature.alterUserMapping,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createRule, Feature.notifyStatement,
-                    Feature.createCollation, Feature.alterCollation,
+                    Feature.createCollation, Feature.alterCollation, // https://www.postgresql.org/docs/current/sql-createoperator.html
+                    // https://www.postgresql.org/docs/current/sql-createopclass.html
+                    // https://www.postgresql.org/docs/current/sql-createopfamily.html
+                    // https://www.postgresql.org/docs/current/sql-createaggregate.html
+                    Feature.createOperator, Feature.alterOperator,
+                    Feature.createOperatorClass, Feature.alterOperatorClass,
+                    Feature.createOperatorFamily, Feature.alterOperatorFamily,
+                    Feature.createAggregate, Feature.alterAggregate,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,

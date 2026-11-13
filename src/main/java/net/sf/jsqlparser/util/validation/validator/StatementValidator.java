@@ -10,6 +10,14 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -1706,6 +1714,54 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(AlterRule statement, S context) {
         validateFeature(Feature.alterRule);
         validateOptionalFromItem(statement.getTable());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateOperator statement, S context) {
+        validateFeature(Feature.createOperator);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateOperatorClass statement, S context) {
+        validateFeature(Feature.createOperatorClass);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateOperatorFamily statement, S context) {
+        validateFeature(Feature.createOperatorFamily);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateAggregate statement, S context) {
+        validateFeature(Feature.createAggregate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperator statement, S context) {
+        validateFeature(Feature.alterOperator);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorClass statement, S context) {
+        validateFeature(Feature.alterOperatorClass);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorFamily statement, S context) {
+        validateFeature(Feature.alterOperatorFamily);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterAggregate statement, S context) {
+        validateFeature(Feature.alterAggregate);
         return null;
     }
 }
