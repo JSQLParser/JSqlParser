@@ -209,7 +209,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || "REASSIGN".equalsIgnoreCase(next.image)
                     || "REVOKE".equalsIgnoreCase(next.image)
                     || "RELEASE".equalsIgnoreCase(next.image)
-                    || isAbortTransactionAhead() || isXaStatementAhead();
+                    || isAbortTransactionAhead() || isXaStatementAhead()
+                    || isPluginStatementAhead();
         }
     }
 
@@ -4020,6 +4021,113 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether a MySQL INSTALL or UNINSTALL PLUGIN or COMPONENT statement starts here; read with the
+     * MySQL and MariaDB dialects or none. UNINSTALL is not a token. With those dialects every
+     * INSTALL is this statement and FORCE INSTALL is an error. Without a dialect, INSTALL plugin
+     * and INSTALL component stay DuckDB extension names unless SONAME or a component URN follows.
+     */
+    private boolean isPluginStatementAhead() {
+        boolean install = getToken(1).kind == K_INSTALL;
+        boolean plugin = isWordAt(2, "PLUGIN");
+        boolean object = plugin || isWordAt(2, "COMPONENT");
+        if (getAsString(Feature.dialect) != null) {
+            return isMySqlDialect() && (install || object && isWordAt(1, "UNINSTALL")
+                    || getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL);
+        }
+        if (!object) {
+            return false;
+        }
+        return install
+                ? (plugin ? isWordAt(4, "SONAME") : getToken(3).kind == S_CHAR_LITERAL)
+                : isWordAt(1, "UNINSTALL");
+    }
+
+    /** Whether the literal is MySQL's TEXT_STRING_sys: a quoted string without a prefix. */
+    private static boolean isMySqlTextString(StringValue value) {
+        return value.getPrefix() == null && value.getQuoteStr() != null
+                && !value.getQuoteStr().startsWith("$");
+    }
+
+    /** The string after SONAME or a component URN. */
+    private StringValue mySqlTextString(Token token) throws ParseException {
+        StringValue value = stringValue(token);
+        requireDdlSyntax(isMySqlTextString(value), "Expected a string literal but found " + token.image);
+        return value;
+    }
+
+    /**
+     * Whether the name is one MySQL does not read as a variable of INSTALL COMPONENT ... SET: an
+     * unquoted scope keyword on its own, or GLOBAL, LOCAL or SESSION as the qualifier, quoted or
+     * not.
+     */
+    private static boolean isComponentVariableScopeWord(String name, boolean qualifier) {
+        switch ((qualifier ? MultiPartName.unquote(name) : name).toUpperCase(Locale.ROOT)) {
+            case "GLOBAL": case "LOCAL": case "SESSION":
+                return true;
+            case "PERSIST": case "PERSIST_ONLY":
+                return !qualifier;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Checks the value of INSTALL COMPONENT ... SET, an expression that starts at {@code first}:
+     * MySQL takes neither the words DEFAULT and ALL nor a subquery, which SELECT, or TABLE, VALUES
+     * or WITH after a parenthesis, starts.
+     */
+    private void requireComponentVariableValue(Token first) throws ParseException {
+        Token last = getToken(0);
+        requireDdlSyntax(first.kind != K_DEFAULT && first.kind != K_ALL
+                || first != last && first.next.kind == OPENING_BRACKET,
+                "Expected a value but found " + first.image);
+        boolean afterParenthesis = false;
+        for (Token token = first; token != last.next; token = token.next) {
+            int kind = token.kind;
+            requireDdlSyntax(kind != K_SELECT
+                    && !(afterParenthesis && (kind == K_TABLE || kind == K_VALUES || kind == K_WITH)),
+                    "INSTALL COMPONENT ... SET does not accept a subquery");
+            afterParenthesis = kind == OPENING_BRACKET;
+        }
+    }
+
+    /** Whether CREATE SERVER and ALTER SERVER take MySQL's quoted names and numeric option values. */
+    private boolean isMySqlServerSyntaxAllowed() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * Checks the options of CREATE SERVER and ALTER SERVER. A numeric value is MySQL's, read with
+     * the MySQL and MariaDB dialects or none. With the MySQL dialect the options are exactly its
+     * server_option: USER, HOST, DATABASE, OWNER, PASSWORD or SOCKET with a string, or PORT with a
+     * number.
+     */
+    private void requireServerOptions(List<ForeignDataOption> options) throws ParseException {
+        boolean mySql = Dialect.MYSQL.name().equals(getAsString(Feature.dialect));
+        for (ForeignDataOption option : options) {
+            boolean numeric = option.getValueExpression() != null && option.getValue() == null;
+            requireDdlSyntax(!numeric || isMySqlServerSyntaxAllowed(), "Option values are string constants");
+            if (mySql) {
+                requireDdlSyntax(option.getAction() == null, "MySQL server options do not allow ADD, SET or DROP");
+                requireDdlSyntax(isMySqlServerOption(option, numeric),
+                        "Unknown MySQL server option or value: " + option);
+            }
+        }
+    }
+
+    private static boolean isMySqlServerOption(ForeignDataOption option, boolean numeric) {
+        switch (option.getName().toUpperCase(Locale.ROOT)) {
+            case "USER": case "HOST": case "DATABASE": case "OWNER": case "PASSWORD": case "SOCKET":
+                return !numeric && isMySqlTextString(option.getValue());
+            case "PORT":
+                return numeric && (!(option.getValueExpression() instanceof HexValue)
+                        || isXaHexPart(option.getValueExpression().toString()));
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Whether ALTER TABLE DROP names a MySQL FOREIGN KEY or CHECK constraint. The default
      * configuration accepts both like MySQL; MariaDB has no DROP CHECK. A parenthesized FOREIGN KEY
      * column list keeps the legacy form, and other dialects use DROP CONSTRAINT.
@@ -6393,6 +6501,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
             |
+            LOOKAHEAD({ isPluginStatementAhead() }) stm = PluginStatement()
+            |
             LOOKAHEAD({ getToken(1).kind == K_INSTALL
                     || (getToken(1).kind == K_LOAD && getToken(2).kind != K_DATA)
                     || (getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL) })
@@ -8616,6 +8726,85 @@ DetachStatement DetachStatement() #DetachStatement:
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { detachStatement.setIfExists(true); } ]
     name=RelObjectNames() { detachStatement.setDatabaseName(String.join(".", name.getNames())); }
     { return detachStatement; }
+}
+
+/**
+ * MySQL INSTALL PLUGIN name SONAME 'library', UNINSTALL PLUGIN name,
+ * INSTALL COMPONENT 'urn'[, ...] [SET [GLOBAL | PERSIST] variable = value[, ...]] and
+ * UNINSTALL COMPONENT 'urn'[, ...]. isPluginStatementAhead() routes here.
+ */
+PluginStatement PluginStatement():
+{
+    PluginStatement statement;
+    PluginStatement.Action action;
+    String name;
+    Token token;
+    ComponentVariable variable;
+}
+{
+    (
+        <K_INSTALL> { action = PluginStatement.Action.INSTALL; }
+        |
+        // The action keeps the JAVACODE call from being the lookahead's first unit.
+        LOOKAHEAD({ isWordAt(1, "UNINSTALL") }) { action = PluginStatement.Action.UNINSTALL; }
+        consumeTransactionWord()
+    )
+    (
+        LOOKAHEAD({ isKeywordAhead("PLUGIN") }) ContextualKeyword("PLUGIN")
+        { statement = new PluginStatement(action, PluginStatement.ObjectType.PLUGIN); }
+        name=RelObjectName() { statement.setPluginName(name); }
+        [ LOOKAHEAD({ isKeywordAhead("SONAME") }) ContextualKeyword("SONAME") token=<S_CHAR_LITERAL>
+            { statement.setLibrary(mySqlTextString(token)); } ]
+        {
+            requireDdlSyntax((action == PluginStatement.Action.INSTALL) == (statement.getLibrary() != null),
+                    "INSTALL PLUGIN names a library after SONAME, UNINSTALL PLUGIN does not");
+        }
+        |
+        ContextualKeyword("COMPONENT")
+        {
+            statement = new PluginStatement(action, PluginStatement.ObjectType.COMPONENT);
+            requireDdlSyntax(!Dialect.MARIADB.name().equals(getAsString(Feature.dialect)),
+                    "MariaDB has no components");
+        }
+        token=<S_CHAR_LITERAL> { statement.addComponents(mySqlTextString(token)); }
+        ( "," token=<S_CHAR_LITERAL> { statement.addComponents(mySqlTextString(token)); } )*
+        [
+            LOOKAHEAD(1) <K_SET> { requireDdlSyntax(action == PluginStatement.Action.INSTALL, "UNINSTALL COMPONENT does not accept SET"); }
+            variable=ComponentVariable() { statement.addVariables(variable); }
+            ( "," variable=ComponentVariable() { statement.addVariables(variable); } )*
+        ]
+    )
+    { return statement; }
+}
+
+/** One assignment of INSTALL COMPONENT ... SET: [GLOBAL | PERSIST] name[.name] {= | :=} {expr | ON}. */
+ComponentVariable ComponentVariable():
+{
+    SetScope scope = SetScope.NONE;
+    String name;
+    String member = null;
+    SetStatement.AssignmentOperator operator;
+    Expression value;
+    Token first;
+}
+{
+    // persist.variable is a name
+    [ LOOKAHEAD({ (getToken(1).kind == K_GLOBAL || isKeywordAhead("PERSIST")) && !".".equals(getToken(2).image) })
+        ( <K_GLOBAL> { scope = SetScope.GLOBAL; } | ContextualKeyword("PERSIST") { scope = SetScope.PERSIST; } ) ]
+    (
+        LOOKAHEAD(1) <K_DEFAULT> "." member=RelObjectName() { name = "DEFAULT"; }
+        |
+        name=RelObjectName() [ "." member=RelObjectName() ]
+        { requireDdlSyntax(!isComponentVariableScopeWord(name, member != null), "Expected a variable name but found " + name); }
+    )
+    ( "=" { operator = SetStatement.AssignmentOperator.EQUALS; }
+      | ":=" { operator = SetStatement.AssignmentOperator.COLON_EQUALS; } )
+    ( LOOKAHEAD({ getToken(1).kind == K_ON }) <K_ON> { value = linkToLastToken(new Column("ON")); }
+      | { first = getToken(1); } value=Expression() { requireComponentVariableValue(first); } )
+    {
+        return new ComponentVariable(member == null ? name : name + "." + member, value)
+                .withScope(scope).withOperator(operator);
+    }
 }
 
 /**
@@ -21013,6 +21202,26 @@ ForeignTableOptions ForeignTableOptions():
 }
 
 List<ForeignDataOption> ForeignDataOptions(boolean alter):
+{ List<ForeignDataOption> options; }
+{
+    options=ForeignDataOptionList(alter)
+    {
+        for (ForeignDataOption item : options) {
+            requireDdlSyntax(item.getValueExpression() == null || item.getValue() != null,
+                    "Option values are string constants");
+        }
+        return options;
+    }
+}
+
+/** OPTIONS of CREATE SERVER and ALTER SERVER, where MySQL also takes a number, as in PORT 3306. */
+List<ForeignDataOption> ServerOptions(boolean alter):
+{ List<ForeignDataOption> options; }
+{
+    options=ForeignDataOptionList(alter) { requireServerOptions(options); return options; }
+}
+
+List<ForeignDataOption> ForeignDataOptionList(boolean alter):
 {
     List<ForeignDataOption> options = new ArrayList<ForeignDataOption>();
     ForeignDataOption option;
@@ -21033,6 +21242,7 @@ ForeignDataOption ForeignDataOption():
     ForeignDataOption.Action action = null;
     String name;
     Token value;
+    Expression number;
     ForeignDataOption option;
 }
 {
@@ -21042,10 +21252,22 @@ ForeignDataOption ForeignDataOption():
         |
         [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
           | <K_SET> { action = ForeignDataOption.Action.SET; } ) ]
-        name=RelObjectName() value=<S_CHAR_LITERAL>
-        { option = new ForeignDataOption(name, stringValue(value)); option.setAction(action); }
+        name=RelObjectName()
+        ( value=<S_CHAR_LITERAL> { option = new ForeignDataOption(name, stringValue(value)); }
+          | number=ServerOptionNumber() { option = new ForeignDataOption(name, null).withValueExpression(number); } )
+        { option.setAction(action); }
     )
     { return option; }
+}
+
+/** MySQL's ulong_num, the value of the PORT server option; only ServerOptions() keeps it. */
+Expression ServerOptionNumber():
+{ Token token; Expression number; }
+{
+    ( token=<S_LONG> { number = new LongValue(token.image); }
+      | token=<S_DOUBLE> { number = new DoubleValue(token.image); }
+      | token=<S_HEX> { number = new HexValue(token.image); } )
+    { linkAST(number, token, token); return number; }
 }
 
 TableElement CreateTableElement(boolean typed):
@@ -28836,12 +29058,32 @@ CreateServer CreateServer():
 {
     ContextualKeyword("SERVER")
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
-    name=RelObjectName() { statement.setName(name); }
+    name=ServerObjectName() { statement.setName(name); }
     [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(stringValue(type)); } ]
     [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
-    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setForeignDataWrapper(name); }
-    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
-    { return statement; }
+    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=ServerObjectName() { statement.setForeignDataWrapper(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ServerOptions(false) { statement.setOptions(options); } ]
+    {
+        // MySQL: CREATE SERVER name FOREIGN DATA WRAPPER wrapper OPTIONS (option[, ...])
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || !statement.isIfNotExists() && statement.getType() == null && statement.getVersion() == null
+                    && statement.getOptions() != null,
+                "MySQL CREATE SERVER takes a name, FOREIGN DATA WRAPPER and OPTIONS");
+        return statement;
+    }
+}
+
+/** A server or wrapper name; MySQL's ident_or_text also takes a string literal, kept as written. */
+String ServerObjectName():
+{ String name; Token token; }
+{
+    ( name=RelObjectName()
+      | token=<S_CHAR_LITERAL> {
+            requireDdlSyntax(isMySqlServerSyntaxAllowed() && isMySqlTextString(new StringValue(token.image)),
+                    "Expected a name but found " + token.image);
+            name = token.image;
+        } )
+    { return name; }
 }
 
 Expression ForeignServerVersion():
@@ -28858,18 +29100,24 @@ AlterServer AlterServer():
     Expression version; List<ForeignDataOption> options;
 }
 {
-    ContextualKeyword("SERVER") name=RelObjectName() { statement.setName(name); }
+    ContextualKeyword("SERVER") name=ServerObjectName() { statement.setName(name); }
     (
         <K_RENAME> <K_TO> name=RelObjectName()
         { statement.setAction(ForeignObjectAlterAction.RENAME); statement.setNewName(name); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
         { statement.setAction(ForeignObjectAlterAction.OWNER); statement.setOwner(name); }
         | [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
-          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
+          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ServerOptions(true) { statement.setOptions(options); } ]
           { requireDdlSyntax(statement.getVersion() != null || statement.getOptions() != null,
                     "ALTER SERVER requires VERSION or OPTIONS"); }
     )
-    { return statement; }
+    {
+        // MySQL: ALTER SERVER name OPTIONS (option[, ...])
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || statement.getAction() == ForeignObjectAlterAction.OPTIONS && statement.getVersion() == null,
+                "MySQL ALTER SERVER takes OPTIONS");
+        return statement;
+    }
 }
 
 CreateUserMapping CreateUserMapping():

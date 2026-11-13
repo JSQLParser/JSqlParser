@@ -615,6 +615,14 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        // loads or unloads server code, like DuckDB's INSTALL; no data or schema changes
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AttachStatement attachStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SESSION);

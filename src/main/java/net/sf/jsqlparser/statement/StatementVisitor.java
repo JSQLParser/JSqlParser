@@ -231,6 +231,14 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+    default <S> T visit(PluginStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(PluginStatement statement) {
+        visit(statement, null);
+    }
+
     <S> T visit(Commit commit, S context);
 
     default void visit(Commit commit) {

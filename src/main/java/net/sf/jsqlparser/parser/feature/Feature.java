@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetConstraintsStatement;
@@ -813,6 +814,18 @@ public enum Feature {
      * @see XaStatement
      */
     xa,
+    /**
+     * MySQL and MariaDB INSTALL PLUGIN and UNINSTALL PLUGIN
+     *
+     * @see PluginStatement
+     */
+    installPlugin,
+    /**
+     * MySQL INSTALL COMPONENT and UNINSTALL COMPONENT
+     *
+     * @see PluginStatement
+     */
+    installComponent,
     /**
      * SQL "LOCK TABLE" statement is allowed
      *
