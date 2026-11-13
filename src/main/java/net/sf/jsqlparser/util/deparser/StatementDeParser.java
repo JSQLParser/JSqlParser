@@ -148,6 +148,7 @@ import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -580,32 +581,38 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(ShowColumnsStatement show, S context) {
-        new ShowColumnsStatementDeParser(builder).deParse(show);
-        return builder;
+        return show.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ShowIndexStatement showIndexes, S context) {
-        new ShowIndexStatementDeParser(builder).deParse(showIndexes);
-        return builder;
+        return showIndexes.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ShowTablesStatement showTables, S context) {
-        new ShowTablesStatementDeparser(builder).deParse(showTables);
-        return builder;
+        return showTables.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ShowTableStatusStatement showTableStatus, S context) {
-        builder.append(showTableStatus);
-        return builder;
+        return showTableStatus.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ShowCreateStatement showCreate, S context) {
         builder.append(showCreate);
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(MySqlShowStatement mySqlShow, S context) {
+        return mySqlShow.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override

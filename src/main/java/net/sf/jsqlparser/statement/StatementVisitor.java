@@ -111,6 +111,7 @@ import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
 import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -549,6 +550,14 @@ public interface StatementVisitor<T> {
 
     default void visit(ShowCreateStatement showCreate) {
         this.visit(showCreate, null);
+    }
+
+    default <S> T visit(MySqlShowStatement mySqlShow, S context) {
+        return null;
+    }
+
+    default void visit(MySqlShowStatement mySqlShow) {
+        this.visit(mySqlShow, null);
     }
 
     <S> T visit(Merge merge, S context);

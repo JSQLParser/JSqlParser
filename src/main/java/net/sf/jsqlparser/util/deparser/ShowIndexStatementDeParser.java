@@ -23,7 +23,7 @@ public class ShowIndexStatementDeParser extends AbstractDeParser<ShowIndexStatem
 
     @Override
     public void deParse(ShowIndexStatement show) {
-        builder.append("SHOW INDEX FROM ").append(show.getTableName());
+        show.appendTo(builder, builder::append);
     }
 
 }
