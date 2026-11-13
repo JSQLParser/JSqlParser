@@ -104,6 +104,8 @@ import net.sf.jsqlparser.statement.role.*;
 import net.sf.jsqlparser.statement.imprt.*;
 import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
+import net.sf.jsqlparser.statement.admin.*;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CancellationException;
@@ -183,6 +185,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isUnlockTablesAhead() || isBackupLockAhead();
             case K_END:
                 return isEndTransactionAhead();
+            case K_CHECK: case K_CHECKSUM: case K_OPTIMIZE: case K_REPAIR:
+                return isTableMaintenanceAhead();
+            case K_FLUSH:
+                return isFlushAhead();
+            case K_KILL:
+                return isKillAhead();
+            case K_HANDLER:
+                return isHandlerAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -2618,6 +2628,122 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && isMySqlLockDialect(false);
     }
 
+    /** MySQL's FLUSH, KILL, HANDLER and RESET PERSIST parse without a dialect and with MySQL's. */
+    private boolean isMySqlServerAdminDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.MYSQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether MySQL FLUSH starts here: FLUSH, an optional NO_WRITE_TO_BINLOG or LOCAL, and then
+     * TABLE, TABLES or the first word of a flush option. Other FLUSH forms, such as the FLUSH
+     * HOSTS that MySQL 8.4 removed, remain unsupported statements.
+     */
+    private boolean isFlushAhead() {
+        if (getToken(1).kind != K_FLUSH || !isMySqlServerAdminDialect()) {
+            return false;
+        }
+        int modifier = getToken(2).kind;
+        Token next = getToken(modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL ? 3 : 2);
+        if (next.kind == K_TABLE || next.kind == K_TABLES) {
+            return true;
+        }
+        if (next.kind != S_IDENTIFIER && next.kind != K_BINARY && next.kind != K_ENGINE
+                && next.kind != K_ERROR) {
+            return false;
+        }
+        for (FlushOption.Kind kind : FlushOption.Kind.values()) {
+            if (kind.getKeyword().split(" ")[0].equalsIgnoreCase(next.image)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether MySQL KILL [CONNECTION | QUERY] processlist_id starts here. */
+    private boolean isKillAhead() {
+        int next = getToken(2).kind;
+        return getToken(1).kind == K_KILL && next != EOF && next != ST_SEMICOLON
+                && isMySqlServerAdminDialect();
+    }
+
+    /** Whether MySQL HANDLER starts here: a table or handler name, then OPEN, READ or CLOSE. */
+    private boolean isHandlerAhead() {
+        if (getToken(1).kind != K_HANDLER || !isMySqlServerAdminDialect()) {
+            return false;
+        }
+        int offset = 2;
+        while (isIdentifierishNameToken(getToken(offset)) && ".".equals(getToken(offset + 1).image)) {
+            offset += 2;
+        }
+        int action = getToken(offset + 1).kind;
+        return isIdentifierishNameToken(getToken(offset))
+                && (action == K_OPEN || action == K_READ || action == K_CLOSE);
+    }
+
+    /**
+     * Whether HANDLER ... READ continues with an index name: a comparison or FIRST, NEXT, PREV or
+     * LAST follows the name. Otherwise FIRST or NEXT reads in storage order.
+     */
+    private boolean isHandlerIndexAhead() {
+        Token next = getToken(2);
+        switch (next.kind) {
+            case K_FIRST: case K_NEXT: case K_LAST:
+            case OP_GREATERTHANEQUALS: case OP_MINORTHANEQUALS:
+                return isIdentifierishNameToken(getToken(1));
+            default:
+                return isIdentifierishNameToken(getToken(1)) && ("=".equals(next.image)
+                        || "<".equals(next.image) || ">".equals(next.image)
+                        || next.kind == S_IDENTIFIER && "PREV".equalsIgnoreCase(next.image));
+        }
+    }
+
+    /**
+     * Whether MySQL RESET PERSIST starts here. Without a dialect only a variable name, which may
+     * have a component prefix, or IF EXISTS after PERSIST tells it from PostgreSQL's RESET of a
+     * parameter named persist, which a bare RESET PERSIST keeps.
+     */
+    private boolean isResetPersistAhead() {
+        if (getToken(1).kind != K_RESET || !isWordSequenceAhead(2, "PERSIST")) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (Dialect.MYSQL.name().equals(dialect)) {
+            return true;
+        }
+        Token next = getToken(3);
+        int end = getToken(4).kind;
+        return dialect == null && (next.kind == K_IF && end == K_EXISTS
+                || isIdentifierishNameToken(next)
+                        && (end == EOF || end == ST_SEMICOLON || ".".equals(getToken(4).image)));
+    }
+
+    /** Whether one of the expressions holds a subquery. */
+    private static boolean containsSubquery(Expression... expressions) {
+        boolean[] found = new boolean[1];
+        ExpressionVisitorAdapter<Void> finder = new ExpressionVisitorAdapter<Void>() {
+            @Override
+            public <S> Void visit(Select select, S context) {
+                found[0] = true;
+                return null;
+            }
+        };
+        for (Expression expression : expressions) {
+            if (expression != null) {
+                expression.accept(finder, null);
+            }
+        }
+        return found[0];
+    }
+
+    private static FlushOption.Kind flushOptionKind(String keyword) throws ParseException {
+        FlushOption.Kind kind = FlushOption.Kind.fromKeyword(keyword);
+        if (kind == null) {
+            throw new ParseException("Unknown FLUSH option: " + keyword);
+        }
+        return kind;
+    }
+
     /**
      * Whether NO_WRITE_TO_BINLOG or LOCAL modifies a MySQL partition operation. Followed by a
      * comma, INTO or the end of the statement, the word remains a partition name.
@@ -4846,6 +4972,7 @@ String NonReservedWordPart1() :
       | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
       | tk=<K_GUARD:"GUARD">
+      | tk=<K_HANDLER:"HANDLER">
       | tk=<K_HASH:"HASH">
       | tk=<K_HIGH : "HIGH">
       | tk=<K_HIGH_PRIORITY : "HIGH_PRIORITY">
@@ -5738,6 +5865,12 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
             |
+            LOOKAHEAD({ isFlushAhead() }) stm = FlushStatement()
+            |
+            LOOKAHEAD({ isKillAhead() }) stm = KillStatement()
+            |
+            LOOKAHEAD({ isHandlerAhead() }) stm = HandlerStatement()
+            |
             LOOKAHEAD({ isReindexAhead() }) stm = Reindex()
             |
             LOOKAHEAD({ getToken(1).kind == K_SECURITY && "LABEL".equalsIgnoreCase(getToken(2).image) })
@@ -5778,6 +5911,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ isSetConstraintsAhead() }) stm = SetConstraintsStatement()
             |
             stm = Set()
+            |
+            LOOKAHEAD({ isResetPersistAhead() }) stm = ResetPersist()
             |
             stm = Reset()
             |
@@ -7480,6 +7615,33 @@ String ConfigurationParameterName():
         name = RelObjectName()
     )
     { return name; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/reset-persist.html
+ResetStatement ResetPersist():
+{
+    ResetStatement reset = new ResetStatement((String) null).withPersist(true);
+    String name;
+    String part;
+    Token prefix;
+}
+{
+    <K_RESET> ContextualKeyword("PERSIST")
+    [
+        // MySQL reserves IF, so IF without EXISTS starts the next statement
+        LOOKAHEAD({ getToken(1).kind == K_IF ? getToken(2).kind == K_EXISTS
+                : isIdentifierishNameToken(getToken(1)) })
+        [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { reset.setIfExists(true); } ]
+        // MySQL's persisted_variable_ident: ident, ident.ident or DEFAULT.ident
+        (
+            LOOKAHEAD(2) prefix=<K_DEFAULT> "." part=RelObjectName() { name = prefix.image + "." + part; }
+            |
+            LOOKAHEAD({ getToken(1).kind != K_DEFAULT })
+            name=RelObjectName() [ "." part=RelObjectName() { name = name + "." + part; } ]
+        )
+        { reset.setName(name); }
+    ]
+    { return reset; }
 }
 
 RenameTableStatement RenameTableStatement(): {
@@ -20750,7 +20912,7 @@ TableMaintenanceStatement TableMaintenanceStatement():
     TableMaintenanceStatement statement = new TableMaintenanceStatement();
     TableMaintenanceStatement.Operation operation = null;
     TableMaintenanceStatement.Option option = null;
-    Token modifier = null;
+    TableMaintenanceStatement.Modifier modifier;
     Token word = null;
     Table table = null;
 }
@@ -20765,11 +20927,7 @@ TableMaintenanceStatement TableMaintenanceStatement():
     [
         LOOKAHEAD({ operation.allowsModifier()
                 && (getToken(1).kind == K_NO_WRITE_TO_BINLOG || getToken(1).kind == K_LOCAL) })
-        ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
-        {
-            statement.setModifier(TableMaintenanceStatement.Modifier.valueOf(
-                    modifier.image.toUpperCase(Locale.ROOT)));
-        }
+        modifier=BinlogModifier() { statement.setModifier(modifier); }
     ]
     ( <K_TABLE> | <K_TABLES> { statement.setTablesKeyword(true); } )
     table=Table() { statement.addTables(table); }
@@ -20790,6 +20948,199 @@ TableMaintenanceStatement TableMaintenanceStatement():
                 || statement.getOptions().size() <= 1, "CHECKSUM TABLE takes QUICK or EXTENDED, not both");
         return statement;
     }
+}
+
+/** MySQL's opt_no_write_to_binlog: NO_WRITE_TO_BINLOG or its synonym LOCAL. */
+TableMaintenanceStatement.Modifier BinlogModifier():
+{ Token modifier; }
+{
+    ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
+    { return TableMaintenanceStatement.Modifier.valueOf(modifier.image.toUpperCase(Locale.ROOT)); }
+}
+
+/**
+ * MySQL FLUSH [NO_WRITE_TO_BINLOG | LOCAL] followed by flush options or by
+ * {TABLE | TABLES} [tbl_name [, tbl_name] ...] [WITH READ LOCK | FOR EXPORT].
+ * https://dev.mysql.com/doc/refman/8.4/en/flush.html
+ */
+FlushStatement FlushStatement():
+{
+    FlushStatement statement = new FlushStatement();
+    TableMaintenanceStatement.Modifier modifier;
+    FlushOption option;
+    Table table;
+}
+{
+    <K_FLUSH>
+    [ modifier=BinlogModifier() { statement.setModifier(modifier); } ]
+    (
+        ( <K_TABLE> { statement.setTablesKeyword(false); } | <K_TABLES> )
+        [
+            table=Table() { statement.addTables(table); }
+            ( "," table=Table() { statement.addTables(table); } )*
+        ]
+        [
+            // WITH without READ LOCK starts the next statement
+            LOOKAHEAD({ getToken(1).kind == K_WITH && getToken(2).kind == K_READ
+                    || getToken(1).kind == K_FOR })
+            (
+                <K_WITH> <K_READ> <K_LOCK>
+                { statement.setTableLock(FlushStatement.TableLock.WITH_READ_LOCK); }
+                |
+                <K_FOR> <K_EXPORT> {
+                    requireDdlSyntax(!statement.getTables().isEmpty(), "FOR EXPORT requires a table list");
+                    statement.setTableLock(FlushStatement.TableLock.FOR_EXPORT);
+                }
+            )
+        ]
+        |
+        option=FlushOption() { statement.addOptions(option); }
+        ( "," option=FlushOption() { statement.addOptions(option); } )*
+    )
+    { return statement; }
+}
+
+/** A flush option of one word, or of a word and LOGS. Only RELAY LOGS names a channel. */
+FlushOption FlushOption():
+{
+    Token first = getToken(1);
+    Token word;
+    Token channel;
+    FlushOption option;
+}
+{
+    (
+        LOOKAHEAD({ isWordSequenceAhead(2, "LOGS") })
+        ( word=<K_BINARY> | word=<K_ENGINE> | word=<K_ERROR> | word=<S_IDENTIFIER> )
+        ContextualKeyword("LOGS")
+        { option = new FlushOption(flushOptionKind(word.image + " LOGS")); }
+        |
+        word=<S_IDENTIFIER> { option = new FlushOption(flushOptionKind(word.image)); }
+    )
+    [
+        <K_FOR> ContextualKeyword("CHANNEL") channel=<S_CHAR_LITERAL>
+        {
+            requireDdlSyntax(option.getKind() == FlushOption.Kind.RELAY_LOGS,
+                    "Only RELAY LOGS takes FOR CHANNEL");
+            option.setChannel(stringValue(channel));
+        }
+    ]
+    { linkAST(option, first); return option; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/kill.html
+KillStatement KillStatement():
+{
+    KillStatement statement = new KillStatement();
+    Expression id;
+}
+{
+    <K_KILL>
+    [
+        LOOKAHEAD({ getToken(1).kind == K_QUERY || isKeywordAhead("CONNECTION") })
+        (
+            <K_QUERY> { statement.setKind(KillStatement.Kind.QUERY); }
+            |
+            ContextualKeyword("CONNECTION") { statement.setKind(KillStatement.Kind.CONNECTION); }
+        )
+    ]
+    id=Expression() { statement.setProcesslistId(id); }
+    { return statement; }
+}
+
+/**
+ * MySQL HANDLER tbl_name OPEN [[AS] alias], HANDLER name READ ... and HANDLER name CLOSE. READ
+ * and CLOSE take the handler name, which is unqualified.
+ * https://dev.mysql.com/doc/refman/8.4/en/handler.html
+ */
+HandlerStatement HandlerStatement():
+{
+    HandlerStatement statement = new HandlerStatement();
+    Table table;
+    String name;
+    boolean useAs = false;
+}
+{
+    <K_HANDLER>
+    (
+        LOOKAHEAD({ getToken(2).kind != K_READ && getToken(2).kind != K_CLOSE })
+        table=Table() <K_OPEN>
+        [
+            [ <K_AS> { useAs = true; } ]
+            name=RelObjectName() { table.setAlias(new Alias(name, useAs)); }
+        ]
+        |
+        name=RelObjectName() { table = linkToLastToken(createTable(Arrays.asList(name))); }
+        (
+            <K_CLOSE> { statement.setAction(HandlerStatement.Action.CLOSE); }
+            |
+            <K_READ> { statement.setAction(HandlerStatement.Action.READ); }
+            HandlerRead(statement)
+        )
+    )
+    { statement.setTable(table); return statement; }
+}
+
+void HandlerRead(HandlerStatement statement):
+{
+    String index;
+    ExpressionList<?> values;
+    Expression expression;
+    Limit limit;
+}
+{
+    (
+        LOOKAHEAD({ isHandlerIndexAhead() })
+        index=RelObjectName() { statement.setIndexName(index); }
+        (
+            HandlerKeyComparison(statement) values=ParenthesedExpressionList()
+            {
+                requireDdlSyntax(!values.isEmpty(), "HANDLER READ requires key values");
+                statement.setKeyValues(values);
+            }
+            |
+            <K_FIRST> { statement.setDirection(HandlerStatement.Direction.FIRST); }
+            | <K_NEXT> { statement.setDirection(HandlerStatement.Direction.NEXT); }
+            | ContextualKeyword("PREV") { statement.setDirection(HandlerStatement.Direction.PREV); }
+            | <K_LAST> { statement.setDirection(HandlerStatement.Direction.LAST); }
+        )
+        |
+        <K_FIRST> { statement.setDirection(HandlerStatement.Direction.FIRST); }
+        |
+        <K_NEXT> { statement.setDirection(HandlerStatement.Direction.NEXT); }
+    )
+    [ expression=WhereClause() { statement.setWhere(expression); } ]
+    [
+        limit=LimitWithOffset() { statement.setLimit(limit); }
+        [
+            <K_OFFSET> expression=Expression()
+            {
+                requireDdlSyntax(limit.getOffset() == null, "LIMIT offset, row_count takes no OFFSET");
+                statement.setOffset(new Offset().withOffset(expression));
+            }
+        ]
+    ]
+    {
+        // MySQL parses HANDLER READ with subqueries disallowed, like PURGE
+        requireDdlSyntax(!containsSubquery(statement.getKeyValues(), statement.getWhere(),
+                statement.getLimit() == null ? null : statement.getLimit().getOffset(),
+                statement.getLimit() == null ? null : statement.getLimit().getRowCount(),
+                statement.getOffset() == null ? null : statement.getOffset().getOffset()),
+                "HANDLER READ takes no subquery");
+    }
+}
+
+void HandlerKeyComparison(HandlerStatement statement):
+{ HandlerStatement.KeyComparison comparison; }
+{
+    (
+        "=" { comparison = HandlerStatement.KeyComparison.EQUALS; }
+        | <OP_MINORTHANEQUALS> { comparison = HandlerStatement.KeyComparison.LESS_THAN_OR_EQUALS; }
+        | <OP_GREATERTHANEQUALS> { comparison = HandlerStatement.KeyComparison.GREATER_THAN_OR_EQUALS; }
+        | "<" { comparison = HandlerStatement.KeyComparison.LESS_THAN; }
+        | ">" { comparison = HandlerStatement.KeyComparison.GREATER_THAN; }
+    )
+    { statement.setKeyComparison(comparison); }
 }
 
 /**
@@ -23214,14 +23565,10 @@ AlterExpressionPartition AddPartition():
 /** Parses MySQL's opt_no_write_to_binlog of a partition operation. */
 void PartitionBinlogModifier(AlterExpressionPartition alterExp):
 {
-    Token tk;
+    TableMaintenanceStatement.Modifier modifier;
 }
 {
-    ( tk=<K_NO_WRITE_TO_BINLOG> | tk=<K_LOCAL> )
-    {
-        alterExp.setModifier(TableMaintenanceStatement.Modifier.valueOf(
-                tk.image.toUpperCase(Locale.ROOT)));
-    }
+    modifier=BinlogModifier() { alterExp.setModifier(modifier); }
 }
 
 /**
@@ -27339,10 +27686,10 @@ ForeignDataWrapperFunctions ForeignDataWrapperFunctions():
         { name = null; }
         (
             <K_NO>
-            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+            ( <K_HANDLER> { handler = true; }
               | ContextualKeyword("VALIDATOR") { handler = false; } )
             |
-            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+            ( <K_HANDLER> { handler = true; }
               | ContextualKeyword("VALIDATOR") { handler = false; } )
             name=AccessQualifiedName()
         )
@@ -27446,7 +27793,7 @@ CreateAccessMethod CreateAccessMethod():
     { statement.setName(name); }
     <K_TYPE> ( <K_TABLE> { statement.setType(CreateAccessMethod.Type.TABLE); }
                | <K_INDEX> { statement.setType(CreateAccessMethod.Type.INDEX); } )
-    ContextualKeyword("HANDLER") name=AccessQualifiedName()
+    <K_HANDLER> name=AccessQualifiedName()
     { statement.setHandler(name); return statement; }
 }
 

@@ -24,8 +24,7 @@ public class ResetStatementDeParser extends AbstractDeParser<ResetStatement> {
 
     @Override
     public void deParse(ResetStatement set) {
-        builder.append("RESET ");
-        builder.append(set.getName());
+        set.appendTo(builder);
     }
 
     public ExpressionVisitor<StringBuilder> getExpressionVisitor() {

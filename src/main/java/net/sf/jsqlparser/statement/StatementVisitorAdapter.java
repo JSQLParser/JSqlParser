@@ -94,6 +94,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.InsertConflictAction;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -749,6 +752,24 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(TableMaintenanceStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FlushStatement flush, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(KillStatement kill, S context) {
+        expressionVisitor.visitExpression(kill.getProcesslistId(), context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(HandlerStatement handler, S context) {
+        expressionVisitor.visitExpression(handler.getKeyValues(), context);
+        expressionVisitor.visitExpression(handler.getWhere(), context);
         return null;
     }
 

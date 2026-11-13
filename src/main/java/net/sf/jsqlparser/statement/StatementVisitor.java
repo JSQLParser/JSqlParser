@@ -91,6 +91,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -407,6 +410,30 @@ public interface StatementVisitor<T> {
 
     default void visit(TableMaintenanceStatement statement) {
         this.visit(statement, null);
+    }
+
+    default <S> T visit(FlushStatement flush, S context) {
+        return null;
+    }
+
+    default void visit(FlushStatement flush) {
+        this.visit(flush, null);
+    }
+
+    default <S> T visit(KillStatement kill, S context) {
+        return null;
+    }
+
+    default void visit(KillStatement kill) {
+        this.visit(kill, null);
+    }
+
+    default <S> T visit(HandlerStatement handler, S context) {
+        return null;
+    }
+
+    default void visit(HandlerStatement handler) {
+        this.visit(handler, null);
     }
 
     default <S> T visit(VacuumStatement vacuum, S context) {

@@ -32,6 +32,8 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.XaStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -55,6 +57,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -493,6 +496,27 @@ public enum Feature {
      * @see TableMaintenanceStatement
      */
     tableMaintenance,
+
+    /**
+     * MySQL "FLUSH" statement is allowed
+     *
+     * @see FlushStatement
+     */
+    flush,
+
+    /**
+     * MySQL "KILL" statement is allowed
+     *
+     * @see KillStatement
+     */
+    kill,
+
+    /**
+     * MySQL "HANDLER ... OPEN", "HANDLER ... READ" and "HANDLER ... CLOSE" statements are allowed
+     *
+     * @see HandlerStatement
+     */
+    handler,
 
     /**
      * PostgreSQL "VACUUM" statement is allowed
@@ -987,6 +1011,12 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.notify.ListenStatement
      */
     listen,
+    /**
+     * MySQL "RESET PERSIST" statement is allowed
+     *
+     * @see ResetStatement#isPersist()
+     */
+    resetPersist,
     /**
      * @see Pivot
      */
