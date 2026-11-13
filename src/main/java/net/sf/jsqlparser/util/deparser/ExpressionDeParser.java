@@ -121,6 +121,7 @@ import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNormalizedExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
@@ -606,6 +607,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     public void visit(IsBooleanExpression isBooleanExpression) {
         visit(isBooleanExpression, null);
+    }
+
+    @Override
+    public <S> StringBuilder visit(IsNormalizedExpression isNormalizedExpression, S context) {
+        return isNormalizedExpression.appendTo(builder,
+                expression -> expression.accept(this, context));
     }
 
     public void visit(IsUnknownExpression isUnknownExpression) {
@@ -1754,13 +1761,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(TimezoneExpression var, S context) {
-        var.getLeftExpression().accept(this, context);
-
-        for (Expression expr : var.getTimezoneExpressions()) {
-            builder.append(" AT TIME ZONE ");
-            expr.accept(this, context);
-        }
-        return builder;
+        return var.appendTo(builder, expression -> expression.accept(this, context));
     }
 
     @Override

@@ -70,6 +70,7 @@ import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SampleClause;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectIntoClause;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -328,9 +329,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.getForXmlPath() != null) {
             builder.append(" FOR XML PATH(").append(plainSelect.getForXmlPath()).append(")");
         }
-        if (plainSelect.getIntoTempTable() != null) {
-            builder.append(" INTO TEMP ").append(plainSelect.getIntoTempTable());
-        }
+        deparseIntoClause(plainSelect, SelectIntoClause.Position.TRAILING, context);
         if (plainSelect.isUseWithNoLog()) {
             builder.append(" WITH NO LOG");
         }
@@ -386,15 +385,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.deleteCharAt(beforeItems - 1);
         }
 
-        if (plainSelect.getIntoTables() != null) {
-            builder.append(" INTO ");
-            for (Iterator<Table> iter = plainSelect.getIntoTables().iterator(); iter.hasNext();) {
-                visit(iter.next(), context);
-                if (iter.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-        }
+        deparseIntoClause(plainSelect, SelectIntoClause.Position.BEFORE_FROM, context);
 
         deparseMySqlSelectInto(plainSelect, MySqlSelectIntoClause.Position.BEFORE_FROM, context);
     }
@@ -756,6 +747,15 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
+    private <S> void deparseIntoClause(PlainSelect select, SelectIntoClause.Position position,
+            S context) {
+        SelectIntoClause into = select.getIntoClause();
+        if (into != null && into.getPosition() == position) {
+            builder.append(' ');
+            into.appendTo(builder, table -> visit(table, context));
+        }
+    }
+
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
         if (join.isGlobal()) {
@@ -790,18 +790,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" ON ");
             onExpression.accept(expressionVisitor, null);
         }
-        if (!join.getUsingColumns().isEmpty()) {
-            builder.append(" USING (");
-            for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator
-                    .hasNext();) {
-                Column column = iterator.next();
-                builder.append(column.toString());
-                if (iterator.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-            builder.append(")");
-        }
+        join.appendUsingTo(builder);
 
     }
 

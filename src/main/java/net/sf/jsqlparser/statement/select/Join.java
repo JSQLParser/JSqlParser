@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
@@ -25,6 +26,7 @@ public class Join extends ASTNodeAccessImpl {
 
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
     private final LinkedList<Column> usingColumns = new LinkedList<>();
+    private Alias usingAlias;
     private boolean asOf = false;
     private boolean outer = false;
     private boolean right = false;
@@ -494,6 +496,23 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     * The alias of the USING columns, as in PostgreSQL's {@code a JOIN b USING (id) AS j}: a table
+     * alias that exposes only the columns listed in USING. Null when there is none.
+     */
+    public Alias getUsingAlias() {
+        return usingAlias;
+    }
+
+    public void setUsingAlias(Alias usingAlias) {
+        this.usingAlias = usingAlias;
+    }
+
+    public Join withUsingAlias(Alias usingAlias) {
+        this.setUsingAlias(usingAlias);
+        return this;
+    }
+
     public boolean isWindowJoin() {
         return joinWindow != null;
     }
@@ -617,11 +636,23 @@ public class Join extends ASTNodeAccessImpl {
         for (Expression onExpression : onExpressions) {
             builder.append(" ON ").append(onExpression);
         }
-        if (!usingColumns.isEmpty()) {
-            builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
-        }
+        appendUsingTo(builder);
 
         return builder.toString();
+    }
+
+    /**
+     * Appends {@code USING (columns) [AS alias]} with a leading space, or nothing when the join has
+     * no USING columns.
+     */
+    public StringBuilder appendUsingTo(StringBuilder builder) {
+        if (!usingColumns.isEmpty()) {
+            builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
+            if (usingAlias != null) {
+                builder.append(" AS ").append(usingAlias.getName());
+            }
+        }
+        return builder;
     }
 
     public Join addUsingColumns(Column... usingColumns) {
