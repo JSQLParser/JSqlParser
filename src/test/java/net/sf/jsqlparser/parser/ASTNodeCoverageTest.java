@@ -211,6 +211,12 @@ public class ASTNodeCoverageTest {
                 "CLOSE ALL"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
+        for (String sql : new String[] {"SELECT v:select FROM t", "SELECT v:select::INT FROM t",
+                "SELECT v:select.x[0], v:from::INT + 1 FROM t",
+                "SELECT v:a.output, v:a.b.from::INT, v:a[0].from.x[1] + 1 FROM t"}) {
+            new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql,
+                    parser -> parser.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE)));
+        }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";
         new Walk(describe, describe, problems).check(CCJSqlParserUtil.parseStatements(describe,
                 parser -> parser.withDialect(AbstractJSqlParser.Dialect.MYSQL)));
