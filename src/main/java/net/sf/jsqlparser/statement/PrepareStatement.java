@@ -11,21 +11,25 @@ package net.sf.jsqlparser.statement;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * {@code PREPARE name [(types)] AS statement}, which stores a parameterised statement for later
- * {@code EXECUTE}.
+ * {@code EXECUTE}, or MySQL's {@code PREPARE name FROM {'text' | @variable}}, which takes the
+ * statement's text from a string literal or a user variable.
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/query_syntax/prepared_statements">Prepared
  *      statements</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/prepare.html">MySQL PREPARE</a>
  */
 public class PrepareStatement extends ASTNodeAccessImpl implements Statement {
     private String name;
     private Statement statement;
     private List<ColDataType> parameterTypes;
+    private Expression source;
 
     public PrepareStatement() {}
 
@@ -53,6 +57,9 @@ public class PrepareStatement extends ASTNodeAccessImpl implements Statement {
 
     public void setStatement(Statement statement) {
         this.statement = statement;
+        if (statement != null) {
+            this.source = null;
+        }
     }
 
     public PrepareStatement withStatement(Statement statement) {
@@ -74,13 +81,46 @@ public class PrepareStatement extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    /**
+     * The statement text of MySQL's {@code FROM} form: a string literal
+     * ({@link net.sf.jsqlparser.expression.StringValue}) or a user variable
+     * ({@link net.sf.jsqlparser.expression.UserVariable}). Null for the {@code AS} form.
+     */
+    public Expression getSource() {
+        return source;
+    }
+
+    public void setSource(Expression source) {
+        this.source = source;
+        if (source != null) {
+            this.statement = null;
+            this.parameterTypes = null;
+        }
+    }
+
+    public PrepareStatement withSource(Expression source) {
+        setSource(source);
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         return appendTo(builder, builder::append);
     }
 
     /** Renders the nested statement through the caller's statement writer. */
     public StringBuilder appendTo(StringBuilder builder, Consumer<Statement> statementPrinter) {
+        return appendTo(builder, statementPrinter, builder::append);
+    }
+
+    /** Renders the nested statement and the statement text through the caller's writers. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Statement> statementPrinter,
+            Consumer<Expression> expressionPrinter) {
         builder.append("PREPARE ").append(name);
+        if (source != null) {
+            builder.append(" FROM ");
+            expressionPrinter.accept(source);
+            return builder;
+        }
         if (parameterTypes != null && !parameterTypes.isEmpty()) {
             builder.append(PlainSelect.getStringList(parameterTypes, true, true));
         }

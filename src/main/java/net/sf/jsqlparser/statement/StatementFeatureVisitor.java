@@ -826,7 +826,12 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(DoStatement statement, S context) {
         analysis.claimTopLevel();
-        analysis.opaque("DO");
+        if (statement.getSelectItems() == null) {
+            analysis.opaque("DO");
+        } else {
+            // MySQL evaluates the expressions and discards their values
+            statement.visitExpressions(expression -> expression.accept(analysis.expressions, null));
+        }
         return null;
     }
 
@@ -850,7 +855,10 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(ExplainStatement explainStatement, S context) {
         if (analysis.claimTopLevel()) {
-            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+            // MySQL's EXPLAIN ... INTO @variable stores the plan instead of returning it
+            analysis.certain(explainStatement.getIntoVariable() != null
+                    ? StmtFeature.MODIFIES_SESSION
+                    : StmtFeature.RETURNS_RESULT_SET);
         }
         // EXPLAIN ANALYZE executes the statement. The option set is dialect-specific, so the
         // side effects of the explained statement stay in the possible set.

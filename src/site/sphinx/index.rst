@@ -178,6 +178,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``ALTER FUNCTION`` · ``ALTER PROCEDURE`` · ``ALTER ROUTINE`` · PostgreSQL ``ALTER TRIGGER``
     * - **MySQL metadata statements**
       - ``SHOW [FULL] COLUMNS``/``FIELDS`` · ``SHOW TABLE STATUS`` · ``SHOW CREATE TABLE``/``VIEW``/``PROCEDURE``/``FUNCTION``/``TRIGGER``/``EVENT``/``DATABASE``/``USER``
+    * - **MySQL utility statements**
+      - ``EXPLAIN``/``DESCRIBE [ANALYZE] FORMAT = …`` · ``EXPLAIN FOR CONNECTION`` · ``DESCRIBE t col`` · ``PREPARE … FROM`` · ``EXECUTE … USING`` · ``DROP PREPARE`` · ``DO``
     * - **PostgreSQL administration**
       - ``CREATE``/``ALTER EVENT TRIGGER`` · ``REINDEX`` · ``SECURITY LABEL``
     * - **Salesforce SOQL**

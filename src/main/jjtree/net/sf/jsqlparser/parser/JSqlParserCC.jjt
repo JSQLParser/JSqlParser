@@ -168,7 +168,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_PURGE: case K_SESSION: case K_BRANCH: case K_LOCK: case K_IF: case K_TABLE:
                 return true;
             case K_DO:
-                return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+                return isDoStatementAhead();
             case K_SECURITY:
                 return "LABEL".equalsIgnoreCase(getToken(2).image);
             case K_REINDEX:
@@ -3497,6 +3497,93 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    /** MySQL's EXPLAIN, PREPARE, EXECUTE, DROP PREPARE and DO: MySQL, MariaDB or no dialect. */
+    private boolean isMySqlUtilityDialect() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * Whether MySQL's EXPLAIN syntax starts here: EXPLAIN, DESCRIBE or DESC before FORMAT =, INTO,
+     * FOR or a REPLACE statement, each optionally after ANALYZE. DESCRIBE and DESC also start it
+     * before ANALYZE and a query, or before another explainable statement. EXPLAIN SELECT,
+     * EXPLAIN ANALYZE SELECT, EXPLAIN table, DESCRIBE SELECT and DESCRIBE table keep their
+     * readings.
+     */
+    private boolean isMySqlExplainAhead() {
+        int keyword = getToken(1).kind;
+        if (keyword != K_EXPLAIN && keyword != K_DESCRIBE && keyword != K_DESC
+                || !isMySqlUtilityDialect()) {
+            return false;
+        }
+        boolean analyze = getToken(2).kind == K_ANALYZE;
+        int offset = analyze ? 3 : 2;
+        Token after = getToken(offset + 1);
+        // a word that ends the statement or a qualified name names a table to describe
+        boolean statement = after.kind != EOF && after.kind != ST_SEMICOLON
+                && !".".equals(after.image);
+        switch (getToken(offset).kind) {
+            case K_FORMAT:
+                return "=".equals(after.image);
+            case K_INTO: case K_FOR:
+                return true;
+            case K_REPLACE:
+                return statement;
+            case K_TABLE:
+                // without a dialect, DESCRIBE TABLE t could also be Snowflake's DESCRIBE of a table
+                return keyword != K_EXPLAIN && statement && (analyze || isMySqlDialect());
+            case K_INSERT: case K_UPDATE: case K_DELETE: case K_VALUES:
+                return keyword != K_EXPLAIN && statement;
+            case K_SELECT: case K_WITH: case OPENING_BRACKET:
+                return keyword != K_EXPLAIN && analyze;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Whether a MySQL column name or wildcard string follows the table of DESCRIBE or EXPLAIN. It
+     * ends the statement, and a statement keyword on the next line starts the next statement.
+     * Without a dialect, DESCRIBE x y could also be Snowflake's DESCRIBE of an object kind.
+     */
+    private boolean isDescribeColumnAhead() {
+        int end = getToken(2).kind;
+        return isMySqlDialect() && (end == EOF || end == ST_SEMICOLON)
+                && (getToken(1).beginLine == getToken(0).endLine || !isStatementStartAhead());
+    }
+
+    /**
+     * Whether DO starts PostgreSQL's code block or MySQL's expression list. Without a dialect, a
+     * string or LANGUAGE after DO could start either, so only other expressions start MySQL's DO.
+     */
+    private boolean isDoStatementAhead() {
+        if (getToken(1).kind != K_DO) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect == null) {
+            Token next = getToken(2);
+            return next.kind != S_CHAR_LITERAL && !"LANGUAGE".equalsIgnoreCase(next.image);
+        }
+        return Dialect.POSTGRESQL.name().equals(dialect) || isMySqlDialect();
+    }
+
+    /** MySQL's EXPLAIN formats. The server rejects other names while it parses the statement. */
+    private ExplainStatement.Option mySqlExplainFormat(Token token) throws ParseException {
+        String name = token.image;
+        if (token.kind == S_CHAR_LITERAL || token.kind == S_QUOTED_IDENTIFIER) {
+            char quote = name.charAt(0);
+            name = quote == '\'' || quote == '"' || quote == '`'
+                    ? name.substring(1, name.length() - 1) : "";
+        }
+        ExplainStatement.Format format = ExplainStatement.Format.find(name);
+        if (format != ExplainStatement.Format.TRADITIONAL && format != ExplainStatement.Format.JSON
+                && format != ExplainStatement.Format.TREE) {
+            throw new ParseException("Unknown EXPLAIN format name: " + token.image);
+        }
+        return new ExplainStatement.Option(ExplainStatement.OptionType.FORMAT)
+                .withValue(format.name()).withUseEqual(true);
+    }
+
     /**
      * Whether ALTER TABLE DROP names a MySQL FOREIGN KEY or CHECK constraint. The default
      * configuration accepts both like MySQL; MariaDB has no DROP CHECK. A parenthesized FOREIGN KEY
@@ -3822,7 +3909,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     private static UserVariable requireMySqlIntoVariable(UserVariable variable) throws ParseException {
         if (variable.isDoubleAdd()) {
-            throw new ParseException("INTO requires a user variable with a single @ prefix");
+            throw new ParseException("A user variable with a single @ prefix is required");
         }
         return variable;
     }
@@ -5634,6 +5721,10 @@ Statement SingleStatement() :
                     && (getToken(4).kind == K_FOR || getToken(4).kind == K_IF) })
             stm = DropUserMapping()
             |
+            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE || (getToken(1).kind == K_DROP
+                    && getToken(2).kind == K_PREPARE && isMySqlUtilityDialect()) })
+            stm = DeallocateStatement()
+            |
             stm = Drop()
             |
             LOOKAHEAD({ getToken(1).kind == K_REASSIGN && "OWNED".equalsIgnoreCase(getToken(2).image) })
@@ -5656,8 +5747,7 @@ Statement SingleStatement() :
             |
             stm = Execute()
             |
-            LOOKAHEAD({ getToken(1).kind == K_DO && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
-            stm = DoStatement()
+            LOOKAHEAD({ isDoStatementAhead() }) stm = DoStatement()
             |
             LOOKAHEAD({ Dialect.SQLSERVER.name().equals(getAsString(Feature.dialect))
                 && getToken(1).kind == K_SET && getToken(2).kind == S_IDENTIFIER
@@ -5722,6 +5812,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ isKeywordAhead("NOTIFY") }) stm = NotifyStatement()
             |
+            LOOKAHEAD({ isMySqlExplainAhead() }) stm = MySqlExplain()
+            |
             stm = Describe()
             |
             stm = Explain()
@@ -5750,8 +5842,6 @@ Statement SingleStatement() :
             stm = DisconnectStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_PREPARE }) stm = PrepareStatement()
-            |
-            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
             |
@@ -5859,24 +5949,35 @@ OracleBlock.ExceptionHandler OracleExceptionHandler():
     <K_THEN> body=OracleBlockStatements() { handler.setStatements(body); return handler; }
 }
 
+/**
+ * PostgreSQL's DO [LANGUAGE name] code [LANGUAGE name], or MySQL's DO expr [, expr] ..., which
+ * MySQL reads as a select list.
+ */
 DoStatement DoStatement():
 {
     DoStatement statement = new DoStatement();
     String language;
     Token code;
+    List<SelectItem<?>> items;
 }
 {
     <K_DO>
     (
-        LOOKAHEAD({ isKeywordAhead("LANGUAGE") })
-        AccessKeyword("LANGUAGE") language=RelObjectName() code=<S_CHAR_LITERAL>
-        { statement.setLanguage(language); statement.setLanguageBeforeCode(true); }
+        LOOKAHEAD({ !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        items=SelectItemsList() { statement.setSelectItems(items); }
         |
-        code=<S_CHAR_LITERAL>
-        [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
-            language=RelObjectName() { statement.setLanguage(language); } ]
+        (
+            LOOKAHEAD({ isKeywordAhead("LANGUAGE") })
+            AccessKeyword("LANGUAGE") language=RelObjectName() code=<S_CHAR_LITERAL>
+            { statement.setLanguage(language); statement.setLanguageBeforeCode(true); }
+            |
+            code=<S_CHAR_LITERAL>
+            [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
+                language=RelObjectName() { statement.setLanguage(language); } ]
+        )
+        { statement.setCode(stringValue(code)); }
     )
-    { statement.setCode(stringValue(code)); return statement; }
+    { return statement; }
 }
 
 Block Block() #Block : {
@@ -7622,7 +7723,8 @@ CopyStatement CopyStatement() #CopyStatement:
 }
 
 /**
- * PREPARE name AS statement, storing a parameterised statement for later EXECUTE.
+ * PREPARE name AS statement, storing a parameterised statement for later EXECUTE, or MySQL's
+ * PREPARE name FROM {'text' | @variable}.
  */
 PrepareStatement PrepareStatement() #PrepareStatement:
 {
@@ -7631,14 +7733,23 @@ PrepareStatement PrepareStatement() #PrepareStatement:
     Statement statement;
     List<ColDataType> parameterTypes = new ArrayList<ColDataType>();
     ColDataType parameterType;
+    Token text;
+    Expression source;
 }
 {
     <K_PREPARE> name=RelObjectNames()
     { prepareStatement.setName(String.join(".", name.getNames())); }
-    [ "(" parameterType=PrepareParameterType() { parameterTypes.add(parameterType); }
-        ( "," parameterType=PrepareParameterType() { parameterTypes.add(parameterType); } )*
-        ")" { prepareStatement.setParameterTypes(parameterTypes); } ]
-    <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    (
+        LOOKAHEAD({ getToken(1).kind == K_FROM && isMySqlUtilityDialect() })
+        <K_FROM>
+        ( text=<S_CHAR_LITERAL> { source = stringValue(text); } | source=MySqlIntoVariable() )
+        { prepareStatement.setSource(source); }
+        |
+        [ "(" parameterType=PrepareParameterType() { parameterTypes.add(parameterType); }
+            ( "," parameterType=PrepareParameterType() { parameterTypes.add(parameterType); } )*
+            ")" { prepareStatement.setParameterTypes(parameterTypes); } ]
+        <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    )
     { return prepareStatement; }
 }
 
@@ -7652,7 +7763,7 @@ ColDataType PrepareParameterType():
 }
 
 /**
- * DEALLOCATE [PREPARE] name.
+ * DEALLOCATE [PREPARE] name, or MySQL's DROP PREPARE name.
  */
 DeallocateStatement DeallocateStatement() #DeallocateStatement:
 {
@@ -7660,8 +7771,12 @@ DeallocateStatement DeallocateStatement() #DeallocateStatement:
     ObjectNames name;
 }
 {
-    <K_DEALLOCATE>
-    [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+    (
+        <K_DEALLOCATE>
+        [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+        |
+        <K_DROP> <K_PREPARE> { deallocateStatement.setKeyword(DeallocateStatement.Keyword.DROP); }
+    )
     name=RelObjectNames() { deallocateStatement.setName(String.join(".", name.getNames())); }
     { return deallocateStatement; }
 }
@@ -7958,6 +8073,7 @@ DescribeStatement Describe(): {
     Select select;
     DescribeStatement stmt = new DescribeStatement();
     Token tk = null;
+    Expression pattern;
 } {
     (tk=<K_DESCRIBE> | tk=<K_DESC>)
     (
@@ -7967,9 +8083,113 @@ DescribeStatement Describe(): {
         select = Select() { stmt.setDescribeType(tk.image).setSelect(select); }
         |
         table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+        [ LOOKAHEAD(DescribeColumnPattern(), { isDescribeColumnAhead() })
+          pattern=DescribeColumnPattern() { stmt.setColumnPattern(pattern); } ]
     )
     {
         return stmt;
+    }
+}
+
+/** MySQL's column name or wildcard string after the table of DESCRIBE or EXPLAIN. */
+Expression DescribeColumnPattern():
+{
+    Token token;
+    String name;
+    Expression pattern;
+}
+{
+    (
+        token=<S_CHAR_LITERAL> { pattern = stringValue(token); }
+        |
+        token=<S_HEX> { pattern = linkToLastToken(new HexValue(token.image)); }
+        |
+        name=RelObjectName() { pattern = linkToLastToken(new Column(name)); }
+    )
+    { return pattern; }
+}
+
+/**
+ * MySQL's EXPLAIN, also spelled DESCRIBE or DESC: ANALYZE [FORMAT = name], or
+ * [FORMAT = name] [INTO @variable], then FOR CONNECTION id or
+ * [FOR {SCHEMA | DATABASE} name] and the explained statement.
+ */
+ExplainStatement MySqlExplain():
+{
+    Token keyword;
+    ExplainStatement explain;
+    List<ExplainStatement.Option> options = new ArrayList<ExplainStatement.Option>();
+    ExplainStatement.Option option;
+    UserVariable variable;
+    Token token;
+    Expression connection;
+    String schema;
+    Statement statement;
+}
+{
+    ( keyword=<K_EXPLAIN> | keyword=<K_DESCRIBE> | keyword=<K_DESC> )
+    { explain = new ExplainStatement(keyword.image); }
+    (
+        <K_ANALYZE>
+        { options.add(new ExplainStatement.Option(ExplainStatement.OptionType.ANALYZE)); }
+        [ option=MySqlExplainFormat() { options.add(option); } ]
+        |
+        [ option=MySqlExplainFormat() { options.add(option); } ]
+        [ <K_INTO> variable=MySqlIntoVariable() { explain.setIntoVariable(variable); } ]
+    )
+    { explain.setOptionList(options); }
+    (
+        LOOKAHEAD({ getToken(1).kind == K_FOR && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_FOR> AccessKeyword("CONNECTION")
+        ( token=<S_LONG> { connection = new LongValue(token.image); }
+          | token=<S_HEX> { connection = new HexValue(token.image); } )
+        { explain.setConnectionId(linkToLastToken(connection)); }
+        |
+        [
+            <K_FOR> ( <K_SCHEMA> { explain.setSchemaKeyword(true); } | <K_DATABASE> )
+            ( schema=RelObjectName() | token=<S_CHAR_LITERAL> { schema = token.image; } )
+            { explain.setSchemaName(schema); }
+        ]
+        statement=ExplainableStatement() { explain.setStatement(statement); }
+    )
+    { return explain; }
+}
+
+/** MySQL's FORMAT = name, with the name unquoted or quoted. */
+ExplainStatement.Option MySqlExplainFormat():
+{
+    Token token;
+}
+{
+    <K_FORMAT> "="
+    ( token=<K_JSON> | token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER> | token=<S_CHAR_LITERAL> )
+    { return mySqlExplainFormat(token); }
+}
+
+/** The statement EXPLAIN explains: a query or a DML statement. */
+Statement ExplainableStatement():
+{
+    List<WithItem<?>> with = null;
+    Statement statement;
+    Token first = getToken(1);
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == K_REPLACE && isMySqlUtilityDialect() })
+        statement = Upsert()
+        |
+        [ LOOKAHEAD(2) with=WithList() ]
+        (
+            statement = SelectWithWithItems( with ) { if (with != null) { widen(statement, first, null); } }
+            | statement = InsertWithWithItems( with )
+            | statement = UpdateWithWithItems( with )
+            | statement = DeleteWithWithItems( with )
+            | statement = Merge( with )
+        )
+    )
+    {
+        linkStatement(statement, first);
+        return statement;
     }
 }
 
@@ -7977,12 +8197,11 @@ ExplainStatement Explain():
 {
     Token tk;
     Statement statement;
-    List<WithItem<?>> with = null;
     Table table;
     List<ExplainStatement.Option> options;
     ExplainStatement es;
     boolean parenthesized = false;
-    Token statementFirst;
+    Expression pattern;
 }
 {
     ( tk=<K_EXPLAIN> | tk = <K_SUMMARIZE> )
@@ -7992,19 +8211,8 @@ ExplainStatement Explain():
                 LOOKAHEAD(2) "(" options = PostgresqlExplainOptions() ")" { parenthesized = true; }
                 | options = ExplainStatementOptions()
             )
-            { statementFirst = getToken(1); }
-            (
-                [ LOOKAHEAD(2) with=WithList() ]
-                (
-                    statement = SelectWithWithItems( with ) { if (with != null) { widen(statement, statementFirst, null); } }
-                    | statement = InsertWithWithItems( with )
-                    | statement = UpdateWithWithItems( with )
-                    | statement = DeleteWithWithItems( with )
-                    | statement = Merge( with )
-                )
-            )
+            statement = ExplainableStatement()
             {
-                linkStatement(statement, statementFirst);
                 es = new ExplainStatement(tk.image, statement, options);
                 es.setParenthesizedOptions(parenthesized);
             }
@@ -8012,6 +8220,12 @@ ExplainStatement Explain():
         |
         (
            table=Table( ) {  es = new ExplainStatement(tk.image, table);  }
+           [ LOOKAHEAD(DescribeColumnPattern(), { isDescribeColumnAhead() })
+             pattern=DescribeColumnPattern()
+             {
+                 requireDdlSyntax(tk.kind == K_EXPLAIN, "SUMMARIZE takes no column");
+                 es.setColumnPattern(pattern);
+             } ]
         )
     )
     {
@@ -11750,17 +11964,22 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
     }
 }
 
+/**
+ * A MySQL user variable with one @ before its name, quoted or not, as SELECT ... INTO,
+ * EXPLAIN ... INTO, EXECUTE ... USING and PREPARE ... FROM take it.
+ */
 UserVariable MySqlIntoVariable():
 {
     UserVariable variable;
+    Token at;
     Token name;
 }
 {
     (
         variable=UserVariable()
         |
-        <K_AT_SIGN> (name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER>)
-        { variable = new UserVariable("@" + name.image); }
+        at=<K_AT_SIGN> (name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER>)
+        { variable = new UserVariable("@" + name.image); linkAST(variable, at, name); }
     )
     { return requireMySqlIntoVariable(variable); }
 }
@@ -16317,6 +16536,8 @@ Execute Execute(): {
     ObjectNames funcName;
     ExpressionList expressionList;
     Execute execute = new Execute();
+    ExpressionList<UserVariable> variables = new ExpressionList<UserVariable>();
+    UserVariable variable;
 }
 {
     (<K_EXEC> { execute.setExecType(Execute.ExecType.EXEC); }
@@ -16325,7 +16546,19 @@ Execute Execute(): {
 
     // A colon starts a bind argument here; it must not join the procedure name.
     funcName=ColumnIdentifier() { execute.setName(funcName.getNames()); }
-    [ LOOKAHEAD(2) expressionList=ExecuteArguments() { execute.setExprList(expressionList); } ]
+    [
+        // MySQL's EXECUTE name USING @variable [, @variable] ...
+        LOOKAHEAD({ getToken(1).kind == K_USING && isMySqlUtilityDialect() })
+        <K_USING> variable=MySqlIntoVariable() { variables.add(variable); }
+        ( LOOKAHEAD(2) "," variable=MySqlIntoVariable() { variables.add(variable); } )*
+        {
+            requireDdlSyntax(execute.getExecType() == Execute.ExecType.EXECUTE,
+                    "Only EXECUTE takes a USING clause");
+            execute.setUsingVariables(linkElements(variables));
+        }
+        |
+        LOOKAHEAD(2) expressionList=ExecuteArguments() { execute.setExprList(expressionList); }
+    ]
     { return execute; }
 }
 
