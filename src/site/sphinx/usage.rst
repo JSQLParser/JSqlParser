@@ -314,7 +314,9 @@ TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
 object types, and so are PostgreSQL's ACCESS METHOD, CAST, LANGUAGE, OPERATOR,
 OPERATOR CLASS, OPERATOR FAMILY, TRANSFORM and TEXT SEARCH CONFIGURATION,
 DICTIONARY, PARSER and TEMPLATE.
-``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. MySQL's
+``DROP SPATIAL REFERENCE SYSTEM [IF EXISTS] srid`` has the object type
+``SPATIAL_REFERENCE_SYSTEM`` and its name is the SRID as written. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
 parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 .. code-block:: java
@@ -2392,6 +2394,54 @@ such as Oracle and NDB data file clauses, still parse as ``UnsupportedStatement`
 ``ALTER TABLE ALL IN TABLESPACE`` remains ``AlterTablespaceMove``. Validators report the
 ``createTablespace`` and ``alterTablespace`` features, which the MySQL and PostgreSQL
 capabilities enable; feature analysis reports ``MODIFIES_SCHEMA``.
+
+MySQL spatial reference systems and ALTER INSTANCE
+--------------------------------------------------
+
+MySQL `CREATE SPATIAL REFERENCE SYSTEM
+<https://dev.mysql.com/doc/refman/8.4/en/create-spatial-reference-system.html>`_ parses to
+``CreateSpatialReferenceSystem``. ``isOrReplace()`` and ``isIfNotExists()`` exclude each
+other, ``getSrid()`` is the number as written (a ``LongValue``, or a ``HexValue`` for
+``0x...`` and ``X'...'``), and ``getAttributes()`` keeps the ``NAME``, ``DEFINITION``,
+``ORGANIZATION … IDENTIFIED BY`` and ``DESCRIPTION`` attributes in source order as
+``SpatialReferenceSystemAttribute`` values. ``getName()``, ``getDefinition()``,
+``getOrganization()``, ``getOrganizationId()`` and ``getDescription()`` return the first
+attribute of their kind. The parser follows MySQL's grammar, which takes the attributes in
+any order and any number: the server reports a repeated attribute, a missing ``NAME`` or
+``DEFINITION`` and an SRID above 4294967295 when it runs the statement, not as syntax
+errors. `DROP SPATIAL REFERENCE SYSTEM
+<https://dev.mysql.com/doc/refman/8.4/en/drop-spatial-reference-system.html>`_ parses to
+``Drop`` with the object type ``SPATIAL_REFERENCE_SYSTEM``.
+
+.. code-block:: java
+
+    CreateSpatialReferenceSystem srs = (CreateSpatialReferenceSystem) CCJSqlParserUtil.parse(
+        "CREATE SPATIAL REFERENCE SYSTEM 4120 NAME 'Greek' ORGANIZATION 'EPSG' "
+            + "IDENTIFIED BY 4120 DEFINITION 'GEOGCS[\"Greek\"]'");
+    srs.getSrid();                     // 4120
+    srs.getName().getValue();          // Greek
+    srs.getOrganizationId();           // 4120
+
+MySQL `ALTER INSTANCE <https://dev.mysql.com/doc/refman/8.4/en/alter-instance.html>`_ parses
+to ``AlterInstance``. ``getAction()`` is ``ENABLE_INNODB_REDO_LOG``,
+``DISABLE_INNODB_REDO_LOG``, ``ROTATE_INNODB_MASTER_KEY``, ``ROTATE_BINLOG_MASTER_KEY``,
+``RELOAD_TLS`` or ``RELOAD_KEYRING``. For ``RELOAD TLS``, ``getChannel()`` is the identifier
+after ``FOR CHANNEL`` as written, or null, and ``isNoRollbackOnError()`` records
+``NO ROLLBACK ON ERROR``. MySQL reads ``INNODB``, ``BINLOG`` and ``REDO_LOG`` as
+identifiers, so they may be written in backticks, and the engine of ``ROTATE`` also as a
+string; the statement prints them as plain words. The grammar takes any identifier as the
+channel; the server accepts ``mysql_main`` and ``mysql_admin``.
+
+These statements are read with ``Dialect.MYSQL`` and without a dialect. With
+``Dialect.MYSQL``, a ``CREATE SPATIAL`` statement that is neither this one nor
+``CREATE SPATIAL INDEX``, and an ``ALTER INSTANCE`` with another action, are errors;
+without a dialect they stay ``UnsupportedStatement``, as in the other dialects, where
+``DROP SPATIAL REFERENCE SYSTEM`` is still rejected. ``REFERENCE``, ``INSTANCE``,
+``ROTATE``, ``RELOAD`` and the other words remain ordinary identifiers. Validators report
+the ``createSpatialReferenceSystem`` and ``alterInstance`` features, which the MySQL
+capabilities enable, and ``drop``. Feature analysis reports ``MODIFIES_SCHEMA`` for
+``CREATE SPATIAL REFERENCE SYSTEM`` and ``MODIFIES_SESSION`` for ``ALTER INSTANCE``, a
+server operation like ``ALTER SYSTEM``.
 
 SQL Server identity inserts
 ---------------------------

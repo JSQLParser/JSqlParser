@@ -130,6 +130,12 @@ public enum MySqlVersion implements Version {
                     Feature.createTablespace, // https://dev.mysql.com/doc/refman/8.0/en/alter-tablespace.html
                     Feature.alterTablespace,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/create-spatial-reference-system.html
+                    Feature.createSpatialReferenceSystem,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-instance.html
+                    Feature.alterInstance,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-database.html
                     Feature.createDatabase, Feature.alterDatabase,

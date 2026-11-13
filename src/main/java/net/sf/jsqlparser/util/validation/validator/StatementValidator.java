@@ -99,6 +99,7 @@ import net.sf.jsqlparser.statement.TransactionMode;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -118,6 +119,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
@@ -1628,6 +1630,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(CreateTablespace statement, S context) {
         validateFeature(Feature.createTablespace);
         statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateSpatialReferenceSystem statement, S context) {
+        validateFeature(Feature.createSpatialReferenceSystem);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterInstance statement, S context) {
+        validateFeature(Feature.alterInstance);
         return null;
     }
 
