@@ -37,6 +37,10 @@ import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -1555,6 +1559,26 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(AlterRule statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateCast statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTransform statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateConversion statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterConversion statement, S context) {
         return schemaOnly();
     }
 }

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -25,7 +26,10 @@ import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -49,6 +53,12 @@ class StatementFeatureVisitorMetadataDdlTest {
                 Arguments.of("ALTER FUNCTION f READS SQL DATA", AlterRoutine.class),
                 Arguments.of("ALTER TRIGGER t ON tbl RENAME TO t2", AlterTrigger.class),
                 Arguments.of("ALTER RULE r ON tbl RENAME TO r2", AlterRule.class),
+                Arguments.of("ALTER CONVERSION c RENAME TO c2", AlterConversion.class),
+                Arguments.of("CREATE CAST (int AS text) WITH INOUT", CreateCast.class),
+                Arguments.of("CREATE TRANSFORM FOR int LANGUAGE l (TO SQL WITH FUNCTION f)",
+                        CreateTransform.class),
+                Arguments.of("CREATE DEFAULT CONVERSION c FOR 'UTF8' TO 'LATIN1' FROM f",
+                        CreateConversion.class),
                 Arguments.of("ALTER SCHEMA s RENAME TO s2", AlterSchema.class),
                 Arguments.of("ALTER SCHEMA s OWNER TO CURRENT_USER", AlterSchema.class),
                 Arguments.of("ALTER STATISTICS s RENAME TO s2", AlterStatistics.class),

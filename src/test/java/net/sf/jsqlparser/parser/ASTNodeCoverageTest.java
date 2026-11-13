@@ -172,6 +172,11 @@ public class ASTNodeCoverageTest {
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
                 "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
+                "CREATE CAST (int[] AS public.t) WITH FUNCTION s.f(IN a int[], text) AS ASSIGNMENT",
+                "CREATE OR REPLACE TRANSFORM FOR public.hstore LANGUAGE plpython3u "
+                        + "(TO SQL WITH FUNCTION g(internal), FROM SQL WITH FUNCTION s.f(internal))",
+                "CREATE DEFAULT CONVERSION s.c FOR 'UTF8' TO E'LATIN1' FROM s.f",
+                "ALTER CONVERSION s.c OWNER TO CURRENT_USER",
                 "SELECT a FROM t AS x USE KEY (i1) FORCE INDEX FOR JOIN (i2, i3) WHERE a = 1",
                 "SELECT a FROM t USE INDEX () JOIN s IGNORE INDEX FOR ORDER BY (i1) ON t.a = s.a",
                 "UPDATE t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2) SET a = 1",

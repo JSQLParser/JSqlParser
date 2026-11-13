@@ -11,6 +11,10 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -1646,6 +1650,30 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(AlterRule statement, S context) {
         validateFeature(Feature.alterRule);
         validateOptionalFromItem(statement.getTable());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateCast statement, S context) {
+        validateFeature(Feature.createCast);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTransform statement, S context) {
+        validateFeature(Feature.createTransform);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateConversion statement, S context) {
+        validateFeature(Feature.createConversion);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterConversion statement, S context) {
+        validateFeature(Feature.alterConversion);
         return null;
     }
 }

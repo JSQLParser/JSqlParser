@@ -59,6 +59,9 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
@@ -4228,6 +4231,108 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     /** Whether the dialect is PostgreSQL: forms the server rejects are then not read. */
     private boolean isPostgreSqlDialect() {
         return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+    }
+
+    /**
+     * With the PostgreSQL dialect, rejects an unquoted word its grammar does not take as the first
+     * part of a name, or as a role: a role may be a type or function name keyword, CURRENT_ROLE,
+     * CURRENT_USER or SESSION_USER. Other dialects keep the names they read today.
+     */
+    private void requireConversionName(String name, boolean role) throws ParseException {
+        if (!isPostgreSqlDialect()) {
+            return;
+        }
+        int dot = name.indexOf('.');
+        String upper = (dot < 0 ? name : name.substring(0, dot)).toUpperCase(Locale.ROOT);
+        boolean valid = role
+                ? !POSTGRESQL_RESERVED_KEYWORDS.contains(upper) || "CURRENT_ROLE".equals(upper)
+                        || "CURRENT_USER".equals(upper) || "SESSION_USER".equals(upper)
+                : !POSTGRESQL_RESERVED_KEYWORDS.contains(upper)
+                        && !POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS.contains(upper);
+        requireDdlSyntax(valid, "PostgreSQL does not take " + name + " as a name here");
+    }
+
+    /**
+     * Whether CREATE [OR REPLACE] is followed by a PostgreSQL cast, transform or conversion
+     * definition. PostgreSQL reads CAST, TRANSFORM, CONVERSION and DEFAULT there as nothing else.
+     * Other products start different statements with these words, such as CREATE CAST (a AS b)
+     * WITH SPECIFIC FUNCTION f or CREATE TRANSFORM FOR type group (...), so in another dialect
+     * and without one the statement must also have PostgreSQL's form: CAST (...) WITH FUNCTION,
+     * WITH INOUT or WITHOUT FUNCTION, TRANSFORM FOR type LANGUAGE, or [DEFAULT] CONVERSION name
+     * FOR, with OR REPLACE only before TRANSFORM.
+     */
+    private boolean isCastDdlAhead() {
+        Token next = getToken(1);
+        boolean postgreSql = isPostgreSqlDialect();
+        boolean orReplace = getToken(0).kind == K_REPLACE;
+        if (next.kind == K_CAST) {
+            return postgreSql || !orReplace && isCastMethodAhead();
+        }
+        if (isKeywordAhead("TRANSFORM")) {
+            return postgreSql || getToken(2).kind == K_FOR && isTransformLanguageAhead();
+        }
+        int offset = next.kind == K_DEFAULT ? 2 : 1;
+        if (!"CONVERSION".equalsIgnoreCase(getToken(offset).image)) {
+            return postgreSql && next.kind == K_DEFAULT;
+        }
+        return postgreSql || !orReplace && getToken(qualifiedNameEnd(offset + 1) + 1).kind == K_FOR;
+    }
+
+    /** Whether CAST (...) is followed by WITH FUNCTION, WITH INOUT or WITHOUT FUNCTION. */
+    private boolean isCastMethodAhead() {
+        if (getToken(2).kind != OPENING_BRACKET) {
+            return false;
+        }
+        int depth = 1;
+        int offset = 3;
+        for (; depth > 0; offset++) {
+            int kind = getToken(offset).kind;
+            if (kind == EOF || kind == ST_SEMICOLON) {
+                return false;
+            }
+            depth += kind == OPENING_BRACKET ? 1 : kind == CLOSING_BRACKET ? -1 : 0;
+        }
+        Token method = getToken(offset);
+        Token next = getToken(offset + 1);
+        return method.kind == K_WITH && (next.kind == K_FUNCTION || "INOUT".equalsIgnoreCase(next.image))
+                || method.kind == K_WITHOUT && next.kind == K_FUNCTION;
+    }
+
+    /** Whether LANGUAGE follows the type of TRANSFORM FOR, outside the type's parentheses. */
+    private boolean isTransformLanguageAhead() {
+        int depth = 0;
+        for (int offset = 3; ; offset++) {
+            Token token = getToken(offset);
+            if (token.kind == EOF || token.kind == ST_SEMICOLON) {
+                return false;
+            }
+            depth += token.kind == OPENING_BRACKET ? 1 : token.kind == CLOSING_BRACKET ? -1 : 0;
+            if (depth == 0 && "LANGUAGE".equalsIgnoreCase(token.image)) {
+                return offset > 3;
+            }
+        }
+    }
+
+    /** The offset of the last part of the dotted name that starts at the offset. */
+    private int qualifiedNameEnd(int offset) {
+        int end = offset;
+        while (".".equals(getToken(end + 1).image)) {
+            end += 2;
+        }
+        return end;
+    }
+
+    /**
+     * Whether ALTER is followed by CONVERSION, and in another dialect than PostgreSQL also by a
+     * name and one of PostgreSQL's actions: RENAME, OWNER or SET.
+     */
+    private boolean isAlterConversionAhead() {
+        if (!isKeywordAhead("CONVERSION")) {
+            return false;
+        }
+        Token action = getToken(qualifiedNameEnd(2) + 1);
+        return isPostgreSqlDialect() || action.kind == K_RENAME || action.kind == K_SET
+                || "OWNER".equalsIgnoreCase(action.image);
     }
 
     /**
@@ -24720,6 +24825,8 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
+                LOOKAHEAD({ isAlterConversionAhead() }) statement = AlterConversion()
+                |
                 // Other routine forms, such as SQL Server definitions, remain unsupported.
                 LOOKAHEAD({ isAlterRoutineAhead() }) statement = AlterRoutine()
                 |
@@ -26825,6 +26932,9 @@ Statement Create():
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
         |
+        // a statement of another product that starts with the same words stays unsupported
+        LOOKAHEAD({ isCastDdlAhead() }) statement = CastDdl(isUsingOrReplace)
+        |
         LOOKAHEAD({ isMySqlCreateRoleAhead() }) statement = MySqlCreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }
         |
@@ -28794,6 +28904,113 @@ ListenStatement ListenStatement():
         }
         return statement;
     }
+}
+
+/**
+ * PostgreSQL's CREATE CAST, CREATE [OR REPLACE] TRANSFORM and CREATE [DEFAULT] CONVERSION, after
+ * CREATE [OR REPLACE]. Only a transform takes OR REPLACE.
+ */
+Statement CastDdl(boolean orReplace):
+{ Statement statement; }
+{
+    (
+        { requireDdlSyntax(!orReplace, "CREATE CAST does not support OR REPLACE"); }
+        statement=CreateCast()
+        |
+        LOOKAHEAD({ isKeywordAhead("TRANSFORM") }) statement=CreateTransform(orReplace)
+        |
+        { requireDdlSyntax(!orReplace, "CREATE CONVERSION does not support OR REPLACE"); }
+        statement=CreateConversion()
+    )
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's CreateCastStmt: CAST (source AS target) with WITH FUNCTION function, WITHOUT
+ * FUNCTION or WITH INOUT, and an optional AS ASSIGNMENT or AS IMPLICIT.
+ */
+CreateCast CreateCast():
+{ CreateCast statement = new CreateCast(); CastSignature cast; RoutineReference function; Token context; }
+{
+    <K_CAST> cast=CastSignature() { statement.setCast(cast); }
+    (
+        <K_WITH>
+        ( <K_FUNCTION> function=RoutineReference(false) { statement.setFunction(function); }
+          | ContextualKeyword("INOUT") { statement.setMethod(CreateCast.Method.WITH_INOUT); } )
+        |
+        <K_WITHOUT> <K_FUNCTION> { statement.setMethod(CreateCast.Method.WITHOUT_FUNCTION); }
+    )
+    [ <K_AS> context=<S_IDENTIFIER> { statement.setContext(typeDdlEnum(CreateCast.Context.class, context.image)); } ]
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's CreateTransformStmt: TRANSFORM FOR type LANGUAGE lang with a FROM SQL item, a TO
+ * SQL item, or both in either order.
+ */
+CreateTransform CreateTransform(boolean orReplace):
+{ CreateTransform statement = new CreateTransform(); TransformSignature transform; RoutineReference function; }
+{
+    ContextualKeyword("TRANSFORM") transform=TransformSignature()
+    { statement.setOrReplace(orReplace); statement.setTransform(transform); }
+    "("
+    (
+        <K_FROM> function=TransformFunction() { statement.setFromSqlFunction(function); }
+        [ "," <K_TO> function=TransformFunction() { statement.setToSqlFunction(function); } ]
+        |
+        <K_TO> function=TransformFunction() { statement.setToSqlFunction(function); }
+        [ "," <K_FROM> function=TransformFunction()
+          { statement.setFromSqlFunction(function); statement.setToSqlFirst(true); } ]
+    )
+    ")"
+    { return statement; }
+}
+
+/** SQL WITH FUNCTION function, after FROM or TO in a transform item. */
+RoutineReference TransformFunction():
+{ RoutineReference function; }
+{
+    ContextualKeyword("SQL") <K_WITH> <K_FUNCTION> function=RoutineReference(false)
+    { return function; }
+}
+
+/** PostgreSQL's CreateConversionStmt: [DEFAULT] CONVERSION name FOR 'source' TO 'dest' FROM function. */
+CreateConversion CreateConversion():
+{ CreateConversion statement = new CreateConversion(); String name; StringValue encoding; }
+{
+    [ <K_DEFAULT> { statement.setDefaultConversion(true); } ]
+    ContextualKeyword("CONVERSION") name=TypeDdlName() { requireConversionName(name, false); statement.setName(name); }
+    <K_FOR> encoding=ConversionEncoding() { statement.setSourceEncoding(encoding); }
+    <K_TO> encoding=ConversionEncoding() { statement.setDestinationEncoding(encoding); }
+    <K_FROM> name=TypeDdlName() { requireConversionName(name, false); statement.setFunction(name); }
+    { return statement; }
+}
+
+/** An encoding name, which PostgreSQL's grammar reads as a string constant. */
+StringValue ConversionEncoding():
+{ Token token; StringValue value; }
+{
+    token=<S_CHAR_LITERAL>
+    {
+        value = stringValue(token);
+        requireDdlSyntax(!isPostgreSqlDialect() || isPostgreSqlStringConstant(value),
+                "PostgreSQL expects a string constant: " + token.image);
+        return value;
+    }
+}
+
+/** PostgreSQL's ALTER CONVERSION name with RENAME TO, OWNER TO or SET SCHEMA. */
+AlterConversion AlterConversion():
+{ AlterConversion statement = new AlterConversion(); String name; }
+{
+    ContextualKeyword("CONVERSION") name=TypeDdlName() { requireConversionName(name, false); statement.setName(name); }
+    ( <K_RENAME> <K_TO> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterConversion.Action.RENAME); statement.setNewName(name); }
+      | ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { requireConversionName(name, true); statement.setAction(AlterConversion.Action.OWNER); statement.setOwner(name); }
+      | <K_SET> <K_SCHEMA> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterConversion.Action.SET_SCHEMA); statement.setSchemaName(name); } )
+    { return statement; }
 }
 
 CreateCollation CreateCollation():

@@ -2499,6 +2499,57 @@ PostgreSQL's ``ALTER RULE name ON table RENAME TO new_name``
 its table and validators report ``alterRule``, which PostgreSQL enables. It is the only
 ``ALTER RULE`` form, so any other text after ``ALTER RULE`` is a parse error.
 
+PostgreSQL's cast, transform and conversion definitions are typed statements:
+
+* ``CREATE CAST (source_type AS target_type) {WITH FUNCTION function [(argument_type [, ...])] | WITHOUT FUNCTION | WITH INOUT} [AS ASSIGNMENT | AS IMPLICIT]``
+  (`CREATE CAST <https://www.postgresql.org/docs/18/sql-createcast.html>`_) parses to
+  ``CreateCast``. ``getCast()`` is the ``CastSignature`` that ``DROP CAST`` uses,
+  ``getMethod()`` is ``WITH_FUNCTION``, ``WITHOUT_FUNCTION`` or ``WITH_INOUT``,
+  ``getFunction()`` is the ``RoutineReference`` of ``WITH FUNCTION``, and ``getContext()``
+  is ``ASSIGNMENT``, ``IMPLICIT`` or ``null`` for a cast that applies only when written.
+* ``CREATE [OR REPLACE] TRANSFORM FOR type_name LANGUAGE lang_name (FROM SQL WITH FUNCTION function, TO SQL WITH FUNCTION function)``
+  (`CREATE TRANSFORM <https://www.postgresql.org/docs/18/sql-createtransform.html>`_) parses
+  to ``CreateTransform``. ``getTransform()`` is the ``TransformSignature`` that
+  ``DROP TRANSFORM`` uses. ``getFromSqlFunction()`` and ``getToSqlFunction()`` are
+  ``RoutineReference`` objects, one of them ``null`` when the statement has only the other
+  item, and ``isToSqlFirst()`` keeps the order of the two items.
+* ``CREATE [DEFAULT] CONVERSION name FOR 'source_encoding' TO 'dest_encoding' FROM function_name``
+  (`CREATE CONVERSION <https://www.postgresql.org/docs/18/sql-createconversion.html>`_) parses
+  to ``CreateConversion`` with ``isDefaultConversion()``, ``getName()``,
+  ``getSourceEncoding()`` and ``getDestinationEncoding()`` as ``StringValue`` and
+  ``getFunction()``.
+* ``ALTER CONVERSION name {RENAME TO new_name | OWNER TO role | SET SCHEMA schema}``
+  (`ALTER CONVERSION <https://www.postgresql.org/docs/18/sql-alterconversion.html>`_) parses
+  to ``AlterConversion`` with ``getAction()`` and ``getNewName()``, ``getOwner()`` or
+  ``getSchemaName()``.
+
+.. code-block:: java
+
+    CreateCast cast = (CreateCast) CCJSqlParserUtil.parse(
+            "CREATE CAST (bigint AS int4) WITH FUNCTION int4(bigint) AS ASSIGNMENT");
+    cast.getCast().getSourceType();   // ColDataType bigint
+    cast.getMethod();                 // CreateCast.Method.WITH_FUNCTION
+    cast.getFunction().getName();     // int4
+    cast.getContext();                // CreateCast.Context.ASSIGNMENT
+
+    CreateTransform transform = (CreateTransform) CCJSqlParserUtil.parse(
+            "CREATE TRANSFORM FOR hstore LANGUAGE plpython3u ("
+                    + "FROM SQL WITH FUNCTION hstore_to_plpython(internal), "
+                    + "TO SQL WITH FUNCTION plpython_to_hstore(internal))");
+    transform.getTransform().getLanguage();     // plpython3u
+    transform.getToSqlFunction().getName();     // plpython_to_hstore
+
+Validators report ``createCast``, ``createTransform``, ``createConversion`` and
+``alterConversion``, which PostgreSQL enables. With ``Dialect.POSTGRESQL`` these are the only
+statements that ``CREATE CAST``, ``CREATE TRANSFORM``, ``CREATE [DEFAULT] CONVERSION`` and
+``ALTER CONVERSION`` start, so any other text after them is a parse error. In another dialect
+and without one, a statement is read this way when it has PostgreSQL's form
+(``CAST (...) WITH FUNCTION``, ``WITH INOUT`` or ``WITHOUT FUNCTION``,
+``TRANSFORM FOR type LANGUAGE``, ``CONVERSION name FOR``, and ``ALTER CONVERSION name``
+followed by ``RENAME``, ``OWNER`` or ``SET``); a statement of another product that starts with
+the same words, such as ``CREATE CAST (a AS b) WITH SPECIFIC FUNCTION f``, remains an
+``UnsupportedStatement``.
+
 ``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
 ``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
 triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,

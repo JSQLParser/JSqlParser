@@ -123,6 +123,13 @@ public enum PostgresqlVersion implements Version {
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createRule, Feature.notifyStatement,
                     Feature.createCollation, Feature.alterCollation,
+
+                    // https://www.postgresql.org/docs/current/sql-createcast.html
+                    // https://www.postgresql.org/docs/current/sql-createtransform.html
+                    // https://www.postgresql.org/docs/current/sql-createconversion.html
+                    // https://www.postgresql.org/docs/current/sql-alterconversion.html
+                    Feature.createCast, Feature.createTransform, Feature.createConversion,
+                    Feature.alterConversion,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,
