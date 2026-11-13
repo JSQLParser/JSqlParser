@@ -28,7 +28,10 @@ import net.sf.jsqlparser.statement.create.user.UserOptions;
  * {@link UserOptions} are those of {@link net.sf.jsqlparser.statement.create.user.CreateUser}.
  * {@code ALTER USER acct DEFAULT ROLE ...} keeps its roles in
  * {@link UserOptions#getDefaultRoles()}. {@code ALTER USER USER() ...} names the current user with
- * the unquoted account name {@code USER()}, see {@link #isUserFunction()}.
+ * the unquoted account name {@code USER()}, see {@link #isUserFunction()}. Multi-factor
+ * authentication changes ({@code ADD}, {@code MODIFY}, {@code DROP} of {@code 2 FACTOR} or
+ * {@code 3 FACTOR}) and the registration steps of one account are the
+ * {@link UserAccount#getFactorOperations()} of the account.
  */
 public class AlterUser extends ASTNodeAccessImpl implements Statement {
 
