@@ -3156,6 +3156,59 @@ generic ``Drop`` reading. The validator checks ``createResourceGroup``,
 ``alterResourceGroup`` and ``setResourceGroup`` (MySQL); feature analysis reports
 ``SET RESOURCE GROUP`` as a session change and the others as schema changes.
 
+MySQL loadable functions
+========================
+
+MySQL ``CREATE [AGGREGATE] FUNCTION [IF NOT EXISTS] name RETURNS {STRING | INTEGER | REAL |
+DECIMAL} SONAME 'library'`` produces a ``CreateFunction`` whose ``getLoadableFunction()``
+holds the name, the ``ReturnType``, the library as a ``StringValue`` and ``isIfNotExists()``;
+``isAggregate()`` tells the two forms apart. The synonyms ``INT``, ``INT4`` and ``DEC`` keep
+their spelling in ``getReturnTypeKeyword()``. ``getFunctionDeclarationParts()`` is derived from
+the definition, and setting declaration parts removes it.
+
+.. code-block:: java
+
+    CreateFunction function = (CreateFunction) CCJSqlParserUtil.parse(
+        "CREATE AGGREGATE FUNCTION IF NOT EXISTS f RETURNS REAL SONAME 'udf.so'",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    LoadableFunction definition = function.getLoadableFunction();
+    // true, f, REAL, udf.so
+    String parts = function.isAggregate() + ", " + definition.getName() + ", "
+        + definition.getReturnType() + ", " + definition.getLibrary().getValue();
+
+With the MySQL dialect the statement follows MySQL's grammar: ``AGGREGATE``, or a function name
+directly followed by ``RETURNS``, must continue as a loadable function, without ``OR REPLACE``.
+With the MariaDB dialect or without one, a statement of exactly this shape gets the definition
+(``OR REPLACE`` included) and anything else keeps its previous reading. Other dialects are
+unchanged: ``CREATE AGGREGATE FUNCTION`` stays an ``UnsupportedStatement`` there.
+``TablesNamesFinder`` finds no tables in a loadable function.
+
+MySQL ALTER TABLE validation modifier
+=====================================
+
+MySQL ``ALTER TABLE ... {WITH | WITHOUT} VALIDATION`` is an ``AlterExpressionTableOption``
+with the operation ``VALIDATION`` and ``getValidationMode()``, like the ``ALGORITHM`` and
+``LOCK`` modifiers it may be mixed with in the action list. The mode written directly after
+``EXCHANGE PARTITION ... WITH TABLE t`` still belongs to that action
+(``AlterExpressionPartition.getExchangeValidationMode()``).
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t1 WITHOUT VALIDATION, EXCHANGE PARTITION p0 WITH TABLE t2",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    AlterExpressionTableOption modifier =
+        (AlterExpressionTableOption) alter.getAlterExpressions().get(0);
+    // VALIDATION, WITHOUT, EXCHANGE_PARTITION
+    String parts = modifier.getOperation() + ", " + modifier.getValidationMode() + ", "
+        + alter.getAlterExpressions().get(1).getOperation();
+
+With the MySQL dialect, ``WITH`` or ``WITHOUT`` at the start of an action must be this
+modifier, and it is rejected after a comma that follows a command MySQL accepts only at the
+end of the list (a partition management command, ``DISCARD`` or ``IMPORT TABLESPACE``,
+``PARTITION BY``, ``REMOVE PARTITIONING``). With the MariaDB dialect or without one, the
+modifier is read where it is a whole item of the list; other dialects keep the raw-text action.
+
 MySQL SHOW statements
 =====================
 

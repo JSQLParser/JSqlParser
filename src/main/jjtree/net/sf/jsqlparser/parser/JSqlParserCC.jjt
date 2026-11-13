@@ -3572,6 +3572,68 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether CREATE is followed by a MySQL loadable function:
+     * [AGGREGATE] FUNCTION [IF NOT EXISTS] name RETURNS type SONAME 'library'. With the MySQL
+     * dialect, AGGREGATE or a function name directly followed by RETURNS selects it, since a stored
+     * function has a parameter list there. With MariaDB, which also has stored aggregate functions,
+     * or without a dialect, the whole statement must have that shape.
+     */
+    private boolean isLoadableFunctionAhead() {
+        String dialect = getAsString(Feature.dialect);
+        if (dialect != null && !isMySqlDialect()) { return false; }
+        boolean mysql = Dialect.MYSQL.name().equals(dialect);
+        int i = 1;
+        if (getToken(i).kind == K_AGGREGATE) {
+            if (mysql) { return true; }
+            i++;
+        }
+        if (getToken(i++).kind != K_FUNCTION) { return false; }
+        if (getToken(i).kind == K_IF && getToken(i + 1).kind == K_NOT && getToken(i + 2).kind == K_EXISTS) { i += 3; }
+        i++;
+        if (mysql) {
+            while (".".equals(getToken(i).image)) { i += 2; }
+            return getToken(i).kind == K_RETURNS;
+        }
+        int end = getToken(i + 4).kind;
+        return getToken(i).kind == K_RETURNS && LoadableFunction.ReturnType.from(getToken(i + 1).image) != null
+                && "SONAME".equalsIgnoreCase(getToken(i + 2).image)
+                && (getToken(i + 3).kind == S_CHAR_LITERAL || getToken(i + 3).kind == S_QUOTED_IDENTIFIER)
+                && (end == EOF || end == ST_SEMICOLON);
+    }
+
+    /**
+     * Whether MySQL's WITH | WITHOUT VALIDATION modifier of ALTER TABLE starts here. With the MySQL
+     * dialect, WITH or WITHOUT selects it, as no other action starts with them. With MariaDB or
+     * without a dialect, it must be the whole item of the action list.
+     */
+    private boolean isAlterValidationModifierAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_WITH && kind != K_WITHOUT) { return false; }
+        String dialect = getAsString(Feature.dialect);
+        if (Dialect.MYSQL.name().equals(dialect)) { return true; }
+        if (dialect != null && !isMySqlDialect() || getToken(2).kind != K_VALIDATION) { return false; }
+        Token next = getToken(3);
+        return next.kind == EOF || next.kind == ST_SEMICOLON || ",".equals(next.image)
+                || next.kind == K_PARTITION && getToken(4).kind == K_BY
+                || next.kind == K_REMOVE && getToken(4).kind == K_PARTITIONING;
+    }
+
+    /**
+     * Whether a WITH | WITHOUT VALIDATION modifier follows, after a comma, a command that MySQL
+     * accepts only at the end of the action list: a partition management command, DISCARD or
+     * IMPORT TABLESPACE, PARTITION BY or REMOVE PARTITIONING. Checked with the MySQL dialect.
+     */
+    private boolean isMisplacedAlterValidationModifier(AlterExpression previous, AlterExpression action) {
+        if (action.getOperation() != AlterOperation.VALIDATION
+                || !Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) {
+            return false;
+        }
+        AlterOperation operation = previous.getOperation();
+        return operation == AlterOperation.DISCARD_TABLESPACE || operation == AlterOperation.IMPORT_TABLESPACE
+                || operation.name().endsWith("_PARTITION") || Alter.isTrailingPartitionOption(previous);
+    }
+
+    /**
      * Whether a CREATE statement names none of TABLE, INDEX, VIEW and POLICY before it ends. Every
      * remaining CREATE form needs one of them, and CREATE TABLE and CREATE INDEX accept any leading
      * words as modifiers, so such a statement would fail there instead of reaching the fallback.
@@ -24107,6 +24169,7 @@ AlterExpression AlterExpressionPartitionOp():
     List<PartitionDefinition> partitionDefinition = null;
     Table exchangeTable = null;
     TablePartitioning partitioning = null;
+    AlterExpressionPartition.ExchangeValidationMode validationMode;
 }
 {
     (
@@ -24141,17 +24204,7 @@ AlterExpression AlterExpressionPartitionOp():
     |
         LOOKAHEAD(2) <K_EXCHANGE> <K_PARTITION> partitions=PartitionNamesList()
         <K_WITH> <K_TABLE> exchangeTable=Table()
-        [
-            LOOKAHEAD(2) (
-                <K_WITH> <K_VALIDATION> {
-                    alterExp.setExchangeValidationMode(AlterExpressionPartition.ExchangeValidationMode.WITH);
-                }
-                |
-                <K_WITHOUT> <K_VALIDATION> {
-                    alterExp.setExchangeValidationMode(AlterExpressionPartition.ExchangeValidationMode.WITHOUT);
-                }
-            )
-        ]
+        [ LOOKAHEAD(2) validationMode=AlterValidationMode() { alterExp.setExchangeValidationMode(validationMode); } ]
         {
             alterExp.setOperation(AlterOperation.EXCHANGE_PARTITION);
             alterExp.setPartitions(partitions);
@@ -24541,12 +24594,23 @@ AlterConstraintAttributes AlterConstraintAttributes():
     }
 }
 
+/** WITH VALIDATION or WITHOUT VALIDATION: after EXCHANGE PARTITION, or MySQL's ALTER TABLE modifier. */
+AlterExpressionPartition.ExchangeValidationMode AlterValidationMode():
+{ AlterExpressionPartition.ExchangeValidationMode mode; }
+{
+    ( <K_WITH> { mode = AlterExpressionPartition.ExchangeValidationMode.WITH; }
+      | <K_WITHOUT> { mode = AlterExpressionPartition.ExchangeValidationMode.WITHOUT; } )
+    <K_VALIDATION>
+    { return mode; }
+}
+
 AlterExpression AlterExpression():
 {
     AlterExpression alterExp = null;
     Token tk;
     Token tk2 = null;
     String sk3 = null;
+    AlterExpressionPartition.ExchangeValidationMode validationMode;
 
     // for captureRest()
     List<String> tokens = new LinkedList<String>();
@@ -24557,6 +24621,9 @@ AlterExpression AlterExpression():
         LOOKAHEAD({ isKeywordAhead("OPTIONS") || getToken(1).kind == K_ALTER
                 && "OPTIONS".equalsIgnoreCase(getToken(getToken(2).kind == K_COLUMN ? 4 : 3).image) })
         alterExp=AlterForeignDataOptions()
+        |
+        LOOKAHEAD({ isAlterValidationModifierAhead() }) validationMode=AlterValidationMode()
+        { alterExp = new AlterExpressionTableOption().withValidationMode(validationMode); }
         |
         LOOKAHEAD(<K_ORDER> <K_BY>) alterExp=MySqlAlterOrderBy()
       |
@@ -25187,6 +25254,7 @@ Alter AlterTable(boolean foreign):
     Alter alter = new Alter();
     Table table;
     AlterExpression alterExp;
+    AlterExpression previous;
     boolean usingIfExists = false;
 }
 {
@@ -25206,7 +25274,12 @@ Alter AlterTable(boolean foreign):
     alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
 
     (
-        "," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
+        "," { previous = alterExp; } alterExp=AlterExpression()
+        {
+            requireDdlSyntax(!isMisplacedAlterValidationModifier(previous, alterExp),
+                    "WITH or WITHOUT VALIDATION cannot follow a command that ends the action list");
+            alter.addAlterExpression(alterExp);
+        }
         | LOOKAHEAD({ isMySqlTableOptionAhead() })
           { requireDdlSyntax(isMySqlTableOptionAction(alterExp), "Expected a comma before table options"); }
           alterExp=AlterSharedTableOption() { alter.addAlterExpression(alterExp); }
@@ -26873,6 +26946,8 @@ Statement Create():
         |
         LOOKAHEAD({ isCreateFunctionMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
+        LOOKAHEAD({ isLoadableFunctionAhead() }) statement = CreateLoadableFunction(isUsingOrReplace)
+        |
         LOOKAHEAD([ MySqlRoutineDefiner() ] ( <K_FUNCTION> | <K_PROCEDURE> ))
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
@@ -26905,6 +26980,49 @@ Statement Create():
     )
     {
         return statement;
+    }
+}
+
+/**
+ * MySQL CREATE [AGGREGATE] FUNCTION [IF NOT EXISTS] name RETURNS type SONAME 'library', selected by
+ * isLoadableFunctionAhead(). SONAME is not a token. MySQL has no OR REPLACE; MariaDB has.
+ */
+CreateFunction CreateLoadableFunction(boolean isUsingOrReplace):
+{
+    CreateFunction function = new CreateFunction();
+    LoadableFunction definition = new LoadableFunction();
+    String name;
+    Token token;
+}
+{
+    {
+        requireDdlSyntax(!isUsingOrReplace || !Dialect.MYSQL.name().equals(getAsString(Feature.dialect)),
+                "A MySQL loadable function does not support OR REPLACE");
+        function.setOrReplace(isUsingOrReplace);
+    }
+    [ <K_AGGREGATE> { function.setAggregate(true); } ]
+    <K_FUNCTION>
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { definition.setIfNotExists(true); } ]
+    name=RelObjectName() { definition.setName(name); }
+    <K_RETURNS>
+    ( token=<DATA_TYPE> | token=<K_STRING> | token=<S_IDENTIFIER> )
+    {
+        requireDdlSyntax(LoadableFunction.ReturnType.from(token.image) != null,
+                "A loadable function returns STRING, INTEGER, REAL or DECIMAL");
+        definition.setReturnTypeKeyword(token.image);
+    }
+    ContextualKeyword("SONAME")
+    ( token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> )
+    {
+        // a quoted text without prefix; double quotes are an identifier token in some configurations
+        requireDdlSyntax(token.image.startsWith("'") || token.image.startsWith("\""),
+                "SONAME expects a string literal");
+        definition.setLibrary(token.kind == S_CHAR_LITERAL ? stringValue(token)
+                : linkToLastToken(new StringValue(token.image)));
+    }
+    {
+        function.setLoadableFunction(definition);
+        return function;
     }
 }
 
