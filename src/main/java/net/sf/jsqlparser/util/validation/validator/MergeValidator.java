@@ -80,4 +80,10 @@ public class MergeValidator<Void> extends AbstractValidator<Merge>
     public void visit(MergeInsert mergeInsert) {
         visit(mergeInsert, null);
     }
+
+    @Override
+    public <S> Void visit(MergeDoNothing mergeDoNothing, S context) {
+        validateOptionalExpression(mergeDoNothing.getAndPredicate());
+        return null;
+    }
 }

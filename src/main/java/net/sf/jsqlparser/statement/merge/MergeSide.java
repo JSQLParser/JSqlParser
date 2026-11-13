@@ -32,7 +32,7 @@ public enum MergeSide {
     /**
      * Validates the clause pairing of a {@code WHEN NOT MATCHED} branch: {@code BY TARGET} (the
      * default) only allows an {@code INSERT} clause, {@code BY SOURCE} only allows {@code UPDATE}
-     * or {@code DELETE}.
+     * or {@code DELETE}. PostgreSQL's {@code DO NOTHING} goes with either side.
      *
      * @param side the parsed {@code BY TARGET}/{@code BY SOURCE} qualifier, null when absent
      * @param operation the parsed clause
@@ -40,6 +40,9 @@ public enum MergeSide {
      * @throws IllegalArgumentException when the pairing is not legal in any dialect
      */
     public static MergeOperation validatePairing(MergeSide side, MergeOperation operation) {
+        if (operation instanceof MergeDoNothing) {
+            return operation;
+        }
         if (side == MergeSide.SOURCE) {
             if (operation instanceof MergeInsert) {
                 throw new IllegalArgumentException(

@@ -212,6 +212,7 @@ import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeDelete;
+import net.sf.jsqlparser.statement.merge.MergeDoNothing;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeOperation;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
@@ -2195,6 +2196,14 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(MergeDelete mergeDelete, S context) {
         if (mergeDelete.getAndPredicate() != null) {
             mergeDelete.getAndPredicate().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MergeDoNothing mergeDoNothing, S context) {
+        if (mergeDoNothing.getAndPredicate() != null) {
+            mergeDoNothing.getAndPredicate().accept(this, context);
         }
         return null;
     }

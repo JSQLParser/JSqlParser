@@ -2041,6 +2041,40 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether the target of UPDATE, DELETE or MERGE carries PostgreSQL's inheritance scope: ONLY
+     * before the table name or * after it. MySQL and MariaDB have no ONLY there.
+     */
+    private boolean isScopedDmlTargetAhead() {
+        if (getToken(1).kind == K_ONLY) {
+            return !isMySqlDialect() && isRelationOnlyAhead(getToken(0));
+        }
+        int i = 2;
+        while (".".equals(getToken(i).image)) {
+            i += 2;
+        }
+        return "*".equals(getToken(i).image) && !"*".equals(getToken(i - 1).image);
+    }
+
+    /**
+     * The targets of (columns) = source, when the source is an expression other than a
+     * parenthesized list or sub-select: one or more columns, array elements or fields.
+     */
+    private static void requireUpdateSetTargets(ExpressionList<?> targets) throws ParseException {
+        boolean valid = !targets.isEmpty();
+        for (Object target : targets) {
+            valid &= target instanceof Column || target instanceof ArrayExpression
+                    || target instanceof RowGetExpression;
+        }
+        requireSyntax(valid, "A SET column list names one or more columns");
+    }
+
+    /** WHERE CURRENT OF cursor, the positioned form of UPDATE and DELETE. */
+    private boolean isWhereCurrentOfAhead() {
+        return getToken(1).kind == K_WHERE && getToken(2).kind == K_CURRENT
+                && getToken(3).kind == K_OF;
+    }
+
+    /**
      * DuckDB's FROM-first query: a FROM clause followed by query clauses the pipe syntax cannot
      * consume.  Scanning stops at a pipe operator or the end of the statement, and clause keywords
      * nested in brackets (a sub-select, for instance) do not count.
@@ -9139,12 +9173,14 @@ Update UpdateWithWithItems( List<WithItem<?>> withItems ):
 Update Update():
 {
     Update update = new Update();
-    Table table = null;
+    TableReference target;
+    List<MySQLIndexHint> indexHints;
     ForPortionClause forPortionClause;
     List<Join> startJoins = null;
     List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
     Expression where = null;
+    String cursorName;
     PreferringClause preferringClause = null;
     Limit limit = null;
     OptionClause optionClause = null;
@@ -9165,7 +9201,8 @@ Update Update():
         { update.setConflictAlgorithm(updateOrAlgorithm(algorithm)); } ]
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAliasAndMysqlIndexHint()
+    target=DmlTarget() { update.setTableReference(target); }
+    [ LOOKAHEAD(2) indexHints=MySQLIndexHints() { target.getTable().setIndexHints(indexHints); } ]
     [ forPortionClause=ForPortionClause() { update.setForPortionClause(forPortionClause); } ]
     [ startJoins=JoinsList() ]
     [ LOOKAHEAD(<K_FROM>, { Dialect.TERADATA.name().equals(getAsString(Feature.dialect)) })
@@ -9177,7 +9214,12 @@ Update Update():
     [ LOOKAHEAD(2, { !Dialect.TERADATA.name().equals(getAsString(Feature.dialect)) })
         UpdateFromClause(update) ]
 
-    [ where=WhereClause() { update.setWhere(where); } ]
+    [
+        LOOKAHEAD({ isWhereCurrentOfAhead() })
+        cursorName=WhereCurrentOfClause() { update.setCursorName(cursorName); }
+        |
+        where=WhereClause() { update.setWhere(where); }
+    ]
     [ preferringClause=PreferringClause() { update.setPreferringClause(preferringClause); } ]
 
     [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
@@ -9187,7 +9229,6 @@ Update Update():
 
     {
         return update.withWithItemsList(with)
-              .withTable(table)
               .withStartJoins(startJoins)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
@@ -9227,62 +9268,87 @@ List<UpdateSet> UpdateSets():
 {
     ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
     UpdateSet updateSet;
+}
+{
+    updateSet=UpdateSet() { updateSets.add(updateSet); }
+    ( LOOKAHEAD(2) "," updateSet=UpdateSet() { updateSets.add(updateSet); } )*
+    {
+        return updateSets;
+    }
+}
+
+/**
+ * One assignment of a SET list: column = value, or (columns) = source. PostgreSQL's set_clause
+ * takes any expression as the source of a column list, such as ROW(...) or a sub-select.
+ */
+UpdateSet UpdateSet():
+{
+    UpdateSet updateSet;
     Column tableColumn;
     Expression valueExpression;
-
     ExpressionList<Column> columns;
-    ExpressionList<Expression>values;
+    ExpressionList<Expression> values;
 }
 {
     (
-        (
-            tableColumn=Column() "=" valueExpression=Expression()
-            {
-                updateSet = new UpdateSet(tableColumn, valueExpression);
-                linkElements(updateSet.getColumns());
-                linkElements(updateSet.getValues());
-                updateSets.add(updateSet);
-            }
-        )
+        tableColumn=Column() "=" valueExpression=Expression()
+        {
+            updateSet = new UpdateSet(tableColumn, valueExpression);
+            linkElements(updateSet.getColumns());
+            linkElements(updateSet.getValues());
+        }
         |
         (
-            { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+            { updateSet = new UpdateSet(); }
             columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
             "="
             (
                 LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
                 |
-                values = ParenthesedExpressionList() { updateSet.setValues(values); }
+                LOOKAHEAD("(") values = ParenthesedExpressionList() { updateSet.setValues(values); }
+                |
+                valueExpression = Expression()
+                {
+                    requireUpdateSetTargets(columns);
+                    updateSet.setValues(linkElements(new ExpressionList(valueExpression)));
+                }
             )
         )
     )
-
-    (
-        LOOKAHEAD(2) "," (
-            tableColumn=Column() "=" valueExpression=Expression()
-            {
-                updateSet = new UpdateSet(tableColumn, valueExpression);
-                linkElements(updateSet.getColumns());
-                linkElements(updateSet.getValues());
-                updateSets.add(updateSet);
-            }
-            |
-            (
-                { updateSet = new UpdateSet(); updateSets.add(updateSet); }
-                columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
-                "="
-                (
-                    LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
-                    |
-                    values = ParenthesedExpressionList() { updateSet.setValues(values); }
-                )
-            )
-        )
-    )*
-
     {
-        return updateSets;
+        return updateSet;
     }
+}
+
+/** WHERE CURRENT OF cursor_name; returns the cursor name. */
+String WhereCurrentOfClause():
+{
+    String cursorName;
+}
+{
+    <K_WHERE> <K_CURRENT> <K_OF> cursorName=RelObjectName()
+    { return cursorName; }
+}
+
+/**
+ * The target of UPDATE, DELETE and MERGE: PostgreSQL's relation_expr_opt_alias with ONLY or *
+ * around the table name, or a table with its alias and hints.
+ */
+TableReference DmlTarget():
+{
+    TableReference target;
+    Table table;
+    Alias alias;
+}
+{
+    (
+        LOOKAHEAD({ isScopedDmlTargetAhead() })
+        target=RelationTarget()
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { target.getTable().setAlias(alias); } ]
+        |
+        table=TableWithAlias() { target = new TableReference(table); }
+    )
+    { return target; }
 }
 
 List<Partition> Partitions():
@@ -9854,6 +9920,8 @@ Delete Delete():
 {
     Delete delete = new Delete();
     Table table = null;
+    TableReference target;
+    String cursorName;
     ForPortionClause forPortionClause;
     List<Table> tables = new ArrayList<Table>();
     List<WithItem<?>> with = null;
@@ -9885,7 +9953,7 @@ Delete Delete():
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias()
+    [ LOOKAHEAD(3) target=DmlTarget() { delete.setTableReference(target); table = target.getTable(); }
         [ forPortionClause=ForPortionClause() { delete.setForPortionClause(forPortionClause); } ]
         [ LOOKAHEAD(2) joins=JoinsList() ] ]
     [ <K_USING> usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); }
@@ -9893,7 +9961,12 @@ Delete Delete():
           // MySQL's table references and PostgreSQL's from items may join further tables
           [ LOOKAHEAD(2) usingJoins=JoinsList() { delete.setUsingJoins(usingJoins); } ]
     ]
-    [where=WhereClause() { delete.setWhere(where); } ]
+    [
+        LOOKAHEAD({ isWhereCurrentOfAhead() })
+        cursorName=WhereCurrentOfClause() { delete.setCursorName(cursorName); }
+        |
+        where=WhereClause() { delete.setWhere(where); }
+    ]
     [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
@@ -9919,7 +9992,7 @@ Delete Delete():
 
 Statement Merge( List<WithItem<?>> with ) : {
     Merge merge = new Merge();
-    Table table;
+    TableReference target;
     FromItem fromItem;
     Expression condition;
     List<MergeOperation> operations;
@@ -9928,7 +10001,7 @@ Statement Merge( List<WithItem<?>> with ) : {
     OptionClause optionClause = null;
 }
 {
-    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> target=DmlTarget() { merge.setTableReference(target); }
     <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
     <K_ON> condition = Expression() { merge.setOnCondition(condition); }
 
@@ -9966,6 +10039,9 @@ MergeOperation MergeWhenMatched() : {
     <K_THEN>
     (
         operation = MergeDeleteClause(predicate) | operation = MergeUpdateClause(predicate)
+        |
+        // PostgreSQL
+        <K_DO> <K_NOTHING> { operation = new MergeDoNothing().withAndPredicate(predicate); }
     )
     { return operation; }
 }
@@ -9998,21 +10074,29 @@ MergeInsert MergeInsertClause(Expression predicate) : {
 }
 {
     <K_INSERT>
-    [ open="(" columns = ColumnList() ")"
+    (
+        // PostgreSQL's merge_insert: without a column list or OVERRIDING
+        <K_DEFAULT> <K_VALUES>
+        |
+        [ open="(" columns = ColumnList() ")"
+            {
+                ParenthesedExpressionList<Column> insertColumns = new ParenthesedExpressionList<Column>(columns);
+                linkAST(insertColumns, open);
+                mi.setColumns(insertColumns);
+            }
+        ]
+        [ <K_OVERRIDING>
+            ( <K_SYSTEM> { mi.setOverridingMode(Insert.OverridingMode.SYSTEM); }
+            | <K_USER> { mi.setOverridingMode(Insert.OverridingMode.USER); } ) <K_VALUE> ]
+        <K_VALUES> open="(" expList = SimpleExpressionList() ")"
         {
-            ParenthesedExpressionList<Column> insertColumns = new ParenthesedExpressionList<Column>(columns);
-            linkAST(insertColumns, open);
-            mi.setColumns(insertColumns);
+            ParenthesedExpressionList insertValues = new ParenthesedExpressionList(expList);
+            linkAST(insertValues, open);
+            mi.setValues(insertValues);
         }
-    ]
-    <K_VALUES> open="(" expList = SimpleExpressionList() ")"
-    {
-        ParenthesedExpressionList insertValues = new ParenthesedExpressionList(expList);
-        linkAST(insertValues, open);
-        mi.setValues(insertValues);
-    }
 
-    [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
+        [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
+    )
 
     {
         mi.setAndPredicate(predicate);
@@ -10039,6 +10123,10 @@ MergeOperation MergeWhenNotMatched() : {
         operation = MergeUpdateClause(predicate) { ((MergeUpdate) operation).setSide(side); }
         |
         operation = MergeDeleteClause(predicate) { ((MergeDelete) operation).setSide(side); }
+        |
+        // PostgreSQL: allowed for the source and the target side alike
+        <K_DO> <K_NOTHING>
+        { operation = new MergeDoNothing(MergeWhen.ofNotMatched(side)).withAndPredicate(predicate); }
     )
     { return MergeSide.validatePairing(side, operation); }
 }
@@ -10249,17 +10337,6 @@ Table TableWithAlias():
     table=TableReference()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { table.setAlias(alias); }]
     [ LOOKAHEAD(<K_WITH> "(") sqlServerHints=SQLServerHints() { table.setSqlServerHints(sqlServerHints); } ]
-    { return table; }
-}
-
-Table TableWithAliasAndMysqlIndexHint():
-{
-    Table table = null;
-    List<MySQLIndexHint> indexHints = null;
-}
-{
-    table=TableWithAlias()
-    [ LOOKAHEAD(2) indexHints=MySQLIndexHints() { table.setIndexHints(indexHints); } ]
     { return table; }
 }
 

@@ -34,6 +34,11 @@ public class MergeDelete implements Serializable, MergeOperation {
         return this;
     }
 
+    /** {@code WHEN MATCHED}, or {@code WHEN NOT MATCHED BY SOURCE} with that side. */
+    public MergeWhen getWhen() {
+        return MergeWhen.ofTargetRow(side);
+    }
+
     public MergeDelete withAndPredicate(Expression andPredicate) {
         this.setAndPredicate(andPredicate);
         return this;
@@ -52,11 +57,7 @@ public class MergeDelete implements Serializable, MergeOperation {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(side == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
-        if (andPredicate != null) {
-            b.append(" AND ").append(andPredicate.toString());
-        }
-        b.append(" THEN DELETE");
+        getWhen().appendTo(b, andPredicate, b::append).append("DELETE");
         return b.toString();
     }
 }

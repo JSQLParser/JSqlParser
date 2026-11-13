@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.schema.TableReference;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
@@ -28,13 +29,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Merge extends ASTNodeAccessImpl implements Statement {
 
     private List<WithItem<?>> withItemsList;
-    private Table table;
+    private TableReference tableReference = new TableReference(null);
     private OracleHint oracleHint = null;
     private FromItem fromItem;
     private Expression onCondition;
@@ -121,11 +123,29 @@ public class Merge extends ASTNodeAccessImpl implements Statement {
     }
 
     public Table getTable() {
-        return table;
+        return tableReference.getTable();
     }
 
+    /** Replaces the target table and keeps the inheritance scope of the target. */
     public void setTable(Table name) {
-        table = name;
+        tableReference.setTable(name);
+    }
+
+    /**
+     * The target as PostgreSQL's relation_expr_opt_alias: the table of {@link #getTable()} with its
+     * alias, and whether ONLY or * describes its inheritance scope.
+     */
+    public TableReference getTableReference() {
+        return tableReference;
+    }
+
+    public void setTableReference(TableReference tableReference) {
+        this.tableReference = Objects.requireNonNull(tableReference);
+    }
+
+    public Merge withTableReference(TableReference tableReference) {
+        this.setTableReference(tableReference);
+        return this;
     }
 
     public OracleHint getOracleHint() {
@@ -265,7 +285,7 @@ public class Merge extends ASTNodeAccessImpl implements Statement {
             b.append(oracleHint).append(" ");
         }
         b.append("INTO ");
-        b.append(table);
+        tableReference.appendWithAliasTo(b);
         b.append(" USING ");
         b.append(fromItem);
         b.append(" ON ");
