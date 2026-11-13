@@ -9,15 +9,23 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.function.Consumer;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
 
+/**
+ * {@code DESCRIBE} or {@code DESC} of a table, or, in DuckDB, of a query's result.
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/explain.html">MySQL DESCRIBE</a>
+ */
 public class DescribeStatement extends ASTNodeAccessImpl implements Statement {
 
     private Table table;
     private Select select;
     private String describeType;
+    private Expression columnPattern;
 
     public DescribeStatement() {
         // empty constructor
@@ -49,10 +57,43 @@ public class DescribeStatement extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
+    /**
+     * The MySQL column name ({@link net.sf.jsqlparser.schema.Column}) or wildcard string that
+     * limits the described columns to those it matches, or null.
+     */
+    public Expression getColumnPattern() {
+        return columnPattern;
+    }
+
+    public void setColumnPattern(Expression columnPattern) {
+        this.columnPattern = columnPattern;
+    }
+
+    public DescribeStatement withColumnPattern(Expression columnPattern) {
+        setColumnPattern(columnPattern);
+        return this;
+    }
+
     @Override
     public String toString() {
-        return this.describeType + " "
-                + (select != null ? select.toString() : table.getFullyQualifiedName());
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append, builder::append).toString();
+    }
+
+    /** Shared by SQL rendering and statement deparsers. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Select> selectPrinter,
+            Consumer<Expression> expressionPrinter) {
+        builder.append(describeType).append(" ");
+        if (select != null) {
+            selectPrinter.accept(select);
+        } else {
+            builder.append(table);
+            if (columnPattern != null) {
+                builder.append(" ");
+                expressionPrinter.accept(columnPattern);
+            }
+        }
+        return builder;
     }
 
     @Override

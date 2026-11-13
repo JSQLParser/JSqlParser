@@ -93,6 +93,7 @@ import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.refresh.*;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.*;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
@@ -104,6 +105,8 @@ import net.sf.jsqlparser.statement.role.*;
 import net.sf.jsqlparser.statement.imprt.*;
 import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
+import net.sf.jsqlparser.statement.admin.*;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CancellationException;
@@ -168,7 +171,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_PURGE: case K_SESSION: case K_BRANCH: case K_LOCK: case K_IF: case K_TABLE:
                 return true;
             case K_DO:
-                return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+                return isDoStatementAhead();
             case K_SECURITY:
                 return "LABEL".equalsIgnoreCase(getToken(2).image);
             case K_REINDEX:
@@ -183,6 +186,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isUnlockTablesAhead() || isBackupLockAhead();
             case K_END:
                 return isEndTransactionAhead();
+            case K_CHECK: case K_CHECKSUM: case K_OPTIMIZE: case K_REPAIR:
+                return isTableMaintenanceAhead();
+            case K_FLUSH:
+                return isFlushAhead();
+            case K_KILL:
+                return isKillAhead();
+            case K_HANDLER:
+                return isHandlerAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -226,6 +237,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // depth of DuckDB MAP keys: the following ":" separates a key from its value
     // and must not be taken as the JSON path operator
     private int mapKeyDepth = 0;
+    /**
+     * Set while the zone of AT TIME ZONE is about to be read: the zone is a primary expression
+     * that leaves a following AT TIME ZONE or AT LOCAL to the expression it converts.
+     */
+    private boolean timezoneOperandAhead = false;
 
     // opening brackets of the enclosing subscripts: a ":" at the top level of a subscript
     // separates the bounds of a slice such as l[1:3] and is not the JSON path operator
@@ -336,6 +352,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
         }
         return list;
+    }
+
+    /**
+     * Links the zones of a TimezoneExpression. One zone is its own range. Several zones span from
+     * the AT of the first one, since the text between two zones is not a list separator.
+     */
+    private void linkTimezones(TimezoneExpression expression, Token firstAt) {
+        // the field behind this getter is an ExpressionList
+        ExpressionList<?> zones = (ExpressionList<?>) expression.getTimezoneExpressions();
+        Node last = zones.size() > 1 ? zones.get(zones.size() - 1).getASTNode() : null;
+        if (last != null && firstAt != null && zones.getASTNode() == null) {
+            linkAST(zones, firstAt, last.jjtGetLastToken());
+        } else {
+            linkElements(zones);
+        }
     }
 
     /** Links an object built from the single token just consumed, such as a name, to that token. */
@@ -2086,6 +2117,40 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether the target of UPDATE, DELETE or MERGE carries PostgreSQL's inheritance scope: ONLY
+     * before the table name or * after it. MySQL and MariaDB have no ONLY there.
+     */
+    private boolean isScopedDmlTargetAhead() {
+        if (getToken(1).kind == K_ONLY) {
+            return !isMySqlDialect() && isRelationOnlyAhead(getToken(0));
+        }
+        int i = 2;
+        while (".".equals(getToken(i).image)) {
+            i += 2;
+        }
+        return "*".equals(getToken(i).image) && !"*".equals(getToken(i - 1).image);
+    }
+
+    /**
+     * The targets of (columns) = source, when the source is an expression other than a
+     * parenthesized list or sub-select: one or more columns, array elements or fields.
+     */
+    private static void requireUpdateSetTargets(ExpressionList<?> targets) throws ParseException {
+        boolean valid = !targets.isEmpty();
+        for (Object target : targets) {
+            valid &= target instanceof Column || target instanceof ArrayExpression
+                    || target instanceof RowGetExpression;
+        }
+        requireSyntax(valid, "A SET column list names one or more columns");
+    }
+
+    /** WHERE CURRENT OF cursor, the positioned form of UPDATE and DELETE. */
+    private boolean isWhereCurrentOfAhead() {
+        return getToken(1).kind == K_WHERE && getToken(2).kind == K_CURRENT
+                && getToken(3).kind == K_OF;
+    }
+
+    /**
      * DuckDB's FROM-first query: a FROM clause followed by query clauses the pipe syntax cannot
      * consume.  Scanning stops at a pipe operator or the end of the statement, and clause keywords
      * nested in brackets (a sub-select, for instance) do not count.
@@ -2694,6 +2759,122 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && isMySqlLockDialect(false);
     }
 
+    /** MySQL's FLUSH, KILL, HANDLER and RESET PERSIST parse without a dialect and with MySQL's. */
+    private boolean isMySqlServerAdminDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.MYSQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether MySQL FLUSH starts here: FLUSH, an optional NO_WRITE_TO_BINLOG or LOCAL, and then
+     * TABLE, TABLES or the first word of a flush option. Other FLUSH forms, such as the FLUSH
+     * HOSTS that MySQL 8.4 removed, remain unsupported statements.
+     */
+    private boolean isFlushAhead() {
+        if (getToken(1).kind != K_FLUSH || !isMySqlServerAdminDialect()) {
+            return false;
+        }
+        int modifier = getToken(2).kind;
+        Token next = getToken(modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL ? 3 : 2);
+        if (next.kind == K_TABLE || next.kind == K_TABLES) {
+            return true;
+        }
+        if (next.kind != S_IDENTIFIER && next.kind != K_BINARY && next.kind != K_ENGINE
+                && next.kind != K_ERROR) {
+            return false;
+        }
+        for (FlushOption.Kind kind : FlushOption.Kind.values()) {
+            if (kind.getKeyword().split(" ")[0].equalsIgnoreCase(next.image)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether MySQL KILL [CONNECTION | QUERY] processlist_id starts here. */
+    private boolean isKillAhead() {
+        int next = getToken(2).kind;
+        return getToken(1).kind == K_KILL && next != EOF && next != ST_SEMICOLON
+                && isMySqlServerAdminDialect();
+    }
+
+    /** Whether MySQL HANDLER starts here: a table or handler name, then OPEN, READ or CLOSE. */
+    private boolean isHandlerAhead() {
+        if (getToken(1).kind != K_HANDLER || !isMySqlServerAdminDialect()) {
+            return false;
+        }
+        int offset = 2;
+        while (isIdentifierishNameToken(getToken(offset)) && ".".equals(getToken(offset + 1).image)) {
+            offset += 2;
+        }
+        int action = getToken(offset + 1).kind;
+        return isIdentifierishNameToken(getToken(offset))
+                && (action == K_OPEN || action == K_READ || action == K_CLOSE);
+    }
+
+    /**
+     * Whether HANDLER ... READ continues with an index name: a comparison or FIRST, NEXT, PREV or
+     * LAST follows the name. Otherwise FIRST or NEXT reads in storage order.
+     */
+    private boolean isHandlerIndexAhead() {
+        Token next = getToken(2);
+        switch (next.kind) {
+            case K_FIRST: case K_NEXT: case K_LAST:
+            case OP_GREATERTHANEQUALS: case OP_MINORTHANEQUALS:
+                return isIdentifierishNameToken(getToken(1));
+            default:
+                return isIdentifierishNameToken(getToken(1)) && ("=".equals(next.image)
+                        || "<".equals(next.image) || ">".equals(next.image)
+                        || next.kind == S_IDENTIFIER && "PREV".equalsIgnoreCase(next.image));
+        }
+    }
+
+    /**
+     * Whether MySQL RESET PERSIST starts here. Without a dialect only a variable name, which may
+     * have a component prefix, or IF EXISTS after PERSIST tells it from PostgreSQL's RESET of a
+     * parameter named persist, which a bare RESET PERSIST keeps.
+     */
+    private boolean isResetPersistAhead() {
+        if (getToken(1).kind != K_RESET || !isWordSequenceAhead(2, "PERSIST")) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (Dialect.MYSQL.name().equals(dialect)) {
+            return true;
+        }
+        Token next = getToken(3);
+        int end = getToken(4).kind;
+        return dialect == null && (next.kind == K_IF && end == K_EXISTS
+                || isIdentifierishNameToken(next)
+                        && (end == EOF || end == ST_SEMICOLON || ".".equals(getToken(4).image)));
+    }
+
+    /** Whether one of the expressions holds a subquery. */
+    private static boolean containsSubquery(Expression... expressions) {
+        boolean[] found = new boolean[1];
+        ExpressionVisitorAdapter<Void> finder = new ExpressionVisitorAdapter<Void>() {
+            @Override
+            public <S> Void visit(Select select, S context) {
+                found[0] = true;
+                return null;
+            }
+        };
+        for (Expression expression : expressions) {
+            if (expression != null) {
+                expression.accept(finder, null);
+            }
+        }
+        return found[0];
+    }
+
+    private static FlushOption.Kind flushOptionKind(String keyword) throws ParseException {
+        FlushOption.Kind kind = FlushOption.Kind.fromKeyword(keyword);
+        if (kind == null) {
+            throw new ParseException("Unknown FLUSH option: " + keyword);
+        }
+        return kind;
+    }
+
     /**
      * Whether NO_WRITE_TO_BINLOG or LOCAL modifies a MySQL partition operation. Followed by a
      * comma, INTO or the end of the statement, the word remains a partition name.
@@ -2855,6 +3036,67 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             "AUTHORIZATION", "BINARY", "COLLATION", "CONCURRENTLY", "CROSS", "CURRENT_SCHEMA",
             "FREEZE", "FULL", "ILIKE", "INNER", "IS", "ISNULL", "JOIN", "LEFT", "LIKE", "NATURAL",
             "NOTNULL", "OUTER", "OVERLAPS", "RIGHT", "SIMILAR", "TABLESAMPLE", "VERBOSE"));
+
+    /**
+     * PostgreSQL 18's column name keywords that are not a type name by themselves, so its grammar
+     * takes none of them as the single word of a definition value. NONE is one more, but a
+     * definition value takes it as the keyword it is.
+     */
+    private static final Set<String> POSTGRESQL_NON_TYPE_COL_NAME_KEYWORDS = new HashSet<String>(Arrays.asList(
+            "BETWEEN", "COALESCE", "EXISTS", "EXTRACT", "GREATEST", "GROUPING", "INOUT", "JSON_ARRAY",
+            "JSON_ARRAYAGG", "JSON_EXISTS", "JSON_OBJECT", "JSON_OBJECTAGG", "JSON_QUERY",
+            "JSON_SCALAR", "JSON_SERIALIZE", "JSON_TABLE", "JSON_VALUE", "LEAST", "MERGE_ACTION",
+            "NATIONAL", "NORMALIZE", "NULLIF", "OUT", "OVERLAY", "POSITION", "PRECISION", "ROW",
+            "SETOF", "SUBSTRING", "TREAT", "TRIM", "VALUES", "XMLATTRIBUTES", "XMLCONCAT",
+            "XMLELEMENT", "XMLEXISTS", "XMLFOREST", "XMLNAMESPACES", "XMLPARSE", "XMLPI", "XMLROOT",
+            "XMLSERIALIZE", "XMLTABLE"));
+
+    /** Whether the token is an identifier or a keyword: a word PostgreSQL takes as a label. */
+    private static boolean isPostgreSqlWord(Token token) {
+        return token.kind == S_IDENTIFIER || token.kind == S_QUOTED_IDENTIFIER || token.kind == DATA_TYPE
+                || token.kind != EOF && token.kind != S_CHAR_LITERAL && token.image != null
+                        && token.image.matches("[A-Za-z_][A-Za-z0-9_$]*");
+    }
+
+    /** Whether "()" occurs in the tokens from first to last, as in the type modifiers of f(). */
+    private static boolean hasEmptyParentheses(Token first, Token last) {
+        for (Token token = first; token != last && token.next != null; token = token.next) {
+            if (token.kind == OPENING_BRACKET && token.next.kind == CLOSING_BRACKET) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether a definition list follows: a parenthesis, a label and then "=", "," or ")". */
+    private boolean isDefinitionAhead() {
+        String next = getToken(3).image;
+        return getToken(1).kind == OPENING_BRACKET && isPostgreSqlWord(getToken(2))
+                && ("=".equals(next) || ",".equals(next) || ")".equals(next));
+    }
+
+    /** Whether the value of a definition element is one word, which no type rule needs to read. */
+    private boolean isDefinitionWordValueAhead() {
+        String next = getToken(2).image;
+        return isPostgreSqlWord(getToken(1)) && (",".equals(next) || ")".equals(next));
+    }
+
+    /**
+     * The one-word value of a definition element: NONE, a reserved keyword, or a name, which
+     * PostgreSQL reads as a type name.
+     */
+    private DefinitionArgument definitionWordValue(Token token) throws ParseException {
+        String upper = token.image.toUpperCase(Locale.ROOT);
+        if (token.kind == K_NONE) {
+            return DefinitionArgument.none();
+        }
+        if (POSTGRESQL_RESERVED_KEYWORDS.contains(upper)) {
+            return DefinitionArgument.keyword(token.image);
+        }
+        requireDdlSyntax(!POSTGRESQL_NON_TYPE_COL_NAME_KEYWORDS.contains(upper),
+                "PostgreSQL does not take " + token.image + " as a definition value");
+        return DefinitionArgument.type(linkToLastToken(new ColDataType(token.image)));
+    }
 
     /** Rejects an unquoted utility option name or word value that PostgreSQL reserves. */
     private void requireUtilityOptionWord(String word, boolean name) throws ParseException {
@@ -3166,7 +3408,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     /**
      * True when an IS after a condition opens a postfix test
-     * (IS [NOT] TRUE/FALSE/UNKNOWN/NULL/JSON) rather than IS DISTINCT FROM or
+     * (IS [NOT] TRUE/FALSE/UNKNOWN/NULL/JSON/NORMALIZED) rather than IS DISTINCT FROM or
      * another comparison form, which has a right-hand operand of its own.
      */
     private boolean isPostfixIsTestAhead() {
@@ -3182,7 +3424,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_JSON:
                 return true;
             default:
-                return false;
+                return isIsNormalizedAhead();
         }
     }
 
@@ -3310,8 +3552,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
-     * Whether a MySQL CREATE/ALTER USER clause starts at the offset: authentication, DEFAULT ROLE,
-     * REQUIRE, WITH resource limits, password and locking options, COMMENT or ATTRIBUTE. PostgreSQL
+     * Whether a MySQL CREATE/ALTER USER clause starts at the offset: authentication, a further
+     * factor after AND, a factor change or registration step, DEFAULT ROLE, REQUIRE, WITH resource limits, password and locking options, COMMENT or ATTRIBUTE. PostgreSQL
      * role attributes such as WITH LOGIN or PASSWORD 'x' do not match.
      */
     private boolean isMySqlUserOptionAhead(int offset) {
@@ -3320,6 +3562,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_IDENTIFIED:
             case K_DISCARD:
                 return true;
+            case K_AND:
+                return getToken(offset + 1).kind == K_IDENTIFIED;
+            case K_ADD:
+            case K_MODIFY:
+            case K_DROP:
+                return isMySqlFactorAhead(offset + 1);
+            case S_LONG:
+                return isMySqlFactorAhead(offset);
             case K_COMMENT:
                 return getToken(offset + 1).kind == S_CHAR_LITERAL;
             case K_DEFAULT:
@@ -3330,6 +3580,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isMySqlPasswordLockOptionAhead(offset) || token.kind == S_IDENTIFIER
                         && ("REQUIRE".equalsIgnoreCase(token.image)
                             || "ATTRIBUTE".equalsIgnoreCase(token.image));
+        }
+    }
+
+    /** Whether a multi-factor authentication factor, n FACTOR, starts at the offset. */
+    private boolean isMySqlFactorAhead(int offset) {
+        return getToken(offset).kind == S_LONG
+                && "FACTOR".equalsIgnoreCase(getToken(offset + 1).image);
+    }
+
+    /** Whether ADD, MODIFY or DROP of a multi-factor authentication factor is next. */
+    private boolean isMySqlFactorChangeAhead() {
+        int kind = getToken(1).kind;
+        return (kind == K_ADD || kind == K_MODIFY || kind == K_DROP) && isMySqlFactorAhead(2);
+    }
+
+    /** The number of n FACTOR, which the MySQL grammar reads as an integer of at most 31 bits. */
+    private static int factorNumber(Token token) throws ParseException {
+        try {
+            return Integer.parseInt(token.image);
+        } catch (NumberFormatException exception) {
+            throw new ParseException("Invalid authentication factor: " + token.image);
         }
     }
 
@@ -3573,6 +3844,93 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    /** MySQL's EXPLAIN, PREPARE, EXECUTE, DROP PREPARE and DO: MySQL, MariaDB or no dialect. */
+    private boolean isMySqlUtilityDialect() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * Whether MySQL's EXPLAIN syntax starts here: EXPLAIN, DESCRIBE or DESC before FORMAT =, INTO,
+     * FOR or a REPLACE statement, each optionally after ANALYZE. DESCRIBE and DESC also start it
+     * before ANALYZE and a query, or before another explainable statement. EXPLAIN SELECT,
+     * EXPLAIN ANALYZE SELECT, EXPLAIN table, DESCRIBE SELECT and DESCRIBE table keep their
+     * readings.
+     */
+    private boolean isMySqlExplainAhead() {
+        int keyword = getToken(1).kind;
+        if (keyword != K_EXPLAIN && keyword != K_DESCRIBE && keyword != K_DESC
+                || !isMySqlUtilityDialect()) {
+            return false;
+        }
+        boolean analyze = getToken(2).kind == K_ANALYZE;
+        int offset = analyze ? 3 : 2;
+        Token after = getToken(offset + 1);
+        // a word that ends the statement or a qualified name names a table to describe
+        boolean statement = after.kind != EOF && after.kind != ST_SEMICOLON
+                && !".".equals(after.image);
+        switch (getToken(offset).kind) {
+            case K_FORMAT:
+                return "=".equals(after.image);
+            case K_INTO: case K_FOR:
+                return true;
+            case K_REPLACE:
+                return statement;
+            case K_TABLE:
+                // without a dialect, DESCRIBE TABLE t could also be Snowflake's DESCRIBE of a table
+                return keyword != K_EXPLAIN && statement && (analyze || isMySqlDialect());
+            case K_INSERT: case K_UPDATE: case K_DELETE: case K_VALUES:
+                return keyword != K_EXPLAIN && statement;
+            case K_SELECT: case K_WITH: case OPENING_BRACKET:
+                return keyword != K_EXPLAIN && analyze;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Whether a MySQL column name or wildcard string follows the table of DESCRIBE or EXPLAIN. It
+     * ends the statement, and a statement keyword on the next line starts the next statement.
+     * Without a dialect, DESCRIBE x y could also be Snowflake's DESCRIBE of an object kind.
+     */
+    private boolean isDescribeColumnAhead() {
+        int end = getToken(2).kind;
+        return isMySqlDialect() && (end == EOF || end == ST_SEMICOLON)
+                && (getToken(1).beginLine == getToken(0).endLine || !isStatementStartAhead());
+    }
+
+    /**
+     * Whether DO starts PostgreSQL's code block or MySQL's expression list. Without a dialect, a
+     * string or LANGUAGE after DO could start either, so only other expressions start MySQL's DO.
+     */
+    private boolean isDoStatementAhead() {
+        if (getToken(1).kind != K_DO) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect == null) {
+            Token next = getToken(2);
+            return next.kind != S_CHAR_LITERAL && !"LANGUAGE".equalsIgnoreCase(next.image);
+        }
+        return Dialect.POSTGRESQL.name().equals(dialect) || isMySqlDialect();
+    }
+
+    /** MySQL's EXPLAIN formats. The server rejects other names while it parses the statement. */
+    private ExplainStatement.Option mySqlExplainFormat(Token token) throws ParseException {
+        String name = token.image;
+        if (token.kind == S_CHAR_LITERAL || token.kind == S_QUOTED_IDENTIFIER) {
+            char quote = name.charAt(0);
+            name = quote == '\'' || quote == '"' || quote == '`'
+                    ? name.substring(1, name.length() - 1) : "";
+        }
+        ExplainStatement.Format format = ExplainStatement.Format.find(name);
+        if (format != ExplainStatement.Format.TRADITIONAL && format != ExplainStatement.Format.JSON
+                && format != ExplainStatement.Format.TREE) {
+            throw new ParseException("Unknown EXPLAIN format name: " + token.image);
+        }
+        return new ExplainStatement.Option(ExplainStatement.OptionType.FORMAT)
+                .withValue(format.name()).withUseEqual(true);
+    }
+
     /**
      * Whether ALTER TABLE DROP names a MySQL FOREIGN KEY or CHECK constraint. The default
      * configuration accepts both like MySQL; MariaDB has no DROP CHECK. A parenthesized FOREIGN KEY
@@ -3694,6 +4052,60 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     private boolean isPostgreSqlTwoPhaseDialect() {
         String dialect = getAsString(Feature.dialect);
         return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether the words RESOURCE GROUP of a MySQL resource group statement are at the offset. Read
+     * with the MySQL dialect or none; MariaDB and the other products have no resource groups.
+     */
+    private boolean isResourceGroupAt(int offset) {
+        String dialect = getAsString(Feature.dialect);
+        return isWordAt(offset, "RESOURCE") && getToken(offset + 1).kind == K_GROUP
+                && (dialect == null || Dialect.MYSQL.name().equals(dialect));
+    }
+
+    /**
+     * Whether DROP names a MySQL resource group. Without a dialect, DROP RESOURCE GROUP on its own
+     * keeps dropping an object called GROUP.
+     */
+    private boolean isDropResourceGroupAhead() {
+        int next = getToken(3).kind;
+        return isResourceGroupAt(1)
+                && (getAsString(Feature.dialect) != null || next != EOF && next != ST_SEMICOLON);
+    }
+
+    /** Whether MySQL CREATE, ALTER or SET RESOURCE GROUP starts here. */
+    private boolean isResourceGroupStatementAhead() {
+        int kind = getToken(1).kind;
+        return (kind == K_CREATE || kind == K_ALTER || kind == K_SET) && isResourceGroupAt(2);
+    }
+
+    /** A group name; MySQL reserves FORCE, the word that may follow the name. */
+    private String resourceGroupName(String name) throws ParseException {
+        requireDdlSyntax(!"FORCE".equalsIgnoreCase(name), "Expected a resource group name");
+        return name;
+    }
+
+    /**
+     * A number that MySQL's lexer reads as NUM, as a CPU number and a thread priority must be:
+     * digits up to 2147483647.
+     */
+    private int resourceGroupNumber(Token token) throws ParseException {
+        if (token.image.matches("[0-9]+")) {
+            java.math.BigInteger number = new java.math.BigInteger(token.image);
+            if (number.bitLength() < Integer.SIZE) {
+                return number.intValue();
+            }
+        }
+        throw new ParseException("Expected an integer up to 2147483647 but found " + token.image);
+    }
+
+    /** A thread ID: MySQL takes an unsigned integer of up to 64 bits. */
+    private LongValue resourceGroupThreadId(Token token) throws ParseException {
+        requireDdlSyntax(token.image.matches("[0-9]+")
+                && new java.math.BigInteger(token.image).bitLength() <= Long.SIZE,
+                "Expected a thread ID but found " + token.image);
+        return linkToLastToken(new LongValue(token.image));
     }
 
     /**
@@ -3889,6 +4301,56 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || "SQL_BUFFER_RESULT".equalsIgnoreCase(token.image));
     }
 
+    /** Whether the dialect is PostgreSQL: forms the server rejects are then not read. */
+    private boolean isPostgreSqlDialect() {
+        return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+    }
+
+    /**
+     * PostgreSQL's persistence and TABLE keywords of SELECT INTO are read with that dialect and
+     * without one, never with another dialect.
+     */
+    private boolean isPostgreSqlSelectIntoDialect() {
+        return getAsString(Feature.dialect) == null || isPostgreSqlDialect();
+    }
+
+    /**
+     * Whether IS [NOT] [NFC | NFD | NFKC | NFKD] NORMALIZED follows. The form names and NORMALIZED
+     * are identifiers everywhere else.
+     */
+    private boolean isIsNormalizedAhead() {
+        if (getToken(1).kind != K_IS) {
+            return false;
+        }
+        int offset = getToken(2).kind == K_NOT ? 3 : 2;
+        if (isWordAt(offset, "NORMALIZED")) {
+            return true;
+        }
+        Token form = getToken(offset);
+        return form.kind == S_IDENTIFIER && IsNormalizedExpression.NormalForm.isNormalForm(form.image)
+                && isWordAt(offset + 1, "NORMALIZED");
+    }
+
+    /**
+     * Whether the arguments of XMLELEMENT continue with XMLATTRIBUTES(...) after the element name,
+     * the only place where the attribute list with its AS names is allowed. PostgreSQL requires
+     * the NAME keyword before the element name.
+     */
+    private boolean isXmlElementAttributesAhead(Function function) {
+        return hasUnqualifiedName(function, "XMLELEMENT") && ",".equals(getToken(2).image)
+                && isWordAt(3, "XMLATTRIBUTES") && getToken(4).kind == OPENING_BRACKET
+                && (!isPostgreSqlDialect() || "NAME".equalsIgnoreCase(function.getExtraKeyword()));
+    }
+
+    private static boolean hasUnqualifiedColumns(List<Column> columns) {
+        for (Column column : columns) {
+            if (column.getTable() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean isMySqlSelectIntoAhead() {
         if (getToken(1).kind != K_INTO) { return false; }
         int kind = getToken(2).kind;
@@ -3898,7 +4360,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     private static UserVariable requireMySqlIntoVariable(UserVariable variable) throws ParseException {
         if (variable.isDoubleAdd()) {
-            throw new ParseException("INTO requires a user variable with a single @ prefix");
+            throw new ParseException("A user variable with a single @ prefix is required");
         }
         return variable;
     }
@@ -4173,7 +4635,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
 
         static boolean isForceAhead(Drop drop, Token first, Token second, Token third) {
-            return drop.getObjectType() == Drop.ObjectType.SYNONYM && first.kind == K_FORCE
+            return (drop.getObjectType() == Drop.ObjectType.SYNONYM
+                    || drop.getObjectType() == Drop.ObjectType.RESOURCE_GROUP) && first.kind == K_FORCE
                     || drop.getObjectType() == Drop.ObjectType.DATABASE
                         && (first.kind == K_WITH && "(".equals(second.image) && third.kind == K_FORCE
                             || "(".equals(first.image) && second.kind == K_FORCE);
@@ -4192,6 +4655,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return token.kind != S_IDENTIFIER && token.kind != S_QUOTED_IDENTIFIER
                     && token.image != null && !token.image.isEmpty()
                     && "+-*/<>=~!@#%^&|?".indexOf(token.image.charAt(0)) >= 0;
+        }
+
+        /** MySQL DROP RESOURCE GROUP names one group by a plain identifier, without IF EXISTS. */
+        static boolean isResourceGroupTarget(Drop drop) {
+            if (drop.isIfExists() || drop.isMaterialized() || drop.getNames().size() != 1) {
+                return false;
+            }
+            Table name = drop.getNames().get(0);
+            return name.getSchemaName() == null && !name.getName().startsWith("'")
+                    && !"FORCE".equalsIgnoreCase(name.getName());
         }
 
         /** The targets are a cast, a transform or operators, named by their types. */
@@ -4835,6 +5308,7 @@ String NonReservedWordPart1() :
       | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
       | tk=<K_GUARD:"GUARD">
+      | tk=<K_HANDLER:"HANDLER">
       | tk=<K_HASH:"HASH">
       | tk=<K_HIGH : "HIGH">
       | tk=<K_HIGH_PRIORITY : "HIGH_PRIORITY">
@@ -5692,6 +6166,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD(3) stm = Upsert()
             |
+            LOOKAHEAD({ isResourceGroupStatementAhead() }) stm = ResourceGroupStatement()
+            |
             LOOKAHEAD(2) stm = Alter()
             |
             LOOKAHEAD({ getToken(1).kind == K_RENAME && getToken(2).kind == K_USER
@@ -5710,6 +6186,10 @@ Statement SingleStatement() :
                     && (getToken(4).kind == K_FOR || getToken(4).kind == K_IF) })
             stm = DropUserMapping()
             |
+            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE || (getToken(1).kind == K_DROP
+                    && getToken(2).kind == K_PREPARE && isMySqlUtilityDialect()) })
+            stm = DeallocateStatement()
+            |
             stm = Drop()
             |
             LOOKAHEAD({ getToken(1).kind == K_REASSIGN && "OWNED".equalsIgnoreCase(getToken(2).image) })
@@ -5723,6 +6203,12 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
             |
+            LOOKAHEAD({ isFlushAhead() }) stm = FlushStatement()
+            |
+            LOOKAHEAD({ isKillAhead() }) stm = KillStatement()
+            |
+            LOOKAHEAD({ isHandlerAhead() }) stm = HandlerStatement()
+            |
             LOOKAHEAD({ isReindexAhead() }) stm = Reindex()
             |
             LOOKAHEAD({ getToken(1).kind == K_SECURITY && "LABEL".equalsIgnoreCase(getToken(2).image) })
@@ -5732,8 +6218,7 @@ Statement SingleStatement() :
             |
             stm = Execute()
             |
-            LOOKAHEAD({ getToken(1).kind == K_DO && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
-            stm = DoStatement()
+            LOOKAHEAD({ isDoStatementAhead() }) stm = DoStatement()
             |
             LOOKAHEAD({ Dialect.SQLSERVER.name().equals(getAsString(Feature.dialect))
                 && getToken(1).kind == K_SET && getToken(2).kind == S_IDENTIFIER
@@ -5764,6 +6249,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ isSetConstraintsAhead() }) stm = SetConstraintsStatement()
             |
             stm = Set()
+            |
+            LOOKAHEAD({ isResetPersistAhead() }) stm = ResetPersist()
             |
             stm = Reset()
             |
@@ -5798,6 +6285,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ isKeywordAhead("NOTIFY") }) stm = NotifyStatement()
             |
+            LOOKAHEAD({ isMySqlExplainAhead() }) stm = MySqlExplain()
+            |
             stm = Describe()
             |
             stm = Explain()
@@ -5826,8 +6315,6 @@ Statement SingleStatement() :
             stm = DisconnectStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_PREPARE }) stm = PrepareStatement()
-            |
-            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
             |
@@ -5935,24 +6422,35 @@ OracleBlock.ExceptionHandler OracleExceptionHandler():
     <K_THEN> body=OracleBlockStatements() { handler.setStatements(body); return handler; }
 }
 
+/**
+ * PostgreSQL's DO [LANGUAGE name] code [LANGUAGE name], or MySQL's DO expr [, expr] ..., which
+ * MySQL reads as a select list.
+ */
 DoStatement DoStatement():
 {
     DoStatement statement = new DoStatement();
     String language;
     Token code;
+    List<SelectItem<?>> items;
 }
 {
     <K_DO>
     (
-        LOOKAHEAD({ isKeywordAhead("LANGUAGE") })
-        AccessKeyword("LANGUAGE") language=RelObjectName() code=<S_CHAR_LITERAL>
-        { statement.setLanguage(language); statement.setLanguageBeforeCode(true); }
+        LOOKAHEAD({ !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        items=SelectItemsList() { statement.setSelectItems(items); }
         |
-        code=<S_CHAR_LITERAL>
-        [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
-            language=RelObjectName() { statement.setLanguage(language); } ]
+        (
+            LOOKAHEAD({ isKeywordAhead("LANGUAGE") })
+            AccessKeyword("LANGUAGE") language=RelObjectName() code=<S_CHAR_LITERAL>
+            { statement.setLanguage(language); statement.setLanguageBeforeCode(true); }
+            |
+            code=<S_CHAR_LITERAL>
+            [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
+                language=RelObjectName() { statement.setLanguage(language); } ]
+        )
+        { statement.setCode(stringValue(code)); }
     )
-    { statement.setCode(stringValue(code)); return statement; }
+    { return statement; }
 }
 
 Block Block() #Block : {
@@ -7457,6 +7955,33 @@ String ConfigurationParameterName():
     { return name; }
 }
 
+// https://dev.mysql.com/doc/refman/8.4/en/reset-persist.html
+ResetStatement ResetPersist():
+{
+    ResetStatement reset = new ResetStatement((String) null).withPersist(true);
+    String name;
+    String part;
+    Token prefix;
+}
+{
+    <K_RESET> ContextualKeyword("PERSIST")
+    [
+        // MySQL reserves IF, so IF without EXISTS starts the next statement
+        LOOKAHEAD({ getToken(1).kind == K_IF ? getToken(2).kind == K_EXISTS
+                : isIdentifierishNameToken(getToken(1)) })
+        [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { reset.setIfExists(true); } ]
+        // MySQL's persisted_variable_ident: ident, ident.ident or DEFAULT.ident
+        (
+            LOOKAHEAD(2) prefix=<K_DEFAULT> "." part=RelObjectName() { name = prefix.image + "." + part; }
+            |
+            LOOKAHEAD({ getToken(1).kind != K_DEFAULT })
+            name=RelObjectName() [ "." part=RelObjectName() { name = name + "." + part; } ]
+        )
+        { reset.setName(name); }
+    ]
+    { return reset; }
+}
+
 RenameTableStatement RenameTableStatement(): {
     RenameTableStatement renameTableStatement;
     Table oldName;
@@ -7698,7 +8223,8 @@ CopyStatement CopyStatement() #CopyStatement:
 }
 
 /**
- * PREPARE name AS statement, storing a parameterised statement for later EXECUTE.
+ * PREPARE name AS statement, storing a parameterised statement for later EXECUTE, or MySQL's
+ * PREPARE name FROM {'text' | @variable}.
  */
 PrepareStatement PrepareStatement() #PrepareStatement:
 {
@@ -7707,14 +8233,23 @@ PrepareStatement PrepareStatement() #PrepareStatement:
     Statement statement;
     List<ColDataType> parameterTypes = new ArrayList<ColDataType>();
     ColDataType parameterType;
+    Token text;
+    Expression source;
 }
 {
     <K_PREPARE> name=RelObjectNames()
     { prepareStatement.setName(String.join(".", name.getNames())); }
-    [ "(" parameterType=PrepareParameterType() { parameterTypes.add(parameterType); }
-        ( "," parameterType=PrepareParameterType() { parameterTypes.add(parameterType); } )*
-        ")" { prepareStatement.setParameterTypes(parameterTypes); } ]
-    <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    (
+        LOOKAHEAD({ getToken(1).kind == K_FROM && isMySqlUtilityDialect() })
+        <K_FROM>
+        ( text=<S_CHAR_LITERAL> { source = stringValue(text); } | source=MySqlIntoVariable() )
+        { prepareStatement.setSource(source); }
+        |
+        [ "(" parameterType=PrepareParameterType() { parameterTypes.add(parameterType); }
+            ( "," parameterType=PrepareParameterType() { parameterTypes.add(parameterType); } )*
+            ")" { prepareStatement.setParameterTypes(parameterTypes); } ]
+        <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    )
     { return prepareStatement; }
 }
 
@@ -7728,7 +8263,7 @@ ColDataType PrepareParameterType():
 }
 
 /**
- * DEALLOCATE [PREPARE] name.
+ * DEALLOCATE [PREPARE] name, or MySQL's DROP PREPARE name.
  */
 DeallocateStatement DeallocateStatement() #DeallocateStatement:
 {
@@ -7736,8 +8271,12 @@ DeallocateStatement DeallocateStatement() #DeallocateStatement:
     ObjectNames name;
 }
 {
-    <K_DEALLOCATE>
-    [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+    (
+        <K_DEALLOCATE>
+        [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+        |
+        <K_DROP> <K_PREPARE> { deallocateStatement.setKeyword(DeallocateStatement.Keyword.DROP); }
+    )
     name=RelObjectNames() { deallocateStatement.setName(String.join(".", name.getNames())); }
     { return deallocateStatement; }
 }
@@ -8034,6 +8573,7 @@ DescribeStatement Describe(): {
     Select select;
     DescribeStatement stmt = new DescribeStatement();
     Token tk = null;
+    Expression pattern;
 } {
     (tk=<K_DESCRIBE> | tk=<K_DESC>)
     (
@@ -8043,9 +8583,113 @@ DescribeStatement Describe(): {
         select = Select() { stmt.setDescribeType(tk.image).setSelect(select); }
         |
         table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+        [ LOOKAHEAD(DescribeColumnPattern(), { isDescribeColumnAhead() })
+          pattern=DescribeColumnPattern() { stmt.setColumnPattern(pattern); } ]
     )
     {
         return stmt;
+    }
+}
+
+/** MySQL's column name or wildcard string after the table of DESCRIBE or EXPLAIN. */
+Expression DescribeColumnPattern():
+{
+    Token token;
+    String name;
+    Expression pattern;
+}
+{
+    (
+        token=<S_CHAR_LITERAL> { pattern = stringValue(token); }
+        |
+        token=<S_HEX> { pattern = linkToLastToken(new HexValue(token.image)); }
+        |
+        name=RelObjectName() { pattern = linkToLastToken(new Column(name)); }
+    )
+    { return pattern; }
+}
+
+/**
+ * MySQL's EXPLAIN, also spelled DESCRIBE or DESC: ANALYZE [FORMAT = name], or
+ * [FORMAT = name] [INTO @variable], then FOR CONNECTION id or
+ * [FOR {SCHEMA | DATABASE} name] and the explained statement.
+ */
+ExplainStatement MySqlExplain():
+{
+    Token keyword;
+    ExplainStatement explain;
+    List<ExplainStatement.Option> options = new ArrayList<ExplainStatement.Option>();
+    ExplainStatement.Option option;
+    UserVariable variable;
+    Token token;
+    Expression connection;
+    String schema;
+    Statement statement;
+}
+{
+    ( keyword=<K_EXPLAIN> | keyword=<K_DESCRIBE> | keyword=<K_DESC> )
+    { explain = new ExplainStatement(keyword.image); }
+    (
+        <K_ANALYZE>
+        { options.add(new ExplainStatement.Option(ExplainStatement.OptionType.ANALYZE)); }
+        [ option=MySqlExplainFormat() { options.add(option); } ]
+        |
+        [ option=MySqlExplainFormat() { options.add(option); } ]
+        [ <K_INTO> variable=MySqlIntoVariable() { explain.setIntoVariable(variable); } ]
+    )
+    { explain.setOptionList(options); }
+    (
+        LOOKAHEAD({ getToken(1).kind == K_FOR && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_FOR> AccessKeyword("CONNECTION")
+        ( token=<S_LONG> { connection = new LongValue(token.image); }
+          | token=<S_HEX> { connection = new HexValue(token.image); } )
+        { explain.setConnectionId(linkToLastToken(connection)); }
+        |
+        [
+            <K_FOR> ( <K_SCHEMA> { explain.setSchemaKeyword(true); } | <K_DATABASE> )
+            ( schema=RelObjectName() | token=<S_CHAR_LITERAL> { schema = token.image; } )
+            { explain.setSchemaName(schema); }
+        ]
+        statement=ExplainableStatement() { explain.setStatement(statement); }
+    )
+    { return explain; }
+}
+
+/** MySQL's FORMAT = name, with the name unquoted or quoted. */
+ExplainStatement.Option MySqlExplainFormat():
+{
+    Token token;
+}
+{
+    <K_FORMAT> "="
+    ( token=<K_JSON> | token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER> | token=<S_CHAR_LITERAL> )
+    { return mySqlExplainFormat(token); }
+}
+
+/** The statement EXPLAIN explains: a query or a DML statement. */
+Statement ExplainableStatement():
+{
+    List<WithItem<?>> with = null;
+    Statement statement;
+    Token first = getToken(1);
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == K_REPLACE && isMySqlUtilityDialect() })
+        statement = Upsert()
+        |
+        [ LOOKAHEAD(2) with=WithList() ]
+        (
+            statement = SelectWithWithItems( with ) { if (with != null) { widen(statement, first, null); } }
+            | statement = InsertWithWithItems( with )
+            | statement = UpdateWithWithItems( with )
+            | statement = DeleteWithWithItems( with )
+            | statement = Merge( with )
+        )
+    )
+    {
+        linkStatement(statement, first);
+        return statement;
     }
 }
 
@@ -8053,12 +8697,11 @@ ExplainStatement Explain():
 {
     Token tk;
     Statement statement;
-    List<WithItem<?>> with = null;
     Table table;
     List<ExplainStatement.Option> options;
     ExplainStatement es;
     boolean parenthesized = false;
-    Token statementFirst;
+    Expression pattern;
 }
 {
     ( tk=<K_EXPLAIN> | tk = <K_SUMMARIZE> )
@@ -8068,19 +8711,8 @@ ExplainStatement Explain():
                 LOOKAHEAD(2) "(" options = PostgresqlExplainOptions() ")" { parenthesized = true; }
                 | options = ExplainStatementOptions()
             )
-            { statementFirst = getToken(1); }
-            (
-                [ LOOKAHEAD(2) with=WithList() ]
-                (
-                    statement = SelectWithWithItems( with ) { if (with != null) { widen(statement, statementFirst, null); } }
-                    | statement = InsertWithWithItems( with )
-                    | statement = UpdateWithWithItems( with )
-                    | statement = DeleteWithWithItems( with )
-                    | statement = Merge( with )
-                )
-            )
+            statement = ExplainableStatement()
             {
-                linkStatement(statement, statementFirst);
                 es = new ExplainStatement(tk.image, statement, options);
                 es.setParenthesizedOptions(parenthesized);
             }
@@ -8088,6 +8720,12 @@ ExplainStatement Explain():
         |
         (
            table=Table( ) {  es = new ExplainStatement(tk.image, table);  }
+           [ LOOKAHEAD(DescribeColumnPattern(), { isDescribeColumnAhead() })
+             pattern=DescribeColumnPattern()
+             {
+                 requireDdlSyntax(tk.kind == K_EXPLAIN, "SUMMARIZE takes no column");
+                 es.setColumnPattern(pattern);
+             } ]
         )
     )
     {
@@ -8611,12 +9249,14 @@ Update UpdateWithWithItems( List<WithItem<?>> withItems ):
 Update Update():
 {
     Update update = new Update();
-    Table table = null;
+    TableReference target;
+    List<MySQLIndexHint> indexHints;
     ForPortionClause forPortionClause;
     List<Join> startJoins = null;
     List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
     Expression where = null;
+    String cursorName;
     PreferringClause preferringClause = null;
     Limit limit = null;
     OptionClause optionClause = null;
@@ -8637,7 +9277,8 @@ Update Update():
         { update.setConflictAlgorithm(updateOrAlgorithm(algorithm)); } ]
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAliasAndMysqlIndexHint()
+    target=DmlTarget() { update.setTableReference(target); }
+    [ LOOKAHEAD(2) indexHints=MySQLIndexHints() { target.getTable().setIndexHints(indexHints); } ]
     [ forPortionClause=ForPortionClause() { update.setForPortionClause(forPortionClause); } ]
     [ startJoins=JoinsList() ]
     [ LOOKAHEAD(<K_FROM>, { Dialect.TERADATA.name().equals(getAsString(Feature.dialect)) })
@@ -8649,7 +9290,12 @@ Update Update():
     [ LOOKAHEAD(2, { !Dialect.TERADATA.name().equals(getAsString(Feature.dialect)) })
         UpdateFromClause(update) ]
 
-    [ where=WhereClause() { update.setWhere(where); } ]
+    [
+        LOOKAHEAD({ isWhereCurrentOfAhead() })
+        cursorName=WhereCurrentOfClause() { update.setCursorName(cursorName); }
+        |
+        where=WhereClause() { update.setWhere(where); }
+    ]
     [ preferringClause=PreferringClause() { update.setPreferringClause(preferringClause); } ]
 
     [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
@@ -8659,7 +9305,6 @@ Update Update():
 
     {
         return update.withWithItemsList(with)
-              .withTable(table)
               .withStartJoins(startJoins)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
@@ -8699,62 +9344,87 @@ List<UpdateSet> UpdateSets():
 {
     ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
     UpdateSet updateSet;
+}
+{
+    updateSet=UpdateSet() { updateSets.add(updateSet); }
+    ( LOOKAHEAD(2) "," updateSet=UpdateSet() { updateSets.add(updateSet); } )*
+    {
+        return updateSets;
+    }
+}
+
+/**
+ * One assignment of a SET list: column = value, or (columns) = source. PostgreSQL's set_clause
+ * takes any expression as the source of a column list, such as ROW(...) or a sub-select.
+ */
+UpdateSet UpdateSet():
+{
+    UpdateSet updateSet;
     Column tableColumn;
     Expression valueExpression;
-
     ExpressionList<Column> columns;
-    ExpressionList<Expression>values;
+    ExpressionList<Expression> values;
 }
 {
     (
-        (
-            tableColumn=Column() "=" valueExpression=Expression()
-            {
-                updateSet = new UpdateSet(tableColumn, valueExpression);
-                linkElements(updateSet.getColumns());
-                linkElements(updateSet.getValues());
-                updateSets.add(updateSet);
-            }
-        )
+        tableColumn=Column() "=" valueExpression=Expression()
+        {
+            updateSet = new UpdateSet(tableColumn, valueExpression);
+            linkElements(updateSet.getColumns());
+            linkElements(updateSet.getValues());
+        }
         |
         (
-            { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+            { updateSet = new UpdateSet(); }
             columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
             "="
             (
                 LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
                 |
-                values = ParenthesedExpressionList() { updateSet.setValues(values); }
+                LOOKAHEAD("(") values = ParenthesedExpressionList() { updateSet.setValues(values); }
+                |
+                valueExpression = Expression()
+                {
+                    requireUpdateSetTargets(columns);
+                    updateSet.setValues(linkElements(new ExpressionList(valueExpression)));
+                }
             )
         )
     )
-
-    (
-        LOOKAHEAD(2) "," (
-            tableColumn=Column() "=" valueExpression=Expression()
-            {
-                updateSet = new UpdateSet(tableColumn, valueExpression);
-                linkElements(updateSet.getColumns());
-                linkElements(updateSet.getValues());
-                updateSets.add(updateSet);
-            }
-            |
-            (
-                { updateSet = new UpdateSet(); updateSets.add(updateSet); }
-                columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
-                "="
-                (
-                    LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues(linkElements(new ExpressionList(valueExpression))); }
-                    |
-                    values = ParenthesedExpressionList() { updateSet.setValues(values); }
-                )
-            )
-        )
-    )*
-
     {
-        return updateSets;
+        return updateSet;
     }
+}
+
+/** WHERE CURRENT OF cursor_name; returns the cursor name. */
+String WhereCurrentOfClause():
+{
+    String cursorName;
+}
+{
+    <K_WHERE> <K_CURRENT> <K_OF> cursorName=RelObjectName()
+    { return cursorName; }
+}
+
+/**
+ * The target of UPDATE, DELETE and MERGE: PostgreSQL's relation_expr_opt_alias with ONLY or *
+ * around the table name, or a table with its alias and hints.
+ */
+TableReference DmlTarget():
+{
+    TableReference target;
+    Table table;
+    Alias alias;
+}
+{
+    (
+        LOOKAHEAD({ isScopedDmlTargetAhead() })
+        target=RelationTarget()
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { target.getTable().setAlias(alias); } ]
+        |
+        table=TableWithAlias() { target = new TableReference(table); }
+    )
+    { return target; }
 }
 
 List<Partition> Partitions():
@@ -9326,6 +9996,8 @@ Delete Delete():
 {
     Delete delete = new Delete();
     Table table = null;
+    TableReference target;
+    String cursorName;
     ForPortionClause forPortionClause;
     List<Table> tables = new ArrayList<Table>();
     List<WithItem<?>> with = null;
@@ -9357,7 +10029,7 @@ Delete Delete():
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias()
+    [ LOOKAHEAD(3) target=DmlTarget() { delete.setTableReference(target); table = target.getTable(); }
         [ forPortionClause=ForPortionClause() { delete.setForPortionClause(forPortionClause); } ]
         [ LOOKAHEAD(2) joins=JoinsList() ] ]
     [ <K_USING> usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); }
@@ -9365,7 +10037,12 @@ Delete Delete():
           // MySQL's table references and PostgreSQL's from items may join further tables
           [ LOOKAHEAD(2) usingJoins=JoinsList() { delete.setUsingJoins(usingJoins); } ]
     ]
-    [where=WhereClause() { delete.setWhere(where); } ]
+    [
+        LOOKAHEAD({ isWhereCurrentOfAhead() })
+        cursorName=WhereCurrentOfClause() { delete.setCursorName(cursorName); }
+        |
+        where=WhereClause() { delete.setWhere(where); }
+    ]
     [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
@@ -9391,7 +10068,7 @@ Delete Delete():
 
 Statement Merge( List<WithItem<?>> with ) : {
     Merge merge = new Merge();
-    Table table;
+    TableReference target;
     FromItem fromItem;
     Expression condition;
     List<MergeOperation> operations;
@@ -9400,7 +10077,7 @@ Statement Merge( List<WithItem<?>> with ) : {
     OptionClause optionClause = null;
 }
 {
-    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> target=DmlTarget() { merge.setTableReference(target); }
     <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
     <K_ON> condition = Expression() { merge.setOnCondition(condition); }
 
@@ -9438,6 +10115,9 @@ MergeOperation MergeWhenMatched() : {
     <K_THEN>
     (
         operation = MergeDeleteClause(predicate) | operation = MergeUpdateClause(predicate)
+        |
+        // PostgreSQL
+        <K_DO> <K_NOTHING> { operation = new MergeDoNothing().withAndPredicate(predicate); }
     )
     { return operation; }
 }
@@ -9470,21 +10150,29 @@ MergeInsert MergeInsertClause(Expression predicate) : {
 }
 {
     <K_INSERT>
-    [ open="(" columns = ColumnList() ")"
+    (
+        // PostgreSQL's merge_insert: without a column list or OVERRIDING
+        <K_DEFAULT> <K_VALUES>
+        |
+        [ open="(" columns = ColumnList() ")"
+            {
+                ParenthesedExpressionList<Column> insertColumns = new ParenthesedExpressionList<Column>(columns);
+                linkAST(insertColumns, open);
+                mi.setColumns(insertColumns);
+            }
+        ]
+        [ <K_OVERRIDING>
+            ( <K_SYSTEM> { mi.setOverridingMode(Insert.OverridingMode.SYSTEM); }
+            | <K_USER> { mi.setOverridingMode(Insert.OverridingMode.USER); } ) <K_VALUE> ]
+        <K_VALUES> open="(" expList = SimpleExpressionList() ")"
         {
-            ParenthesedExpressionList<Column> insertColumns = new ParenthesedExpressionList<Column>(columns);
-            linkAST(insertColumns, open);
-            mi.setColumns(insertColumns);
+            ParenthesedExpressionList insertValues = new ParenthesedExpressionList(expList);
+            linkAST(insertValues, open);
+            mi.setValues(insertValues);
         }
-    ]
-    <K_VALUES> open="(" expList = SimpleExpressionList() ")"
-    {
-        ParenthesedExpressionList insertValues = new ParenthesedExpressionList(expList);
-        linkAST(insertValues, open);
-        mi.setValues(insertValues);
-    }
 
-    [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
+        [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
+    )
 
     {
         mi.setAndPredicate(predicate);
@@ -9511,6 +10199,10 @@ MergeOperation MergeWhenNotMatched() : {
         operation = MergeUpdateClause(predicate) { ((MergeUpdate) operation).setSide(side); }
         |
         operation = MergeDeleteClause(predicate) { ((MergeDelete) operation).setSide(side); }
+        |
+        // PostgreSQL: allowed for the source and the target side alike
+        <K_DO> <K_NOTHING>
+        { operation = new MergeDoNothing(MergeWhen.ofNotMatched(side)).withAndPredicate(predicate); }
     )
     { return MergeSide.validatePairing(side, operation); }
 }
@@ -9721,17 +10413,6 @@ Table TableWithAlias():
     table=TableReference()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { table.setAlias(alias); }]
     [ LOOKAHEAD(<K_WITH> "(") sqlServerHints=SQLServerHints() { table.setSqlServerHints(sqlServerHints); } ]
-    { return table; }
-}
-
-Table TableWithAliasAndMysqlIndexHint():
-{
-    Table table = null;
-    List<MySQLIndexHint> indexHints = null;
-}
-{
-    table=TableWithAlias()
-    [ LOOKAHEAD(2) indexHints=MySQLIndexHints() { table.setIndexHints(indexHints); } ]
     { return table; }
 }
 
@@ -10616,7 +11297,7 @@ PlainSelect PlainSelect() #PlainSelect:
     PreferringClause preferringClause = null;
     ExpressionList expressionList = null;
     Token partitionFirst = null;
-    List<Table> intoTables = null;
+    SelectIntoClause intoClause = null;
     MySqlSelectIntoClause mySqlSelectIntoClause = null;
     MySqlProcedureAnalyse mySqlProcedureAnalyse = null;
     Table updateTable = null;
@@ -10627,7 +11308,6 @@ PlainSelect PlainSelect() #PlainSelect:
     boolean noWait = false;
     String windowName = null;
     WindowDefinition winDef;
-    Table intoTempTable = null;
     List<UpdateSet> settings = null;
     Distinct distinct;
     boolean all = false;
@@ -10687,8 +11367,8 @@ PlainSelect PlainSelect() #PlainSelect:
 
     (
         // PostgreSQL allows SELECT with no target expressions.
-        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
-                && getToken(1).kind == K_FROM })
+        LOOKAHEAD({ isPostgreSqlDialect()
+                && (getToken(1).kind == K_FROM || getToken(1).kind == K_INTO) })
         { selectItems = new ArrayList<SelectItem<?>>(); }
         |
         selectItems=SelectItemsList()
@@ -10700,7 +11380,7 @@ PlainSelect PlainSelect() #PlainSelect:
             mySqlSelectIntoClause = MySqlSelectIntoClause(MySqlSelectIntoClause.Position.BEFORE_FROM)
             { plainSelect.setMySqlSelectIntoClause(mySqlSelectIntoClause); }
             |
-            intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); }
+            intoClause = IntoClause() { plainSelect.setIntoClause(intoClause); }
         )
     ]
     [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
@@ -10795,7 +11475,7 @@ PlainSelect PlainSelect() #PlainSelect:
     ]
     [ LOOKAHEAD({ isMySqlSelectIntoAhead() })
         {
-            if (mySqlSelectIntoClause != null || intoTables != null) {
+            if (mySqlSelectIntoClause != null || intoClause != null) {
                 throw new ParseException("Only one INTO clause is allowed per SELECT");
             }
         }
@@ -10804,7 +11484,15 @@ PlainSelect PlainSelect() #PlainSelect:
     ]
     [ LOOKAHEAD(2) <K_SETTINGS> settings = UpdateSets() { plainSelect.setSettings(settings); } ]
     [ LOOKAHEAD(1, <K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
-    [ LOOKAHEAD(3) <K_INTO> <K_TEMP> intoTempTable = Table() { plainSelect.setIntoTempTable(intoTempTable);} ]
+    // Informix writes INTO TEMP table at the end of the query, which PostgreSQL rejects
+    [ LOOKAHEAD(<K_INTO> <K_TEMP>, { !isPostgreSqlDialect() })
+        {
+            if (mySqlSelectIntoClause != null || intoClause != null) {
+                throw new ParseException("Only one INTO clause is allowed per SELECT");
+            }
+        }
+        intoClause = TrailingIntoTempClause() { plainSelect.setIntoClause(intoClause); }
+    ]
     [ LOOKAHEAD(3)<K_WITH> <K_NO> <K_LOG> { plainSelect.setUseWithNoLog(true); } ]
     {
         plainSelect.setSelectItems(selectItems);
@@ -11785,15 +12473,67 @@ UnPivot UnPivot():
     }
 }
 
-List<Table> IntoClause():
+/**
+ * INTO after the select list. PostgreSQL (gram.y into_clause) creates one table and accepts a
+ * persistence and the TABLE keyword before its name:
+ * INTO [ [LOCAL | GLOBAL] {TEMPORARY | TEMP} | UNLOGGED ] [TABLE] table.
+ * A persistence word that no name follows is the table name itself, as in INTO temp FROM t.
+ * The list of targets is what other products and procedural languages write.
+ */
+SelectIntoClause IntoClause():
 {
-    List<Table> tables = new ArrayList<Table>();
+    SelectIntoClause clause = new SelectIntoClause();
     Table table;
+    Token first;
+    Token scope = null;
+    Token persistence;
 }
 {
-    <K_INTO> table=Table() { tables.add(table); } ( LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
+    first=<K_INTO>
+    [
+        LOOKAHEAD(( <K_UNLOGGED> | [ <K_LOCAL> | <K_GLOBAL> ] ( <K_TEMP> | <K_TEMPORARY> ) )
+                ( <K_TABLE> | RelObjectName() ), { isPostgreSqlSelectIntoDialect() })
+        (
+            <K_UNLOGGED> { clause.setPersistence(SelectIntoClause.Persistence.UNLOGGED); }
+            |
+            [ scope=<K_LOCAL> | scope=<K_GLOBAL> ]
+            ( persistence=<K_TEMP> | persistence=<K_TEMPORARY> ) {
+                clause.setPersistence(SelectIntoClause.Persistence.from(
+                        (scope == null ? "" : scope.image + " ") + persistence.image));
+            }
+        )
+    ]
+    [
+        LOOKAHEAD(<K_TABLE> RelObjectName(), { isPostgreSqlSelectIntoDialect() })
+        <K_TABLE> { clause.setTableKeyword(true); }
+        |
+        // TABLE is reserved in PostgreSQL, so that it never names the table there
+        LOOKAHEAD(<K_TABLE>, { isPostgreSqlDialect() })
+        <K_TABLE> { clause.setTableKeyword(true); }
+    ]
+    table=Table() { clause.addTable(table); }
+    ( LOOKAHEAD(2) "," table=Table() { clause.addTable(table); } )*
     {
-        return tables;
+        requireSyntax(clause.getTables().size() == 1 || !isPostgreSqlDialect()
+                && clause.getPersistence() == null && !clause.isTableKeyword(),
+                "SELECT INTO creates a single table");
+        linkAST(clause, first);
+        return clause;
+    }
+}
+
+/** Informix: INTO TEMP table at the end of the query. */
+SelectIntoClause TrailingIntoTempClause():
+{
+    Table table;
+    Token first;
+}
+{
+    first=<K_INTO> <K_TEMP> table=Table()
+    {
+        return linked(new SelectIntoClause(table)
+                .withPosition(SelectIntoClause.Position.TRAILING)
+                .withPersistence(SelectIntoClause.Persistence.TEMP), first);
     }
 }
 
@@ -11826,17 +12566,22 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
     }
 }
 
+/**
+ * A MySQL user variable with one @ before its name, quoted or not, as SELECT ... INTO,
+ * EXPLAIN ... INTO, EXECUTE ... USING and PREPARE ... FROM take it.
+ */
 UserVariable MySqlIntoVariable():
 {
     UserVariable variable;
+    Token at;
     Token name;
 }
 {
     (
         variable=UserVariable()
         |
-        <K_AT_SIGN> (name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER>)
-        { variable = new UserVariable("@" + name.image); }
+        at=<K_AT_SIGN> (name=<S_CHAR_LITERAL> | name=<S_QUOTED_IDENTIFIER>)
+        { variable = new UserVariable("@" + name.image); linkAST(variable, at, name); }
     )
     { return requireMySqlIntoVariable(variable); }
 }
@@ -12414,6 +13159,7 @@ Join JoinerExpression() #JoinerExpression:
     KSQLJoinWindow joinWindow = null;
     JoinHint joinHint = null;
     Token tk = null;
+    String usingAlias;
 }
 {
     [ LOOKAHEAD({ isAsOfJoinAhead() }) <S_IDENTIFIER> { join.setAsOf(true); } ]
@@ -12486,6 +13232,14 @@ Join JoinerExpression() #JoinerExpression:
                             <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
                             ( "," tableColumn=Column() { columns.add(tableColumn); } ) *
                             ")" { join.setUsingColumns(columns); }
+                            // PostgreSQL join_using_alias: a qualified join only, AS is required
+                            [ LOOKAHEAD(2) <K_AS> usingAlias=RelObjectName() {
+                                requireSyntax(!join.isNatural() && !join.isCross()
+                                        && !join.isSimple() && hasUnqualifiedColumns(columns),
+                                        "An alias of the USING columns requires a qualified join"
+                                        + " and plain column names");
+                                join.setUsingAlias(new Alias(usingAlias, true));
+                            } ]
                         )
                     )
     ]
@@ -13443,6 +14197,7 @@ Expression Condition():
                     | LOOKAHEAD(3) result=IncludesExpression(left)
                     | LOOKAHEAD(2) result=Between(left)
                     | LOOKAHEAD(2) result = MemberOfExpression(left)
+                    | LOOKAHEAD({ isIsNormalizedAhead() }) result=IsNormalizedExpression(left)
                     | LOOKAHEAD(3) result=IsNullExpression(left)
                     | LOOKAHEAD(3) result=IsBooleanExpression(left)
                     | LOOKAHEAD(3) result=IsJsonExpression(left)
@@ -13457,7 +14212,8 @@ Expression Condition():
                 (
                     LOOKAHEAD({ isPostfixIsTestAhead() })
                     (
-                        LOOKAHEAD(3) result=IsBooleanExpression(result)
+                        LOOKAHEAD({ isIsNormalizedAhead() }) result=IsNormalizedExpression(result)
+                        | LOOKAHEAD(3) result=IsBooleanExpression(result)
                         | LOOKAHEAD(3) result=IsUnknownExpression(result)
                         | LOOKAHEAD(3) result=IsNullExpression(result)
                         | LOOKAHEAD(3) result=IsJsonExpression(result)
@@ -13598,6 +14354,8 @@ Expression SQLCondition():
                 LOOKAHEAD(2) result=Between(left)
                 |
                 result = MemberOfExpression(left)
+                |
+                LOOKAHEAD({ isIsNormalizedAhead() }) result=IsNormalizedExpression(left)
                 |
                 LOOKAHEAD(3) result=IsNullExpression(left)
                 |
@@ -13892,6 +14650,26 @@ Expression IsJsonExpression(Expression leftExpression):
         <K_UNIQUE> { result.setUseKeysKeyword(false); }
         [ LOOKAHEAD(1, <K_KEYS>) <K_KEYS> { result.setUseKeysKeyword(true); } ] ]
     { result.setLeftExpression(leftExpression); return result; }
+}
+
+Expression IsNormalizedExpression(Expression leftExpression):
+{
+    IsNormalizedExpression result = new IsNormalizedExpression();
+    Token operator = getToken(1);
+    Token form;
+}
+{
+    <K_IS> [ <K_NOT> { result.setNot(true); } ]
+    [ LOOKAHEAD({ !isKeywordAhead("NORMALIZED") }) form=<S_IDENTIFIER> {
+        result.setNormalForm(IsNormalizedExpression.NormalForm.valueOf(
+                form.image.toUpperCase(Locale.ROOT)));
+    } ]
+    ContextualKeyword("NORMALIZED")
+    {
+        result.setLeftExpression(leftExpression);
+        linkAST(result, firstToken(leftExpression, operator));
+        return result;
+    }
 }
 
 Expression IsUnknownExpression(Expression leftExpression):
@@ -14453,8 +15231,12 @@ Expression PrimaryExpression() #PrimaryExpression:
     ExpressionList list;
 
     List<Map.Entry<Expression, String>> jsonIdents = null;
+    boolean timezoneOperand;
+    Token atToken;
+    Token timezoneFirst = null;
 }
 {
+    { timezoneOperand = timezoneOperandAhead; timezoneOperandAhead = false; }
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
     [
         ( sign="+" | sign="-" | sign="~" )
@@ -14673,20 +15455,47 @@ Expression PrimaryExpression() #PrimaryExpression:
         retval = JsonExpression(retval, jsonIdents)
     ]
 
-    ( LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
-        if (timezoneExpr == null)
-            timezoneExpr = new TimezoneExpression();
-
-        timezoneExpr.addTimezoneExpression(timezoneRightExpr);
-        }
+    // AT TIME ZONE zone and AT LOCAL chain from left to right: one TimezoneExpression holds a run
+    // of zones and an AT LOCAL that ends it, and a conversion after AT LOCAL wraps that expression
+    ( LOOKAHEAD(2, { !timezoneOperand }) { linkASTIfMissing(retval, coreFirst); } atToken=<K_AT>
+        (
+            <K_DATETIMELITERAL> <K_ZONE> { timezoneOperandAhead = true; }
+            timezoneRightExpr=PrimaryExpression() {
+                if (timezoneExpr == null || timezoneExpr.isAtLocal()) {
+                    timezoneExpr = new TimezoneExpression().setLeftExpression(retval);
+                    retval = timezoneExpr;
+                    timezoneFirst = atToken;
+                }
+                timezoneExpr.addTimezoneExpression(timezoneRightExpr);
+                // a run that was linked before this zone takes it in
+                widen(timezoneExpr, null, getToken(0));
+            }
+            |
+            <K_LOCAL> {
+                if (timezoneExpr == null || timezoneExpr.isAtLocal()) {
+                    timezoneExpr = new TimezoneExpression().setLeftExpression(retval);
+                    retval = timezoneExpr;
+                }
+                timezoneExpr.setAtLocal(true);
+                widen(timezoneExpr, null, getToken(0));
+                linkTimezones(timezoneExpr, timezoneFirst);
+            }
+            // a cast applies to the converted value: ts AT LOCAL::date
+            ( LOOKAHEAD(2) { linkASTIfMissing(retval, coreFirst); } "::" type=ColDataType() {
+                    castExpr = new CastExpression();
+                    castExpr.setUseCastKeyword(false);
+                    castExpr.setLeftExpression(retval);
+                    castExpr.setColDataType(type);
+                    retval = castExpr;
+                    timezoneExpr = null;
+                }
+            )*
+        )
     )*
 
     {
-        if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
-            timezoneExpr.setLeftExpression(retval);
-            retval=timezoneExpr;
-            // the field behind this getter is an ExpressionList
-            linkElements((ExpressionList<?>) timezoneExpr.getTimezoneExpressions());
+        if (timezoneExpr != null) {
+            linkTimezones(timezoneExpr, timezoneFirst);
         }
         // each value gets a range node only once something wraps it, the outermost takes jjtThis
         Token valueFirst = coreFirst;
@@ -16454,6 +17263,8 @@ Execute Execute(): {
     ObjectNames funcName;
     ExpressionList expressionList;
     Execute execute = new Execute();
+    ExpressionList<UserVariable> variables = new ExpressionList<UserVariable>();
+    UserVariable variable;
 }
 {
     (<K_EXEC> { execute.setExecType(Execute.ExecType.EXEC); }
@@ -16462,7 +17273,19 @@ Execute Execute(): {
 
     // A colon starts a bind argument here; it must not join the procedure name.
     funcName=ColumnIdentifier() { execute.setName(funcName.getNames()); }
-    [ LOOKAHEAD(2) expressionList=ExecuteArguments() { execute.setExprList(expressionList); } ]
+    [
+        // MySQL's EXECUTE name USING @variable [, @variable] ...
+        LOOKAHEAD({ getToken(1).kind == K_USING && isMySqlUtilityDialect() })
+        <K_USING> variable=MySqlIntoVariable() { variables.add(variable); }
+        ( LOOKAHEAD(2) "," variable=MySqlIntoVariable() { variables.add(variable); } )*
+        {
+            requireDdlSyntax(execute.getExecType() == Execute.ExecType.EXECUTE,
+                    "Only EXECUTE takes a USING clause");
+            execute.setUsingVariables(linkElements(variables));
+        }
+        |
+        LOOKAHEAD(2) expressionList=ExecuteArguments() { execute.setExprList(expressionList); }
+    ]
     { return execute; }
 }
 
@@ -16809,6 +17632,7 @@ ExpressionList FunctionArgumentList(Function retval):
 }
 {
     { if (hasUnqualifiedName(retval, "XMLFOREST")) { return XmlForestArguments(); } }
+    { if (isXmlElementAttributesAhead(retval)) { return XmlElementArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
     // explicit lookahead: InternalFunction accepts ORDER BY after IGNORE NULLS too
@@ -16840,14 +17664,61 @@ ExpressionList<Expression> XmlForestArguments():
     { return linkElements(arguments); }
 }
 
-Expression XmlForestArgument():
+/**
+ * XMLELEMENT(NAME name, XMLATTRIBUTES(value [AS name], ...) [, content, ...]): the attribute list
+ * is the argument after the element name and is kept as a function over aliased expressions.
+ */
+ExpressionList<Expression> XmlElementArguments():
 {
+    ExpressionList<Expression> arguments = new ExpressionList<Expression>();
     Expression expression;
     String name;
 }
 {
+    (
+        // PostgreSQL: the element name is an identifier, not a value
+        LOOKAHEAD({ isPostgreSqlDialect() })
+        name=RelObjectName() { expression = linkToLastToken(new Column(name)); }
+        |
+        expression=Expression()
+    ) { arguments.add(expression); }
+    "," expression=XmlAttributes() { arguments.add(expression); }
+    ( "," expression=Expression() { arguments.add(expression); } )*
+    {
+        requireSyntax(getToken(1).kind == CLOSING_BRACKET,
+                "XMLELEMENT takes its name, XMLATTRIBUTES and content values only");
+        return linkElements(arguments);
+    }
+}
+
+Function XmlAttributes() #Function:
+{
+    Function function = new Function();
+    ExpressionList<Expression> arguments;
+    Token name;
+}
+{
+    name=<S_IDENTIFIER> "(" arguments=XmlForestArguments() ")"
+    {
+        function.setName(name.image);
+        function.setParameters(arguments);
+        linkAST(function, jjtThis);
+        return function;
+    }
+}
+
+Expression XmlForestArgument():
+{
+    Expression expression;
+    String name;
+    Token first = getToken(1);
+}
+{
     expression=Expression()
-    [ <K_AS> name=RelObjectName() { expression = new AliasedExpression(expression, new Alias(name, true)); } ]
+    [ <K_AS> name=RelObjectName() {
+        first = firstToken(expression, first);
+        expression = linked(new AliasedExpression(expression, new Alias(name, true)), first);
+    } ]
     { return expression; }
 }
 
@@ -18303,15 +19174,114 @@ UserAuthentication MySqlUserAuthentication():
     { return authentication; }
 }
 
+/**
+ * A CREATE USER account: the first factor, which a plugin without credentials may follow with
+ * INITIAL AUTHENTICATION, and up to two further factors, each written AND IDENTIFIED ...; the
+ * server grammar also accepts the further factors without a first one.
+ */
 UserAccount MySqlUserAccount():
 {
     UserAccount account;
     UserAuthentication authentication = null;
+    UserAuthentication initial = null;
 }
 {
     account=MySqlAccountName()
-    [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
+    [
+        authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); }
+        [
+            LOOKAHEAD({ isKeywordAhead("INITIAL") })
+            ContextualKeyword("INITIAL") ContextualKeyword("AUTHENTICATION")
+            initial=MySqlUserAuthentication()
+            {
+                requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.WITH_PLUGIN,
+                        "INITIAL AUTHENTICATION requires IDENTIFIED WITH plugin");
+                requireAccessSyntax(initial.getMode() == UserAuthentication.Mode.BY_PASSWORD
+                        || initial.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
+                        || initial.getMode() == UserAuthentication.Mode.WITH_PLUGIN_AS_STRING,
+                        "INITIAL AUTHENTICATION accepts IDENTIFIED BY or IDENTIFIED WITH plugin AS");
+                authentication.setInitialAuthentication(initial);
+            }
+        ]
+    ]
+    (
+        <K_AND> authentication=MySqlUserAuthentication()
+        {
+            requireAccessSyntax(initial == null,
+                    "INITIAL AUTHENTICATION cannot be combined with further factors");
+            requireAccessSyntax(account.getAdditionalAuthentications().size() < 2,
+                    "An account has at most three authentication factors");
+            account.addAdditionalAuthentications(authentication);
+        }
+    )*
     { return account; }
+}
+
+/** The factor of a multi-factor authentication clause: 2 FACTOR or 3 FACTOR. */
+int MySqlAuthenticationFactor():
+{
+    Token number;
+}
+{
+    number=<S_LONG> ContextualKeyword("FACTOR")
+    { return factorNumber(number); }
+}
+
+/** ALTER USER: ADD factor IDENTIFIED ..., MODIFY factor IDENTIFIED ... or DROP factor. */
+UserFactorOperation MySqlFactorChange():
+{
+    UserFactorOperation.Operation operation;
+    int factor;
+    UserAuthentication authentication = null;
+}
+{
+    (
+        <K_ADD> { operation = UserFactorOperation.Operation.ADD; }
+        |
+        <K_MODIFY> { operation = UserFactorOperation.Operation.MODIFY; }
+        |
+        <K_DROP> { operation = UserFactorOperation.Operation.DROP; }
+    )
+    factor=MySqlAuthenticationFactor()
+    [ authentication=MySqlUserAuthentication() ]
+    {
+        requireAccessSyntax(operation.hasAuthentication() == (authentication != null),
+                "ADD and MODIFY of a factor require IDENTIFIED, DROP does not accept it");
+        return new UserFactorOperation(operation, factor).withAuthentication(authentication);
+    }
+}
+
+/**
+ * ALTER USER registration of a passwordless device: factor INITIATE REGISTRATION, factor FINISH
+ * REGISTRATION SET CHALLENGE_RESPONSE AS 'response', or factor UNREGISTER.
+ */
+UserFactorOperation MySqlFactorRegistration():
+{
+    UserFactorOperation operation = new UserFactorOperation();
+    int factor;
+    Token response;
+}
+{
+    factor=MySqlAuthenticationFactor() { operation.setFactor(factor); }
+    (
+        LOOKAHEAD({ isKeywordAhead("INITIATE") })
+        ContextualKeyword("INITIATE") ContextualKeyword("REGISTRATION")
+        { operation.setOperation(UserFactorOperation.Operation.INITIATE_REGISTRATION); }
+        |
+        LOOKAHEAD({ isKeywordAhead("FINISH") })
+        ContextualKeyword("FINISH") ContextualKeyword("REGISTRATION")
+        <K_SET> ContextualKeyword("CHALLENGE_RESPONSE") <K_AS>
+        { operation.setOperation(UserFactorOperation.Operation.FINISH_REGISTRATION); }
+        (
+            response=<S_CHAR_LITERAL> { operation.setChallengeResponse(stringValue(response)); }
+            |
+            response=<S_HEX> { operation.setChallengeResponse(new HexValue(response.image)); }
+        )
+        |
+        ContextualKeyword("UNREGISTER")
+        { operation.setOperation(UserFactorOperation.Operation.UNREGISTER); }
+    )
+    { return operation; }
 }
 
 CreateUser CreateUser():
@@ -18540,29 +19510,49 @@ UserAuthentication MySqlAlterUserAuthentication():
     { return authentication; }
 }
 
+/**
+ * An ALTER USER account with an authentication change, or with one or two factor changes of the
+ * same kind: ADD ... [ADD ...], MODIFY ... [MODIFY ...] or DROP ... [DROP ...].
+ */
 UserAccount MySqlAlterUserAccount():
 {
     UserAccount account;
     UserAuthentication authentication;
+    UserFactorOperation change;
+    UserFactorOperation second;
 }
 {
     account=MySqlAccountName()
     [
         LOOKAHEAD({ getToken(1).kind == K_IDENTIFIED || getToken(1).kind == K_DISCARD })
         authentication=MySqlAlterUserAuthentication() { account.setAuthentication(authentication); }
+        |
+        LOOKAHEAD({ isMySqlFactorChangeAhead() })
+        change=MySqlFactorChange() { account.addFactorOperations(change); }
+        [
+            LOOKAHEAD({ isMySqlFactorChangeAhead() })
+            second=MySqlFactorChange()
+            {
+                requireAccessSyntax(second.getOperation() == change.getOperation(),
+                        "Factor changes of one account repeat the same operation");
+                account.addFactorOperations(second);
+            }
+        ]
     ]
     { return account; }
 }
 
 /**
- * MySQL ALTER USER: accounts with authentication changes and the options shared with CREATE USER,
- * USER() with a password change, or one account with DEFAULT ROLE.
+ * MySQL ALTER USER: accounts with authentication or factor changes and the options shared with
+ * CREATE USER, USER() with a password change, one account with DEFAULT ROLE, or one account or
+ * USER() with a registration step of multi-factor authentication.
  */
 AlterUser AlterUser():
 {
     AlterUser alterUser = new AlterUser();
     UserAccount account;
     UserAuthentication authentication;
+    UserFactorOperation registration;
     RoleSelection roles;
 }
 {
@@ -18570,21 +19560,41 @@ AlterUser AlterUser():
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alterUser.setIfExists(true); } ]
     (
         LOOKAHEAD({ getToken(1).kind == K_USER && "(".equals(getToken(2).image) })
-        <K_USER> "(" ")" authentication=MySqlAlterUserAuthentication()
-        {
-            requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.BY_PASSWORD
-                    || authentication.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
-                    || authentication.getMode() == UserAuthentication.Mode.DISCARD_OLD_PASSWORD,
-                    "USER() accepts IDENTIFIED BY or DISCARD OLD PASSWORD");
-            alterUser.withUserFunction(authentication);
-        }
+        <K_USER> "(" ")"
+        (
+            LOOKAHEAD({ isMySqlFactorAhead(1) })
+            registration=MySqlFactorRegistration()
+            {
+                alterUser.withUserFunction(null);
+                alterUser.getAccounts().get(0).addFactorOperations(registration);
+            }
+            |
+            authentication=MySqlAlterUserAuthentication()
+            {
+                requireAccessSyntax(authentication.getMode() == UserAuthentication.Mode.BY_PASSWORD
+                        || authentication.getMode() == UserAuthentication.Mode.BY_RANDOM_PASSWORD
+                        || authentication.getMode() == UserAuthentication.Mode.DISCARD_OLD_PASSWORD,
+                        "USER() accepts IDENTIFIED BY or DISCARD OLD PASSWORD");
+                alterUser.withUserFunction(authentication);
+            }
+        )
         |
         account=MySqlAlterUserAccount() { alterUser.addAccounts(account); }
         (
+            LOOKAHEAD({ isMySqlFactorAhead(1) })
+            registration=MySqlFactorRegistration()
+            {
+                requireAccessSyntax(account.getAuthentication() == null
+                        && account.getFactorOperations().isEmpty(),
+                        "A registration step cannot follow an authentication change");
+                account.addFactorOperations(registration);
+            }
+            |
             LOOKAHEAD({ getToken(1).kind == K_DEFAULT && "ROLE".equalsIgnoreCase(getToken(2).image) })
             <K_DEFAULT> ContextualKeyword("ROLE") roles=MySqlRoleSelection(false)
             {
-                requireAccessSyntax(account.getAuthentication() == null,
+                requireAccessSyntax(account.getAuthentication() == null
+                        && account.getFactorOperations().isEmpty(),
                         "DEFAULT ROLE cannot follow an authentication change");
                 alterUser.getOptions().setDefaultRoles(roles);
             }
@@ -19935,9 +20945,16 @@ TableOption CreateTableOption():
           option = new TableOption(); option.setStorageParameters(storageParameters);
       }
       |
+      LOOKAHEAD({ getToken(1).kind == K_WITHOUT && "ROWID".equalsIgnoreCase(getToken(2).image) })
+      <K_WITHOUT> ContextualKeyword("ROWID") {
+          option = new TableOption(TableOption.Kind.WITHOUT_ROWID, "WITHOUT ROWID", null, false);
+      }
+      |
       LOOKAHEAD(<K_WITHOUT> <S_IDENTIFIER>) <K_WITHOUT> ContextualKeyword("OIDS") {
           option = new TableOption(TableOption.Kind.WITHOUT_OIDS, "WITHOUT OIDS", null, false);
       }
+      |
+      <K_STRICT> { option = new TableOption(TableOption.Kind.STRICT, "STRICT", null, false); }
       |
       LOOKAHEAD(<K_ON> <K_COMMIT>) option=OnCommitTableOption()
       |
@@ -20654,7 +21671,7 @@ TableMaintenanceStatement TableMaintenanceStatement():
     TableMaintenanceStatement statement = new TableMaintenanceStatement();
     TableMaintenanceStatement.Operation operation = null;
     TableMaintenanceStatement.Option option = null;
-    Token modifier = null;
+    TableMaintenanceStatement.Modifier modifier;
     Token word = null;
     Table table = null;
 }
@@ -20669,11 +21686,7 @@ TableMaintenanceStatement TableMaintenanceStatement():
     [
         LOOKAHEAD({ operation.allowsModifier()
                 && (getToken(1).kind == K_NO_WRITE_TO_BINLOG || getToken(1).kind == K_LOCAL) })
-        ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
-        {
-            statement.setModifier(TableMaintenanceStatement.Modifier.valueOf(
-                    modifier.image.toUpperCase(Locale.ROOT)));
-        }
+        modifier=BinlogModifier() { statement.setModifier(modifier); }
     ]
     ( <K_TABLE> | <K_TABLES> { statement.setTablesKeyword(true); } )
     table=Table() { statement.addTables(table); }
@@ -20694,6 +21707,199 @@ TableMaintenanceStatement TableMaintenanceStatement():
                 || statement.getOptions().size() <= 1, "CHECKSUM TABLE takes QUICK or EXTENDED, not both");
         return statement;
     }
+}
+
+/** MySQL's opt_no_write_to_binlog: NO_WRITE_TO_BINLOG or its synonym LOCAL. */
+TableMaintenanceStatement.Modifier BinlogModifier():
+{ Token modifier; }
+{
+    ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
+    { return TableMaintenanceStatement.Modifier.valueOf(modifier.image.toUpperCase(Locale.ROOT)); }
+}
+
+/**
+ * MySQL FLUSH [NO_WRITE_TO_BINLOG | LOCAL] followed by flush options or by
+ * {TABLE | TABLES} [tbl_name [, tbl_name] ...] [WITH READ LOCK | FOR EXPORT].
+ * https://dev.mysql.com/doc/refman/8.4/en/flush.html
+ */
+FlushStatement FlushStatement():
+{
+    FlushStatement statement = new FlushStatement();
+    TableMaintenanceStatement.Modifier modifier;
+    FlushOption option;
+    Table table;
+}
+{
+    <K_FLUSH>
+    [ modifier=BinlogModifier() { statement.setModifier(modifier); } ]
+    (
+        ( <K_TABLE> { statement.setTablesKeyword(false); } | <K_TABLES> )
+        [
+            table=Table() { statement.addTables(table); }
+            ( "," table=Table() { statement.addTables(table); } )*
+        ]
+        [
+            // WITH without READ LOCK starts the next statement
+            LOOKAHEAD({ getToken(1).kind == K_WITH && getToken(2).kind == K_READ
+                    || getToken(1).kind == K_FOR })
+            (
+                <K_WITH> <K_READ> <K_LOCK>
+                { statement.setTableLock(FlushStatement.TableLock.WITH_READ_LOCK); }
+                |
+                <K_FOR> <K_EXPORT> {
+                    requireDdlSyntax(!statement.getTables().isEmpty(), "FOR EXPORT requires a table list");
+                    statement.setTableLock(FlushStatement.TableLock.FOR_EXPORT);
+                }
+            )
+        ]
+        |
+        option=FlushOption() { statement.addOptions(option); }
+        ( "," option=FlushOption() { statement.addOptions(option); } )*
+    )
+    { return statement; }
+}
+
+/** A flush option of one word, or of a word and LOGS. Only RELAY LOGS names a channel. */
+FlushOption FlushOption():
+{
+    Token first = getToken(1);
+    Token word;
+    Token channel;
+    FlushOption option;
+}
+{
+    (
+        LOOKAHEAD({ isWordSequenceAhead(2, "LOGS") })
+        ( word=<K_BINARY> | word=<K_ENGINE> | word=<K_ERROR> | word=<S_IDENTIFIER> )
+        ContextualKeyword("LOGS")
+        { option = new FlushOption(flushOptionKind(word.image + " LOGS")); }
+        |
+        word=<S_IDENTIFIER> { option = new FlushOption(flushOptionKind(word.image)); }
+    )
+    [
+        <K_FOR> ContextualKeyword("CHANNEL") channel=<S_CHAR_LITERAL>
+        {
+            requireDdlSyntax(option.getKind() == FlushOption.Kind.RELAY_LOGS,
+                    "Only RELAY LOGS takes FOR CHANNEL");
+            option.setChannel(stringValue(channel));
+        }
+    ]
+    { linkAST(option, first); return option; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/kill.html
+KillStatement KillStatement():
+{
+    KillStatement statement = new KillStatement();
+    Expression id;
+}
+{
+    <K_KILL>
+    [
+        LOOKAHEAD({ getToken(1).kind == K_QUERY || isKeywordAhead("CONNECTION") })
+        (
+            <K_QUERY> { statement.setKind(KillStatement.Kind.QUERY); }
+            |
+            ContextualKeyword("CONNECTION") { statement.setKind(KillStatement.Kind.CONNECTION); }
+        )
+    ]
+    id=Expression() { statement.setProcesslistId(id); }
+    { return statement; }
+}
+
+/**
+ * MySQL HANDLER tbl_name OPEN [[AS] alias], HANDLER name READ ... and HANDLER name CLOSE. READ
+ * and CLOSE take the handler name, which is unqualified.
+ * https://dev.mysql.com/doc/refman/8.4/en/handler.html
+ */
+HandlerStatement HandlerStatement():
+{
+    HandlerStatement statement = new HandlerStatement();
+    Table table;
+    String name;
+    boolean useAs = false;
+}
+{
+    <K_HANDLER>
+    (
+        LOOKAHEAD({ getToken(2).kind != K_READ && getToken(2).kind != K_CLOSE })
+        table=Table() <K_OPEN>
+        [
+            [ <K_AS> { useAs = true; } ]
+            name=RelObjectName() { table.setAlias(new Alias(name, useAs)); }
+        ]
+        |
+        name=RelObjectName() { table = linkToLastToken(createTable(Arrays.asList(name))); }
+        (
+            <K_CLOSE> { statement.setAction(HandlerStatement.Action.CLOSE); }
+            |
+            <K_READ> { statement.setAction(HandlerStatement.Action.READ); }
+            HandlerRead(statement)
+        )
+    )
+    { statement.setTable(table); return statement; }
+}
+
+void HandlerRead(HandlerStatement statement):
+{
+    String index;
+    ExpressionList<?> values;
+    Expression expression;
+    Limit limit;
+}
+{
+    (
+        LOOKAHEAD({ isHandlerIndexAhead() })
+        index=RelObjectName() { statement.setIndexName(index); }
+        (
+            HandlerKeyComparison(statement) values=ParenthesedExpressionList()
+            {
+                requireDdlSyntax(!values.isEmpty(), "HANDLER READ requires key values");
+                statement.setKeyValues(values);
+            }
+            |
+            <K_FIRST> { statement.setDirection(HandlerStatement.Direction.FIRST); }
+            | <K_NEXT> { statement.setDirection(HandlerStatement.Direction.NEXT); }
+            | ContextualKeyword("PREV") { statement.setDirection(HandlerStatement.Direction.PREV); }
+            | <K_LAST> { statement.setDirection(HandlerStatement.Direction.LAST); }
+        )
+        |
+        <K_FIRST> { statement.setDirection(HandlerStatement.Direction.FIRST); }
+        |
+        <K_NEXT> { statement.setDirection(HandlerStatement.Direction.NEXT); }
+    )
+    [ expression=WhereClause() { statement.setWhere(expression); } ]
+    [
+        limit=LimitWithOffset() { statement.setLimit(limit); }
+        [
+            <K_OFFSET> expression=Expression()
+            {
+                requireDdlSyntax(limit.getOffset() == null, "LIMIT offset, row_count takes no OFFSET");
+                statement.setOffset(new Offset().withOffset(expression));
+            }
+        ]
+    ]
+    {
+        // MySQL parses HANDLER READ with subqueries disallowed, like PURGE
+        requireDdlSyntax(!containsSubquery(statement.getKeyValues(), statement.getWhere(),
+                statement.getLimit() == null ? null : statement.getLimit().getOffset(),
+                statement.getLimit() == null ? null : statement.getLimit().getRowCount(),
+                statement.getOffset() == null ? null : statement.getOffset().getOffset()),
+                "HANDLER READ takes no subquery");
+    }
+}
+
+void HandlerKeyComparison(HandlerStatement statement):
+{ HandlerStatement.KeyComparison comparison; }
+{
+    (
+        "=" { comparison = HandlerStatement.KeyComparison.EQUALS; }
+        | <OP_MINORTHANEQUALS> { comparison = HandlerStatement.KeyComparison.LESS_THAN_OR_EQUALS; }
+        | <OP_GREATERTHANEQUALS> { comparison = HandlerStatement.KeyComparison.GREATER_THAN_OR_EQUALS; }
+        | "<" { comparison = HandlerStatement.KeyComparison.LESS_THAN; }
+        | ">" { comparison = HandlerStatement.KeyComparison.GREATER_THAN; }
+    )
+    { statement.setKeyComparison(comparison); }
 }
 
 /**
@@ -21846,6 +23052,9 @@ Drop Drop():
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
         |
+        // MySQL DROP RESOURCE GROUP
+        LOOKAHEAD({ isDropResourceGroupAhead() }) <S_IDENTIFIER> <K_GROUP> { multiWordType = "RESOURCE GROUP"; }
+        |
         // MySQL DROP UNDO TABLESPACE
         LOOKAHEAD({ isKeywordAhead("UNDO") && getToken(2).kind == K_TABLESPACE })
         <S_IDENTIFIER> tk=<K_TABLESPACE> { drop.setUndo(true); }
@@ -21952,6 +23161,10 @@ Drop Drop():
         requireDdlSyntax(!DropLookahead.hasSignatureTargets(drop)
                 || dropArgs.isEmpty() && indexTable == null && indexOptions.isEmpty(),
                 "Unexpected clause after DROP " + drop.getType());
+        requireDdlSyntax(drop.getObjectType() != Drop.ObjectType.RESOURCE_GROUP
+                || DropLookahead.isResourceGroupTarget(drop) && dropArgs.isEmpty()
+                    && indexTable == null && indexOptions.isEmpty() && behavior == null,
+                "DROP RESOURCE GROUP takes one group name and FORCE");
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
         }
@@ -23118,14 +24331,10 @@ AlterExpressionPartition AddPartition():
 /** Parses MySQL's opt_no_write_to_binlog of a partition operation. */
 void PartitionBinlogModifier(AlterExpressionPartition alterExp):
 {
-    Token tk;
+    TableMaintenanceStatement.Modifier modifier;
 }
 {
-    ( tk=<K_NO_WRITE_TO_BINLOG> | tk=<K_LOCAL> )
-    {
-        alterExp.setModifier(TableMaintenanceStatement.Modifier.valueOf(
-                tk.image.toUpperCase(Locale.ROOT)));
-    }
+    modifier=BinlogModifier() { alterExp.setModifier(modifier); }
 }
 
 /**
@@ -23643,6 +24852,8 @@ Statement Alter():
                 statement = AlterTextSearchConfiguration()
                 |
                 LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
+                |
+                LOOKAHEAD({ isKeywordAhead("RULE") }) statement = AlterRule()
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
@@ -24606,6 +25817,103 @@ Expression XaTransactionIdPart():
           part = linkToLastToken(new HexValue(token.image)); }
     )
     { return part; }
+}
+
+/**
+ * MySQL CREATE, ALTER and SET RESOURCE GROUP. RESOURCE, VCPU and THREAD_PRIORITY are not tokens;
+ * isResourceGroupStatementAhead() routes here. DROP RESOURCE GROUP is read by Drop().
+ */
+Statement ResourceGroupStatement():
+{ Statement statement; }
+{
+    (
+        <K_CREATE> ContextualKeyword("RESOURCE") <K_GROUP> statement=CreateResourceGroup()
+        |
+        <K_ALTER> ContextualKeyword("RESOURCE") <K_GROUP> statement=AlterResourceGroup()
+        |
+        <K_SET> ContextualKeyword("RESOURCE") <K_GROUP> statement=SetResourceGroup()
+    )
+    { return statement; }
+}
+
+CreateResourceGroup CreateResourceGroup():
+{ CreateResourceGroup group = new CreateResourceGroup(); String name; OptionAssignment assignment; }
+{
+    name=RelObjectName() { group.setName(resourceGroupName(name)); }
+    <K_TYPE> assignment=ResourceGroupOptionAssignment() { group.setTypeAssignment(assignment); }
+    ( <K_USER> { group.setType(CreateResourceGroup.Type.USER); }
+      | <K_SYSTEM> { group.setType(CreateResourceGroup.Type.SYSTEM); } )
+    ResourceGroupOptions(group)
+    { return group; }
+}
+
+AlterResourceGroup AlterResourceGroup():
+{ AlterResourceGroup group = new AlterResourceGroup(); String name; }
+{
+    name=RelObjectName() { group.setName(resourceGroupName(name)); }
+    ResourceGroupOptions(group)
+    // FORCE INSTALL starts the next statement
+    [ LOOKAHEAD({ getToken(1).kind == K_FORCE && getToken(2).kind != K_INSTALL })
+        <K_FORCE> { group.setForce(true); } ]
+    { return group; }
+}
+
+/** The optional = or := between a resource group option and its value. */
+OptionAssignment ResourceGroupOptionAssignment():
+{ OptionAssignment assignment = OptionAssignment.NONE; }
+{
+    [ "=" { assignment = OptionAssignment.EQUALS; } | ":=" { assignment = OptionAssignment.COLON_EQUALS; } ]
+    { return assignment; }
+}
+
+/**
+ * [VCPU [=] vcpu_spec [[,] vcpu_spec] ...] [THREAD_PRIORITY [=] [-] N] [ENABLE | DISABLE], in the
+ * order of MySQL's grammar.
+ */
+void ResourceGroupOptions(ResourceGroupDefinition group):
+{ OptionAssignment assignment; VcpuRange range; Token number; boolean negative = false; }
+{
+    [ LOOKAHEAD({ isKeywordAhead("VCPU") }) ContextualKeyword("VCPU")
+        assignment=ResourceGroupOptionAssignment() { group.setVcpuAssignment(assignment); }
+        range=ResourceGroupVcpuRange() { group.addVcpus(range); }
+        ( [ "," ] range=ResourceGroupVcpuRange() { group.addVcpus(range); } )* ]
+    [ LOOKAHEAD({ isKeywordAhead("THREAD_PRIORITY") }) ContextualKeyword("THREAD_PRIORITY")
+        assignment=ResourceGroupOptionAssignment() { group.setThreadPriorityAssignment(assignment); }
+        [ "-" { negative = true; } ] number=<S_LONG>
+        { group.setThreadPriority(negative ? -resourceGroupNumber(number) : resourceGroupNumber(number)); } ]
+    [ <K_ENABLE> { group.setState(ResourceGroupDefinition.State.ENABLE); }
+      | <K_DISABLE> { group.setState(ResourceGroupDefinition.State.DISABLE); } ]
+}
+
+/** A CPU number, or two of them around a minus sign. */
+VcpuRange ResourceGroupVcpuRange():
+{ Token start; Token end = null; }
+{
+    start=<S_LONG> [ "-" end=<S_LONG> ]
+    { return new VcpuRange(resourceGroupNumber(start), end == null ? null : Integer.valueOf(resourceGroupNumber(end))); }
+}
+
+SetResourceGroup SetResourceGroup():
+{ SetResourceGroup statement = new SetResourceGroup(); String name; Expression threadId; }
+{
+    name=RelObjectName() { statement.setName(resourceGroupName(name)); }
+    [ <K_FOR> threadId=ResourceGroupThreadId() { statement.addThreadIds(threadId); }
+        ( [ "," ] threadId=ResourceGroupThreadId() { statement.addThreadIds(threadId); } )* ]
+    { linkElements(statement.getThreadIds()); return statement; }
+}
+
+/** A thread ID: a decimal or hexadecimal number. */
+Expression ResourceGroupThreadId():
+{ Token token; Expression threadId; }
+{
+    (
+        token=<S_LONG> { threadId = resourceGroupThreadId(token); }
+        |
+        token=<S_HEX>
+        { requireDdlSyntax(isXaHexPart(token.image), "Invalid hexadecimal literal: " + token.image);
+          threadId = linkToLastToken(new HexValue(token.image)); }
+    )
+    { return threadId; }
 }
 
 /**
@@ -26113,10 +27421,15 @@ CreateType CreateType():
     CompositeTypeDefinition composite = new CompositeTypeDefinition();
     RangeTypeDefinition range = new RangeTypeDefinition();
     RangeTypeDefinition.Option option;
+    List<DefinitionElement> elements;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
     [
+        // A base type. A parenthesis can also start the statement after a shell type.
+        LOOKAHEAD({ isDefinitionAhead() })
+        elements=PostgreSqlDefinition() { result.setDefinition(new BaseTypeDefinition(elements)); }
+        |
         <K_AS>
         (
             LOOKAHEAD({ isKeywordAhead("ENUM") }) TypeDdlKeyword("ENUM") "("
@@ -26134,6 +27447,94 @@ CreateType CreateType():
               ")" { result.setDefinition(composite); }
         )
     ]
+    { return result; }
+}
+
+/**
+ * PostgreSQL's definition, "(" def_elem [, ...] ")": the property list of a base type in CREATE
+ * TYPE name (...) and of ALTER TYPE name SET (...).
+ */
+List<DefinitionElement> PostgreSqlDefinition():
+{ List<DefinitionElement> elements = new ArrayList<DefinitionElement>(); DefinitionElement element; }
+{
+    "(" element=PostgreSqlDefinitionElement() { elements.add(element); }
+    ( "," element=PostgreSqlDefinitionElement() { elements.add(element); } )* ")"
+    { return elements; }
+}
+
+/** PostgreSQL's def_elem, label [ = def_arg ]. Any identifier or keyword is a label. */
+DefinitionElement PostgreSqlDefinitionElement():
+{ Token name; DefinitionArgument argument = null; }
+{
+    // The action keeps the JAVACODE call from being the production's first unit.
+    { } name=PostgreSqlWord()
+    [ "=" argument=PostgreSqlDefinitionArgument() ]
+    { return new DefinitionElement(name.image, argument); }
+}
+
+/** Consumes an identifier or any keyword. As a JAVACODE production it adds no choice conflicts. */
+JAVACODE
+Token PostgreSqlWord() {
+    Token token = getToken(1);
+    if (!isPostgreSqlWord(token)) {
+        throw new ParseException("Encountered unexpected token: \"" + token.image + "\" at line "
+                + token.beginLine + ", column " + token.beginColumn + ". Expected a name.");
+    }
+    return getNextToken();
+}
+
+/**
+ * PostgreSQL's def_arg: a type (which is also how a function or any other name is read), a
+ * reserved keyword, an operator, a number, a string constant or NONE.
+ */
+DefinitionArgument PostgreSqlDefinitionArgument():
+{
+    Token token; Token first = getToken(1); Token sign = null;
+    String name; String operator; StringBuilder schema = new StringBuilder();
+    ColDataType type; StringValue string; Expression number;
+    boolean setOf = false; boolean typeReference = false;
+    DefinitionArgument result;
+}
+{
+    (
+        LOOKAHEAD({ isDefinitionWordValueAhead() }) { } token=PostgreSqlWord()
+        { result = definitionWordValue(token); }
+        |
+        token=<S_CHAR_LITERAL>
+        {
+            string = stringValue(token);
+            requireDdlSyntax(isPostgreSqlStringConstant(string),
+                    "PostgreSQL expects a string constant: " + token.image);
+            result = DefinitionArgument.string(string);
+        }
+        |
+        LOOKAHEAD(2) [ sign="+" | sign="-" ]
+        ( token=<S_LONG> { number = linkToLastToken(new LongValue(token.image)); }
+          | token=<S_DOUBLE> { number = linkToLastToken(new DoubleValue(token.image)); } )
+        {
+            if (sign != null) {
+                number = linked(new SignedExpression(sign.image.charAt(0), number), first);
+            }
+            result = DefinitionArgument.number(number);
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("OPERATOR") && getToken(2).kind == OPENING_BRACKET })
+        ContextualKeyword("OPERATOR") "("
+        ( LOOKAHEAD(2) name=RelObjectName() "." { schema.append(name).append('.'); } )*
+        operator=PostgreSqlOperatorName() ")"
+        { result = DefinitionArgument.operator(schema + operator, true); }
+        |
+        operator=PostgreSqlOperatorName() { result = DefinitionArgument.operator(operator, false); }
+        |
+        [ LOOKAHEAD({ isKeywordAhead("SETOF") }) ContextualKeyword("SETOF") { setOf = true; } ]
+        type=ColDataType()
+        { requireDdlSyntax(!hasEmptyParentheses(first, getToken(0)), "Type modifiers must not be empty"); }
+        [ "%" <K_TYPE> {
+            requireDdlSyntax(type.toString().indexOf('.') > 0, "%TYPE follows the name of a column");
+            typeReference = true;
+        } ]
+        { result = DefinitionArgument.type(type, setOf, typeReference); }
+    )
     { return result; }
 }
 
@@ -26181,7 +27582,7 @@ AlterType.AttributeChange TypeAttributeChange():
 AlterType AlterType():
 {
     AlterType result = new AlterType(); String name; Token label;
-    AlterType.AttributeChange change; CascadeBehavior behavior;
+    AlterType.AttributeChange change; CascadeBehavior behavior; List<DefinitionElement> properties;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
@@ -26203,7 +27604,12 @@ AlterType AlterType():
                 [ behavior=TypeAlterBehavior() { result.setBehavior(behavior); } ]
               | <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.RENAME); }
           )
-        | <K_SET> <K_SCHEMA> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.SET_SCHEMA); }
+        | <K_SET>
+          (
+              <K_SCHEMA> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.SET_SCHEMA); }
+              | properties=PostgreSqlDefinition()
+                { result.setProperties(properties); result.setAction(AlterType.Action.SET_PROPERTIES); }
+          )
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) TypeDdlKeyword("OWNER") <K_TO>
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.OWNER); }
         | change=TypeAttributeChange() { result.setAction(AlterType.Action.ATTRIBUTES); result.getAttributeChanges().add(change); }
@@ -27243,10 +28649,10 @@ ForeignDataWrapperFunctions ForeignDataWrapperFunctions():
         { name = null; }
         (
             <K_NO>
-            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+            ( <K_HANDLER> { handler = true; }
               | ContextualKeyword("VALIDATOR") { handler = false; } )
             |
-            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+            ( <K_HANDLER> { handler = true; }
               | ContextualKeyword("VALIDATOR") { handler = false; } )
             name=AccessQualifiedName()
         )
@@ -27350,7 +28756,7 @@ CreateAccessMethod CreateAccessMethod():
     { statement.setName(name); }
     <K_TYPE> ( <K_TABLE> { statement.setType(CreateAccessMethod.Type.TABLE); }
                | <K_INDEX> { statement.setType(CreateAccessMethod.Type.INDEX); } )
-    ContextualKeyword("HANDLER") name=AccessQualifiedName()
+    <K_HANDLER> name=AccessQualifiedName()
     { statement.setHandler(name); return statement; }
 }
 
@@ -27447,6 +28853,20 @@ CreateRule CreateRule(boolean orReplace):
           ")"
         | action=PostgreSqlRuleAction() { statement.getActions().add(action); }
     )
+    { return statement; }
+}
+
+/** PostgreSQL's ALTER RULE name ON table RENAME TO new_name, its only ALTER RULE form. */
+AlterRule AlterRule():
+{ AlterRule statement = new AlterRule(); Token name; Table table; }
+{
+    ContextualKeyword("RULE") name=PostgreSqlWord() { requirePostgreSqlColId(name.image); statement.setName(name.image); }
+    <K_ON> table=Table()
+    {
+        requireDdlSyntax(table.getNameParts().size() <= 3, "A table name has at most three parts");
+        statement.setTable(table);
+    }
+    <K_RENAME> <K_TO> name=PostgreSqlWord() { requirePostgreSqlColId(name.image); statement.setNewName(name.image); }
     { return statement; }
 }
 

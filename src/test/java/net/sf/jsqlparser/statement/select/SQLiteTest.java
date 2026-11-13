@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.TableOption;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateConflictAlgorithm;
 import net.sf.jsqlparser.test.TestUtils;
@@ -19,7 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -93,5 +97,25 @@ public class SQLiteTest {
         Update update = (Update) TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "UPDATE t SET a = 1", true, parser -> parser.withDialect(Dialect.SQLITE));
         assertNull(update.getConflictAlgorithm());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CREATE TABLE t (a INTEGER PRIMARY KEY, b TEXT) WITHOUT ROWID",
+            "CREATE TABLE t (a INTEGER PRIMARY KEY, b TEXT) STRICT",
+            "CREATE TABLE t (a INTEGER PRIMARY KEY, b BLOB) STRICT, WITHOUT ROWID",
+            "CREATE TABLE t (a INTEGER PRIMARY KEY, b TEXT) WITHOUT ROWID, STRICT",
+            "create table t (a integer primary key) without rowid"})
+    void testCreateTableWithoutRowidAndStrict(String sql) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    void testCreateTableOptionKinds() throws JSQLParserException {
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(
+                "CREATE TABLE t (a INTEGER PRIMARY KEY) STRICT, WITHOUT ROWID");
+        assertEquals(List.of(TableOption.Kind.STRICT, TableOption.Kind.WITHOUT_ROWID),
+                createTable.getTableOptions().stream().map(TableOption::getKind)
+                        .collect(Collectors.toList()));
     }
 }

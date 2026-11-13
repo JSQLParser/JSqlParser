@@ -71,6 +71,11 @@ public class MergeUpdate implements Serializable, MergeOperation {
         return this;
     }
 
+    /** {@code WHEN MATCHED}, or {@code WHEN NOT MATCHED BY SOURCE} with that side. */
+    public MergeWhen getWhen() {
+        return MergeWhen.ofTargetRow(side);
+    }
+
     @Override
     public <S, T> T accept(MergeOperationVisitor<T> mergeOperationVisitor, S context) {
         return mergeOperationVisitor.visit(this, context);
@@ -79,11 +84,7 @@ public class MergeUpdate implements Serializable, MergeOperation {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(side == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
-        if (andPredicate != null) {
-            b.append(" AND ").append(andPredicate.toString());
-        }
-        b.append(" THEN UPDATE SET ");
+        getWhen().appendTo(b, andPredicate, b::append).append("UPDATE SET ");
         UpdateSet.appendUpdateSetsTo(b, updateSets);
 
         if (whereCondition != null) {

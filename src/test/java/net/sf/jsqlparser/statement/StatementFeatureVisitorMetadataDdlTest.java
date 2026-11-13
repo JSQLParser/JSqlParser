@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -47,6 +48,7 @@ class StatementFeatureVisitorMetadataDdlTest {
                 Arguments.of("ALTER PROCEDURE p SET search_path = public", AlterRoutine.class),
                 Arguments.of("ALTER FUNCTION f READS SQL DATA", AlterRoutine.class),
                 Arguments.of("ALTER TRIGGER t ON tbl RENAME TO t2", AlterTrigger.class),
+                Arguments.of("ALTER RULE r ON tbl RENAME TO r2", AlterRule.class),
                 Arguments.of("ALTER SCHEMA s RENAME TO s2", AlterSchema.class),
                 Arguments.of("ALTER SCHEMA s OWNER TO CURRENT_USER", AlterSchema.class),
                 Arguments.of("ALTER STATISTICS s RENAME TO s2", AlterStatistics.class),

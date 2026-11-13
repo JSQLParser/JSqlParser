@@ -55,6 +55,7 @@ import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNormalizedExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
@@ -129,6 +130,7 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -199,6 +201,9 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -207,6 +212,7 @@ import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeDelete;
+import net.sf.jsqlparser.statement.merge.MergeDoNothing;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeOperation;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
@@ -238,6 +244,9 @@ import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
@@ -868,6 +877,12 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(IsUnknownExpression isUnknownExpression, S context) {
         isUnknownExpression.getLeftExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(IsNormalizedExpression isNormalizedExpression, S context) {
+        isNormalizedExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
@@ -1750,6 +1765,35 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        flush.getTables().forEach(table -> visit(table, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        if (kill.getProcesslistId() != null) {
+            kill.getProcesslistId().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        if (handler.getAction() == HandlerStatement.Action.OPEN) {
+            visit(handler.getTable(), context);
+        }
+        // READ and CLOSE name a handler, which may be an alias that OPEN gave the table
+        if (handler.getKeyValues() != null) {
+            handler.getKeyValues().accept(this, context);
+        }
+        if (handler.getWhere() != null) {
+            handler.getWhere().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(VacuumStatement vacuum, S context) {
         // the column lists name columns of these tables, not tables
         vacuum.getTargets().forEach(target -> visit(target.getTable(), context));
@@ -1822,7 +1866,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DoStatement statement, S context) {
-        throwUnsupported(statement);
+        // a code block's table accesses are unknown; MySQL's expressions are visible
+        if (statement.getSelectItems() == null) {
+            throwUnsupported(statement);
+        } else {
+            statement.visitExpressions(expression -> expression.accept(this, context));
+        }
         return null;
     }
 
@@ -2057,7 +2106,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ResetStatement reset, S context) {
-        throwUnsupported(reset);
+        // RESET names a configuration parameter or a system variable, never a table
         return null;
     }
 
@@ -2147,6 +2196,14 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(MergeDelete mergeDelete, S context) {
         if (mergeDelete.getAndPredicate() != null) {
             mergeDelete.getAndPredicate().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MergeDoNothing mergeDoNothing, S context) {
+        if (mergeDoNothing.getAndPredicate() != null) {
+            mergeDoNothing.getAndPredicate().accept(this, context);
         }
         return null;
     }
@@ -2269,6 +2326,21 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
         return null;
     }
 
@@ -2411,6 +2483,9 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(ExplainStatement explainStatement, S context) {
         if (explainStatement.getStatement() != null) {
             explainStatement.getStatement().accept((StatementVisitor<?>) this, context);
+        } else if (explainStatement.getTable() != null) {
+            // EXPLAIN table describes it, as DESCRIBE table does
+            explainStatement.getTable().accept(this, context);
         }
         return null;
     }
@@ -2980,7 +3055,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.getStatement().accept(this, context);
+        Statement statement = prepareStatement.getStatement();
+        if (statement == null) {
+            // the tables of a statement held in a string or a variable are unknown
+            throwUnsupported(prepareStatement);
+        } else {
+            statement.accept(this, context);
+        }
         return null;
     }
 
@@ -3442,6 +3523,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterTrigger statement, S context) {
+        visit(statement.getTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRule statement, S context) {
         visit(statement.getTable(), context);
         return null;
     }

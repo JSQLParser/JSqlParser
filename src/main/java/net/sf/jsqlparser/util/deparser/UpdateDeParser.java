@@ -58,7 +58,7 @@ public class UpdateDeParser extends AbstractDeParser<Update>
         if (update.isModifierIgnore()) {
             builder.append("IGNORE ");
         }
-        builder.append(update.getTable());
+        update.getTableReference().appendWithAliasTo(builder);
         deparseForPortionClause(update.getForPortionClause(), expressionVisitor);
         if (update.getStartJoins() != null) {
             sources.deparseJoins(update.getStartJoins());
@@ -98,7 +98,9 @@ public class UpdateDeParser extends AbstractDeParser<Update>
     }
 
     protected void deparseWhereClause(Update update) {
-        if (update.getWhere() != null) {
+        if (update.getCursorName() != null) {
+            builder.append(" WHERE CURRENT OF ").append(update.getCursorName());
+        } else if (update.getWhere() != null) {
             builder.append(" WHERE ");
             update.getWhere().accept(expressionVisitor, null);
         }

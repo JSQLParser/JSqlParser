@@ -79,11 +79,23 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
                     Feature.analyze, Feature.tableMaintenance,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/flush.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/kill.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/reset-persist.html
+                    Feature.flush, Feature.kill, Feature.resetPersist,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/handler.html
+                    Feature.handler,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html
                     Feature.lock, Feature.unlockTables,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/lock-instance-for-backup.html
                     Feature.backupLock,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/resource-groups.html
+                    Feature.createResourceGroup, Feature.alterResourceGroup,
+                    Feature.setResourceGroup,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
                     Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
@@ -93,8 +105,14 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
+                    // https://dev.mysql.com/doc/refman/8.4/en/sql-prepared-statements.html
+                    Feature.prepare, Feature.executeExecute, Feature.executeUsing,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/deallocate-prepare.html
                     Feature.deallocate,
+
+                    // https://dev.mysql.com/doc/refman/8.4/en/do.html
+                    Feature.doStatement,
 
                     Feature.drop, // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
                     Feature.dropTable, // https://dev.mysql.com/doc/refman/8.0/en/drop-index.html

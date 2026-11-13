@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +34,7 @@ public class PlainSelect extends Select {
     private Distinct distinct = null;
     private BigQuerySelectQualifier bigQuerySelectQualifier = null;
     private List<SelectItem<?>> selectItems;
-    private List<Table> intoTables;
+    private SelectIntoClause intoClause;
     private MySqlSelectIntoClause mySqlSelectIntoClause;
     private FromItem fromItem;
     private List<LateralView> lateralViews;
@@ -69,7 +68,6 @@ public class PlainSelect extends Select {
     private boolean isUsingOnly = false;
     private boolean useWithNoLog = false;
     private boolean fromFirst = false;
-    private Table intoTempTable = null;
     private List<UpdateSet> settings = null;
 
     public enum EmitMode {
@@ -143,12 +141,50 @@ public class PlainSelect extends Select {
         fromItem = item;
     }
 
-    public List<Table> getIntoTables() {
-        return intoTables;
+    /**
+     * The {@code INTO [persistence] [TABLE] table} clause, either after the select list or, for
+     * Informix's {@code INTO TEMP table}, at the end of the query. A SELECT has one such clause.
+     */
+    public SelectIntoClause getIntoClause() {
+        return intoClause;
     }
 
+    public void setIntoClause(SelectIntoClause intoClause) {
+        this.intoClause = intoClause;
+    }
+
+    public PlainSelect withIntoClause(SelectIntoClause intoClause) {
+        this.setIntoClause(intoClause);
+        return this;
+    }
+
+    private boolean hasIntoClauseAt(SelectIntoClause.Position position) {
+        return intoClause != null && intoClause.getPosition() == position;
+    }
+
+    /**
+     * The tables of the INTO clause after the select list, or null when there is none. This is a
+     * view of {@link #getIntoClause()}, which also holds the persistence and the TABLE keyword.
+     */
+    public List<Table> getIntoTables() {
+        return hasIntoClauseAt(SelectIntoClause.Position.BEFORE_FROM) ? intoClause.getTables()
+                : null;
+    }
+
+    /**
+     * Sets the tables of the INTO clause after the select list, keeping the persistence and the
+     * TABLE keyword of such a clause. Null removes the clause.
+     */
     public void setIntoTables(List<Table> intoTables) {
-        this.intoTables = intoTables;
+        if (intoTables == null) {
+            if (hasIntoClauseAt(SelectIntoClause.Position.BEFORE_FROM)) {
+                intoClause = null;
+            }
+        } else if (hasIntoClauseAt(SelectIntoClause.Position.BEFORE_FROM)) {
+            intoClause.setTables(intoTables);
+        } else {
+            intoClause = new SelectIntoClause().withTables(intoTables);
+        }
     }
 
     public MySqlSelectIntoClause getMySqlSelectIntoClause() {
@@ -328,12 +364,23 @@ public class PlainSelect extends Select {
         return this;
     }
 
+    /**
+     * The table of an {@code INTO TEMP table} clause at the end of the query, or null when there is
+     * none. This is a view of {@link #getIntoClause()}.
+     */
     public Table getIntoTempTable() {
-        return intoTempTable;
+        return hasIntoClauseAt(SelectIntoClause.Position.TRAILING) ? intoClause.getTable() : null;
     }
 
+    /** Sets an {@code INTO TEMP table} clause at the end of the query. Null removes it. */
     public void setIntoTempTable(Table intoTempTable) {
-        this.intoTempTable = intoTempTable;
+        if (intoTempTable != null) {
+            intoClause = new SelectIntoClause(intoTempTable)
+                    .withPosition(SelectIntoClause.Position.TRAILING)
+                    .withPersistence(SelectIntoClause.Persistence.TEMP);
+        } else if (hasIntoClauseAt(SelectIntoClause.Position.TRAILING)) {
+            intoClause = null;
+        }
     }
 
     public PlainSelect withIntoTempTable(Table intoTempTable) {
@@ -618,8 +665,8 @@ public class PlainSelect extends Select {
             builder.append(" QUALIFY ").append(qualify);
         }
         appendEmitClauseTo(builder);
-        if (intoTempTable != null) {
-            builder.append(" INTO TEMP ").append(intoTempTable);
+        if (hasIntoClauseAt(SelectIntoClause.Position.TRAILING)) {
+            builder.append(' ').append(intoClause);
         }
         if (useWithNoLog) {
             builder.append(" WITH NO LOG");
@@ -722,14 +769,8 @@ public class PlainSelect extends Select {
     }
 
     private void appendIntoClausesTo(StringBuilder builder) {
-        if (intoTables != null) {
-            builder.append(" INTO ");
-            for (Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
-                builder.append(iter.next().toString());
-                if (iter.hasNext()) {
-                    builder.append(", ");
-                }
-            }
+        if (hasIntoClauseAt(SelectIntoClause.Position.BEFORE_FROM)) {
+            builder.append(' ').append(intoClause);
         }
 
         if (mySqlSelectIntoClause != null

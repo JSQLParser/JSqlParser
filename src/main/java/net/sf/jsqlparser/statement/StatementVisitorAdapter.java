@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
@@ -94,6 +95,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.InsertConflictAction;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -105,6 +109,9 @@ import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -259,6 +266,21 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetResourceGroup statement, S context) {
         return null;
     }
 
@@ -562,12 +584,13 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(Execute execute, S context) {
         expressionVisitor.visitExpression(execute.getExprList(), context);
+        expressionVisitor.visitExpression(execute.getUsingVariables(), context);
         return null;
     }
 
     @Override
     public <S> T visit(DoStatement statement, S context) {
-        expressionVisitor.visitExpression(statement.getCode(), context);
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
         return null;
     }
 
@@ -752,6 +775,24 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(FlushStatement flush, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(KillStatement kill, S context) {
+        expressionVisitor.visitExpression(kill.getProcesslistId(), context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(HandlerStatement handler, S context) {
+        expressionVisitor.visitExpression(handler.getKeyValues(), context);
+        expressionVisitor.visitExpression(handler.getWhere(), context);
+        return null;
+    }
+
+    @Override
     public <S> T visit(VacuumStatement vacuum, S context) {
         return null;
     }
@@ -840,6 +881,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(PrepareStatement prepareStatement, S context) {
+        expressionVisitor.visitExpression(prepareStatement.getSource(), context);
         return null;
     }
 
@@ -1193,4 +1235,10 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         return null;
     }
 
+
+    @Override
+    public <S> T visit(AlterRule statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
+        return null;
+    }
 }

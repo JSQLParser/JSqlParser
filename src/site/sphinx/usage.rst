@@ -1139,7 +1139,7 @@ See `CREATE PUBLICATION <https://www.postgresql.org/docs/18/sql-createpublicatio
 Inspect type, domain and extension statements
 =============================================
 
-PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` exposes its qualified name and a ``TypeDefinition``: ``EnumTypeDefinition``, ``CompositeTypeDefinition`` or ``RangeTypeDefinition``. A null definition denotes a shell type. Enum labels are ordered ``StringValue`` nodes, composite attributes carry a name, ``ColDataType`` and optional collation, and range options distinguish the subtype from names of support functions, collations and operator classes.
+PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` exposes its qualified name and a ``TypeDefinition``: ``EnumTypeDefinition``, ``CompositeTypeDefinition``, ``RangeTypeDefinition`` or ``BaseTypeDefinition``. A null definition denotes a shell type. Enum labels are ordered ``StringValue`` nodes, composite attributes carry a name, ``ColDataType`` and optional collation, and range options distinguish the subtype from names of support functions, collations and operator classes.
 
 .. code-block:: java
 
@@ -1153,7 +1153,25 @@ PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` e
     alteration.getPosition();       // AlterType.Position.AFTER
     alteration.getNeighborValue(); // StringValue containing 'ok'
 
-``AlterType`` also models type ownership, renaming, schema moves and ordered composite-attribute changes. Base-type I/O definitions and base-type ``SET (...)`` alterations are not part of this support.
+``AlterType`` also models type ownership, renaming, schema moves and ordered composite-attribute changes.
+
+A base type, ``CREATE TYPE name (INPUT = fn, OUTPUT = fn, ...)``, has a ``BaseTypeDefinition``, and ``ALTER TYPE name SET (property = value, ...)`` has the action ``SET_PROPERTIES`` with ``getProperties()``. Both hold ``DefinitionElement`` items in source order: a name with its spelling and quoting, and a ``DefinitionArgument``, which is ``null`` for an element without a value such as ``PASSEDBYVALUE``. The argument follows PostgreSQL's grammar: its ``Kind`` is ``TYPE`` (a ``ColDataType``, with ``isSetOf()`` and ``isTypeReference()`` for ``SETOF`` and ``%TYPE``), ``KEYWORD`` (a reserved keyword such as ``true``), ``OPERATOR``, ``NUMBER``, ``STRING`` or ``NONE``. PostgreSQL reads a function name or a word such as ``plain`` as a type name, so these are ``TYPE`` arguments whose name is ``getDataType().getDataType()``. The property names and the kind of value each property takes are not checked, because PostgreSQL checks them when it runs the statement.
+
+.. code-block:: java
+
+    CreateType type = (CreateType) CCJSqlParserUtil.parse(
+            "CREATE TYPE box3 (INPUT = box3_in, OUTPUT = box3_out, INTERNALLENGTH = 16, PASSEDBYVALUE)");
+    BaseTypeDefinition definition = (BaseTypeDefinition) type.getDefinition();
+    definition.getElement("INPUT").getArgument().getDataType().getDataType(); // box3_in
+    definition.getElement("INTERNALLENGTH").getArgument().getNumber();        // LongValue 16
+    definition.getElement("PASSEDBYVALUE").getArgument();                     // null
+
+    AlterType alteration = (AlterType) CCJSqlParserUtil.parse(
+            "ALTER TYPE box3 SET (SEND = box3_send, RECEIVE = NONE)");
+    alteration.getAction();                                   // AlterType.Action.SET_PROPERTIES
+    alteration.getProperties().get(1).getArgument().getKind(); // DefinitionArgument.Kind.NONE
+
+See `CREATE TYPE <https://www.postgresql.org/docs/18/sql-createtype.html>`_ and `ALTER TYPE <https://www.postgresql.org/docs/18/sql-altertype.html>`_.
 
 ``CreateDomain`` stores a ``ColDataType``, default expression and ordered ``DomainConstraint`` nodes. Each constraint distinguishes nullability from a check expression and preserves its optional name. ``AlterDomain`` models default/nullability changes, constraint actions, ownership, renaming and schema moves. Its ``isNotValid()`` flag describes the newly added check constraint. Domain expressions participate in statement visitors, expression deparsers and validation.
 
@@ -2475,6 +2493,12 @@ list. Other forms after ``ALTER FUNCTION`` or ``ALTER PROCEDURE``, such as Oracl
 Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
 ``alterTrigger``; PostgreSQL enables all of them, MySQL and MariaDB the first two.
 
+PostgreSQL's ``ALTER RULE name ON table RENAME TO new_name``
+(`ALTER RULE <https://www.postgresql.org/docs/18/sql-alterrule.html>`_) parses to
+``AlterRule`` with ``getName()``, ``getTable()`` and ``getNewName()``; table visitors report
+its table and validators report ``alterRule``, which PostgreSQL enables. It is the only
+``ALTER RULE`` form, so any other text after ``ALTER RULE`` is a parse error.
+
 ``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
 ``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
 triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,
@@ -2511,7 +2535,8 @@ records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in 
 order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
 ``CHANGED``; CHECKSUM accepts one of ``QUICK`` and ``EXTENDED``; REPAIR accepts ``QUICK``,
 ``EXTENDED`` and ``USE_FRM``. Other combinations are rejected, and the option words and
-``CHECKSUM`` remain ordinary identifiers elsewhere.
+``CHECKSUM`` remain ordinary identifiers elsewhere. With unsupported statements enabled, these
+statements are parsed rather than captured as unsupported statements.
 
 .. code-block:: java
 
@@ -2683,6 +2708,70 @@ together with ``show``. Feature analysis reports ``MODIFIES_SESSION`` for ``DISC
 ``LISTEN`` and ``UNLISTEN``, and a possible ``MODIFIES_SCHEMA`` for ``DISCARD ALL``, ``TEMP``
 and ``TEMPORARY``, which drop the temporary tables of the session.
 
+MySQL server administration statements
+--------------------------------------
+
+With ``Dialect.MYSQL`` and without a dialect, these MySQL 8.4 statements parse to typed
+statements:
+
+* `FLUSH <https://dev.mysql.com/doc/refman/8.4/en/flush.html>`_ parses to
+  ``FlushStatement``. ``getModifier()`` returns ``NO_WRITE_TO_BINLOG`` or ``LOCAL``, the
+  ``TableMaintenanceStatement.Modifier`` of OPTIMIZE, REPAIR and the partition operations.
+  ``getOptions()`` keeps the flush options in source order. Each is a ``FlushOption`` whose
+  ``getKind()`` is one of MySQL 8.4's options, from ``BINARY_LOGS`` to ``USER_RESOURCES``,
+  and whose ``getChannel()`` holds the string literal of ``RELAY LOGS FOR CHANNEL 'name'``.
+  Without options the statement is
+  ``FLUSH {TABLE | TABLES} [tbl_name, ...] [WITH READ LOCK | FOR EXPORT]``
+  (``isFlushTables()``), with ``getTables()``, ``isTablesKeyword()`` and ``getTableLock()``.
+  As in MySQL, that form takes no flush option, ``FOR EXPORT`` requires a table list, only
+  ``RELAY LOGS`` names a channel, and ``FLUSH HOSTS``, which MySQL 8.4 removed, is rejected;
+  with unsupported statements enabled it remains an ``UnsupportedStatement``.
+* `KILL [CONNECTION | QUERY] processlist_id
+  <https://dev.mysql.com/doc/refman/8.4/en/kill.html>`_ parses to ``KillStatement``.
+  ``getKind()`` is ``CONNECTION``, ``QUERY`` or null when neither is given, and
+  ``getProcesslistId()`` is an expression, since MySQL accepts ``@id`` or ``1 + 2`` there.
+* `RESET PERSIST [[IF EXISTS] system_var_name]
+  <https://dev.mysql.com/doc/refman/8.4/en/reset-persist.html>`_ extends ``ResetStatement``
+  with ``isPersist()`` and ``isIfExists()``; ``getName()`` is the variable as written, with
+  a component or ``DEFAULT`` prefix such as ``validate_password.length``, or null when the
+  statement names none. Without a dialect only a variable name or ``IF EXISTS`` after
+  ``PERSIST`` selects this form, so a bare ``RESET PERSIST`` still resets a parameter named
+  ``persist``, as it does in the other dialects.
+* `HANDLER <https://dev.mysql.com/doc/refman/8.4/en/handler.html>`_ parses to
+  ``HandlerStatement``, whose ``getAction()`` is ``OPEN``, ``READ`` or ``CLOSE``.
+  ``getTable()`` is the table that OPEN opens, with the handler name as its alias, or the
+  unqualified handler name that READ and CLOSE take; ``getHandlerName()`` returns the name in
+  both cases. A READ has ``getIndexName()`` and either ``getKeyComparison()`` (``=``,
+  ``<=``, ``>=``, ``<`` or ``>``) with ``getKeyValues()``, or ``getDirection()``
+  (``FIRST``, ``NEXT``, ``PREV`` or ``LAST``, and only ``FIRST`` or ``NEXT`` without an
+  index), followed by ``getWhere()``, ``getLimit()`` and ``getOffset()``. As in MySQL, a
+  READ takes no subquery.
+
+.. code-block:: java
+
+    FlushStatement flush = (FlushStatement) CCJSqlParserUtil.parse(
+        "FLUSH LOCAL TABLES t1, t2 WITH READ LOCK");
+    flush.getTables();         // [t1, t2]
+    flush.getTableLock();      // WITH_READ_LOCK
+
+    HandlerStatement read = (HandlerStatement) CCJSqlParserUtil.parse(
+        "HANDLER h READ i1 >= (1, 2) WHERE a > 0 LIMIT 3");
+    read.getKeyComparison();   // GREATER_THAN_OR_EQUALS
+    read.getKeyValues();       // (1, 2)
+
+Other dialects keep rejecting these statements. ``HANDLER`` becomes a non-reserved keyword
+and remains usable as a name, like ``FLUSH``, ``KILL`` and the option words.
+
+Table visitors report the tables of ``FLUSH TABLES`` and the table that ``HANDLER ... OPEN``
+opens, but not the handler name of READ and CLOSE, which may be an alias. They find the
+tables of subqueries in the KILL expression, and they now return no table for every
+``RESET`` statement instead of throwing. Validators report the
+``flush``, ``kill``, ``handler`` and ``resetPersist`` features, which the MySQL capabilities
+enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
+``MODIFIES_SESSION`` for FLUSH, KILL and HANDLER OPEN and CLOSE, adds
+``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
+``RETURNS_RESULT_SET`` for HANDLER READ.
+
 MySQL account management statements
 -----------------------------------
 
@@ -2701,6 +2790,28 @@ clauses stay omitted. ``UserAuthentication`` adds ``ALTER USER``'s ``REPLACE 'cu
             + "PASSWORD EXPIRE INTERVAL 90 DAY ACCOUNT LOCK");
     alter.getAccounts().get(0).getAuthentication().isRetainCurrentPassword(); // true
     alter.getOptions().getPasswordLockOptions(); // [PASSWORD EXPIRE INTERVAL 90 DAY, ACCOUNT LOCK]
+
+MySQL multi-factor authentication is part of the same model. ``CREATE USER`` keeps the
+second and third factor of ``IDENTIFIED ... AND IDENTIFIED ... [AND IDENTIFIED ...]`` in
+``UserAccount.getAdditionalAuthentications()``, and the temporary first factor of a
+passwordless plugin, ``IDENTIFIED WITH plugin INITIAL AUTHENTICATION IDENTIFIED ...``, in
+``UserAuthentication.getInitialAuthentication()``. ``ALTER USER`` keeps
+``{ADD | MODIFY} n FACTOR IDENTIFIED ...``, ``DROP n FACTOR`` and the registration steps
+``n FACTOR INITIATE REGISTRATION``, ``n FACTOR FINISH REGISTRATION SET CHALLENGE_RESPONSE AS
+'...'`` and ``n FACTOR UNREGISTER`` as ``UserFactorOperation`` objects (operation, factor
+number, authentication or challenge response) in ``UserAccount.getFactorOperations()``. As
+on the server, an account takes one or two changes of the same kind, and the factor number
+is checked only when the statement runs.
+
+.. code-block:: java
+
+    AlterUser factors = (AlterUser) CCJSqlParserUtil.parse(
+        "ALTER USER app ADD 2 FACTOR IDENTIFIED WITH authentication_ldap_sasl AS 'uid=app' "
+            + "ADD 3 FACTOR IDENTIFIED WITH authentication_webauthn");
+    UserFactorOperation second = factors.getAccounts().get(0).getFactorOperations().get(0);
+    second.getOperation();                  // ADD
+    second.getFactor();                     // 2
+    second.getAuthentication().getPlugin(); // authentication_ldap_sasl
 
 ``ALTER USER USER() ...`` keeps ``USER()`` as the unquoted account name, as
 ``DEFINER = CURRENT_USER`` does; ``isUserFunction()`` identifies it.
@@ -3011,6 +3122,40 @@ The validator checks ``twoPhaseCommit`` (PostgreSQL) and ``xa`` (MySQL and Maria
 Feature analysis reports ``XA RECOVER`` as returning a result set and the other
 statements as transaction control.
 
+MySQL resource groups
+=====================
+
+MySQL ``CREATE RESOURCE GROUP name TYPE [=] {SYSTEM | USER} [VCPU [=] vcpu_spec [, ...]]
+[THREAD_PRIORITY [=] N] [ENABLE | DISABLE]`` produces a ``CreateResourceGroup`` and
+``ALTER RESOURCE GROUP name [VCPU ...] [THREAD_PRIORITY ...] [ENABLE | DISABLE] [FORCE]``
+an ``AlterResourceGroup``. Both extend ``ResourceGroupDefinition``, which holds the name,
+the VCPU list as ``VcpuRange`` elements (a single CPU or ``start-end``), the thread
+priority and the ``State``. Each option remembers whether it was written with ``=``, ``:=``
+or nothing (``OptionAssignment``); the optional commas of the VCPU list are always printed.
+``SET RESOURCE GROUP name [FOR thread_id [, ...]]`` produces a ``SetResourceGroup`` whose
+thread IDs are the numbers as written (``LongValue`` or ``HexValue``);
+``getThreadIds()`` is null without ``FOR``.
+``DROP RESOURCE GROUP name [FORCE]`` is a ``Drop`` with the object type ``RESOURCE_GROUP``
+and ``isForce()``.
+
+.. code-block:: java
+
+    CreateResourceGroup group = (CreateResourceGroup) CCJSqlParserUtil.parse(
+        "CREATE RESOURCE GROUP rg1 TYPE = USER VCPU = 0-3, 5 THREAD_PRIORITY = 10 ENABLE",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    // USER, [0-3, 5], 10, ENABLE
+    String parts = group.getType() + ", " + group.getVcpus() + ", "
+        + group.getThreadPriority() + ", " + group.getState();
+
+The statements are read with the MySQL dialect or without one and follow MySQL's grammar:
+the options come in the order above, and CPU numbers and the priority are plain integers.
+What MySQL checks when it runs the statement, such as the CPU numbers of the machine or the
+priority range of the group type, is not checked. In other dialects ``CREATE`` and ``ALTER
+RESOURCE GROUP`` stay an ``UnsupportedStatement`` and ``DROP RESOURCE GROUP rg`` keeps the
+generic ``Drop`` reading. The validator checks ``createResourceGroup``,
+``alterResourceGroup`` and ``setResourceGroup`` (MySQL); feature analysis reports
+``SET RESOURCE GROUP`` as a session change and the others as schema changes.
+
 MySQL SHOW statements
 =====================
 
@@ -3054,3 +3199,58 @@ and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until n
 table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
 features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
 ``RETURNS_RESULT_SET``.
+
+MySQL EXPLAIN, prepared statements and DO
+=========================================
+
+The MySQL forms of these utility statements extend the existing models. They are read with
+``Dialect.MYSQL`` and ``Dialect.MARIADB`` and, unless noted, without a dialect; other dialects
+are unchanged.
+
+* `EXPLAIN <https://dev.mysql.com/doc/refman/8.4/en/explain.html>`_,
+  ``DESCRIBE`` and ``DESC`` take ``ANALYZE [FORMAT = name]`` or
+  ``[FORMAT = name] [INTO @variable]``, then ``FOR CONNECTION id`` or
+  ``[FOR {SCHEMA | DATABASE} name]`` and a ``SELECT``, ``TABLE``, ``VALUES``, ``INSERT``,
+  ``REPLACE``, ``UPDATE`` or ``DELETE`` statement. They parse to ``ExplainStatement``, whose
+  ``getKeyword()`` keeps the spelling. ``ANALYZE`` and ``FORMAT`` are ``Option`` values like
+  PostgreSQL's options; ``Option.isUseEqual()`` marks MySQL's ``FORMAT = name``, and
+  ``getFormat()`` reads the format as ``ExplainStatement.Format``. A format other than
+  ``TRADITIONAL``, ``JSON`` or ``TREE`` is rejected, as MySQL rejects it while it parses.
+  ``getIntoVariable()``, ``getConnectionId()``, ``getSchemaName()`` and ``isSchemaKeyword()``
+  hold the other clauses, and ``getTargetKind()`` tells a statement, a table and a connection
+  apart. ``EXPLAIN SELECT``, ``EXPLAIN ANALYZE SELECT`` and ``DESCRIBE SELECT`` keep their
+  readings, and ``DESCRIBE TABLE t`` needs the MySQL dialect.
+* ``{DESCRIBE | DESC | EXPLAIN} table {column | 'pattern'}`` keeps ``DescribeStatement`` and
+  ``ExplainStatement``; ``getColumnPattern()`` is the ``Column`` or the ``StringValue``. It
+  needs the MySQL dialect, since ``DESCRIBE x y`` names an object kind in Snowflake.
+* `PREPARE name FROM {'text' | @variable} <https://dev.mysql.com/doc/refman/8.4/en/prepare.html>`_
+  extends ``PrepareStatement``: ``getSource()`` is the ``StringValue`` or ``UserVariable`` and
+  ``getStatement()`` is null. The statement text is not parsed.
+* `EXECUTE name USING @a, @b <https://dev.mysql.com/doc/refman/8.4/en/execute.html>`_ fills
+  ``Execute.getUsingVariables()``.
+* `DROP PREPARE name <https://dev.mysql.com/doc/refman/8.4/en/deallocate-prepare.html>`_ parses
+  to ``DeallocateStatement`` with ``getKeyword()`` ``DROP``.
+* `DO expr [, expr] ... <https://dev.mysql.com/doc/refman/8.4/en/do.html>`_ extends
+  ``DoStatement``: ``getSelectItems()`` holds the expressions, which MySQL reads as a select list,
+  and ``getCode()`` is null. Without a dialect, ``DO`` before a string or ``LANGUAGE`` remains
+  PostgreSQL's code block, which needs ``Dialect.POSTGRESQL``.
+
+.. code-block:: java
+
+    ExplainStatement explain = (ExplainStatement) CCJSqlParserUtil.parse(
+        "EXPLAIN ANALYZE FORMAT = TREE SELECT * FROM t",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    explain.getFormat();                                    // TREE
+    explain.getOption(ExplainStatement.OptionType.ANALYZE); // present
+
+    Execute execute = (Execute) CCJSqlParserUtil.parse("EXECUTE s USING @a, @b");
+    execute.getUsingVariables().size();                     // 2
+
+Table visitors report the tables of the explained statement, of ``EXPLAIN table`` (until now
+none) and of subqueries in MySQL's ``DO``. ``PREPARE ... FROM`` raises
+``UnsupportedOperationException``, like ``EXECUTE`` and PostgreSQL's ``DO``, because the tables
+of the statement text are unknown. Validators report ``explain``, ``prepare``,
+``executeUsing``, ``deallocate`` and ``doStatement``; the MySQL and MariaDB capabilities now
+include ``prepare``, ``executeExecute``, ``executeUsing`` and ``doStatement``. Feature analysis
+reports ``MODIFIES_SESSION`` instead of ``RETURNS_RESULT_SET`` for ``EXPLAIN ... INTO``, and reads
+the expressions of MySQL's ``DO`` instead of reporting ``OPAQUE``.

@@ -32,6 +32,8 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.XaStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -55,11 +57,15 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
@@ -495,6 +501,27 @@ public enum Feature {
     tableMaintenance,
 
     /**
+     * MySQL "FLUSH" statement is allowed
+     *
+     * @see FlushStatement
+     */
+    flush,
+
+    /**
+     * MySQL "KILL" statement is allowed
+     *
+     * @see KillStatement
+     */
+    kill,
+
+    /**
+     * MySQL "HANDLER ... OPEN", "HANDLER ... READ" and "HANDLER ... CLOSE" statements are allowed
+     *
+     * @see HandlerStatement
+     */
+    handler,
+
+    /**
      * PostgreSQL "VACUUM" statement is allowed
      *
      * @see VacuumStatement
@@ -539,6 +566,11 @@ public enum Feature {
      */
     executeStatementImmediate,
 
+    /**
+     * MySQL "EXECUTE name USING @variable, ..." of a prepared statement is allowed
+     *
+     * @see Execute#getUsingVariables()
+     */
     executeUsing,
     /**
      * "PREPARE" and "DEALLOCATE" of a prepared statement are allowed
@@ -797,6 +829,24 @@ public enum Feature {
      */
     backupLock,
     /**
+     * MySQL "CREATE RESOURCE GROUP" statement is allowed
+     *
+     * @see CreateResourceGroup
+     */
+    createResourceGroup,
+    /**
+     * MySQL "ALTER RESOURCE GROUP" statement is allowed
+     *
+     * @see AlterResourceGroup
+     */
+    alterResourceGroup,
+    /**
+     * MySQL "SET RESOURCE GROUP" statement is allowed
+     *
+     * @see SetResourceGroup
+     */
+    setResourceGroup,
+    /**
      * SQL "COMMENT ON" statement is allowed
      *
      * @see Comment
@@ -946,6 +996,12 @@ public enum Feature {
      */
     alterTrigger,
     /**
+     * PostgreSQL "ALTER RULE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterRule
+     */
+    alterRule,
+    /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *
      * @see Block
@@ -982,6 +1038,12 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.notify.ListenStatement
      */
     listen,
+    /**
+     * MySQL "RESET PERSIST" statement is allowed
+     *
+     * @see ResetStatement#isPersist()
+     */
+    resetPersist,
     /**
      * @see Pivot
      */

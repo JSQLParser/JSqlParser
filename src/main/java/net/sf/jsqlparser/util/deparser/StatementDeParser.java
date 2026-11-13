@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -126,6 +127,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -135,6 +139,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -221,7 +228,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(DoStatement statement, S context) {
-        return statement.appendTo(builder, code -> code.accept(expressionDeParser, context));
+        return statement.appendTo(builder, code -> code.accept(expressionDeParser, context),
+                item -> item.accept(selectDeParser, context));
     }
 
     @Override
@@ -400,6 +408,22 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(FlushStatement flush, S context) {
+        return flush.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(KillStatement kill, S context) {
+        return kill.appendTo(builder, id -> id.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(HandlerStatement handler, S context) {
+        return handler.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
     public <S> StringBuilder visit(VacuumStatement vacuum, S context) {
         return vacuum.appendTo(builder);
     }
@@ -504,6 +528,21 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(CreateResourceGroup statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterResourceGroup statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetResourceGroup statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(Commit commit, S context) {
         return commit.appendTo(builder);
     }
@@ -572,28 +611,14 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(DescribeStatement describe, S context) {
-        builder.append(describe.getDescribeType());
-        builder.append(" ");
-        if (describe.getSelect() != null) {
-            describe.getSelect().accept(this, context);
-        } else {
-            builder.append(describe.getTable());
-        }
-        return builder;
+        return describe.appendTo(builder, select -> select.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
     public <S> StringBuilder visit(ExplainStatement explainStatement, S context) {
-        builder.append(explainStatement.getKeyword());
-        if (explainStatement.getTable() != null) {
-            builder.append(" ").append(explainStatement.getTable());
-        } else {
-            explainStatement.appendOptionsTo(builder).append(" ");
-        }
-        if (explainStatement.getStatement() != null) {
-            explainStatement.getStatement().accept(this, context);
-        }
-        return builder;
+        return explainStatement.appendTo(builder, statement -> statement.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
@@ -768,7 +793,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.appendTo(builder, statement -> statement.accept(this, context));
+        prepareStatement.appendTo(builder, statement -> statement.accept(this, context),
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
     }
 
@@ -1120,6 +1146,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterTrigger statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterRule statement, S context) {
         return statement.appendTo(builder);
     }
 }

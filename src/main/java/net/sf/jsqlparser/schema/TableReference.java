@@ -11,7 +11,10 @@ package net.sf.jsqlparser.schema;
 
 import java.io.Serializable;
 
-/** A relation target with optional PostgreSQL inheritance scope, shared by LOCK and TRUNCATE. */
+/**
+ * A relation target with optional PostgreSQL inheritance scope, shared by LOCK, TRUNCATE and the
+ * targets of UPDATE, DELETE and MERGE.
+ */
 public class TableReference implements Serializable {
     private Table table;
     private boolean only;
@@ -82,6 +85,27 @@ public class TableReference implements Serializable {
             builder.append(" *");
         }
         return builder;
+    }
+
+    /**
+     * Appends the target of UPDATE, DELETE or MERGE (PostgreSQL's relation_expr_opt_alias): the
+     * inheritance scope surrounds the table name and the alias of the table follows it. A target
+     * without a scope is the table as it renders itself, with its alias and hints.
+     */
+    public StringBuilder appendWithAliasTo(StringBuilder builder) {
+        if (!only && !includeDescendants || table == null) {
+            return builder.append(table);
+        }
+        appendTo(builder);
+        if (table.getAlias() != null) {
+            builder.append(table.getAlias());
+        }
+        return builder;
+    }
+
+    /** Whether ONLY or * describes the inheritance scope of the table. */
+    public boolean hasInheritanceScope() {
+        return only || includeDescendants;
     }
 
     @Override

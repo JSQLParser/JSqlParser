@@ -117,6 +117,7 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNormalizedExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
@@ -320,6 +321,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(IsUnknownExpression isUnknownExpression, S context) {
         isUnknownExpression.getLeftExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(IsNormalizedExpression isNormalizedExpression, S context) {
+        isNormalizedExpression.getLeftExpression().accept(this, context);
         return null;
     }
 

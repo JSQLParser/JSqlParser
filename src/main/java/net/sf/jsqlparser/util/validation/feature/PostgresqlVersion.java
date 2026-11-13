@@ -30,7 +30,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.doStatement,
                     Feature.exprLike,
                     Feature.exprSimilarTo, // https://www.postgresql.org/docs/current/sql-select.html
-                    Feature.select,
+                    Feature.select, // https://www.postgresql.org/docs/current/sql-selectinto.html
+                    Feature.selectInto,
                     Feature.tableStatement,
                     Feature.selectGroupBy, Feature.function, Feature.tableFunction,
                     Feature.lateralSubSelect,
@@ -164,8 +165,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-alterprocedure.html
                     // https://www.postgresql.org/docs/current/sql-alterroutine.html
                     // https://www.postgresql.org/docs/current/sql-altertrigger.html
+                    // https://www.postgresql.org/docs/current/sql-alterrule.html
                     Feature.alterFunction, Feature.alterProcedure, Feature.alterRoutine,
-                    Feature.alterTrigger,
+                    Feature.alterTrigger, Feature.alterRule,
 
                     // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
                     Feature.refreshMaterializedView,

@@ -35,7 +35,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, CAST, OPERATOR, TRANSFORM, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, CAST, OPERATOR, TRANSFORM, RESOURCE_GROUP, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -432,7 +432,10 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
         return this;
     }
 
-    /** PostgreSQL DROP DATABASE ... WITH (FORCE), or Oracle DROP SYNONYM ... FORCE. */
+    /**
+     * PostgreSQL DROP DATABASE ... WITH (FORCE), or Oracle DROP SYNONYM ... FORCE and MySQL DROP
+     * RESOURCE GROUP ... FORCE.
+     */
     public boolean isForce() {
         return force;
     }
@@ -634,7 +637,8 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
             builder.append(" USING ").append(accessMethod);
         }
         if (force) {
-            builder.append(objectType == ObjectType.SYNONYM ? " FORCE" : " WITH (FORCE)");
+            builder.append(objectType == ObjectType.SYNONYM
+                    || objectType == ObjectType.RESOURCE_GROUP ? " FORCE" : " WITH (FORCE)");
         }
         if (engine != null) {
             builder.append(engineUseEquals ? " ENGINE = " : " ENGINE ").append(engine);

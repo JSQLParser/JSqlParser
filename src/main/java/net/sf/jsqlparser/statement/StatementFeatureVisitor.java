@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -98,6 +99,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -111,6 +115,9 @@ import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
@@ -785,6 +792,40 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        // a server operation like ALTER SYSTEM FLUSH; WITH READ LOCK and FOR EXPORT also lock
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        if (flush.getTableLock() != null) {
+            analysis.certain(StmtFeature.MODIFIES_TRANSACTION);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        // ends another session or its statement, like ALTER SYSTEM KILL SESSION
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        if (handler.getAction() != HandlerStatement.Action.READ) {
+            // OPEN and CLOSE change the handlers of the session
+            analysis.claimTopLevel();
+            analysis.certain(StmtFeature.MODIFIES_SESSION);
+            return null;
+        }
+        if (analysis.claimTopLevel()) {
+            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+        }
+        analysis.certain(StmtFeature.READS_DATA);
+        return super.visit(handler, context);
+    }
+
+    @Override
     public <S> Void visit(VacuumStatement vacuum, S context) {
         // reclaims storage and, with ANALYZE, rewrites statistics; FULL rewrites the tables
         analysis.claimTopLevel();
@@ -826,7 +867,12 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(DoStatement statement, S context) {
         analysis.claimTopLevel();
-        analysis.opaque("DO");
+        if (statement.getSelectItems() == null) {
+            analysis.opaque("DO");
+        } else {
+            // MySQL evaluates the expressions and discards their values
+            statement.visitExpressions(expression -> expression.accept(analysis.expressions, null));
+        }
         return null;
     }
 
@@ -850,7 +896,10 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(ExplainStatement explainStatement, S context) {
         if (analysis.claimTopLevel()) {
-            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+            // MySQL's EXPLAIN ... INTO @variable stores the plan instead of returning it
+            analysis.certain(explainStatement.getIntoVariable() != null
+                    ? StmtFeature.MODIFIES_SESSION
+                    : StmtFeature.RETURNS_RESULT_SET);
         }
         // EXPLAIN ANALYZE executes the statement. The option set is dialect-specific, so the
         // side effects of the explained statement stay in the possible set.
@@ -926,6 +975,21 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(XaStatement statement, S context) {
         return statement.getAction() == XaStatement.Action.RECOVER ? metadataOnly()
                 : transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
+        return sessionOnly();
     }
 
     @Override
@@ -1101,9 +1165,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
             // SELECT .. INTO <table> materialises rows instead of returning them, so the
             // RETURNS_RESULT_SET claimed by the statement visit has to be withdrawn
-            boolean into = plainSelect.getIntoTables() != null
-                    && !plainSelect.getIntoTables().isEmpty()
-                    || plainSelect.getIntoTempTable() != null;
+            boolean into = plainSelect.getIntoClause() != null
+                    && !plainSelect.getIntoClause().getTables().isEmpty();
             if (into) {
                 analysis.certain(StmtFeature.MODIFIES_DATA, StmtFeature.MODIFIES_SCHEMA);
                 analysis.certain.remove(StmtFeature.RETURNS_RESULT_SET);
@@ -1489,4 +1552,9 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         return schemaOnly();
     }
 
+
+    @Override
+    public <S> Void visit(AlterRule statement, S context) {
+        return schemaOnly();
+    }
 }

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -133,6 +134,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -142,6 +146,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -363,6 +370,9 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(DoStatement statement, S context) {
         validateFeature(Feature.doStatement);
+        if (statement.getSelectItems() != null) {
+            statement.visitExpressions(this::validateOptionalExpression);
+        }
         return null;
     }
 
@@ -456,6 +466,24 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(XaStatement statement, S context) {
         validateFeature(Feature.xa);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        validateFeature(Feature.createResourceGroup);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        validateFeature(Feature.alterResourceGroup);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
+        validateFeature(Feature.setResourceGroup);
         return null;
     }
 
@@ -717,6 +745,35 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(FlushStatement flush, S context) {
+        validateFeature(Feature.flush);
+        for (Table table : flush.getTables()) {
+            validateName(NamedObject.table, table.getFullyQualifiedName());
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(KillStatement kill, S context) {
+        validateFeature(Feature.kill);
+        validateOptionalExpression(kill.getProcesslistId());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HandlerStatement handler, S context) {
+        validateFeature(Feature.handler);
+        if (handler.getAction() == HandlerStatement.Action.OPEN) {
+            Table table = handler.getTable();
+            validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
+                    ValidationUtil.getAlias(table.getAlias()));
+        }
+        validateOptionalExpression(handler.getKeyValues());
+        validateOptionalExpression(handler.getWhere());
+        return null;
+    }
+
+    @Override
     public <S> Void visit(VacuumStatement vacuum, S context) {
         getValidator(VacuumValidator.class).validate(vacuum);
         return null;
@@ -824,6 +881,7 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(PrepareStatement prepareStatement, S context) {
         validateFeature(Feature.prepare);
+        validateOptionalExpression(prepareStatement.getSource());
         return null;
     }
 
@@ -1583,4 +1641,11 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(AlterRule statement, S context) {
+        validateFeature(Feature.alterRule);
+        validateOptionalFromItem(statement.getTable());
+        return null;
+    }
 }

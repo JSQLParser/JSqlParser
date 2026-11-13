@@ -151,13 +151,17 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |
+| **MySQL resource groups** | `CREATE`/`ALTER`/`DROP RESOURCE GROUP` · `SET RESOURCE GROUP` |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
+| **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
 | **Routine changes** | `ALTER FUNCTION` · `ALTER PROCEDURE` · `ALTER ROUTINE` · PostgreSQL `ALTER TRIGGER` |
 | **MySQL metadata statements** | `SHOW [FULL] COLUMNS`/`FIELDS` · `SHOW TABLE STATUS` · `SHOW CREATE TABLE`/`VIEW`/`PROCEDURE`/`FUNCTION`/`TRIGGER`/`EVENT`/`DATABASE`/`USER` |
+| **MySQL utility statements** | `EXPLAIN`/`DESCRIBE [ANALYZE] FORMAT = …` · `EXPLAIN FOR CONNECTION` · `DESCRIBE t col` · `PREPARE … FROM` · `EXECUTE … USING` · `DROP PREPARE` · `DO` |
 | **PostgreSQL administration** | `CREATE`/`ALTER EVENT TRIGGER` · `REINDEX` · `SECURITY LABEL` |
+| **PostgreSQL types and rules** | `CREATE TYPE` (shell, composite, enum, range and base types) · `ALTER TYPE` · `CREATE RULE` · `ALTER RULE` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |
 | **Salesforce SOQL** | `INCLUDES` · `EXCLUDES` |
 

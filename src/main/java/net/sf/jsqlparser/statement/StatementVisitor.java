@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -91,6 +92,9 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.admin.FlushStatement;
+import net.sf.jsqlparser.statement.admin.KillStatement;
+import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
@@ -100,6 +104,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
@@ -194,6 +201,30 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(XaStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateResourceGroup statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterResourceGroup statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(SetResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(SetResourceGroup statement) {
         visit(statement, null);
     }
 
@@ -407,6 +438,30 @@ public interface StatementVisitor<T> {
 
     default void visit(TableMaintenanceStatement statement) {
         this.visit(statement, null);
+    }
+
+    default <S> T visit(FlushStatement flush, S context) {
+        return null;
+    }
+
+    default void visit(FlushStatement flush) {
+        this.visit(flush, null);
+    }
+
+    default <S> T visit(KillStatement kill, S context) {
+        return null;
+    }
+
+    default void visit(KillStatement kill) {
+        this.visit(kill, null);
+    }
+
+    default <S> T visit(HandlerStatement handler, S context) {
+        return null;
+    }
+
+    default void visit(HandlerStatement handler) {
+        this.visit(handler, null);
     }
 
     default <S> T visit(VacuumStatement vacuum, S context) {
@@ -1117,6 +1172,14 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterTrigger statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterRule statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterRule statement) {
         visit(statement, null);
     }
 }

@@ -12,9 +12,14 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
- * {@code DEALLOCATE [PREPARE] name}, which drops a statement prepared by {@link PrepareStatement}.
+ * {@code DEALLOCATE [PREPARE] name}, or MySQL's {@code DROP PREPARE name}, which drops a statement
+ * prepared by {@link PrepareStatement}.
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/deallocate-prepare.html">MySQL DEALLOCATE
+ *      PREPARE</a>
  */
 public class DeallocateStatement extends ASTNodeAccessImpl implements Statement {
+    private Keyword keyword = Keyword.DEALLOCATE;
     private String name;
     private boolean usingPrepareKeyword;
 
@@ -37,8 +42,23 @@ public class DeallocateStatement extends ASTNodeAccessImpl implements Statement 
         return this;
     }
 
+    /** The leading keyword, {@code DEALLOCATE} unless MySQL's {@code DROP} was written. */
+    public Keyword getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(Keyword keyword) {
+        this.keyword = keyword == null ? Keyword.DEALLOCATE : keyword;
+    }
+
+    public DeallocateStatement withKeyword(Keyword keyword) {
+        setKeyword(keyword);
+        return this;
+    }
+
+    /** Whether {@code PREPARE} follows the keyword; {@code DROP} always takes it. */
     public boolean isUsingPrepareKeyword() {
-        return usingPrepareKeyword;
+        return usingPrepareKeyword || keyword == Keyword.DROP;
     }
 
     public void setUsingPrepareKeyword(boolean usingPrepareKeyword) {
@@ -51,8 +71,8 @@ public class DeallocateStatement extends ASTNodeAccessImpl implements Statement 
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("DEALLOCATE ");
-        if (usingPrepareKeyword) {
+        builder.append(keyword).append(' ');
+        if (isUsingPrepareKeyword()) {
             builder.append("PREPARE ");
         }
         builder.append(name);
@@ -67,5 +87,10 @@ public class DeallocateStatement extends ASTNodeAccessImpl implements Statement 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
+    }
+
+    /** The keyword that starts the statement. */
+    public enum Keyword {
+        DEALLOCATE, DROP
     }
 }

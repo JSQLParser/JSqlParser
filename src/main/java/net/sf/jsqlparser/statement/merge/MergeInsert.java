@@ -12,11 +12,14 @@ package net.sf.jsqlparser.statement.merge;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.insert.Insert;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MergeInsert implements Serializable, MergeOperation {
 
@@ -25,6 +28,7 @@ public class MergeInsert implements Serializable, MergeOperation {
     private ExpressionList<Expression> values;
     private Expression whereCondition;
     private MergeSide side;
+    private Insert.OverridingMode overridingMode = Insert.OverridingMode.NONE;
 
     public MergeSide getSide() {
         return side;
@@ -66,6 +70,52 @@ public class MergeInsert implements Serializable, MergeOperation {
         this.whereCondition = whereCondition;
     }
 
+    /** {@code WHEN NOT MATCHED}, or {@code WHEN NOT MATCHED BY TARGET} with that side. */
+    public MergeWhen getWhen() {
+        return MergeWhen.ofSourceRow(side);
+    }
+
+    /** The mode of {@code OVERRIDING {SYSTEM | USER} VALUE}, {@code NONE} without the clause. */
+    public Insert.OverridingMode getOverridingMode() {
+        return overridingMode;
+    }
+
+    public void setOverridingMode(Insert.OverridingMode overridingMode) {
+        this.overridingMode = Objects.requireNonNull(overridingMode);
+    }
+
+    public MergeInsert withOverridingMode(Insert.OverridingMode overridingMode) {
+        this.setOverridingMode(overridingMode);
+        return this;
+    }
+
+    /** Whether the clause is {@code INSERT DEFAULT VALUES}: an insert without a values list. */
+    public boolean isDefaultValues() {
+        return values == null;
+    }
+
+    /**
+     * Appends {@code INSERT DEFAULT VALUES} or {@code INSERT [(columns)] [OVERRIDING ... VALUE]
+     * VALUES (...)}, letting the renderer write the column and value lists.
+     */
+    public StringBuilder appendInsertTo(StringBuilder builder,
+            Consumer<Expression> expressionRenderer) {
+        builder.append("INSERT ");
+        if (isDefaultValues()) {
+            return builder.append("DEFAULT VALUES");
+        }
+        if (columns != null) {
+            expressionRenderer.accept(columns);
+        }
+        if (overridingMode != Insert.OverridingMode.NONE) {
+            builder.append(columns != null ? " " : "").append("OVERRIDING ")
+                    .append(overridingMode).append(" VALUE");
+        }
+        builder.append(" VALUES ");
+        expressionRenderer.accept(values);
+        return builder;
+    }
+
     @Override
     public <S, T> T accept(MergeOperationVisitor<T> mergeOperationVisitor, S context) {
         return mergeOperationVisitor.visit(this, context);
@@ -74,18 +124,8 @@ public class MergeInsert implements Serializable, MergeOperation {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(" WHEN NOT MATCHED");
-        if (side == MergeSide.TARGET) {
-            b.append(" BY TARGET");
-        }
-        if (andPredicate != null) {
-            b.append(" AND ").append(andPredicate);
-        }
-        b.append(" THEN INSERT ");
-        if (columns != null) {
-            b.append(columns);
-        }
-        b.append(" VALUES ").append(values.toString());
+        getWhen().appendTo(b, andPredicate, b::append);
+        appendInsertTo(b, b::append);
         if (whereCondition != null) {
             b.append(" WHERE ").append(whereCondition);
         }

@@ -115,8 +115,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
                             || modifier == MySqlSelectModifier.SQL_BIG_RESULT
                             || modifier == MySqlSelectModifier.SQL_BUFFER_RESULT),
                     Feature.mysqlSelectModifiers);
-            validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
-            validateOptionalFeature(c, plainSelect.getIntoTempTable(), Feature.selectInto);
+            validateOptionalFeature(c, plainSelect.getIntoClause(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getMySqlSelectIntoClause(),
                     Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);

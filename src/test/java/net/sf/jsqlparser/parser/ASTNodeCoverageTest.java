@@ -136,12 +136,19 @@ public class ASTNodeCoverageTest {
                 "PREPARE TRANSACTION 'x'", "COMMIT PREPARED 'x'", "ROLLBACK PREPARED 'x'",
                 "ROLLBACK WORK FORCE '1.2.3'", "XA START X'0a', B'01', 1 JOIN",
                 "XA END 'x' SUSPEND FOR MIGRATE", "XA RECOVER CONVERT XID",
+                "CREATE RESOURCE GROUP rg TYPE = USER VCPU = 0-3, 5 THREAD_PRIORITY = 10 ENABLE",
+                "ALTER RESOURCE GROUP rg VCPU = 0 DISABLE FORCE",
+                "SET RESOURCE GROUP rg FOR 14, 0x1F", "DROP RESOURCE GROUP rg FORCE",
                 "CREATE SCHEMA s CREATE TABLE t (a INT) CREATE VIEW v AS SELECT 1",
                 "CREATE TABLE t AS EXECUTE p",
                 "ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO r",
                 "IF a = 1 SELECT 1;",
                 "BEGIN SELECT 1; END;",
                 "DISCARD TEMPORARY", "LISTEN \"Ch 1\"", "UNLISTEN *",
+                "ALTER RULE \"Rule 1\" ON s.t RENAME TO r2",
+                "CREATE TYPE s.box3 (INPUT = s.box3_in, PASSEDBYVALUE, INTERNALLENGTH = - 1, "
+                        + "ELEMENT = setof float8[], LIKE = t.a%TYPE, DEFAULT = E'x', x = extended)",
+                "ALTER TYPE box3 SET (SEND = NONE, STORAGE = plain, x = +1.5, y = varchar(3))",
                 "SHOW TRANSACTION ISOLATION LEVEL", "RESET SESSION AUTHORIZATION",
                 "COPY s.t (a) TO STDOUT WITH NULL AS 'x' CSV FORCE QUOTE a, \"B\"",
                 "COPY BINARY t FROM STDIN FREEZE ENCODING 'UTF8'",
@@ -155,6 +162,13 @@ public class ASTNodeCoverageTest {
                 "CLUSTER VERBOSE i ON t",
                 "ANALYSE (\"verbose\", PARALLEL -1) t",
                 "CHECKPOINT",
+                "FLUSH LOCAL TABLES db1.t, s WITH READ LOCK",
+                "FLUSH ERROR LOGS, RELAY LOGS FOR CHANNEL 'c1', STATUS",
+                "KILL QUERY 1 + 2",
+                "HANDLER db1.t OPEN AS h",
+                "HANDLER h READ i1 >= (1, 2) WHERE a > 0 LIMIT 3 OFFSET 1",
+                "HANDLER h CLOSE",
+                "RESET PERSIST IF EXISTS max_connections",
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
                 "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
@@ -168,7 +182,12 @@ public class ASTNodeCoverageTest {
                 "REPLACE INTO t () VALUES ()",
                 "REPLACE INTO t (a, b) VALUES ROW(1, 2)",
                 "DELETE FROM t1, t2 USING t1 INNER JOIN t2 INNER JOIN t3 WHERE t1.id = t2.id",
-                "DELETE FROM t USING s JOIN u ON s.id = u.id, v WHERE t.id = s.id"}) {
+                "DELETE FROM t USING s JOIN u ON s.id = u.id, v WHERE t.id = s.id",
+                "EXPLAIN ANALYZE FORMAT = TREE FOR SCHEMA s SELECT a FROM t",
+                "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
+                "DESC FOR CONNECTION 0x1F",
+                "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         for (String sql : new String[] {"SELECT v:select FROM t", "SELECT v:select::INT FROM t",
@@ -177,6 +196,9 @@ public class ASTNodeCoverageTest {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql,
                     parser -> parser.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE)));
         }
+        String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";
+        new Walk(describe, describe, problems).check(CCJSqlParserUtil.parseStatements(describe,
+                parser -> parser.withDialect(AbstractJSqlParser.Dialect.MYSQL)));
         String block = "BEGIN x := 1; NULL; foo(1); END;";
         new Walk(block, block, problems).check(CCJSqlParserUtil.parseStatements(block,
                 parser -> parser.withDialect(AbstractJSqlParser.Dialect.ORACLE)));

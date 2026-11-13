@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -21,11 +22,19 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.List;
 
+/**
+ * A call of a stored procedure or a prepared statement: {@code EXEC}, {@code EXECUTE} or
+ * {@code CALL} with optional arguments, or MySQL's
+ * {@code EXECUTE name USING @variable [, @variable] ...}.
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.4/en/execute.html">MySQL EXECUTE</a>
+ */
 public class Execute extends ASTNodeAccessImpl implements Statement {
 
     private ExecType execType = ExecType.EXECUTE;
     private String name;
     private ExpressionList exprList;
+    private ExpressionList<UserVariable> usingVariables;
 
     public String getName() {
         return name;
@@ -49,6 +58,20 @@ public class Execute extends ASTNodeAccessImpl implements Statement {
 
     public void setExprList(ExpressionList exprList) {
         this.exprList = exprList;
+    }
+
+    /** The user variables of MySQL's {@code USING} clause, or null without one. */
+    public ExpressionList<UserVariable> getUsingVariables() {
+        return usingVariables;
+    }
+
+    public void setUsingVariables(ExpressionList<UserVariable> usingVariables) {
+        this.usingVariables = usingVariables;
+    }
+
+    public Execute withUsingVariables(ExpressionList<UserVariable> usingVariables) {
+        this.setUsingVariables(usingVariables);
+        return this;
     }
 
     public ExecType getExecType() {
@@ -94,6 +117,15 @@ public class Execute extends ASTNodeAccessImpl implements Statement {
             }
             if (brackets) {
                 builder.append(')');
+            }
+        }
+        if (usingVariables != null && !usingVariables.isEmpty()) {
+            builder.append(" USING ");
+            for (int i = 0; i < usingVariables.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                expressionPrinter.accept(usingVariables.get(i));
             }
         }
         return builder;

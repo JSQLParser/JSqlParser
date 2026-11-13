@@ -10,7 +10,8 @@
 package net.sf.jsqlparser.statement.merge;
 
 /**
- * Marker interface to cover {@link MergeDelete}, {@link MergeUpdate} and {@link MergeInsert}
+ * Marker interface to cover {@link MergeDelete}, {@link MergeUpdate}, {@link MergeInsert} and
+ * {@link MergeDoNothing}
  */
 public interface MergeOperation {
     <S, T> T accept(MergeOperationVisitor<T> mergeOperationVisitor, S context);
