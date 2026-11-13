@@ -168,10 +168,14 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
     * - **MySQL resource groups**
       - ``CREATE``/``ALTER``/``DROP RESOURCE GROUP`` · ``SET RESOURCE GROUP``
+    * - **MySQL servers, plugins and components**
+      - ``CREATE SERVER`` · ``ALTER SERVER`` with ``OPTIONS (… PORT 3306)`` · ``INSTALL``/``UNINSTALL PLUGIN`` · ``INSTALL``/``UNINSTALL COMPONENT``
     * - **PostgreSQL session statements**
       - ``DISCARD`` · ``LISTEN`` · ``UNLISTEN`` · ``SHOW``/``RESET TIME ZONE``/``TRANSACTION ISOLATION LEVEL``/``SESSION AUTHORIZATION`` · ``COPY`` options from before 9.0
     * - **MySQL server administration**
       - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
+    * - **PostgreSQL cursors**
+      - ``DECLARE … CURSOR`` · ``FETCH`` · ``MOVE`` · ``CLOSE``
     * - **MySQL account management**
       - ``CREATE``/``ALTER``/``RENAME USER`` · ``CREATE ROLE`` · ``SET ROLE`` · ``SET DEFAULT ROLE`` · ``SET PASSWORD``
     * - **Tablespaces**

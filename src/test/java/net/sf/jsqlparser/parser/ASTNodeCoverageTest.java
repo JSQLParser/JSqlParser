@@ -142,6 +142,11 @@ public class ASTNodeCoverageTest {
                 "CREATE SPATIAL REFERENCE SYSTEM 4120 NAME 'Greek' ORGANIZATION 'EPSG' IDENTIFIED BY 0x1018 DEFINITION 'x' DESCRIPTION 'd'",
                 "DROP SPATIAL REFERENCE SYSTEM IF EXISTS 4120",
                 "ALTER INSTANCE RELOAD TLS FOR CHANNEL mysql_admin NO ROLLBACK ON ERROR",
+                "INSTALL PLUGIN p SONAME 'p.so'", "UNINSTALL PLUGIN p",
+                "INSTALL COMPONENT 'file://c', 'file://d' SET GLOBAL c.v = 1 + 2, w = ON",
+                "UNINSTALL COMPONENT 'file://c'",
+                "CREATE SERVER 's' FOREIGN DATA WRAPPER mysql OPTIONS (HOST 'h', PORT 3306)",
+                "ALTER SERVER s OPTIONS (PORT 0x10, SOCKET '/tmp/x')",
                 "CREATE SCHEMA s CREATE TABLE t (a INT) CREATE VIEW v AS SELECT 1",
                 "CREATE TABLE t AS EXECUTE p",
                 "ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO r",
@@ -190,7 +195,12 @@ public class ASTNodeCoverageTest {
                 "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
-                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "DECLARE c BINARY NO SCROLL CURSOR WITH HOLD FOR WITH x AS (SELECT a FROM t) "
+                        + "SELECT a FROM x",
+                "FETCH FORWARD -2 FROM c",
+                "MOVE ALL IN c",
+                "CLOSE ALL"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";

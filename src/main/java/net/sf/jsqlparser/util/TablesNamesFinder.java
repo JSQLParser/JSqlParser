@@ -94,6 +94,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
@@ -182,6 +183,9 @@ import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -2347,6 +2351,12 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return null;
     }
@@ -3213,6 +3223,25 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        if (declareCursor.getQuery() != null) {
+            visit(declareCursor.getQuery(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        // FETCH and MOVE name a cursor, not a table
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
         return null;
     }
 

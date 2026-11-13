@@ -162,7 +162,9 @@ public enum MariaDbVersion implements Version {
                     Feature.commit, // https://mariadb.com/kb/en/rollback/
                     Feature.rollback, // https://mariadb.com/kb/en/savepoint/
                     Feature.savepoint, // https://mariadb.com/kb/en/xa-transactions/
-                    Feature.xa, // https://mariadb.com/kb/en/optimizer-hints/
+                    Feature.xa, // https://mariadb.com/kb/en/create-server/
+                    Feature.createServer, Feature.alterServer, // https://mariadb.com/kb/en/install-plugin/
+                    Feature.installPlugin, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),
