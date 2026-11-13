@@ -93,6 +93,10 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/lock-instance-for-backup.html
                     Feature.backupLock,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/resource-groups.html
+                    Feature.createResourceGroup, Feature.alterResourceGroup,
+                    Feature.setResourceGroup,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
                     Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
                     Feature.setRole,

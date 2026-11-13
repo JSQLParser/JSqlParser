@@ -114,6 +114,9 @@ import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
@@ -971,6 +974,21 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(XaStatement statement, S context) {
         return statement.getAction() == XaStatement.Action.RECOVER ? metadataOnly()
                 : transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
+        return sessionOnly();
     }
 
     @Override

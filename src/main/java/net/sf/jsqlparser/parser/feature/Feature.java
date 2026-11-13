@@ -63,6 +63,9 @@ import net.sf.jsqlparser.statement.lock.UnlockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
@@ -825,6 +828,24 @@ public enum Feature {
      * @see BackupLockStatement
      */
     backupLock,
+    /**
+     * MySQL "CREATE RESOURCE GROUP" statement is allowed
+     *
+     * @see CreateResourceGroup
+     */
+    createResourceGroup,
+    /**
+     * MySQL "ALTER RESOURCE GROUP" statement is allowed
+     *
+     * @see AlterResourceGroup
+     */
+    alterResourceGroup,
+    /**
+     * MySQL "SET RESOURCE GROUP" statement is allowed
+     *
+     * @see SetResourceGroup
+     */
+    setResourceGroup,
     /**
      * SQL "COMMENT ON" statement is allowed
      *

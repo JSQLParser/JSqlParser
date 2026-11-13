@@ -103,6 +103,9 @@ import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
@@ -197,6 +200,30 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(XaStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateResourceGroup statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterResourceGroup statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(SetResourceGroup statement, S context) {
+        return null;
+    }
+
+    default void visit(SetResourceGroup statement) {
         visit(statement, null);
     }
 

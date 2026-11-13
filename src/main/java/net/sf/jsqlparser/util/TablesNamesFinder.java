@@ -241,6 +241,9 @@ import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
+import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
@@ -2306,6 +2309,21 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(XaStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetResourceGroup statement, S context) {
         return null;
     }
 
