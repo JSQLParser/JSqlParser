@@ -161,6 +161,12 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-unlisten.html
                     Feature.show, Feature.discard, Feature.listen,
 
+                    // https://www.postgresql.org/docs/current/sql-declare.html
+                    // https://www.postgresql.org/docs/current/sql-fetch.html
+                    // https://www.postgresql.org/docs/current/sql-move.html
+                    // https://www.postgresql.org/docs/current/sql-close.html
+                    Feature.declareCursor, Feature.fetchCursor, Feature.closeCursor,
+
                     // https://www.postgresql.org/docs/current/sql-alterfunction.html
                     // https://www.postgresql.org/docs/current/sql-alterprocedure.html
                     // https://www.postgresql.org/docs/current/sql-alterroutine.html

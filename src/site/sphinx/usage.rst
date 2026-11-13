@@ -2772,6 +2772,61 @@ enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
 ``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
 ``RETURNS_RESULT_SET`` for HANDLER READ.
 
+PostgreSQL cursors
+------------------
+
+PostgreSQL's cursor statements parse to the ``net.sf.jsqlparser.statement.cursor`` package:
+
+* `DECLARE name [BINARY] [ASENSITIVE | INSENSITIVE] [[NO] SCROLL] CURSOR [{WITH | WITHOUT} HOLD]
+  FOR query <https://www.postgresql.org/docs/18/sql-declare.html>`_ parses to
+  ``DeclareCursorStatement``. ``getOptions()`` lists the ``CursorOption`` values in their
+  order; as in PostgreSQL's grammar they may come in any order and repeat, and PostgreSQL
+  rejects contradicting ones such as ``SCROLL NO SCROLL`` when it runs the statement.
+  ``getHoldability()`` is ``WITH_HOLD``, ``WITHOUT_HOLD`` or null, and ``getQuery()`` is the
+  ``Select``: a SELECT, ``VALUES``, ``TABLE t`` or a query with ``WITH``.
+* `FETCH <https://www.postgresql.org/docs/18/sql-fetch.html>`_ and
+  `MOVE <https://www.postgresql.org/docs/18/sql-move.html>`_
+  ``[direction] [FROM | IN] cursor`` parse to ``FetchCursorStatement``, whose ``getKind()``
+  is ``FETCH`` or ``MOVE``. The direction is an optional ``FetchDirection`` keyword
+  (``NEXT``, ``PRIOR``, ``FIRST``, ``LAST``, ``ABSOLUTE``, ``RELATIVE``, ``FORWARD``,
+  ``BACKWARD``) with ``getCount()`` or ``isAll()``: ``ABSOLUTE`` and ``RELATIVE`` take a
+  count, ``FORWARD`` and ``BACKWARD`` an optional count or ``ALL``, and a count or ``ALL``
+  can stand alone. A count is a signed 32-bit integer, as in PostgreSQL. ``getFromKeyword()``
+  is ``FROM``, ``IN`` or null.
+* `CLOSE {name | ALL} <https://www.postgresql.org/docs/18/sql-close.html>`_ parses to
+  ``CloseCursorStatement``; ``isAll()`` is true when it has no cursor name.
+
+.. code-block:: java
+
+    FetchCursorStatement fetch = (FetchCursorStatement) CCJSqlParserUtil.parse(
+        "FETCH ABSOLUTE -1 FROM c", parser -> parser.withDialect(Dialect.POSTGRESQL));
+    fetch.getDirection();     // ABSOLUTE
+    fetch.getCount();         // -1
+    fetch.getCursorName();    // c
+
+A cursor name is any name PostgreSQL takes as a column identifier, so its reserved words and
+type or function name keywords such as ``table`` or ``binary`` are rejected. As in PostgreSQL,
+a direction word that ends the statement names the cursor: ``FETCH next`` fetches from a
+cursor named ``next``.
+
+``Dialect.POSTGRESQL`` reads ``FETCH``, ``MOVE``, ``CLOSE`` and ``DECLARE`` followed by a
+name as cursor statements. Without a dialect they parse when they take the PostgreSQL form:
+``DECLARE`` needs a name, the cursor options and ``CURSOR``, and ``FETCH``, ``MOVE`` and
+``CLOSE`` must end at a semicolon or the end of the input, so other products' variants such
+as ``FETCH NEXT FROM c INTO @x`` or ``CLOSE GLOBAL c`` remain unsupported statements. Other
+dialects keep their readings, and ``DECLARE @variable`` still parses to the SQL Server
+``DeclareStatement`` in every dialect that read it before. ``MOVE`` becomes a non-reserved
+keyword; it remains usable as a name, as do ``CLOSE``, ``CURSOR`` and the option and
+direction words. ``SELECT ... FETCH FIRST`` is unchanged.
+
+Table visitors report the tables of the query of ``DECLARE`` and none for the other
+statements, whose cursor name is not a table. Validators report the ``declareCursor``,
+``fetchCursor`` (``FETCH`` and ``MOVE``) and ``closeCursor`` features, which the PostgreSQL
+capabilities enable, and validate the query of ``DECLARE`` like a SELECT. Feature analysis
+reports ``MODIFIES_SESSION`` for all of them, ``READS_DATA`` for a ``DECLARE`` whose query
+reads a table, ``RETURNS_RESULT_SET`` for ``FETCH``, and a possible ``READS_DATA`` for
+``FETCH`` and ``MOVE``, which run the query of the cursor.
+
 MySQL account management statements
 -----------------------------------
 

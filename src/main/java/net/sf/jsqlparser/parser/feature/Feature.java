@@ -53,6 +53,9 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
@@ -1011,6 +1014,24 @@ public enum Feature {
      * @see DeclareStatement
      */
     declare,
+    /**
+     * PostgreSQL "DECLARE name CURSOR FOR query" statement is allowed
+     *
+     * @see DeclareCursorStatement
+     */
+    declareCursor,
+    /**
+     * PostgreSQL "FETCH" and "MOVE" statements of a cursor are allowed
+     *
+     * @see FetchCursorStatement
+     */
+    fetchCursor,
+    /**
+     * PostgreSQL "CLOSE" statement of a cursor is allowed
+     *
+     * @see CloseCursorStatement
+     */
+    closeCursor,
 
     /** SQL Server local table variables in queries and DML targets. */
     tableVariable,

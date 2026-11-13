@@ -187,7 +187,12 @@ public class ASTNodeCoverageTest {
                 "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
-                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "DECLARE c BINARY NO SCROLL CURSOR WITH HOLD FOR WITH x AS (SELECT a FROM t) "
+                        + "SELECT a FROM x",
+                "FETCH FORWARD -2 FROM c",
+                "MOVE ALL IN c",
+                "CLOSE ALL"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
         }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";

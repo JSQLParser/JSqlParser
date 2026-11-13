@@ -119,6 +119,9 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
@@ -806,6 +809,30 @@ public interface StatementVisitor<T> {
 
     default void visit(BackupLockStatement backupLock) {
         visit(backupLock, null);
+    }
+
+    default <S> T visit(DeclareCursorStatement declareCursor, S context) {
+        return null;
+    }
+
+    default void visit(DeclareCursorStatement declareCursor) {
+        visit(declareCursor, null);
+    }
+
+    default <S> T visit(FetchCursorStatement fetchCursor, S context) {
+        return null;
+    }
+
+    default void visit(FetchCursorStatement fetchCursor) {
+        visit(fetchCursor, null);
+    }
+
+    default <S> T visit(CloseCursorStatement closeCursor, S context) {
+        return null;
+    }
+
+    default void visit(CloseCursorStatement closeCursor) {
+        visit(closeCursor, null);
     }
 
     <S> T visit(CreatePolicy createPolicy, S context);
