@@ -16,6 +16,8 @@ CREATE TYPE empty_composite AS ()
 CREATE TYPE localized AS (label text COLLATE pg_catalog."C", tags text[], created timestamp with time zone)
 CREATE TYPE float8range AS RANGE (SUBTYPE = float8, SUBTYPE_DIFF = float8mi)
 CREATE TYPE app.r AS RANGE (SUBTYPE_OPCLASS = pg_catalog.text_ops, SUBTYPE = text, COLLATION = pg_catalog."C", CANONICAL = app.canonical, MULTIRANGE_TYPE_NAME = app.mr)
+CREATE TYPE box3 (INPUT = box3_in, OUTPUT = box3_out, INTERNALLENGTH = 16)
+CREATE TYPE app.box3 (INPUT = app.box3_in, OUTPUT = app.box3_out, ELEMENT = float8, LIKE = double precision, DELIMITER = ';', PASSEDBYVALUE, COLLATABLE = false)
 ALTER TYPE mood ADD VALUE IF NOT EXISTS 'great' AFTER 'happy'
 ALTER TYPE mood ADD VALUE 'bad' BEFORE 'sad'
 ALTER TYPE mood ADD VALUE 'new'
@@ -23,6 +25,7 @@ ALTER TYPE mood RENAME VALUE 'ok' TO 'fine'
 ALTER TYPE mood OWNER TO CURRENT_USER
 ALTER TYPE mood RENAME TO feeling
 ALTER TYPE mood SET SCHEMA app
+ALTER TYPE box3 SET (SEND = box3_send, RECEIVE = NONE, STORAGE = plain)
 ALTER TYPE inventory_item RENAME ATTRIBUTE name TO title CASCADE
 ALTER TYPE inventory_item ADD ATTRIBUTE sku text COLLATE "C" RESTRICT
 ALTER TYPE inventory_item DROP ATTRIBUTE IF EXISTS price CASCADE

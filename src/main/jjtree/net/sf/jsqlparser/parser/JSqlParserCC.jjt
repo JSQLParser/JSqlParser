@@ -2907,6 +2907,67 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             "FREEZE", "FULL", "ILIKE", "INNER", "IS", "ISNULL", "JOIN", "LEFT", "LIKE", "NATURAL",
             "NOTNULL", "OUTER", "OVERLAPS", "RIGHT", "SIMILAR", "TABLESAMPLE", "VERBOSE"));
 
+    /**
+     * PostgreSQL 18's column name keywords that are not a type name by themselves, so its grammar
+     * takes none of them as the single word of a definition value. NONE is one more, but a
+     * definition value takes it as the keyword it is.
+     */
+    private static final Set<String> POSTGRESQL_NON_TYPE_COL_NAME_KEYWORDS = new HashSet<String>(Arrays.asList(
+            "BETWEEN", "COALESCE", "EXISTS", "EXTRACT", "GREATEST", "GROUPING", "INOUT", "JSON_ARRAY",
+            "JSON_ARRAYAGG", "JSON_EXISTS", "JSON_OBJECT", "JSON_OBJECTAGG", "JSON_QUERY",
+            "JSON_SCALAR", "JSON_SERIALIZE", "JSON_TABLE", "JSON_VALUE", "LEAST", "MERGE_ACTION",
+            "NATIONAL", "NORMALIZE", "NULLIF", "OUT", "OVERLAY", "POSITION", "PRECISION", "ROW",
+            "SETOF", "SUBSTRING", "TREAT", "TRIM", "VALUES", "XMLATTRIBUTES", "XMLCONCAT",
+            "XMLELEMENT", "XMLEXISTS", "XMLFOREST", "XMLNAMESPACES", "XMLPARSE", "XMLPI", "XMLROOT",
+            "XMLSERIALIZE", "XMLTABLE"));
+
+    /** Whether the token is an identifier or a keyword: a word PostgreSQL takes as a label. */
+    private static boolean isPostgreSqlWord(Token token) {
+        return token.kind == S_IDENTIFIER || token.kind == S_QUOTED_IDENTIFIER || token.kind == DATA_TYPE
+                || token.kind != EOF && token.kind != S_CHAR_LITERAL && token.image != null
+                        && token.image.matches("[A-Za-z_][A-Za-z0-9_$]*");
+    }
+
+    /** Whether "()" occurs in the tokens from first to last, as in the type modifiers of f(). */
+    private static boolean hasEmptyParentheses(Token first, Token last) {
+        for (Token token = first; token != last && token.next != null; token = token.next) {
+            if (token.kind == OPENING_BRACKET && token.next.kind == CLOSING_BRACKET) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether a definition list follows: a parenthesis, a label and then "=", "," or ")". */
+    private boolean isDefinitionAhead() {
+        String next = getToken(3).image;
+        return getToken(1).kind == OPENING_BRACKET && isPostgreSqlWord(getToken(2))
+                && ("=".equals(next) || ",".equals(next) || ")".equals(next));
+    }
+
+    /** Whether the value of a definition element is one word, which no type rule needs to read. */
+    private boolean isDefinitionWordValueAhead() {
+        String next = getToken(2).image;
+        return isPostgreSqlWord(getToken(1)) && (",".equals(next) || ")".equals(next));
+    }
+
+    /**
+     * The one-word value of a definition element: NONE, a reserved keyword, or a name, which
+     * PostgreSQL reads as a type name.
+     */
+    private DefinitionArgument definitionWordValue(Token token) throws ParseException {
+        String upper = token.image.toUpperCase(Locale.ROOT);
+        if (token.kind == K_NONE) {
+            return DefinitionArgument.none();
+        }
+        if (POSTGRESQL_RESERVED_KEYWORDS.contains(upper)) {
+            return DefinitionArgument.keyword(token.image);
+        }
+        requireDdlSyntax(!POSTGRESQL_NON_TYPE_COL_NAME_KEYWORDS.contains(upper),
+                "PostgreSQL does not take " + token.image + " as a definition value");
+        return DefinitionArgument.type(linkToLastToken(new ColDataType(token.image)));
+    }
+
     /** Rejects an unquoted utility option name or word value that PostgreSQL reserves. */
     private void requireUtilityOptionWord(String word, boolean name) throws ParseException {
         String upper = word.toUpperCase(Locale.ROOT);
@@ -24337,6 +24398,8 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
                 |
+                LOOKAHEAD({ isKeywordAhead("RULE") }) statement = AlterRule()
+                |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
                 // Other routine forms, such as SQL Server definitions, remain unsupported.
@@ -26903,10 +26966,15 @@ CreateType CreateType():
     CompositeTypeDefinition composite = new CompositeTypeDefinition();
     RangeTypeDefinition range = new RangeTypeDefinition();
     RangeTypeDefinition.Option option;
+    List<DefinitionElement> elements;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
     [
+        // A base type. A parenthesis can also start the statement after a shell type.
+        LOOKAHEAD({ isDefinitionAhead() })
+        elements=PostgreSqlDefinition() { result.setDefinition(new BaseTypeDefinition(elements)); }
+        |
         <K_AS>
         (
             LOOKAHEAD({ isKeywordAhead("ENUM") }) TypeDdlKeyword("ENUM") "("
@@ -26924,6 +26992,94 @@ CreateType CreateType():
               ")" { result.setDefinition(composite); }
         )
     ]
+    { return result; }
+}
+
+/**
+ * PostgreSQL's definition, "(" def_elem [, ...] ")": the property list of a base type in CREATE
+ * TYPE name (...) and of ALTER TYPE name SET (...).
+ */
+List<DefinitionElement> PostgreSqlDefinition():
+{ List<DefinitionElement> elements = new ArrayList<DefinitionElement>(); DefinitionElement element; }
+{
+    "(" element=PostgreSqlDefinitionElement() { elements.add(element); }
+    ( "," element=PostgreSqlDefinitionElement() { elements.add(element); } )* ")"
+    { return elements; }
+}
+
+/** PostgreSQL's def_elem, label [ = def_arg ]. Any identifier or keyword is a label. */
+DefinitionElement PostgreSqlDefinitionElement():
+{ Token name; DefinitionArgument argument = null; }
+{
+    // The action keeps the JAVACODE call from being the production's first unit.
+    { } name=PostgreSqlWord()
+    [ "=" argument=PostgreSqlDefinitionArgument() ]
+    { return new DefinitionElement(name.image, argument); }
+}
+
+/** Consumes an identifier or any keyword. As a JAVACODE production it adds no choice conflicts. */
+JAVACODE
+Token PostgreSqlWord() {
+    Token token = getToken(1);
+    if (!isPostgreSqlWord(token)) {
+        throw new ParseException("Encountered unexpected token: \"" + token.image + "\" at line "
+                + token.beginLine + ", column " + token.beginColumn + ". Expected a name.");
+    }
+    return getNextToken();
+}
+
+/**
+ * PostgreSQL's def_arg: a type (which is also how a function or any other name is read), a
+ * reserved keyword, an operator, a number, a string constant or NONE.
+ */
+DefinitionArgument PostgreSqlDefinitionArgument():
+{
+    Token token; Token first = getToken(1); Token sign = null;
+    String name; String operator; StringBuilder schema = new StringBuilder();
+    ColDataType type; StringValue string; Expression number;
+    boolean setOf = false; boolean typeReference = false;
+    DefinitionArgument result;
+}
+{
+    (
+        LOOKAHEAD({ isDefinitionWordValueAhead() }) { } token=PostgreSqlWord()
+        { result = definitionWordValue(token); }
+        |
+        token=<S_CHAR_LITERAL>
+        {
+            string = stringValue(token);
+            requireDdlSyntax(isPostgreSqlStringConstant(string),
+                    "PostgreSQL expects a string constant: " + token.image);
+            result = DefinitionArgument.string(string);
+        }
+        |
+        LOOKAHEAD(2) [ sign="+" | sign="-" ]
+        ( token=<S_LONG> { number = linkToLastToken(new LongValue(token.image)); }
+          | token=<S_DOUBLE> { number = linkToLastToken(new DoubleValue(token.image)); } )
+        {
+            if (sign != null) {
+                number = linked(new SignedExpression(sign.image.charAt(0), number), first);
+            }
+            result = DefinitionArgument.number(number);
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("OPERATOR") && getToken(2).kind == OPENING_BRACKET })
+        ContextualKeyword("OPERATOR") "("
+        ( LOOKAHEAD(2) name=RelObjectName() "." { schema.append(name).append('.'); } )*
+        operator=PostgreSqlOperatorName() ")"
+        { result = DefinitionArgument.operator(schema + operator, true); }
+        |
+        operator=PostgreSqlOperatorName() { result = DefinitionArgument.operator(operator, false); }
+        |
+        [ LOOKAHEAD({ isKeywordAhead("SETOF") }) ContextualKeyword("SETOF") { setOf = true; } ]
+        type=ColDataType()
+        { requireDdlSyntax(!hasEmptyParentheses(first, getToken(0)), "Type modifiers must not be empty"); }
+        [ "%" <K_TYPE> {
+            requireDdlSyntax(type.toString().indexOf('.') > 0, "%TYPE follows the name of a column");
+            typeReference = true;
+        } ]
+        { result = DefinitionArgument.type(type, setOf, typeReference); }
+    )
     { return result; }
 }
 
@@ -26971,7 +27127,7 @@ AlterType.AttributeChange TypeAttributeChange():
 AlterType AlterType():
 {
     AlterType result = new AlterType(); String name; Token label;
-    AlterType.AttributeChange change; CascadeBehavior behavior;
+    AlterType.AttributeChange change; CascadeBehavior behavior; List<DefinitionElement> properties;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
@@ -26993,7 +27149,12 @@ AlterType AlterType():
                 [ behavior=TypeAlterBehavior() { result.setBehavior(behavior); } ]
               | <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.RENAME); }
           )
-        | <K_SET> <K_SCHEMA> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.SET_SCHEMA); }
+        | <K_SET>
+          (
+              <K_SCHEMA> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.SET_SCHEMA); }
+              | properties=PostgreSqlDefinition()
+                { result.setProperties(properties); result.setAction(AlterType.Action.SET_PROPERTIES); }
+          )
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) TypeDdlKeyword("OWNER") <K_TO>
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.OWNER); }
         | change=TypeAttributeChange() { result.setAction(AlterType.Action.ATTRIBUTES); result.getAttributeChanges().add(change); }
@@ -28237,6 +28398,20 @@ CreateRule CreateRule(boolean orReplace):
           ")"
         | action=PostgreSqlRuleAction() { statement.getActions().add(action); }
     )
+    { return statement; }
+}
+
+/** PostgreSQL's ALTER RULE name ON table RENAME TO new_name, its only ALTER RULE form. */
+AlterRule AlterRule():
+{ AlterRule statement = new AlterRule(); Token name; Table table; }
+{
+    ContextualKeyword("RULE") name=PostgreSqlWord() { requirePostgreSqlColId(name.image); statement.setName(name.image); }
+    <K_ON> table=Table()
+    {
+        requireDdlSyntax(table.getNameParts().size() <= 3, "A table name has at most three parts");
+        statement.setTable(table);
+    }
+    <K_RENAME> <K_TO> name=PostgreSqlWord() { requirePostgreSqlColId(name.image); statement.setNewName(name.image); }
     { return statement; }
 }
 

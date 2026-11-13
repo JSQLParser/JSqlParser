@@ -1139,7 +1139,7 @@ See `CREATE PUBLICATION <https://www.postgresql.org/docs/18/sql-createpublicatio
 Inspect type, domain and extension statements
 =============================================
 
-PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` exposes its qualified name and a ``TypeDefinition``: ``EnumTypeDefinition``, ``CompositeTypeDefinition`` or ``RangeTypeDefinition``. A null definition denotes a shell type. Enum labels are ordered ``StringValue`` nodes, composite attributes carry a name, ``ColDataType`` and optional collation, and range options distinguish the subtype from names of support functions, collations and operator classes.
+PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` exposes its qualified name and a ``TypeDefinition``: ``EnumTypeDefinition``, ``CompositeTypeDefinition``, ``RangeTypeDefinition`` or ``BaseTypeDefinition``. A null definition denotes a shell type. Enum labels are ordered ``StringValue`` nodes, composite attributes carry a name, ``ColDataType`` and optional collation, and range options distinguish the subtype from names of support functions, collations and operator classes.
 
 .. code-block:: java
 
@@ -1153,7 +1153,25 @@ PostgreSQL type DDL uses the existing column data-type model. A ``CreateType`` e
     alteration.getPosition();       // AlterType.Position.AFTER
     alteration.getNeighborValue(); // StringValue containing 'ok'
 
-``AlterType`` also models type ownership, renaming, schema moves and ordered composite-attribute changes. Base-type I/O definitions and base-type ``SET (...)`` alterations are not part of this support.
+``AlterType`` also models type ownership, renaming, schema moves and ordered composite-attribute changes.
+
+A base type, ``CREATE TYPE name (INPUT = fn, OUTPUT = fn, ...)``, has a ``BaseTypeDefinition``, and ``ALTER TYPE name SET (property = value, ...)`` has the action ``SET_PROPERTIES`` with ``getProperties()``. Both hold ``DefinitionElement`` items in source order: a name with its spelling and quoting, and a ``DefinitionArgument``, which is ``null`` for an element without a value such as ``PASSEDBYVALUE``. The argument follows PostgreSQL's grammar: its ``Kind`` is ``TYPE`` (a ``ColDataType``, with ``isSetOf()`` and ``isTypeReference()`` for ``SETOF`` and ``%TYPE``), ``KEYWORD`` (a reserved keyword such as ``true``), ``OPERATOR``, ``NUMBER``, ``STRING`` or ``NONE``. PostgreSQL reads a function name or a word such as ``plain`` as a type name, so these are ``TYPE`` arguments whose name is ``getDataType().getDataType()``. The property names and the kind of value each property takes are not checked, because PostgreSQL checks them when it runs the statement.
+
+.. code-block:: java
+
+    CreateType type = (CreateType) CCJSqlParserUtil.parse(
+            "CREATE TYPE box3 (INPUT = box3_in, OUTPUT = box3_out, INTERNALLENGTH = 16, PASSEDBYVALUE)");
+    BaseTypeDefinition definition = (BaseTypeDefinition) type.getDefinition();
+    definition.getElement("INPUT").getArgument().getDataType().getDataType(); // box3_in
+    definition.getElement("INTERNALLENGTH").getArgument().getNumber();        // LongValue 16
+    definition.getElement("PASSEDBYVALUE").getArgument();                     // null
+
+    AlterType alteration = (AlterType) CCJSqlParserUtil.parse(
+            "ALTER TYPE box3 SET (SEND = box3_send, RECEIVE = NONE)");
+    alteration.getAction();                                   // AlterType.Action.SET_PROPERTIES
+    alteration.getProperties().get(1).getArgument().getKind(); // DefinitionArgument.Kind.NONE
+
+See `CREATE TYPE <https://www.postgresql.org/docs/18/sql-createtype.html>`_ and `ALTER TYPE <https://www.postgresql.org/docs/18/sql-altertype.html>`_.
 
 ``CreateDomain`` stores a ``ColDataType``, default expression and ordered ``DomainConstraint`` nodes. Each constraint distinguishes nullability from a check expression and preserves its optional name. ``AlterDomain`` models default/nullability changes, constraint actions, ownership, renaming and schema moves. Its ``isNotValid()`` flag describes the newly added check constraint. Domain expressions participate in statement visitors, expression deparsers and validation.
 
@@ -2474,6 +2492,12 @@ list. Other forms after ``ALTER FUNCTION`` or ``ALTER PROCEDURE``, such as Oracl
 ``[NO] DEPENDS ON EXTENSION`` parse to ``AlterTrigger``; table visitors report its table.
 Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
 ``alterTrigger``; PostgreSQL enables all of them, MySQL and MariaDB the first two.
+
+PostgreSQL's ``ALTER RULE name ON table RENAME TO new_name``
+(`ALTER RULE <https://www.postgresql.org/docs/18/sql-alterrule.html>`_) parses to
+``AlterRule`` with ``getName()``, ``getTable()`` and ``getNewName()``; table visitors report
+its table and validators report ``alterRule``, which PostgreSQL enables. It is the only
+``ALTER RULE`` form, so any other text after ``ALTER RULE`` is a parse error.
 
 ``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
 ``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and

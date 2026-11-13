@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -1171,6 +1172,14 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterTrigger statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterRule statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterRule statement) {
         visit(statement, null);
     }
 }

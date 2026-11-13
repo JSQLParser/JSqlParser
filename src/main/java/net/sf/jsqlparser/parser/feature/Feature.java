@@ -996,6 +996,12 @@ public enum Feature {
      */
     alterTrigger,
     /**
+     * PostgreSQL "ALTER RULE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterRule
+     */
+    alterRule,
+    /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *
      * @see Block

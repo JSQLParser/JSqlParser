@@ -11,6 +11,6 @@ package net.sf.jsqlparser.statement.create.type;
 
 import java.io.Serializable;
 
-/** Definition of a composite, enumeration or range type. */
+/** Definition of a composite, enumeration, range or base type. */
 public interface TypeDefinition extends Serializable {
 }

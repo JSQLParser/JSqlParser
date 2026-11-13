@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.drop.DropUserMapping;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -1145,6 +1146,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterTrigger statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterRule statement, S context) {
         return statement.appendTo(builder);
     }
 }

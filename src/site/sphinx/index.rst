@@ -186,6 +186,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``EXPLAIN``/``DESCRIBE [ANALYZE] FORMAT = …`` · ``EXPLAIN FOR CONNECTION`` · ``DESCRIBE t col`` · ``PREPARE … FROM`` · ``EXECUTE … USING`` · ``DROP PREPARE`` · ``DO``
     * - **PostgreSQL administration**
       - ``CREATE``/``ALTER EVENT TRIGGER`` · ``REINDEX`` · ``SECURITY LABEL``
+    * - **PostgreSQL types and rules**
+      - ``CREATE TYPE`` (shell, composite, enum, range and base types) · ``ALTER TYPE`` · ``CREATE RULE`` · ``ALTER RULE``
     * - **Salesforce SOQL**
       - ``INCLUDES`` · ``EXCLUDES``
 

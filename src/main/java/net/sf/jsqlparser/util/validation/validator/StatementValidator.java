@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -1640,4 +1641,11 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(AlterRule statement, S context) {
+        validateFeature(Feature.alterRule);
+        validateOptionalFromItem(statement.getTable());
+        return null;
+    }
 }
