@@ -1181,6 +1181,94 @@ Type names, domain names and routine signatures are not reported as tables by ``
 
 See PostgreSQL's documentation for `CREATE TYPE <https://www.postgresql.org/docs/18/sql-createtype.html>`_, `ALTER TYPE <https://www.postgresql.org/docs/18/sql-altertype.html>`_, `CREATE DOMAIN <https://www.postgresql.org/docs/18/sql-createdomain.html>`_ and `ALTER EXTENSION <https://www.postgresql.org/docs/18/sql-alterextension.html>`_.
 
+Inspect operator and aggregate definitions
+==========================================
+
+PostgreSQL's operator and aggregate DDL parses to typed statements that reuse the models of
+``DROP OPERATOR``, ``DROP AGGREGATE`` and ``CREATE TYPE``: an operator is an ``ExclusionOperator``
+(schema and symbol) or an ``OperatorSignature`` (with its operand types, ``null`` for ``NONE``), an
+aggregate is a ``RoutineReference``, and a definition list holds ``DefinitionElement`` items with a
+``DefinitionArgument``. PostgreSQL checks the names and values of a definition when it runs the
+statement, so they are not restricted.
+
+.. list-table::
+    :header-rows: 1
+    :widths: 45 55
+
+    * - Statement
+      - Model
+    * - ``CREATE OPERATOR [schema.]op (definition)``
+      - ``CreateOperator``: ``getOperator()``, ``getDefinition()``, ``getDefinitionElement(name)``
+    * - ``ALTER OPERATOR op (left, right) {OWNER TO | SET SCHEMA | SET (...)}``
+      - ``AlterOperator``: ``getOperator()``, ``getAction()``, ``getNewName()``, ``getProperties()``
+    * - ``CREATE OPERATOR CLASS name [DEFAULT] FOR TYPE type USING method [FAMILY family] AS ...``
+      - ``CreateOperatorClass``: ``getName()``, ``isDefaultClass()``, ``getDataType()``,
+        ``getAccessMethod()``, ``getFamily()``, ``getItems()``
+    * - ``ALTER OPERATOR CLASS name USING method {RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterOperatorClass``: ``getName()``, ``getAccessMethod()``, ``getAction()``,
+        ``getNewName()``
+    * - ``CREATE OPERATOR FAMILY name USING method``
+      - ``CreateOperatorFamily``: ``getName()``, ``getAccessMethod()``
+    * - ``ALTER OPERATOR FAMILY name USING method {ADD ... | DROP ... | RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterOperatorFamily``: ``getName()``, ``getAccessMethod()``, ``getAction()``,
+        ``getItems()``, ``getNewName()``
+    * - ``CREATE [OR REPLACE] AGGREGATE name (arguments) (definition)`` and the old
+        ``CREATE AGGREGATE name (BASETYPE = type, ...)``
+      - ``CreateAggregate``: ``isOrReplace()``, ``getAggregate()``, ``isOldStyle()``,
+        ``getDefinition()``, ``getDefinitionElement(name)``
+    * - ``ALTER AGGREGATE name (arguments) {RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterAggregate``: ``getAggregate()``, ``getAction()``, ``getNewName()``
+
+``getNewName()`` is the new name, the role or the schema of the action. An ``OperatorClassItem``
+is one member of an operator class or family: its ``Kind`` is ``OPERATOR``, ``FUNCTION`` or
+``STORAGE``, with the strategy or support number, the operator and its optional operand types, the
+``Purpose`` (``FOR SEARCH`` or ``FOR ORDER BY`` with ``getSortFamily()``), the function as a
+``RoutineReference``, or the storage type. A member that ``ALTER OPERATOR FAMILY ... DROP`` removes
+has a kind, a number and operand types only.
+
+.. code-block:: java
+
+    CreateOperator operator = (CreateOperator) CCJSqlParserUtil.parse(
+            "CREATE OPERATOR app.=== (FUNCTION = app.eq, LEFTARG = int, RIGHTARG = int, "
+                    + "NEGATOR = OPERATOR(app.!==), HASHES)");
+    operator.getOperator().getSchemaName();                          // app
+    operator.getOperator().getName();                                // ===
+    operator.getDefinitionElement("NEGATOR").getArgument().getOperator(); // app.!==
+    operator.getDefinitionElement("HASHES").getArgument();           // null
+
+    CreateOperatorClass operatorClass = (CreateOperatorClass) CCJSqlParserUtil.parse(
+            "CREATE OPERATOR CLASS oc DEFAULT FOR TYPE int4 USING btree AS "
+                    + "OPERATOR 1 < (int4, int4), FUNCTION 1 btint4cmp(int4, int4)");
+    OperatorClassItem item = operatorClass.getItems().get(0);
+    item.getNumber();                     // 1
+    item.getOperator().getName();         // <
+    item.getOperandTypes();               // [int4, int4]
+
+    CreateAggregate aggregate = (CreateAggregate) CCJSqlParserUtil.parse(
+            "CREATE AGGREGATE app.total (numeric ORDER BY int) (SFUNC = app.add, STYPE = numeric)");
+    aggregate.getAggregate().getName();              // app.total
+    aggregate.getAggregate().getOrderByArguments();  // [int]
+    aggregate.getDefinitionElement("STYPE").getArgument().getDataType(); // numeric
+
+An operator name is one name with its exact text, such as ``===``, ``<==>`` or ``@#@``, wherever
+PostgreSQL DDL names an operator. It follows the rules of PostgreSQL's lexer: the parts must touch
+each other, a name of several characters ends in ``+`` or ``-`` only if it contains one of
+``~ ! @ # % ^ & | ?``, ``=>`` alone is not an operator, and a name has at most 63 characters. A
+database may precede the schema (``db.schema.+``); ``getSchemaName()`` then returns both. An
+operator that contains a backtick is not supported, and without ``Dialect.POSTGRESQL`` the lexer
+reads ``#`` before ``#``, ``@`` or a letter as the start of a name. An aggregate signature is
+``*`` or has at least one argument, so ``agg()`` is rejected wherever an aggregate is named.
+
+Without a dialect, ``CREATE OPERATOR`` and ``ALTER OPERATOR`` are read this way when an operator
+symbol follows, so Oracle's ``CREATE OPERATOR name BINDING ...`` stays an
+``UnsupportedStatement``, and so do MySQL's ``CREATE AGGREGATE FUNCTION`` and SQL Server's
+``CREATE AGGREGATE name (@parameter type) ...``. With ``Dialect.POSTGRESQL`` they are parse
+errors. Validators report ``createOperator``, ``alterOperator``, ``createOperatorClass``,
+``alterOperatorClass``, ``createOperatorFamily``, ``alterOperatorFamily``, ``createAggregate``
+and ``alterAggregate``, which PostgreSQL enables.
+
+See `CREATE OPERATOR <https://www.postgresql.org/docs/18/sql-createoperator.html>`_, `ALTER OPERATOR <https://www.postgresql.org/docs/18/sql-alteroperator.html>`_, `CREATE OPERATOR CLASS <https://www.postgresql.org/docs/18/sql-createopclass.html>`_, `ALTER OPERATOR CLASS <https://www.postgresql.org/docs/18/sql-alteropclass.html>`_, `CREATE OPERATOR FAMILY <https://www.postgresql.org/docs/18/sql-createopfamily.html>`_, `ALTER OPERATOR FAMILY <https://www.postgresql.org/docs/18/sql-alteropfamily.html>`_, `CREATE AGGREGATE <https://www.postgresql.org/docs/18/sql-createaggregate.html>`_ and `ALTER AGGREGATE <https://www.postgresql.org/docs/18/sql-alteraggregate.html>`_.
+
 Classify a Statement
 ==============================
 

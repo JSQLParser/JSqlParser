@@ -24,6 +24,14 @@ import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -1180,6 +1188,70 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterRule statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperator statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperator statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperatorClass statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperatorClass statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperatorFamily statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperatorFamily statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateAggregate statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateAggregate statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperator statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperator statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperatorClass statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperatorClass statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperatorFamily statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperatorFamily statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterAggregate statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterAggregate statement) {
         visit(statement, null);
     }
 }

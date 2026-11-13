@@ -1002,6 +1002,54 @@ public enum Feature {
      */
     alterRule,
     /**
+     * PostgreSQL "CREATE OPERATOR" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperator
+     */
+    createOperator,
+    /**
+     * PostgreSQL "CREATE OPERATOR CLASS" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperatorClass
+     */
+    createOperatorClass,
+    /**
+     * PostgreSQL "CREATE OPERATOR FAMILY" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily
+     */
+    createOperatorFamily,
+    /**
+     * PostgreSQL "CREATE AGGREGATE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.aggregate.CreateAggregate
+     */
+    createAggregate,
+    /**
+     * PostgreSQL "ALTER OPERATOR" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperator
+     */
+    alterOperator,
+    /**
+     * PostgreSQL "ALTER OPERATOR CLASS" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperatorClass
+     */
+    alterOperatorClass,
+    /**
+     * PostgreSQL "ALTER OPERATOR FAMILY" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperatorFamily
+     */
+    alterOperatorFamily,
+    /**
+     * PostgreSQL "ALTER AGGREGATE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterAggregate
+     */
+    alterAggregate,
+    /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *
      * @see Block
