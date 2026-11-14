@@ -9,8 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
 
 public class ValuesStatementValidatorTest extends ValidationTestAsserts {
@@ -20,6 +22,13 @@ public class ValuesStatementValidatorTest extends ValidationTestAsserts {
         validateNoErrors(
                 "WITH w (col1, col2, col3) AS (VALUES ('Header1', 'Header2', 'Header3') UNION ALL SELECT a, b, c FROM tab) SELECT * FROM w",
                 1, DatabaseType.SQLSERVER);
+    }
+
+    @Test
+    public void testValidateWithItemsOfValues() {
+        validateNotAllowed("WITH d AS (UPDATE t SET a = 1 RETURNING a) VALUES (1)", 1, 1,
+                FeaturesAllowed.SELECT.copy().add(Feature.values), Feature.withItem,
+                Feature.update, Feature.updateReturning);
     }
 
 }

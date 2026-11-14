@@ -347,6 +347,9 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(TableStatement tableStatement, S context) {
+        visitWithItems(tableStatement.getWithItemsList(), context);
+        expressionVisitor.visitOrderBy(tableStatement.getOrderByElements(), context);
+        visitLimitOffsetFetch(tableStatement, context);
         return null;
     }
 }

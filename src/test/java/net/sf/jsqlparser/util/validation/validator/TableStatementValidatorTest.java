@@ -31,4 +31,17 @@ public class TableStatementValidatorTest extends ValidationTestAsserts {
         validateNotAllowed(sql, 1, 1, FeaturesAllowed.DDL, Feature.select, Feature.tableStatement);
     }
 
+    @Test
+    public void testValidationWithItemNotAllowed() throws JSQLParserException {
+        String sql = "WITH d AS (DELETE FROM t RETURNING a) TABLE d";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT, Feature.withItem, Feature.delete,
+                Feature.deleteReturningExpressionList);
+    }
+
+    @Test
+    public void testValidationWithItemAllowed() throws JSQLParserException {
+        String sql = "WITH d AS (DELETE FROM t RETURNING a) TABLE d";
+        validateNoErrors(sql, 1, PostgresqlVersion.V14);
+    }
+
 }
