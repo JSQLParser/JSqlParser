@@ -155,6 +155,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **MySQL servers, plugins and components** | `CREATE SERVER` · `ALTER SERVER` with `OPTIONS (… PORT 3306)` · `INSTALL`/`UNINSTALL PLUGIN` · `INSTALL`/`UNINSTALL COMPONENT` |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |
+| **MySQL data loading** | `LOAD DATA` · `LOAD XML` · `SELECT … INTO OUTFILE` with the same `FIELDS` and `LINES` clauses |
 | **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |

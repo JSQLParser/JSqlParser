@@ -192,6 +192,7 @@ import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 import java.util.List;
 
@@ -946,6 +947,15 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        validateFeature(Feature.loadData);
+        validateOptionalFromItem(loadData.getTable());
+        validateOptionalExpressions(loadData.getColumns());
+        validateOptionalUpdateSets(loadData.getUpdateSets());
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         validateFeature(Feature.purge);
         return null;
@@ -1313,6 +1323,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(LoadDataStatement loadDataStatement) {
         visit(loadDataStatement, null);
+    }
+
+    public void visit(MySqlLoadDataStatement loadData) {
+        visit(loadData, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {

@@ -3045,6 +3045,50 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether MySQL's LOAD {DATA | XML} [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE starts here,
+     * without a dialect or in MySQL and MariaDB. BigQuery's LOAD DATA continues with INTO or
+     * OVERWRITE and DuckDB's or PostgreSQL's LOAD with a name, so their readings, including an
+     * extension named xml, stay unchanged.
+     */
+    private boolean isMySqlLoadDataAhead() {
+        int format = getToken(2).kind;
+        String dialect = getAsString(Feature.dialect);
+        if (getToken(1).kind != K_LOAD || format != K_DATA && format != K_XML
+                || dialect != null && !isMySqlDialect()) {
+            return false;
+        }
+        int offset = 3;
+        if (getToken(offset).kind == K_LOW_PRIORITY || isWordAt(offset, "CONCURRENT")) {
+            offset++;
+        }
+        if (getToken(offset).kind == K_LOCAL) {
+            offset++;
+        }
+        return isWordAt(offset, "INFILE");
+    }
+
+    private boolean isMySqlCharacterSetClauseAhead() {
+        return getToken(1).kind == K_CHARACTER && getToken(2).kind == K_SET
+                || isWordAt(1, "CHARSET");
+    }
+
+    /**
+     * The number of MySQL's IGNORE number {LINES | ROWS}. MySQL reads it as an integer of at most
+     * 2147483647, leading zeros aside, and reports a larger one as a syntax error.
+     */
+    private static Long mySqlIgnoreCount(Token token) throws ParseException {
+        String digits = token.image.replaceFirst("^0+(?=.)", "");
+        if (digits.length() > 10 || Long.parseLong(digits) > Integer.MAX_VALUE) {
+            throw new ParseException("IGNORE takes a number of at most 2147483647");
+        }
+        return Long.valueOf(digits);
+    }
+
+    private boolean isBigQueryWithConnectionAhead() {
+        return getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image);
+    }
+
+    /**
      * Whether NO_WRITE_TO_BINLOG or LOCAL modifies a MySQL partition operation. Followed by a
      * comma, INTO or the end of the statement, the word remains a partition name.
      */
@@ -6906,6 +6950,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
             |
+            LOOKAHEAD({ isMySqlLoadDataAhead() }) stm = MySqlLoadDataStatement()
+            |
             LOOKAHEAD({ isPluginStatementAhead() }) stm = PluginStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_INSTALL
@@ -9420,7 +9466,7 @@ LoadDataStatement LoadDataStatement() #LoadDataStatement:
     List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
     ColumnDefinition columnDefinition;
     ExpressionList options;
-    ObjectNames connectionName;
+    String connectionName;
     Table table;
 }
 {
@@ -9445,11 +9491,179 @@ LoadDataStatement LoadDataStatement() #LoadDataStatement:
         { loadDataStatement.setWithPartitionColumns(true); }
     ]
     [
-        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
-        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
-        { loadDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+        LOOKAHEAD({ isBigQueryWithConnectionAhead() })
+        connectionName=BigQueryWithConnection() { loadDataStatement.setConnectionName(connectionName); }
     ]
     { return loadDataStatement; }
+}
+
+/** BigQuery's WITH CONNECTION connection_name of LOAD DATA and EXPORT DATA. */
+String BigQueryWithConnection():
+{ ObjectNames connectionName; }
+{
+    <K_WITH> ContextualKeyword("CONNECTION") connectionName=RelObjectNames()
+    { return String.join(".", connectionName.getNames()); }
+}
+
+/**
+ * MySQL's LOAD {DATA | XML} [LOW_PRIORITY | CONCURRENT] [LOCAL] INFILE 'file_name'
+ * [REPLACE | IGNORE] INTO TABLE tbl_name [PARTITION (names)] [CHARACTER SET charset_name]
+ * [ROWS IDENTIFIED BY 'tag'] [FIELDS ...] [LINES ...] [IGNORE number {LINES | ROWS}]
+ * [(col_name_or_user_var, ...)] [SET col_name = {expr | DEFAULT}, ...]. One grammar serves
+ * DATA and XML, as in the server.
+ *
+ * https://dev.mysql.com/doc/refman/8.4/en/load-data.html
+ * https://dev.mysql.com/doc/refman/8.4/en/load-xml.html
+ */
+MySqlLoadDataStatement MySqlLoadDataStatement():
+{
+    MySqlLoadDataStatement statement = new MySqlLoadDataStatement();
+    Token token;
+    Table table;
+    List<String> partitions;
+    boolean charsetKeyword;
+    MySqlFileFormat fileFormat;
+    ExpressionList<Expression> columns;
+    List<UpdateSet> updateSets;
+}
+{
+    <K_LOAD> ( <K_DATA> | <K_XML> { statement.setFormat(MySqlLoadDataStatement.Format.XML); } )
+    [
+        <K_LOW_PRIORITY> { statement.setLockOption(MySqlLoadDataStatement.LockOption.LOW_PRIORITY); }
+        |
+        LOOKAHEAD({ isKeywordAhead("CONCURRENT") }) ContextualKeyword("CONCURRENT")
+        { statement.setLockOption(MySqlLoadDataStatement.LockOption.CONCURRENT); }
+    ]
+    [ <K_LOCAL> { statement.setLocal(true); } ]
+    ContextualKeyword("INFILE") token=<S_CHAR_LITERAL> { statement.setFileName(stringValue(token)); }
+    [
+        <K_REPLACE> { statement.setDuplicateHandling(CreateTable.DuplicateHandling.REPLACE); }
+        |
+        <K_IGNORE> { statement.setDuplicateHandling(CreateTable.DuplicateHandling.IGNORE); }
+    ]
+    <K_INTO> <K_TABLE> table=Table() { statement.setTable(table); }
+    [ <K_PARTITION> "(" partitions=PartitionNamesList() ")" { statement.setPartitions(partitions); } ]
+    [
+        LOOKAHEAD({ isMySqlCharacterSetClauseAhead() })
+        charsetKeyword=MySqlCharacterSetKeyword() token=CharacterSetName()
+        { statement.setCharacterSet(token.image); statement.setUseCharsetKeyword(charsetKeyword); }
+    ]
+    [ <K_ROWS> <K_IDENTIFIED> <K_BY> token=<S_CHAR_LITERAL> { statement.setRowsIdentifiedBy(stringValue(token)); } ]
+    [ fileFormat=MySqlFileFormat() { statement.setFileFormat(fileFormat); } ]
+    [
+        <K_IGNORE> token=<S_LONG> { statement.setIgnoreCount(mySqlIgnoreCount(token)); }
+        ( <K_LINES> | <K_ROWS> { statement.setIgnoreUnit(MySqlLoadDataStatement.IgnoreUnit.ROWS); } )
+    ]
+    [ LOOKAHEAD(1, "(") columns=MySqlLoadDataColumns() { statement.setColumns(columns); } ]
+    [ LOOKAHEAD(1, <K_SET>) <K_SET> updateSets=MySqlLoadDataSets() { statement.setUpdateSets(updateSets); } ]
+    { return statement; }
+}
+
+/** The column list of LOAD DATA: column names and user variables, possibly none. */
+ExpressionList<Expression> MySqlLoadDataColumns():
+{
+    ExpressionList<Expression> columns = new ExpressionList<Expression>();
+    Expression column;
+}
+{
+    "("
+    [
+        ( column=MySqlIntoVariable() | column=Column() ) { columns.add(column); }
+        ( "," ( column=MySqlIntoVariable() | column=Column() ) { columns.add(column); } )*
+    ]
+    ")"
+    { return linkElements(columns); }
+}
+
+/** The SET clause of LOAD DATA: each assignment sets one column to an expression or DEFAULT. */
+List<UpdateSet> MySqlLoadDataSets():
+{
+    List<UpdateSet> updateSets = new ArrayList<UpdateSet>();
+    UpdateSet updateSet;
+    Column column;
+    Expression value;
+}
+{
+    column=Column() "=" value=Expression()
+    {
+        updateSet = new UpdateSet(column, value);
+        linkElements(updateSet.getColumns());
+        linkElements(updateSet.getValues());
+        updateSets.add(updateSet);
+    }
+    (
+        "," column=Column() "=" value=Expression()
+        {
+            updateSet = new UpdateSet(column, value);
+            linkElements(updateSet.getColumns());
+            linkElements(updateSet.getValues());
+            updateSets.add(updateSet);
+        }
+    )*
+    { return updateSets; }
+}
+
+/** MySQL's CHARACTER SET or CHARSET before a character set name: true for CHARSET. */
+boolean MySqlCharacterSetKeyword():
+{ boolean charsetKeyword = false; }
+{
+    ( <K_CHARACTER> <K_SET> | ContextualKeyword("CHARSET") { charsetKeyword = true; } )
+    { return charsetKeyword; }
+}
+
+/**
+ * The FIELDS (or COLUMNS) and LINES clauses of MySQL's LOAD DATA and SELECT ... INTO OUTFILE.
+ * Each clause takes at least one subclause, in any order and possibly repeated, as in the
+ * server's grammar; the last value of a subclause wins.
+ */
+MySqlFileFormat MySqlFileFormat():
+{
+    MySqlFileFormat fileFormat = new MySqlFileFormat();
+    Token first = getToken(1);
+}
+{
+    (
+        (
+            <K_FIELDS> { fileFormat.setFieldsKeyword(MySqlFileFormat.FieldsKeyword.FIELDS); }
+            |
+            <K_COLUMNS> { fileFormat.setFieldsKeyword(MySqlFileFormat.FieldsKeyword.COLUMNS); }
+        )
+        ( LOOKAHEAD(1) MySqlFieldsSubclause(fileFormat) )+
+        [ LOOKAHEAD(1, <K_LINES>) MySqlLinesClause(fileFormat) ]
+        |
+        MySqlLinesClause(fileFormat)
+    )
+    { linkAST(fileFormat, first); return fileFormat; }
+}
+
+void MySqlFieldsSubclause(MySqlFileFormat fileFormat):
+{ Token token; }
+{
+    (
+        <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL> { fileFormat.setFieldsTerminatedBy(stringValue(token)); }
+        |
+        // OPTIONALLY stays set when a later ENCLOSED BY replaces the character, as in the server
+        <K_OPTIONALLY> <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
+        { fileFormat.setFieldsOptionallyEnclosed(true); fileFormat.setFieldsEnclosedBy(stringValue(token)); }
+        |
+        <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL> { fileFormat.setFieldsEnclosedBy(stringValue(token)); }
+        |
+        <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL> { fileFormat.setFieldsEscapedBy(stringValue(token)); }
+    )
+}
+
+void MySqlLinesClause(MySqlFileFormat fileFormat):
+{ Token token; }
+{
+    <K_LINES>
+    (
+        LOOKAHEAD(1)
+        (
+            <K_STARTING> <K_BY> token=<S_CHAR_LITERAL> { fileFormat.setLinesStartingBy(stringValue(token)); }
+            |
+            <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL> { fileFormat.setLinesTerminatedBy(stringValue(token)); }
+        )
+    )+
 }
 
 /**
@@ -9459,15 +9673,14 @@ ExportDataStatement ExportDataStatement() #ExportDataStatement:
 {
     ExportDataStatement exportDataStatement = new ExportDataStatement();
     ExpressionList options;
-    ObjectNames connectionName;
+    String connectionName;
     Select select;
 }
 {
     <K_EXPORT> <K_DATA>
     [
-        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
-        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
-        { exportDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+        LOOKAHEAD({ isBigQueryWithConnectionAhead() })
+        connectionName=BigQueryWithConnection() { exportDataStatement.setConnectionName(connectionName); }
     ]
     [
         LOOKAHEAD({ isKeywordAhead("OPTIONS") })
@@ -13891,6 +14104,7 @@ SelectIntoClause TrailingIntoTempClause():
 MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position position):
 {
     MySqlSelectIntoClause intoClause = new MySqlSelectIntoClause().withPosition(position);
+    Token first = getToken(1);
     Token token;
     ExpressionList<UserVariable> variables = new ExpressionList<UserVariable>();
     UserVariable variable;
@@ -13913,6 +14127,7 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
           { intoClause.setType(MySqlSelectIntoClause.Type.VARIABLES); intoClause.setVariables(linkElements(variables)); }
     )
     {
+        linkAST(intoClause, first);
         return intoClause;
     }
 }
@@ -13965,106 +14180,26 @@ MySqlProcedureAnalyse MySqlProcedureAnalyse():
     }
 }
 
+/**
+ * The rest of INTO OUTFILE 'file_name': [CHARACTER SET charset_name] and the FIELDS and LINES
+ * clauses that LOAD DATA shares.
+ */
 void MySqlSelectIntoOutfileTail(MySqlSelectIntoClause intoClause):
 {
     Token token;
+    boolean charsetKeyword;
+    MySqlFileFormat fileFormat;
 }
 {
-    (
-          LOOKAHEAD(<K_CHARACTER> <K_SET>)
-          <K_CHARACTER> <K_SET>
-          (token=<S_IDENTIFIER> | token=<K_BINARY>)
-          { intoClause.setCharacterSet(token.image); }
-          (
-                LOOKAHEAD(1, (<K_FIELDS> | <K_COLUMNS>))
-                MySqlSelectIntoFieldsClause(intoClause)
-                [ LOOKAHEAD(1, <K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
-              |
-                LOOKAHEAD(1, <K_LINES>)
-                MySqlSelectIntoLinesClause(intoClause)
-              |
-                { }
-          )
-        |
-          LOOKAHEAD(1, (<K_FIELDS> | <K_COLUMNS>))
-          MySqlSelectIntoFieldsClause(intoClause)
-          [ LOOKAHEAD(1, <K_LINES>) MySqlSelectIntoLinesClause(intoClause) ]
-        |
-          LOOKAHEAD(1, <K_LINES>)
-          MySqlSelectIntoLinesClause(intoClause)
-        |
-          { }
-    )
-}
-
-void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
-{
-    Token token;
-}
-{
-    (
-          <K_FIELDS> { intoClause.setFieldsKeyword(MySqlSelectIntoClause.FieldsKeyword.FIELDS); }
-        | <K_COLUMNS> { intoClause.setFieldsKeyword(MySqlSelectIntoClause.FieldsKeyword.COLUMNS); }
-    )
-    (
-          LOOKAHEAD(<K_TERMINATED> <K_BY>)
-          <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsTerminatedBy(stringValue(token)); }
-          (
-                LOOKAHEAD(1, (<K_OPTIONALLY> | <K_ENCLOSED>))
-                [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
-                <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEnclosedBy(stringValue(token)); }
-                [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
-                    <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                    { intoClause.setFieldsEscapedBy(stringValue(token)); }
-                ]
-              |
-                LOOKAHEAD(<K_ESCAPED> <K_BY>)
-                <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEscapedBy(stringValue(token)); }
-              |
-                { }
-          )
-        |
-          LOOKAHEAD(1, (<K_OPTIONALLY> | <K_ENCLOSED>))
-          [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
-          <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEnclosedBy(stringValue(token)); }
-          [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
-              <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setFieldsEscapedBy(stringValue(token)); }
-          ]
-        |
-          LOOKAHEAD(<K_ESCAPED> <K_BY>)
-          <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEscapedBy(stringValue(token)); }
-        |
-          { }
-    )
-}
-
-void MySqlSelectIntoLinesClause(MySqlSelectIntoClause intoClause):
-{
-    Token token;
-}
-{
-    <K_LINES>
-    (
-          LOOKAHEAD(<K_STARTING> <K_BY>)
-          <K_STARTING> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesStartingBy(stringValue(token)); }
-          [ LOOKAHEAD(<K_TERMINATED> <K_BY>)
-              <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setLinesTerminatedBy(stringValue(token)); }
-          ]
-        |
-          LOOKAHEAD(<K_TERMINATED> <K_BY>)
-          <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesTerminatedBy(stringValue(token)); }
-        |
-          { }
-    )
+    [
+        LOOKAHEAD({ isMySqlCharacterSetClauseAhead() })
+        charsetKeyword=MySqlCharacterSetKeyword() token=CharacterSetName()
+        { intoClause.setCharacterSet(token.image); intoClause.setUseCharsetKeyword(charsetKeyword); }
+    ]
+    [
+        LOOKAHEAD(1, (<K_FIELDS> | <K_COLUMNS> | <K_LINES>))
+        fileFormat=MySqlFileFormat() { intoClause.setFileFormat(fileFormat); }
+    ]
 }
 
 FromItem ParenthesedFromItem():

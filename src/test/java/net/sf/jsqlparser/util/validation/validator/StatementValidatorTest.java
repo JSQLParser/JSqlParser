@@ -32,6 +32,7 @@ public class StatementValidatorTest extends ValidationTestAsserts {
         return Stream.of(
                 Arguments.of("COPY t TO '/tmp/t.csv'", Feature.copy),
                 Arguments.of("LOAD DATA INTO ds.t FROM FILES (format = 'CSV')", Feature.loadData),
+                Arguments.of("LOAD XML INFILE 'a.xml' INTO TABLE t", Feature.loadData),
                 Arguments.of("EXPORT DATA OPTIONS (uri = 'gs://b/*.csv', format = 'CSV') "
                         + "AS SELECT a FROM t", Feature.export),
                 Arguments.of("ATTACH DATABASE '/tmp/x.db' AS x", Feature.attach),

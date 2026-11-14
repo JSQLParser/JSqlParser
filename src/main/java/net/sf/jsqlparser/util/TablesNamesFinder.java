@@ -215,6 +215,7 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 import net.sf.jsqlparser.statement.admin.FlushStatement;
 import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
@@ -3049,6 +3050,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        visitTargetTable(loadData.getTable(), context);
+        if (loadData.getUpdateSets() != null) {
+            for (UpdateSet updateSet : loadData.getUpdateSets()) {
+                updateSet.getValues().accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void visit(AttachStatement attachStatement) {
         StatementVisitor.super.visit(attachStatement);
     }
@@ -3158,6 +3170,11 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(LoadDataStatement loadDataStatement) {
         StatementVisitor.super.visit(loadDataStatement);
+    }
+
+    @Override
+    public void visit(MySqlLoadDataStatement loadData) {
+        StatementVisitor.super.visit(loadData);
     }
 
     @Override

@@ -112,6 +112,7 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 import net.sf.jsqlparser.statement.admin.FlushStatement;
 import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
@@ -708,6 +709,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_DATA);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_DATA);
+        return super.visit(loadData, context);
     }
 
     @Override

@@ -86,6 +86,10 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/lock-tables/
                     Feature.lock, Feature.unlockTables,
 
+                    // https://mariadb.com/kb/en/load-data-infile/
+                    // https://mariadb.com/kb/en/load-xml/
+                    Feature.loadData,
+
                     // https://mariadb.com/kb/en/account-management-sql-statements/
                     Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
                     Feature.setRole,

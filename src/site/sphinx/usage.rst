@@ -2967,6 +2967,48 @@ enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
 ``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
 ``RETURNS_RESULT_SET`` for HANDLER READ.
 
+MySQL LOAD DATA and LOAD XML
+----------------------------
+
+MySQL and MariaDB `LOAD DATA <https://dev.mysql.com/doc/refman/8.4/en/load-data.html>`_ and
+`LOAD XML <https://dev.mysql.com/doc/refman/8.4/en/load-xml.html>`_ parse to
+``MySqlLoadDataStatement``; BigQuery's ``LOAD DATA {INTO | OVERWRITE}`` remains
+``LoadDataStatement``. ``getFormat()`` is ``DATA`` or ``XML``. As in the server's grammar,
+both forms take every clause: ``getLockOption()`` (``LOW_PRIORITY`` or ``CONCURRENT``),
+``isLocal()``, ``getFileName()``, ``getDuplicateHandling()`` (``REPLACE`` or ``IGNORE``, the
+enum of ``CREATE TABLE … SELECT``), ``getTable()``, ``getPartitions()``,
+``getCharacterSet()`` with ``isUseCharsetKeyword()`` for the ``CHARSET`` spelling,
+``getRowsIdentifiedBy()``, ``getFileFormat()``, ``getIgnoreCount()`` with ``getIgnoreUnit()``
+(``LINES`` or ``ROWS``), ``getColumns()`` (columns and ``UserVariable`` targets, empty for
+``()``) and ``getUpdateSets()`` for the ``SET`` clause.
+
+.. code-block:: java
+
+    MySqlLoadDataStatement load = (MySqlLoadDataStatement) CCJSqlParserUtil.parse(
+        "LOAD DATA LOCAL INFILE 'a.csv' INTO TABLE t FIELDS TERMINATED BY ',' "
+            + "IGNORE 1 LINES (a, @b) SET c = @b + 1");
+    load.getFileFormat().getFieldsTerminatedBy().getValue();   // ,
+    load.getUpdateSets().get(0).getValue(0);                   // @b + 1
+
+``MySqlFileFormat`` holds the ``{FIELDS | COLUMNS}`` and ``LINES`` clauses, which
+``SELECT … INTO OUTFILE`` shares: ``MySqlSelectIntoClause.getFileFormat()`` returns it, and the
+clause's earlier getters and setters, such as ``getFieldsTerminatedBy()``, read and write it.
+Each clause needs at least one subclause, so a bare ``FIELDS`` or ``LINES``, which MySQL
+rejects, is now a parse error. The subclauses may come in any order and repeat, as MySQL
+allows; like the server, the format keeps the last value of each and prints them in the
+documented order. ``INTO OUTFILE`` also takes ``CHARSET`` and a quoted character set name.
+
+The MySQL and MariaDB dialects read these forms, and so does the parser without a dialect:
+``INFILE`` after ``LOAD DATA`` or ``LOAD XML`` and the optional ``LOW_PRIORITY``,
+``CONCURRENT`` and ``LOCAL`` tells them from BigQuery's ``LOAD DATA INTO`` and from DuckDB's
+and PostgreSQL's ``LOAD name``, so ``LOAD xml`` still loads an extension named ``xml``. The
+other dialects keep rejecting the MySQL forms. ``INFILE`` and ``CONCURRENT`` remain ordinary
+identifiers.
+
+Table visitors report the target table and the tables of subqueries in the ``SET`` clause.
+Validators report the ``loadData`` feature, which the MySQL and MariaDB capabilities now
+enable. Feature analysis reports ``MODIFIES_DATA``.
+
 PostgreSQL cursors
 ------------------
 

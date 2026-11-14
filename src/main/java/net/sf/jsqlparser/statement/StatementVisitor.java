@@ -135,6 +135,7 @@ import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
 import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 public interface StatementVisitor<T> {
 
@@ -760,6 +761,14 @@ public interface StatementVisitor<T> {
 
     default void visit(LoadDataStatement loadDataStatement) {
         this.visit(loadDataStatement, null);
+    }
+
+    default <S> T visit(MySqlLoadDataStatement loadData, S context) {
+        return null;
+    }
+
+    default void visit(MySqlLoadDataStatement loadData) {
+        this.visit(loadData, null);
     }
 
     <S> T visit(PurgeStatement purgeStatement, S context);
