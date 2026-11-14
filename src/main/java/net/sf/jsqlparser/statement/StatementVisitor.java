@@ -33,6 +33,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -140,6 +144,7 @@ import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
 import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 public interface StatementVisitor<T> {
 
@@ -767,6 +772,14 @@ public interface StatementVisitor<T> {
         this.visit(loadDataStatement, null);
     }
 
+    default <S> T visit(MySqlLoadDataStatement loadData, S context) {
+        return null;
+    }
+
+    default void visit(MySqlLoadDataStatement loadData) {
+        this.visit(loadData, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {
@@ -1295,6 +1308,38 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterRule statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateCast statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateCast statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTransform statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTransform statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateConversion statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateConversion statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterConversion statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterConversion statement) {
         visit(statement, null);
     }
 

@@ -102,6 +102,10 @@ public enum MySqlVersion implements Version {
                     Feature.changeReplicationSource, Feature.changeReplicationFilter,
                     Feature.startReplica, Feature.stopReplica,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/load-data.html
+                    // https://dev.mysql.com/doc/refman/8.0/en/load-xml.html
+                    Feature.loadData,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
                     Feature.createRole, Feature.createUser, Feature.alterUser, Feature.renameUser,
                     Feature.setRole,

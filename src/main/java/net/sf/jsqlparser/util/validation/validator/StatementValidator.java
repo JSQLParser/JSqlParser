@@ -19,6 +19,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -197,6 +201,7 @@ import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 import java.util.List;
 
@@ -951,6 +956,15 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        validateFeature(Feature.loadData);
+        validateOptionalFromItem(loadData.getTable());
+        validateOptionalExpressions(loadData.getColumns());
+        validateOptionalUpdateSets(loadData.getUpdateSets());
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         validateFeature(purgeStatement.getLogBound() != null ? Feature.purgeBinaryLogs
                 : Feature.purge);
@@ -1349,6 +1363,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(LoadDataStatement loadDataStatement) {
         visit(loadDataStatement, null);
+    }
+
+    public void visit(MySqlLoadDataStatement loadData) {
+        visit(loadData, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {
@@ -1754,8 +1772,20 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateCast statement, S context) {
+        validateFeature(Feature.createCast);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateOperator statement, S context) {
         validateFeature(Feature.createOperator);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTransform statement, S context) {
+        validateFeature(Feature.createTransform);
         return null;
     }
 
@@ -1766,8 +1796,20 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateConversion statement, S context) {
+        validateFeature(Feature.createConversion);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateOperatorFamily statement, S context) {
         validateFeature(Feature.createOperatorFamily);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterConversion statement, S context) {
+        validateFeature(Feature.alterConversion);
         return null;
     }
 

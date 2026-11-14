@@ -11,9 +11,12 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -144,5 +147,51 @@ public class ForUpdateTest {
         ForUpdateClause forUpdate = plainSelect.getForUpdate();
         assertThat(forUpdate.getWait()).isNotNull();
         assertThat(forUpdate.getWait().getTimeout()).isEqualTo(10L);
+    }
+
+    @Test
+    void testPostgresMultipleLockingClausesIssue2926() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t JOIN u ON u.t_id = t.id FOR UPDATE OF t FOR SHARE OF u";
+        Statement stmt = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        PlainSelect plainSelect = (PlainSelect) stmt;
+
+        assertThat(plainSelect.getForMode()).isEqualTo(ForMode.UPDATE);
+        assertThat(plainSelect.getForUpdateTables()).extracting(Table::getName)
+                .containsExactly("t");
+
+        assertThat(plainSelect.getAdditionalForUpdateClauses()).hasSize(1);
+        ForUpdateClause second = plainSelect.getAdditionalForUpdateClauses().get(0);
+        assertThat(second.isForShare()).isTrue();
+        assertThat(second.getTables()).extracting(Table::getName).containsExactly("u");
+    }
+
+    @Test
+    void testPostgresMultipleLockingClausesWithOptions() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM a, b, c, d"
+                + " FOR NO KEY UPDATE OF a NOWAIT"
+                + " FOR KEY SHARE OF b, c SKIP LOCKED"
+                + " FOR SHARE"
+                + " FOR UPDATE OF d NOWAIT";
+        Statement stmt = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        PlainSelect plainSelect = (PlainSelect) stmt;
+
+        assertThat(plainSelect.getForMode()).isEqualTo(ForMode.NO_KEY_UPDATE);
+        assertThat(plainSelect.isNoWait()).isTrue();
+
+        List<ForUpdateClause> more = plainSelect.getAdditionalForUpdateClauses();
+        assertThat(more).extracting(ForUpdateClause::getMode)
+                .containsExactly(ForMode.KEY_SHARE, ForMode.SHARE, ForMode.UPDATE);
+        assertThat(more.get(0).getTables()).extracting(Table::getName)
+                .containsExactly("b", "c");
+        assertThat(more.get(0).isSkipLocked()).isTrue();
+        assertThat(more.get(1).getTables()).isNull();
+        assertThat(more.get(2).isNoWait()).isTrue();
+    }
+
+    @Test
+    void testSingleLockingClauseHasNoAdditionalClauses() throws JSQLParserException {
+        PlainSelect plainSelect =
+                (PlainSelect) CCJSqlParserUtil.parse("SELECT * FROM t FOR UPDATE OF t");
+        assertThat(plainSelect.getAdditionalForUpdateClauses()).isNull();
     }
 }

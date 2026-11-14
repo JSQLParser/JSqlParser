@@ -152,10 +152,12 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |
 | **MySQL resource groups** | `CREATE`/`ALTER`/`DROP RESOURCE GROUP` · `SET RESOURCE GROUP` |
+| **MySQL loadable functions** | `CREATE [AGGREGATE] FUNCTION … RETURNS … SONAME` |
 | **MySQL servers, plugins and components** | `CREATE SERVER` · `ALTER SERVER` with `OPTIONS (… PORT 3306)` · `INSTALL`/`UNINSTALL PLUGIN` · `INSTALL`/`UNINSTALL COMPONENT` |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |
 | **MySQL replication** | `CHANGE REPLICATION SOURCE TO` · `CHANGE REPLICATION FILTER` · `START`/`STOP REPLICA` · `RESET REPLICA` · `RESET BINARY LOGS AND GTIDS` · `PURGE BINARY LOGS` |
+| **MySQL data loading** | `LOAD DATA` · `LOAD XML` · `SELECT … INTO OUTFILE` with the same `FIELDS` and `LINES` clauses |
 | **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
@@ -166,6 +168,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **MySQL utility statements** | `EXPLAIN`/`DESCRIBE [ANALYZE] FORMAT = …` · `EXPLAIN FOR CONNECTION` · `DESCRIBE t col` · `PREPARE … FROM` · `EXECUTE … USING` · `DROP PREPARE` · `DO` |
 | **PostgreSQL administration** | `CREATE`/`ALTER EVENT TRIGGER` · `REINDEX` · `SECURITY LABEL` |
 | **PostgreSQL types and rules** | `CREATE TYPE` (shell, composite, enum, range and base types) · `ALTER TYPE` · `CREATE RULE` · `ALTER RULE` |
+| **PostgreSQL casts, transforms and conversions** | `CREATE CAST` · `DROP CAST` · `CREATE [OR REPLACE] TRANSFORM` · `DROP TRANSFORM` · `CREATE [DEFAULT] CONVERSION` · `ALTER CONVERSION` |
 | **PostgreSQL operators and aggregates** | `CREATE`/`ALTER OPERATOR` · `CREATE`/`ALTER OPERATOR CLASS` · `CREATE`/`ALTER OPERATOR FAMILY` · `CREATE`/`ALTER AGGREGATE` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |
 | **Salesforce SOQL** | `INCLUDES` · `EXCLUDES` |

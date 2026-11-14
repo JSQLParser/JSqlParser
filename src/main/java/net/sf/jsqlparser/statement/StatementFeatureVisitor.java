@@ -45,6 +45,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -112,6 +116,7 @@ import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 import net.sf.jsqlparser.statement.admin.FlushStatement;
 import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
@@ -713,6 +718,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_DATA);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_DATA);
+        return super.visit(loadData, context);
     }
 
     @Override
@@ -1659,7 +1671,17 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(CreateCast statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
     public <S> Void visit(CreateOperator statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTransform statement, S context) {
         return schemaOnly();
     }
 
@@ -1669,7 +1691,17 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(CreateConversion statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
     public <S> Void visit(CreateOperatorFamily statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterConversion statement, S context) {
         return schemaOnly();
     }
 

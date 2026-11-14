@@ -65,6 +65,8 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
     private boolean oracleMultiInsert = false;
     private boolean oracleMultiInsertFirst = false;
     private List<OracleMultiInsertBranch> oracleMultiInsertBranches;
+    private InsertConflictAlgorithm conflictAlgorithm = null;
+    private boolean omitInto = false;
 
     public List<UpdateSet> getDuplicateUpdateSets() {
         return duplicateAction != null ? duplicateAction.getUpdateSets() : null;
@@ -405,6 +407,10 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
 
     private void appendInsertPrefix(StringBuilder builder) {
         builder.append("INSERT");
+        if (conflictAlgorithm != null) {
+            // SQLite writes the conflict resolution before the INTO, see lang_conflict
+            builder.append(" ").append(conflictAlgorithm.getKeywords());
+        }
         if (oracleHint != null) {
             builder.append(" ").append(oracleHint);
         }
@@ -451,7 +457,8 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
 
     /** The target: table, partitions, columns and the options before the source. */
     private void appendTarget(StringBuilder builder) {
-        builder.append(overwrite ? " OVERWRITE" : " INTO");
+        // SQLite's INSERT OR ... may omit the INTO
+        builder.append(overwrite ? " OVERWRITE" : omitInto ? "" : " INTO");
         if (tableKeyword) {
             builder.append(" TABLE");
         }
@@ -524,6 +531,37 @@ public class Insert extends ASTNodeAccessImpl implements Statement {
             builder.append(columns.get(i).getColumnName());
         }
         return builder.append(")");
+    }
+
+    /**
+     * Whether the statement is written without the optional INTO, as in SQLite's
+     * {@code INSERT OR IGNORE t VALUES (1)}.
+     */
+    public boolean isOmitInto() {
+        return omitInto;
+    }
+
+    public void setOmitInto(boolean omitInto) {
+        this.omitInto = omitInto;
+    }
+
+    public Insert withOmitInto(boolean omitInto) {
+        this.omitInto = omitInto;
+        return this;
+    }
+
+    /** The conflict resolution of {@code INSERT OR ...} and {@code REPLACE}, or null. */
+    public InsertConflictAlgorithm getConflictAlgorithm() {
+        return conflictAlgorithm;
+    }
+
+    public void setConflictAlgorithm(InsertConflictAlgorithm conflictAlgorithm) {
+        this.conflictAlgorithm = conflictAlgorithm;
+    }
+
+    public Insert withConflictAlgorithm(InsertConflictAlgorithm conflictAlgorithm) {
+        this.conflictAlgorithm = conflictAlgorithm;
+        return this;
     }
 
     public Insert withWithItemsList(List<WithItem<?>> withList) {

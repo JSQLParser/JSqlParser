@@ -11,6 +11,10 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
@@ -150,6 +154,7 @@ import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
 import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -975,6 +980,14 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(MySqlLoadDataStatement loadData, S context) {
+        fromItemVisitor.visitFromItem(loadData.getTable(), context);
+        expressionVisitor.visitExpressions(loadData.getColumns(), context);
+        expressionVisitor.visitUpdateSets(loadData.getUpdateSets(), context);
+        return null;
+    }
+
+    @Override
     public <S> T visit(PurgeStatement purgeStatement, S context) {
         return null;
     }
@@ -1313,6 +1326,26 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(AlterRule statement, S context) {
         fromItemVisitor.visitFromItem(statement.getTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateCast statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateTransform statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateConversion statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterConversion statement, S context) {
         return null;
     }
 }

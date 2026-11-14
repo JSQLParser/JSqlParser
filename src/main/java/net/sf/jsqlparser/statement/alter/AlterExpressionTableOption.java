@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import net.sf.jsqlparser.statement.create.table.TableOption;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
@@ -18,11 +19,13 @@ import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 /**
  * Internal subclass for table-level option operations within ALTER TABLE. Handles ENGINE,
  * ALGORITHM, LOCK, KEY_BLOCK_SIZE, COMMENT, ENCRYPTION, AUTO_INCREMENT (SET_TABLE_OPTION),
- * DISCARD/IMPORT TABLESPACE, DISABLE/ENABLE KEYS.
+ * DISCARD/IMPORT TABLESPACE, DISABLE/ENABLE KEYS, and MySQL's {@code WITH | WITHOUT VALIDATION}
+ * modifier (VALIDATION).
  */
 public class AlterExpressionTableOption extends AlterExpression {
 
     private TableOption structuredTableOption;
+    private AlterExpressionPartition.ExchangeValidationMode validationMode;
 
     public TableOption getStructuredTableOption() {
         return structuredTableOption;
@@ -34,6 +37,28 @@ public class AlterExpressionTableOption extends AlterExpression {
         setOperation(AlterOperation.SET_TABLE_OPTION);
         super.setTableOption(null);
         super.setUseEqual(false);
+    }
+
+    /**
+     * @return the mode of MySQL's {@code WITH | WITHOUT VALIDATION} modifier, which applies to the
+     *         whole statement, or {@code null} for any other action. The mode written after
+     *         {@code EXCHANGE PARTITION ... WITH TABLE} belongs to that action instead.
+     */
+    public AlterExpressionPartition.ExchangeValidationMode getValidationMode() {
+        return getOperation() == AlterOperation.VALIDATION ? validationMode : null;
+    }
+
+    /** Makes this action the {@code WITH | WITHOUT VALIDATION} modifier. */
+    public void setValidationMode(AlterExpressionPartition.ExchangeValidationMode validationMode) {
+        this.validationMode = Objects.requireNonNull(validationMode, "validationMode");
+        structuredTableOption = null;
+        setOperation(AlterOperation.VALIDATION);
+    }
+
+    public AlterExpressionTableOption withValidationMode(
+            AlterExpressionPartition.ExchangeValidationMode validationMode) {
+        setValidationMode(validationMode);
+        return this;
     }
 
     @Override
@@ -164,6 +189,9 @@ public class AlterExpressionTableOption extends AlterExpression {
             return;
         }
         switch (getOperation()) {
+            case VALIDATION:
+                b.append(validationMode).append(" VALIDATION");
+                break;
             case SET_TABLE_OPTION:
                 b.append(getTableOption());
                 break;

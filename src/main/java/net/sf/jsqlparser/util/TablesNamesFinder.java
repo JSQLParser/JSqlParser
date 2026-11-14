@@ -140,6 +140,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -169,6 +173,7 @@ import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.extension.CreateExtension;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -215,6 +220,7 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 import net.sf.jsqlparser.statement.admin.FlushStatement;
 import net.sf.jsqlparser.statement.admin.KillStatement;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
@@ -2639,7 +2645,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateFunctionalStatement createFunctionalStatement, S context) {
-        throwUnsupported(createFunctionalStatement);
+        // a MySQL loadable function names a shared library and no table
+        if (!(createFunctionalStatement instanceof CreateFunction)
+                || ((CreateFunction) createFunctionalStatement).getLoadableFunction() == null) {
+            throwUnsupported(createFunctionalStatement);
+        }
         return null;
     }
 
@@ -3055,6 +3065,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(MySqlLoadDataStatement loadData, S context) {
+        visitTargetTable(loadData.getTable(), context);
+        if (loadData.getUpdateSets() != null) {
+            for (UpdateSet updateSet : loadData.getUpdateSets()) {
+                updateSet.getValues().accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void visit(AttachStatement attachStatement) {
         StatementVisitor.super.visit(attachStatement);
     }
@@ -3164,6 +3185,11 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(LoadDataStatement loadDataStatement) {
         StatementVisitor.super.visit(loadDataStatement);
+    }
+
+    @Override
+    public void visit(MySqlLoadDataStatement loadData) {
+        StatementVisitor.super.visit(loadData);
     }
 
     @Override
@@ -3631,7 +3657,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateCast statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateOperator statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTransform statement, S context) {
         return null;
     }
 
@@ -3641,7 +3677,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateConversion statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateOperatorFamily statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterConversion statement, S context) {
         return null;
     }
 
