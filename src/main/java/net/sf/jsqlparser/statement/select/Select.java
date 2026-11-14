@@ -44,6 +44,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     private Wait wait;
     private boolean noWait = false;
     private boolean forUpdateBeforeOrderBy = false;
+    private List<ForUpdateClause> additionalForUpdateClauses = null;
     Alias alias;
     Pivot pivot;
     UnPivot unPivot;
@@ -417,6 +418,30 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     }
 
     /**
+     * Returns the locking clauses that follow the first one, as in PostgreSQL's
+     * {@code FOR UPDATE OF t FOR SHARE OF u}, or {@code null} if there are none. The first clause
+     * is the one {@link #getForMode()}, {@link #getForUpdateTables()}, {@link #getWait()},
+     * {@link #isNoWait()} and {@link #isSkipLocked()} describe.
+     *
+     * @return the locking clauses after the first one, or {@code null}
+     */
+    public List<ForUpdateClause> getAdditionalForUpdateClauses() {
+        return additionalForUpdateClauses;
+    }
+
+    public void setAdditionalForUpdateClauses(List<ForUpdateClause> additionalForUpdateClauses) {
+        this.additionalForUpdateClauses = additionalForUpdateClauses;
+    }
+
+    public Select addAdditionalForUpdateClause(ForUpdateClause forUpdateClause) {
+        if (additionalForUpdateClauses == null) {
+            additionalForUpdateClauses = new ArrayList<>();
+        }
+        additionalForUpdateClauses.add(forUpdateClause);
+        return this;
+    }
+
+    /**
      * Returns {@code true} when the {@code FOR UPDATE} clause appears before the {@code ORDER BY}
      * clause in the original SQL (non-standard ordering supported by some databases).
      *
@@ -571,6 +596,11 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
                 builder.append(" NOWAIT");
             } else if (isSkipLocked()) {
                 builder.append(" SKIP LOCKED");
+            }
+            if (additionalForUpdateClauses != null) {
+                for (ForUpdateClause forUpdateClause : additionalForUpdateClauses) {
+                    forUpdateClause.appendTo(builder);
+                }
             }
         }
 

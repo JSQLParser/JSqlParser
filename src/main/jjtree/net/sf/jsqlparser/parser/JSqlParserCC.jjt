@@ -12943,6 +12943,34 @@ void MySqlSelectModifier(PlainSelect select):
     }
 }
 
+ForUpdateClause AdditionalForUpdateClause():
+{
+    ForUpdateClause clause = new ForUpdateClause();
+    List<Table> tables = new ArrayList<Table>();
+    Table table;
+    Wait wait;
+}
+{
+    <K_FOR>
+    (
+        <K_UPDATE> { clause.setMode(ForMode.UPDATE); }
+        | <K_SHARE> { clause.setMode(ForMode.SHARE); }
+        | (<K_NO> <K_KEY> <K_UPDATE> { clause.setMode(ForMode.NO_KEY_UPDATE); })
+        | (<K_KEY> <K_SHARE> { clause.setMode(ForMode.KEY_SHARE); })
+    )
+    [ LOOKAHEAD(2) <K_OF>
+        table = Table() { tables.add(table); }
+        ( LOOKAHEAD(2) "," table = Table() { tables.add(table); } )*
+        { clause.setTables(tables); }
+    ]
+    [ LOOKAHEAD(1, <K_WAIT>) wait = Wait() { clause.setWait(wait); } ]
+    [ LOOKAHEAD(2) (<K_NOWAIT> { clause.setNoWait(true); }
+           | <K_SKIP> <K_LOCKED> { clause.setSkipLocked(true); }) ]
+    {
+        return clause;
+    }
+}
+
 ForClause ForClause() #ForClause:
 {
     Token token = null;
@@ -13079,6 +13107,7 @@ PlainSelect PlainSelect() #PlainSelect:
     MySqlProcedureAnalyse mySqlProcedureAnalyse = null;
     Table updateTable = null;
     List<Table> updateTables = new ArrayList<Table>();
+    ForUpdateClause additionalForUpdateClause;
     Wait wait = null;
     Token token;
     KSQLWindow ksqlWindow = null;
@@ -13245,6 +13274,11 @@ PlainSelect PlainSelect() #PlainSelect:
         [ LOOKAHEAD(1, <K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
         [ LOOKAHEAD(2) (<K_NOWAIT> { plainSelect.setNoWait(true); }
                | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
+        // PostgreSQL: more locking clauses, e.g. FOR UPDATE OF t FOR SHARE OF u
+        ( LOOKAHEAD(<K_FOR> (<K_UPDATE> | <K_SHARE> | <K_NO> <K_KEY> | <K_KEY> <K_SHARE>))
+            additionalForUpdateClause = AdditionalForUpdateClause()
+            { plainSelect.addAdditionalForUpdateClause(additionalForUpdateClause); }
+        )*
         [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements()
             { plainSelect.setOrderByElements(orderByElements); plainSelect.setForUpdateBeforeOrderBy(true); }
         ]
