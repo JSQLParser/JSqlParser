@@ -24,6 +24,14 @@ import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -60,6 +68,7 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -76,6 +85,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
@@ -109,6 +119,7 @@ import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
 import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -119,6 +130,9 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
@@ -225,6 +239,14 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(SetResourceGroup statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(PluginStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(PluginStatement statement) {
         visit(statement, null);
     }
 
@@ -538,6 +560,14 @@ public interface StatementVisitor<T> {
         this.visit(showCreate, null);
     }
 
+    default <S> T visit(MySqlShowStatement mySqlShow, S context) {
+        return null;
+    }
+
+    default void visit(MySqlShowStatement mySqlShow) {
+        this.visit(mySqlShow, null);
+    }
+
     <S> T visit(Merge merge, S context);
 
     default void visit(Merge merge) {
@@ -808,6 +838,30 @@ public interface StatementVisitor<T> {
         visit(backupLock, null);
     }
 
+    default <S> T visit(DeclareCursorStatement declareCursor, S context) {
+        return null;
+    }
+
+    default void visit(DeclareCursorStatement declareCursor) {
+        visit(declareCursor, null);
+    }
+
+    default <S> T visit(FetchCursorStatement fetchCursor, S context) {
+        return null;
+    }
+
+    default void visit(FetchCursorStatement fetchCursor) {
+        visit(fetchCursor, null);
+    }
+
+    default <S> T visit(CloseCursorStatement closeCursor, S context) {
+        return null;
+    }
+
+    default void visit(CloseCursorStatement closeCursor) {
+        visit(closeCursor, null);
+    }
+
     <S> T visit(CreatePolicy createPolicy, S context);
 
     default void visit(CreatePolicy createPolicy) {
@@ -988,6 +1042,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(CreateTablespace statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateSpatialReferenceSystem statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateSpatialReferenceSystem statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterInstance statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterInstance statement) {
         visit(statement, null);
     }
 
@@ -1180,6 +1250,70 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterRule statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperator statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperator statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperatorClass statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperatorClass statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateOperatorFamily statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateOperatorFamily statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateAggregate statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateAggregate statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperator statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperator statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperatorClass statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperatorClass statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterOperatorFamily statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterOperatorFamily statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterAggregate statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterAggregate statement) {
         visit(statement, null);
     }
 }

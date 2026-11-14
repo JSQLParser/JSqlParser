@@ -130,6 +130,12 @@ public enum MySqlVersion implements Version {
                     Feature.createTablespace, // https://dev.mysql.com/doc/refman/8.0/en/alter-tablespace.html
                     Feature.alterTablespace,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/create-spatial-reference-system.html
+                    Feature.createSpatialReferenceSystem,
+
+                    // https://dev.mysql.com/doc/refman/8.0/en/alter-instance.html
+                    Feature.alterInstance,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-database.html
                     Feature.createDatabase, Feature.alterDatabase,
@@ -162,7 +168,8 @@ public enum MySqlVersion implements Version {
                     Feature.showColumns, // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
                     Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/show-table-status.html
                     Feature.showTableStatus, // https://dev.mysql.com/doc/refman/8.0/en/show-create-table.html
-                    Feature.showCreate, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
+                    Feature.showCreate, // https://dev.mysql.com/doc/refman/8.4/en/show.html
+                    Feature.mySqlShow, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
                     Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/revoke.html
                     Feature.revoke, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
@@ -172,7 +179,9 @@ public enum MySqlVersion implements Version {
                     Feature.transactionRelease, // https://dev.mysql.com/doc/refman/8.4/en/set-transaction.html
                     Feature.setTransaction, Feature.setTransactionGlobal,
                     Feature.setTransactionPersist, // https://dev.mysql.com/doc/refman/8.4/en/xa-statements.html
-                    Feature.xa, //
+                    Feature.xa, // https://dev.mysql.com/doc/refman/8.4/en/create-server.html
+                    Feature.createServer, Feature.alterServer, // https://dev.mysql.com/doc/refman/8.4/en/component-statements.html
+                    Feature.installPlugin, Feature.installComponent, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));

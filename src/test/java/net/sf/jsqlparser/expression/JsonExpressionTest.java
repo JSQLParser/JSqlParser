@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import org.junit.jupiter.api.Assertions;
@@ -53,6 +54,99 @@ class JsonExpressionTest {
                     reparsed.getSelectItem(0).getExpression(),
                     sqlStr + " deparsed to " + st);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"select", "from", "where", "join", "union", "and", "or", "not", "case",
+            "when", "else", "as", "is", "like", "having", "distinct", "inner", "into", "with",
+            "outer", "cross", "using", "output", "null", "order", "group"})
+    void testSnowflakeKeywordAsPathName(String keyword) throws JSQLParserException {
+        String sqlStr = "SELECT v:" + keyword + "::INT, v:" + keyword + ".x[0] FROM vartab";
+        PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());
+        Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(1).getExpression());
+    }
+
+    @Test
+    void testSnowflakeKeywordPathNameBeforeClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT v:from FROM t WHERE v:where::INT = 1 ORDER BY v:order",
+                true);
+    }
+
+    @Test
+    void testSnowflakeKeywordPathNameInInsertSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO \"MY_DB\".\"MY_SCHEMA\".\"T\" (\"c\")\n"
+                + "SELECT \"F\".\"DATA_VALUE\":window::VARCHAR FROM \"MY_DB\".\"MY_SCHEMA\".\"RAW_TRACES\" AS \"F\"",
+                true);
+    }
+
+    @Test
+    void testSnowflakeKeywordPathNameOnLateralFlatten() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO \"MY_DB\".\"MY_SCHEMA\".\"OBS\" (\"o\")\n"
+                + "SELECT \"obs\".VALUE:output::VARIANT\n"
+                + "FROM \"MY_DB\".\"MY_SCHEMA\".\"RAW_TRACES\" AS \"F\",\n"
+                + "     lateral flatten(input=>\"F\".\"DATA_VALUE\":observations, outer => true, mode => 'ARRAY') AS \"obs\"",
+                true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT v:from::INT, v:output.x[0] FROM t",
+            "SELECT v:select + 1, v:where * 2 - v:from FROM t",
+            "SELECT v:window::INT + 1 FROM t WHERE v:order::INT > 2"})
+    void testKeywordPathNameDatabricksAndMysqlArithmetic(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true,
+                parser -> parser.withDialect(Dialect.DATABRICKS));
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.MYSQL));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT coalesce(v:from, v:select::INT) FROM t",
+            "SELECT CASE WHEN v:when::INT = 1 THEN v:else ELSE v:end END FROM t",
+            "SELECT * FROM (SELECT v:from AS a FROM t) x WHERE x.a IN (SELECT v:where FROM u)",
+            "SELECT * FROM t WHERE EXISTS (SELECT 1 FROM u WHERE u.v:order::INT = t.id)",
+            "SELECT f(v:window, (SELECT w:output FROM u)) FROM t"})
+    void testKeywordPathNameInsideNestedConstructs(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"select", "from", "where", "join", "union", "and", "or", "not", "case",
+            "when", "else", "as", "is", "like", "having", "distinct", "inner", "into", "with",
+            "outer", "cross", "using", "output", "null", "true", "false", "order", "group"})
+    void testSnowflakeKeywordAfterDotInPath(String keyword) throws JSQLParserException {
+        String sqlStr = "SELECT v:a." + keyword + ", v:a.b." + keyword + "::INT, v:a[0]." + keyword
+                + ".x[1] FROM vartab";
+        PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(i).getExpression());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT v:a.output + 1, \"F\".\"X\":\"a\".from::VARIANT AS y FROM t F",
+            "SELECT * FROM t WHERE v:payload.output::INT = 1 ORDER BY v:payload.from",
+            "SELECT v:a.output FROM t, lateral flatten(input => t.v:a.input.where) f"})
+    void testKeywordAfterDotInPathInContext(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+    }
+
+    @Test
+    void testKeywordAfterDotOutsideJsonPathIsStillRejected() {
+        // a reserved word is not a part of a qualified name, only of a JSON path
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT t.output FROM t",
+                        parser -> parser.withDialect(Dialect.SNOWFLAKE)));
+    }
+
+    @Test
+    void testKeywordFollowedByParenthesisStaysFunction() throws JSQLParserException {
+        // only parsing is asserted: a function behind ":" deparses with "."
+        Assertions.assertNotNull(CCJSqlParserUtil.parse("SELECT v:left(x) FROM t",
+                parser -> parser.withDialect(Dialect.SNOWFLAKE)));
     }
 
     @Test

@@ -314,7 +314,9 @@ TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
 object types, and so are PostgreSQL's ACCESS METHOD, CAST, LANGUAGE, OPERATOR,
 OPERATOR CLASS, OPERATOR FAMILY, TRANSFORM and TEXT SEARCH CONFIGURATION,
 DICTIONARY, PARSER and TEMPLATE.
-``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+``getType()`` returns their words separated by spaces, as in ``ACCESS METHOD``. MySQL's
+``DROP SPATIAL REFERENCE SYSTEM [IF EXISTS] srid`` has the object type
+``SPATIAL_REFERENCE_SYSTEM`` and its name is the SRID as written. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
 parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
 
 .. code-block:: java
@@ -1180,6 +1182,94 @@ See `CREATE TYPE <https://www.postgresql.org/docs/18/sql-createtype.html>`_ and 
 Type names, domain names and routine signatures are not reported as tables by ``TablesNamesFinder``; relation members of an extension are included. Extension scripts themselves are not inspected or executed. The obsolete ``CREATE EXTENSION ... FROM`` form is not supported.
 
 See PostgreSQL's documentation for `CREATE TYPE <https://www.postgresql.org/docs/18/sql-createtype.html>`_, `ALTER TYPE <https://www.postgresql.org/docs/18/sql-altertype.html>`_, `CREATE DOMAIN <https://www.postgresql.org/docs/18/sql-createdomain.html>`_ and `ALTER EXTENSION <https://www.postgresql.org/docs/18/sql-alterextension.html>`_.
+
+Inspect operator and aggregate definitions
+==========================================
+
+PostgreSQL's operator and aggregate DDL parses to typed statements that reuse the models of
+``DROP OPERATOR``, ``DROP AGGREGATE`` and ``CREATE TYPE``: an operator is an ``ExclusionOperator``
+(schema and symbol) or an ``OperatorSignature`` (with its operand types, ``null`` for ``NONE``), an
+aggregate is a ``RoutineReference``, and a definition list holds ``DefinitionElement`` items with a
+``DefinitionArgument``. PostgreSQL checks the names and values of a definition when it runs the
+statement, so they are not restricted.
+
+.. list-table::
+    :header-rows: 1
+    :widths: 45 55
+
+    * - Statement
+      - Model
+    * - ``CREATE OPERATOR [schema.]op (definition)``
+      - ``CreateOperator``: ``getOperator()``, ``getDefinition()``, ``getDefinitionElement(name)``
+    * - ``ALTER OPERATOR op (left, right) {OWNER TO | SET SCHEMA | SET (...)}``
+      - ``AlterOperator``: ``getOperator()``, ``getAction()``, ``getNewName()``, ``getProperties()``
+    * - ``CREATE OPERATOR CLASS name [DEFAULT] FOR TYPE type USING method [FAMILY family] AS ...``
+      - ``CreateOperatorClass``: ``getName()``, ``isDefaultClass()``, ``getDataType()``,
+        ``getAccessMethod()``, ``getFamily()``, ``getItems()``
+    * - ``ALTER OPERATOR CLASS name USING method {RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterOperatorClass``: ``getName()``, ``getAccessMethod()``, ``getAction()``,
+        ``getNewName()``
+    * - ``CREATE OPERATOR FAMILY name USING method``
+      - ``CreateOperatorFamily``: ``getName()``, ``getAccessMethod()``
+    * - ``ALTER OPERATOR FAMILY name USING method {ADD ... | DROP ... | RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterOperatorFamily``: ``getName()``, ``getAccessMethod()``, ``getAction()``,
+        ``getItems()``, ``getNewName()``
+    * - ``CREATE [OR REPLACE] AGGREGATE name (arguments) (definition)`` and the old
+        ``CREATE AGGREGATE name (BASETYPE = type, ...)``
+      - ``CreateAggregate``: ``isOrReplace()``, ``getAggregate()``, ``isOldStyle()``,
+        ``getDefinition()``, ``getDefinitionElement(name)``
+    * - ``ALTER AGGREGATE name (arguments) {RENAME TO | OWNER TO | SET SCHEMA}``
+      - ``AlterAggregate``: ``getAggregate()``, ``getAction()``, ``getNewName()``
+
+``getNewName()`` is the new name, the role or the schema of the action. An ``OperatorClassItem``
+is one member of an operator class or family: its ``Kind`` is ``OPERATOR``, ``FUNCTION`` or
+``STORAGE``, with the strategy or support number, the operator and its optional operand types, the
+``Purpose`` (``FOR SEARCH`` or ``FOR ORDER BY`` with ``getSortFamily()``), the function as a
+``RoutineReference``, or the storage type. A member that ``ALTER OPERATOR FAMILY ... DROP`` removes
+has a kind, a number and operand types only.
+
+.. code-block:: java
+
+    CreateOperator operator = (CreateOperator) CCJSqlParserUtil.parse(
+            "CREATE OPERATOR app.=== (FUNCTION = app.eq, LEFTARG = int, RIGHTARG = int, "
+                    + "NEGATOR = OPERATOR(app.!==), HASHES)");
+    operator.getOperator().getSchemaName();                          // app
+    operator.getOperator().getName();                                // ===
+    operator.getDefinitionElement("NEGATOR").getArgument().getOperator(); // app.!==
+    operator.getDefinitionElement("HASHES").getArgument();           // null
+
+    CreateOperatorClass operatorClass = (CreateOperatorClass) CCJSqlParserUtil.parse(
+            "CREATE OPERATOR CLASS oc DEFAULT FOR TYPE int4 USING btree AS "
+                    + "OPERATOR 1 < (int4, int4), FUNCTION 1 btint4cmp(int4, int4)");
+    OperatorClassItem item = operatorClass.getItems().get(0);
+    item.getNumber();                     // 1
+    item.getOperator().getName();         // <
+    item.getOperandTypes();               // [int4, int4]
+
+    CreateAggregate aggregate = (CreateAggregate) CCJSqlParserUtil.parse(
+            "CREATE AGGREGATE app.total (numeric ORDER BY int) (SFUNC = app.add, STYPE = numeric)");
+    aggregate.getAggregate().getName();              // app.total
+    aggregate.getAggregate().getOrderByArguments();  // [int]
+    aggregate.getDefinitionElement("STYPE").getArgument().getDataType(); // numeric
+
+An operator name is one name with its exact text, such as ``===``, ``<==>`` or ``@#@``, wherever
+PostgreSQL DDL names an operator. It follows the rules of PostgreSQL's lexer: the parts must touch
+each other, a name of several characters ends in ``+`` or ``-`` only if it contains one of
+``~ ! @ # % ^ & | ?``, ``=>`` alone is not an operator, and a name has at most 63 characters. A
+database may precede the schema (``db.schema.+``); ``getSchemaName()`` then returns both. An
+operator that contains a backtick is not supported, and without ``Dialect.POSTGRESQL`` the lexer
+reads ``#`` before ``#``, ``@`` or a letter as the start of a name. An aggregate signature is
+``*`` or has at least one argument, so ``agg()`` is rejected wherever an aggregate is named.
+
+Without a dialect, ``CREATE OPERATOR`` and ``ALTER OPERATOR`` are read this way when an operator
+symbol follows, so Oracle's ``CREATE OPERATOR name BINDING ...`` stays an
+``UnsupportedStatement``, and so do MySQL's ``CREATE AGGREGATE FUNCTION`` and SQL Server's
+``CREATE AGGREGATE name (@parameter type) ...``. With ``Dialect.POSTGRESQL`` they are parse
+errors. Validators report ``createOperator``, ``alterOperator``, ``createOperatorClass``,
+``alterOperatorClass``, ``createOperatorFamily``, ``alterOperatorFamily``, ``createAggregate``
+and ``alterAggregate``, which PostgreSQL enables.
+
+See `CREATE OPERATOR <https://www.postgresql.org/docs/18/sql-createoperator.html>`_, `ALTER OPERATOR <https://www.postgresql.org/docs/18/sql-alteroperator.html>`_, `CREATE OPERATOR CLASS <https://www.postgresql.org/docs/18/sql-createopclass.html>`_, `ALTER OPERATOR CLASS <https://www.postgresql.org/docs/18/sql-alteropclass.html>`_, `CREATE OPERATOR FAMILY <https://www.postgresql.org/docs/18/sql-createopfamily.html>`_, `ALTER OPERATOR FAMILY <https://www.postgresql.org/docs/18/sql-alteropfamily.html>`_, `CREATE AGGREGATE <https://www.postgresql.org/docs/18/sql-createaggregate.html>`_ and `ALTER AGGREGATE <https://www.postgresql.org/docs/18/sql-alteraggregate.html>`_.
 
 Classify a Statement
 ==============================
@@ -2393,6 +2483,54 @@ such as Oracle and NDB data file clauses, still parse as ``UnsupportedStatement`
 ``createTablespace`` and ``alterTablespace`` features, which the MySQL and PostgreSQL
 capabilities enable; feature analysis reports ``MODIFIES_SCHEMA``.
 
+MySQL spatial reference systems and ALTER INSTANCE
+--------------------------------------------------
+
+MySQL `CREATE SPATIAL REFERENCE SYSTEM
+<https://dev.mysql.com/doc/refman/8.4/en/create-spatial-reference-system.html>`_ parses to
+``CreateSpatialReferenceSystem``. ``isOrReplace()`` and ``isIfNotExists()`` exclude each
+other, ``getSrid()`` is the number as written (a ``LongValue``, or a ``HexValue`` for
+``0x...`` and ``X'...'``), and ``getAttributes()`` keeps the ``NAME``, ``DEFINITION``,
+``ORGANIZATION … IDENTIFIED BY`` and ``DESCRIPTION`` attributes in source order as
+``SpatialReferenceSystemAttribute`` values. ``getName()``, ``getDefinition()``,
+``getOrganization()``, ``getOrganizationId()`` and ``getDescription()`` return the first
+attribute of their kind. The parser follows MySQL's grammar, which takes the attributes in
+any order and any number: the server reports a repeated attribute, a missing ``NAME`` or
+``DEFINITION`` and an SRID above 4294967295 when it runs the statement, not as syntax
+errors. `DROP SPATIAL REFERENCE SYSTEM
+<https://dev.mysql.com/doc/refman/8.4/en/drop-spatial-reference-system.html>`_ parses to
+``Drop`` with the object type ``SPATIAL_REFERENCE_SYSTEM``.
+
+.. code-block:: java
+
+    CreateSpatialReferenceSystem srs = (CreateSpatialReferenceSystem) CCJSqlParserUtil.parse(
+        "CREATE SPATIAL REFERENCE SYSTEM 4120 NAME 'Greek' ORGANIZATION 'EPSG' "
+            + "IDENTIFIED BY 4120 DEFINITION 'GEOGCS[\"Greek\"]'");
+    srs.getSrid();                     // 4120
+    srs.getName().getValue();          // Greek
+    srs.getOrganizationId();           // 4120
+
+MySQL `ALTER INSTANCE <https://dev.mysql.com/doc/refman/8.4/en/alter-instance.html>`_ parses
+to ``AlterInstance``. ``getAction()`` is ``ENABLE_INNODB_REDO_LOG``,
+``DISABLE_INNODB_REDO_LOG``, ``ROTATE_INNODB_MASTER_KEY``, ``ROTATE_BINLOG_MASTER_KEY``,
+``RELOAD_TLS`` or ``RELOAD_KEYRING``. For ``RELOAD TLS``, ``getChannel()`` is the identifier
+after ``FOR CHANNEL`` as written, or null, and ``isNoRollbackOnError()`` records
+``NO ROLLBACK ON ERROR``. MySQL reads ``INNODB``, ``BINLOG`` and ``REDO_LOG`` as
+identifiers, so they may be written in backticks, and the engine of ``ROTATE`` also as a
+string; the statement prints them as plain words. The grammar takes any identifier as the
+channel; the server accepts ``mysql_main`` and ``mysql_admin``.
+
+These statements are read with ``Dialect.MYSQL`` and without a dialect. With
+``Dialect.MYSQL``, a ``CREATE SPATIAL`` statement that is neither this one nor
+``CREATE SPATIAL INDEX``, and an ``ALTER INSTANCE`` with another action, are errors;
+without a dialect they stay ``UnsupportedStatement``, as in the other dialects, where
+``DROP SPATIAL REFERENCE SYSTEM`` is still rejected. ``REFERENCE``, ``INSTANCE``,
+``ROTATE``, ``RELOAD`` and the other words remain ordinary identifiers. Validators report
+the ``createSpatialReferenceSystem`` and ``alterInstance`` features, which the MySQL
+capabilities enable, and ``drop``. Feature analysis reports ``MODIFIES_SCHEMA`` for
+``CREATE SPATIAL REFERENCE SYSTEM`` and ``MODIFIES_SESSION`` for ``ALTER INSTANCE``, a
+server operation like ``ALTER SYSTEM``.
+
 SQL Server identity inserts
 ---------------------------
 
@@ -2658,6 +2796,63 @@ Table visitors report the locked tables but not their aliases. Validators report
 three, MariaDB the first two, and PostgreSQL and Oracle ``lock``. Feature analysis reports
 ``MODIFIES_TRANSACTION``.
 
+MySQL servers, plugins and components
+-------------------------------------
+
+MySQL `CREATE SERVER <https://dev.mysql.com/doc/refman/8.4/en/create-server.html>`_ and
+`ALTER SERVER <https://dev.mysql.com/doc/refman/8.4/en/alter-server.html>`_ parse to the
+``CreateServer`` and ``AlterServer`` of the PostgreSQL statements. A ``ForeignDataOption``
+keeps its value in ``getValueExpression()``: a ``StringValue``, or for MySQL's ``PORT`` the
+number as written (``LongValue``, ``DoubleValue`` or ``HexValue``). ``getValue()`` still
+returns the string value and is null for a number. A server or wrapper name written as a
+string literal, as in ``FOREIGN DATA WRAPPER 'mysql'``, is kept with its quotes.
+
+.. code-block:: java
+
+    CreateServer server = (CreateServer) CCJSqlParserUtil.parse(
+        "CREATE SERVER s FOREIGN DATA WRAPPER mysql OPTIONS (HOST 'h', PORT 3306)");
+    ForeignDataOption port = server.getOptions().get(1);
+    port.getValueExpression();   // LongValue 3306
+    port.getValue();             // null
+
+Numeric values and quoted names are read with the MySQL and MariaDB dialects and without a
+dialect, and only in these two statements; PostgreSQL and the other option lists keep
+requiring string constants. ``Dialect.MYSQL`` follows the server grammar: the options are
+``USER``, ``HOST``, ``DATABASE``, ``OWNER``, ``PASSWORD`` and ``SOCKET`` with a string and
+``PORT`` with a number, ``OPTIONS`` is required, and the PostgreSQL clauses (``IF NOT
+EXISTS``, ``TYPE``, ``VERSION``, ``ADD``/``SET``/``DROP`` options, ``RENAME TO``,
+``OWNER TO``) are rejected. ``DROP SERVER`` stays a ``Drop``.
+
+`INSTALL PLUGIN <https://dev.mysql.com/doc/refman/8.4/en/install-plugin.html>`_,
+`UNINSTALL PLUGIN <https://dev.mysql.com/doc/refman/8.4/en/uninstall-plugin.html>`_,
+`INSTALL COMPONENT <https://dev.mysql.com/doc/refman/8.4/en/install-component.html>`_ and
+`UNINSTALL COMPONENT <https://dev.mysql.com/doc/refman/8.4/en/uninstall-component.html>`_
+parse to one ``PluginStatement`` with an ``Action`` (``INSTALL``, ``UNINSTALL``) and an
+``ObjectType`` (``PLUGIN``, ``COMPONENT``). A plugin statement has ``getPluginName()`` and,
+for ``INSTALL``, the ``getLibrary()`` after ``SONAME``. A component statement lists its URNs
+in ``getComponents()``, and ``INSTALL COMPONENT ... SET`` its assignments in
+``getVariables()``: each ``ComponentVariable`` has a ``SetScope`` (``NONE``, ``GLOBAL`` or
+``PERSIST``), the name as written, the operator (``=`` or ``:=``) and the value expression;
+the word ``ON`` is read as a column. As in MySQL, a value is not ``DEFAULT`` or a subquery.
+
+.. code-block:: java
+
+    PluginStatement install = (PluginStatement) CCJSqlParserUtil.parse(
+        "INSTALL COMPONENT 'file://component1' SET GLOBAL component1.var1 = 12 + 3",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    ComponentVariable variable = install.getVariables().get(0);
+    // GLOBAL, component1.var1, 12 + 3
+    String parts = variable.getScope() + ", " + variable.getName() + ", " + variable.getValue();
+
+The statements are read with the MySQL and MariaDB dialects and without a dialect; MariaDB
+has no components. With the MySQL and MariaDB dialects every ``INSTALL`` is this statement.
+Without a dialect DuckDB's ``INSTALL extension`` keeps producing an ``ExtensionStatement``,
+also for extensions named ``plugin`` or ``component``: ``SONAME`` after the plugin name or a
+component URN selects the MySQL statement. ``UNINSTALL``, ``PLUGIN``, ``COMPONENT`` and
+``SONAME`` remain ordinary identifiers. The validator checks ``installPlugin`` (MySQL and
+MariaDB) and ``installComponent`` (MySQL), and ``createServer`` and ``alterServer`` are now
+part of the MySQL and MariaDB capabilities. Feature analysis reports ``MODIFIES_SESSION``.
+
 PostgreSQL session statements and COPY options
 ----------------------------------------------
 
@@ -2771,6 +2966,61 @@ enable; PostgreSQL's ``RESET`` keeps ``reset``. Feature analysis reports
 ``MODIFIES_SESSION`` for FLUSH, KILL and HANDLER OPEN and CLOSE, adds
 ``MODIFIES_TRANSACTION`` for the table locks of FLUSH TABLES, and reports ``READS_DATA`` and
 ``RETURNS_RESULT_SET`` for HANDLER READ.
+
+PostgreSQL cursors
+------------------
+
+PostgreSQL's cursor statements parse to the ``net.sf.jsqlparser.statement.cursor`` package:
+
+* `DECLARE name [BINARY] [ASENSITIVE | INSENSITIVE] [[NO] SCROLL] CURSOR [{WITH | WITHOUT} HOLD]
+  FOR query <https://www.postgresql.org/docs/18/sql-declare.html>`_ parses to
+  ``DeclareCursorStatement``. ``getOptions()`` lists the ``CursorOption`` values in their
+  order; as in PostgreSQL's grammar they may come in any order and repeat, and PostgreSQL
+  rejects contradicting ones such as ``SCROLL NO SCROLL`` when it runs the statement.
+  ``getHoldability()`` is ``WITH_HOLD``, ``WITHOUT_HOLD`` or null, and ``getQuery()`` is the
+  ``Select``: a SELECT, ``VALUES``, ``TABLE t`` or a query with ``WITH``.
+* `FETCH <https://www.postgresql.org/docs/18/sql-fetch.html>`_ and
+  `MOVE <https://www.postgresql.org/docs/18/sql-move.html>`_
+  ``[direction] [FROM | IN] cursor`` parse to ``FetchCursorStatement``, whose ``getKind()``
+  is ``FETCH`` or ``MOVE``. The direction is an optional ``FetchDirection`` keyword
+  (``NEXT``, ``PRIOR``, ``FIRST``, ``LAST``, ``ABSOLUTE``, ``RELATIVE``, ``FORWARD``,
+  ``BACKWARD``) with ``getCount()`` or ``isAll()``: ``ABSOLUTE`` and ``RELATIVE`` take a
+  count, ``FORWARD`` and ``BACKWARD`` an optional count or ``ALL``, and a count or ``ALL``
+  can stand alone. A count is a signed 32-bit integer, as in PostgreSQL. ``getFromKeyword()``
+  is ``FROM``, ``IN`` or null.
+* `CLOSE {name | ALL} <https://www.postgresql.org/docs/18/sql-close.html>`_ parses to
+  ``CloseCursorStatement``; ``isAll()`` is true when it has no cursor name.
+
+.. code-block:: java
+
+    FetchCursorStatement fetch = (FetchCursorStatement) CCJSqlParserUtil.parse(
+        "FETCH ABSOLUTE -1 FROM c", parser -> parser.withDialect(Dialect.POSTGRESQL));
+    fetch.getDirection();     // ABSOLUTE
+    fetch.getCount();         // -1
+    fetch.getCursorName();    // c
+
+A cursor name is any name PostgreSQL takes as a column identifier, so its reserved words and
+type or function name keywords such as ``table`` or ``binary`` are rejected. As in PostgreSQL,
+a direction word that ends the statement names the cursor: ``FETCH next`` fetches from a
+cursor named ``next``.
+
+``Dialect.POSTGRESQL`` reads ``FETCH``, ``MOVE``, ``CLOSE`` and ``DECLARE`` followed by a
+name as cursor statements. Without a dialect they parse when they take the PostgreSQL form:
+``DECLARE`` needs a name, the cursor options and ``CURSOR``, and ``FETCH``, ``MOVE`` and
+``CLOSE`` must end at a semicolon or the end of the input, so other products' variants such
+as ``FETCH NEXT FROM c INTO @x`` or ``CLOSE GLOBAL c`` remain unsupported statements. Other
+dialects keep their readings, and ``DECLARE @variable`` still parses to the SQL Server
+``DeclareStatement`` in every dialect that read it before. ``MOVE`` becomes a non-reserved
+keyword; it remains usable as a name, as do ``CLOSE``, ``CURSOR`` and the option and
+direction words. ``SELECT ... FETCH FIRST`` is unchanged.
+
+Table visitors report the tables of the query of ``DECLARE`` and none for the other
+statements, whose cursor name is not a table. Validators report the ``declareCursor``,
+``fetchCursor`` (``FETCH`` and ``MOVE``) and ``closeCursor`` features, which the PostgreSQL
+capabilities enable, and validate the query of ``DECLARE`` like a SELECT. Feature analysis
+reports ``MODIFIES_SESSION`` for all of them, ``READS_DATA`` for a ``DECLARE`` whose query
+reads a table, ``RETURNS_RESULT_SET`` for ``FETCH``, and a possible ``READS_DATA`` for
+``FETCH`` and ``MOVE``, which run the query of the cursor.
 
 MySQL account management statements
 -----------------------------------
@@ -3215,21 +3465,71 @@ MySQL SHOW statements
 The MySQL statements that read table, column and object definitions parse to typed
 statements in every dialect:
 
+* ``SHOW [EXTENDED] [FULL] TABLES [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
+  ``ShowTablesStatement``, as before.
 * ``SHOW [EXTENDED] [FULL] {COLUMNS | FIELDS} {FROM | IN} t [{FROM | IN} db]
   [LIKE 'p' | WHERE expr]`` extends ``ShowColumnsStatement``. ``getTable()`` returns the
   ``Table``; ``getTableName()`` and ``setTableName(String)`` remain and are derived from it.
   ``isExtended()``, ``isFull()`` and ``isFieldsKeyword()`` record the modifiers and the
-  ``FIELDS`` spelling, ``getTableSelectionMode()`` and ``getDbSelectionMode()`` the
-  ``FROM``/``IN`` spelling, and ``getDbName()``, ``getLikeExpression()`` and
-  ``getWhereCondition()`` the optional clauses.
+  ``FIELDS`` spelling, and ``getTableSelectionMode()`` the ``FROM``/``IN`` spelling before
+  the table.
+* ``SHOW [EXTENDED] {INDEX | INDEXES | KEYS} {FROM | IN} t [{FROM | IN} db] [WHERE expr]``
+  extends ``ShowIndexStatement`` in the same way: ``getTable()``, ``isExtended()``,
+  ``getKeyword()`` (``INDEX``, ``INDEXES`` or ``KEYS``), ``getTableSelectionMode()``,
+  ``getDbSelection()`` and ``getWhereCondition()``. The ``String`` constructor,
+  ``getTableName()`` and ``setTableName(String)`` remain. ``SHOW INDEX FROM t FROM db``
+  used to fail.
 * ``SHOW TABLE STATUS [{FROM | IN} db] [LIKE 'p' | WHERE expr]`` parses to
-  ``ShowTableStatusStatement``, with the same accessors as ``ShowTablesStatement``.
+  ``ShowTableStatusStatement``.
 * ``SHOW CREATE`` parses to ``ShowCreateStatement``. ``getObjectType()`` is ``TABLE``,
   ``VIEW``, ``PROCEDURE``, ``FUNCTION``, ``TRIGGER``, ``EVENT``, ``DATABASE`` or ``USER``.
   The first six name the object with ``getName()``, a ``Table``. ``DATABASE`` uses
   ``getDatabaseName()``, ``isSchemaKeyword()`` and ``isIfNotExists()``. ``USER`` uses
   ``getAccount()``, a ``UserAccount`` without authentication; ``isCurrentUser()`` and
   ``isCurrentUserParentheses()`` describe ``CURRENT_USER`` and ``CURRENT_USER()``.
+
+The ``{FROM | IN} db`` clause is a ``ShowDbSelection`` (``getSelectionMode()`` and
+``getName()``) and the ``LIKE 'p' | WHERE expr`` filter a ``ShowFilter`` (``getKind()`` and
+``getExpression()``). ``ShowTablesStatement``, ``ShowColumnsStatement``,
+``ShowTableStatusStatement`` and ``MySqlShowStatement`` return them from
+``getDbSelection()`` and ``getFilter()``; ``ShowIndexStatement`` has the database clause
+only. The separate accessors remain and read and write these values:
+``getSelectionMode()``/``getDbSelectionMode()``, ``getDbName()``, ``getLikeExpression()``
+and ``getWhereCondition()``. A selection mode set before the database name is kept for it.
+A statement holds one filter, so ``setWhereCondition`` replaces a ``LIKE`` filter and
+``setLikeExpression`` a ``WHERE`` filter; ``ShowTablesStatement`` used to keep and render
+both. ``ShowTablesStatement.toString()`` no longer fails without modifiers or without a
+selection mode.
+
+The other `MySQL 8.4 SHOW statements <https://dev.mysql.com/doc/refman/8.4/en/show.html>`_
+parse to ``MySqlShowStatement``. ``getKind()`` tells which one it is and ``getKeyword()``
+how its keywords were spelled:
+
+* ``VARIABLES`` and ``STATUS`` take a scope and a filter;
+* ``PROCESSLIST`` takes ``FULL``;
+* ``DATABASES`` (also ``SCHEMAS``), ``PROCEDURE_STATUS``, ``FUNCTION_STATUS``,
+  ``CHARACTER_SET`` (also ``CHARSET`` and ``CHAR SET``) and ``COLLATION`` take a filter;
+* ``TRIGGERS`` (with ``FULL``), ``EVENTS`` and ``OPEN_TABLES`` take a database and a filter;
+* ``PROCEDURE_CODE`` and ``FUNCTION_CODE`` take the routine name, and ``ENGINE`` the engine
+  name and ``STATUS``, ``MUTEX`` or ``LOGS``;
+* ``GRANTS`` takes ``FOR account [USING role, ...]``;
+* ``WARNINGS`` and ``ERRORS`` take ``COUNT(*)`` or a limit;
+* ``BINLOG_EVENTS`` takes ``IN 'log'``, ``FROM pos`` and a limit, and ``RELAYLOG_EVENTS``
+  also ``FOR CHANNEL 'c'``;
+* ``REPLICA_STATUS`` takes ``FOR CHANNEL 'c'``;
+* ``PROFILE`` takes types such as ``CPU`` or ``BLOCK IO``, ``FOR QUERY n`` and a limit;
+* ``ENGINES`` (also ``STORAGE ENGINES``), ``PLUGINS``, ``PRIVILEGES``, ``PROFILES``,
+  ``BINARY_LOGS``, ``BINARY_LOG_STATUS`` and ``REPLICAS`` take nothing.
+
+The parts have typed accessors: ``getScope()`` (``GLOBAL``, ``SESSION`` or ``LOCAL``),
+``isFull()``, ``isCount()``, ``getRoutineName()`` (a ``Table``), ``getEngineName()`` and
+``getEngineInfo()``, ``getDbSelection()``, ``getFilter()``, ``getAccount()`` and
+``getUsingRoles()`` (``UserAccount`` values, read like the accounts of ``CREATE USER``),
+``getLogName()``, ``getPosition()``, ``getLimit()`` (``LIMIT [offset,] n``) with
+``getOffset()`` (``LIMIT n OFFSET offset``), ``getChannel()``, ``getProfileTypes()`` and
+``getProfileQuery()``. ``Kind.allows(Part)`` tells which parts a kind takes; setting
+another part throws ``IllegalArgumentException``, and ``setKind`` drops the parts the new
+kind does not take. ``setKeyword("SCHEMAS")`` selects the kind together with its spelling.
 
 .. code-block:: java
 
@@ -3242,16 +3542,47 @@ statements in every dialect:
         "SHOW CREATE USER 'app'@'%'");
     create.getAccount().getHost().getNotExcapedValue();   // %
 
-A typed statement is used only when it covers the whole statement. Other dialects'
-``SHOW`` forms, such as ``SHOW COLUMNS IN SCHEMA s`` or ``SHOW CREATE TABLE t FORMAT f``,
-remain ``UnsupportedStatement``.
+    MySqlShowStatement grants = (MySqlShowStatement) CCJSqlParserUtil.parse(
+        "SHOW GRANTS FOR 'app'@'%' USING 'reader'");
+    grants.getKind();                   // GRANTS
+    grants.getUsingRoles().size();      // 1
 
-Table visitors report the table of ``SHOW COLUMNS`` (qualified by the ``FROM db`` clause)
-and the table or view of ``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now
-``SHOW COLUMNS`` raised ``UnsupportedOperationException``. ``SHOW TABLE STATUS`` names no
-table. Validators report the ``showColumns``, ``showTableStatus`` and ``showCreate``
-features, which the MySQL and MariaDB capabilities enable. Feature analysis reports
-``RETURNS_RESULT_SET``.
+    MySqlShowStatement events = (MySqlShowStatement) CCJSqlParserUtil.parse(
+        "SHOW BINLOG EVENTS IN 'binlog.000001' FROM 4 LIMIT 10",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    events.getLogName().getValue();     // binlog.000001
+    events.getLimit().getRowCount();    // 10
+
+``MySqlShowStatement`` is read with ``Dialect.MYSQL`` and ``Dialect.MARIADB`` and without
+a dialect; other dialects keep ``UnsupportedStatement``. Without a dialect, a single word
+such as ``SHOW VARIABLES`` or ``SHOW GRANTS`` remains a ``ShowStatement``, as in every
+dialect but MySQL and MariaDB. The spellings MySQL 8.4 removed, ``SHOW MASTER STATUS``,
+``SHOW MASTER LOGS``, ``SHOW SLAVE STATUS`` and ``SHOW SLAVE HOSTS``, are read with
+``Dialect.MARIADB`` and without a dialect.
+
+With ``Dialect.MYSQL`` or ``Dialect.MARIADB`` the ``LIKE`` pattern of every ``SHOW``
+statement is a string literal, as in the server, and parses to a ``StringValue``;
+without a dialect it is any simple expression, as before. Limit values are unsigned
+integers, names or ``?`` parameters, log names and channels are strings, and a log
+position is an unsigned number.
+
+A typed statement is used only when it covers the whole statement. Other forms, such as
+Snowflake's ``SHOW COLUMNS IN SCHEMA s``, ClickHouse's ``SHOW CREATE TABLE t FORMAT f`` or
+``SHOW WARNINGS LIKE 'a'``, remain ``UnsupportedStatement``; ``SHOW INDEX`` forms with
+such trailing clauses used to fail. A ``WHERE`` filter is read to its end, so
+``SHOW COLUMNS FROM t WHERE a = 1 AND b = 2`` no longer becomes an
+``UnsupportedStatement``, and text the expression does not take is a parse error.
+
+``StatementDeParser`` prints the expressions of the filters, limits and log positions with
+its ``ExpressionDeParser``. Table visitors report the table of ``SHOW COLUMNS`` and
+``SHOW INDEX`` (qualified by the ``FROM db`` clause) and the table or view of
+``SHOW CREATE TABLE`` and ``SHOW CREATE VIEW``; until now ``SHOW INDEX`` raised
+``UnsupportedOperationException``, as ``SHOW TABLES`` still does. ``SHOW TABLE STATUS``
+and ``MySqlShowStatement`` name no table. Validators report the ``showColumns``,
+``showIndex``, ``showTableStatus``, ``showCreate`` and ``mySqlShow`` features, which the
+MySQL and MariaDB capabilities enable, and look up the database of ``MySqlShowStatement``
+and the procedure of ``SHOW PROCEDURE CODE``. Feature analysis
+reports ``RETURNS_RESULT_SET``.
 
 MySQL EXPLAIN, prepared statements and DO
 =========================================

@@ -224,8 +224,8 @@ class MySqlLoadableFunctionTest {
                     parse("CREATE AGGREGATE FUNCTION f(x INT) RETURNS INT RETURN x", dialect));
             assertInstanceOf(UnsupportedStatement.class,
                     parse("CREATE AGGREGATE FUNCTION f RETURNS DOUBLE SONAME 'udf.so'", dialect));
-            assertInstanceOf(UnsupportedStatement.class,
-                    parse("CREATE AGGREGATE f RETURNS INTEGER SONAME 'udf.so'", dialect));
+            // The PostgreSQL aggregate parser rejects a definition without its signature.
+            assertRejected("CREATE AGGREGATE f RETURNS INTEGER SONAME 'udf.so'", dialect);
             CreateFunction tokens = assertInstanceOf(CreateFunction.class,
                     parse("CREATE FUNCTION f RETURNS DOUBLE SONAME 'udf.so'", dialect));
             assertNull(tokens.getLoadableFunction());
@@ -237,9 +237,13 @@ class MySqlLoadableFunctionTest {
     void otherDialectsKeepTheirReading() throws Exception {
         for (Dialect dialect : OTHERS) {
             String aggregate = "CREATE AGGREGATE FUNCTION f RETURNS INTEGER SONAME 'udf.so'";
-            Statement statement = parse(aggregate, dialect);
-            assertInstanceOf(UnsupportedStatement.class, statement, String.valueOf(dialect));
-            assertEquals(aggregate, statement.toString());
+            if (dialect == Dialect.POSTGRESQL) {
+                assertRejected(aggregate, dialect);
+            } else {
+                Statement statement = parse(aggregate, dialect);
+                assertInstanceOf(UnsupportedStatement.class, statement, String.valueOf(dialect));
+                assertEquals(aggregate, statement.toString());
+            }
             String plain = "CREATE FUNCTION f RETURNS STRING SONAME 'udf.so'";
             if (dialect == Dialect.SQLSERVER) {
                 // a SQL Server function needs its parameter parentheses

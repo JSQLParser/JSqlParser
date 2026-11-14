@@ -122,7 +122,14 @@ public enum PostgresqlVersion implements Version {
                     Feature.alterUserMapping,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createRule, Feature.notifyStatement,
-                    Feature.createCollation, Feature.alterCollation,
+                    Feature.createCollation, Feature.alterCollation, // https://www.postgresql.org/docs/current/sql-createoperator.html
+                    // https://www.postgresql.org/docs/current/sql-createopclass.html
+                    // https://www.postgresql.org/docs/current/sql-createopfamily.html
+                    // https://www.postgresql.org/docs/current/sql-createaggregate.html
+                    Feature.createOperator, Feature.alterOperator,
+                    Feature.createOperatorClass, Feature.alterOperatorClass,
+                    Feature.createOperatorFamily, Feature.alterOperatorFamily,
+                    Feature.createAggregate, Feature.alterAggregate,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,
@@ -160,6 +167,12 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-listen.html
                     // https://www.postgresql.org/docs/current/sql-unlisten.html
                     Feature.show, Feature.discard, Feature.listen,
+
+                    // https://www.postgresql.org/docs/current/sql-declare.html
+                    // https://www.postgresql.org/docs/current/sql-fetch.html
+                    // https://www.postgresql.org/docs/current/sql-move.html
+                    // https://www.postgresql.org/docs/current/sql-close.html
+                    Feature.declareCursor, Feature.fetchCursor, Feature.closeCursor,
 
                     // https://www.postgresql.org/docs/current/sql-alterfunction.html
                     // https://www.postgresql.org/docs/current/sql-alterprocedure.html

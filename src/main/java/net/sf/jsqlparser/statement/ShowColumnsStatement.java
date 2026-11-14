@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.show.ShowDbSelection;
+import net.sf.jsqlparser.statement.show.ShowFilter;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement.SelectionMode;
 
 /**
@@ -27,10 +30,8 @@ public class ShowColumnsStatement extends ASTNodeAccessImpl implements Statement
     private boolean fieldsKeyword;
     private SelectionMode tableSelectionMode = SelectionMode.FROM;
     private Table table;
-    private SelectionMode dbSelectionMode = SelectionMode.FROM;
-    private String dbName;
-    private Expression likeExpression;
-    private Expression whereCondition;
+    private ShowDbSelection dbSelection;
+    private ShowFilter filter;
 
     public ShowColumnsStatement() {
         // empty constructor
@@ -97,41 +98,73 @@ public class ShowColumnsStatement extends ASTNodeAccessImpl implements Statement
 
     /** The keyword before the database name, {@code FROM} unless {@code IN} was written. */
     public SelectionMode getDbSelectionMode() {
-        return dbSelectionMode;
+        return dbSelection == null ? SelectionMode.FROM : dbSelection.getSelectionMode();
     }
 
+    /** Sets the keyword before the database name, which is kept until the name is set. */
     public void setDbSelectionMode(SelectionMode dbSelectionMode) {
-        this.dbSelectionMode = dbSelectionMode;
+        dbSelection = ShowDbSelection.updateSelectionMode(dbSelection, dbSelectionMode);
     }
 
     /** The database of the trailing {@code FROM db} or {@code IN db} clause, or null. */
     public String getDbName() {
-        return dbName;
+        return ShowDbSelection.name(dbSelection);
     }
 
     public void setDbName(String dbName) {
-        this.dbName = dbName;
+        dbSelection = ShowDbSelection.updateName(dbSelection, dbName);
+    }
+
+    /** The trailing {@code {FROM | IN} db} clause, or null. */
+    public ShowDbSelection getDbSelection() {
+        return dbSelection;
+    }
+
+    public void setDbSelection(ShowDbSelection dbSelection) {
+        this.dbSelection = dbSelection;
+    }
+
+    /** The {@code LIKE} or {@code WHERE} filter, or null. */
+    public ShowFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(ShowFilter filter) {
+        this.filter = filter;
     }
 
     public Expression getLikeExpression() {
-        return likeExpression;
+        return ShowFilter.likeExpression(filter);
     }
 
+    /** Sets a {@code LIKE} filter, which replaces a {@code WHERE} filter; null removes it. */
     public void setLikeExpression(Expression likeExpression) {
-        this.likeExpression = likeExpression;
+        filter = ShowFilter.replace(filter, ShowFilter.Kind.LIKE, likeExpression);
     }
 
     public Expression getWhereCondition() {
-        return whereCondition;
+        return ShowFilter.whereCondition(filter);
     }
 
+    /** Sets a {@code WHERE} filter, which replaces a {@code LIKE} filter; null removes it. */
     public void setWhereCondition(Expression whereCondition) {
-        this.whereCondition = whereCondition;
+        filter = ShowFilter.replace(filter, ShowFilter.Kind.WHERE, whereCondition);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder("SHOW");
+    /**
+     * The table the statement reads: {@link #getTable()}, or the table in the database of the
+     * trailing {@code FROM db} clause, which MySQL reads as {@code db.table}.
+     */
+    public Table getQualifiedTable() {
+        if (table == null || !ShowDbSelection.isPresent(dbSelection)) {
+            return table;
+        }
+        return new Table(dbSelection.getName(), table.getName());
+    }
+
+    /** Appends the statement, printing the filter expression with the given printer. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> printer) {
+        builder.append("SHOW");
         if (extended) {
             builder.append(" EXTENDED");
         }
@@ -141,17 +174,19 @@ public class ShowColumnsStatement extends ASTNodeAccessImpl implements Statement
         builder.append(fieldsKeyword ? " FIELDS " : " COLUMNS ")
                 .append(tableSelectionMode == null ? SelectionMode.FROM : tableSelectionMode)
                 .append(' ').append(table);
-        if (dbName != null) {
-            builder.append(' ')
-                    .append(dbSelectionMode == null ? SelectionMode.FROM : dbSelectionMode)
-                    .append(' ').append(dbName);
+        if (ShowDbSelection.isPresent(dbSelection)) {
+            builder.append(' ').append(dbSelection);
         }
-        if (likeExpression != null) {
-            builder.append(" LIKE ").append(likeExpression);
-        } else if (whereCondition != null) {
-            builder.append(" WHERE ").append(whereCondition);
+        if (filter != null) {
+            filter.appendTo(builder.append(' '), printer);
         }
-        return builder.toString();
+        return builder;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
     }
 
     @Override
@@ -206,6 +241,16 @@ public class ShowColumnsStatement extends ASTNodeAccessImpl implements Statement
 
     public ShowColumnsStatement withWhereCondition(Expression whereCondition) {
         this.setWhereCondition(whereCondition);
+        return this;
+    }
+
+    public ShowColumnsStatement withDbSelection(ShowDbSelection dbSelection) {
+        this.setDbSelection(dbSelection);
+        return this;
+    }
+
+    public ShowColumnsStatement withFilter(ShowFilter filter) {
+        this.setFilter(filter);
         return this;
     }
 }
