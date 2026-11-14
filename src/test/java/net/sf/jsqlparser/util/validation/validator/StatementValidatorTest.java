@@ -56,6 +56,8 @@ public class StatementValidatorTest extends ValidationTestAsserts {
                 Arguments.of("CREATE RESOURCE GROUP rg TYPE = USER", Feature.createResourceGroup),
                 Arguments.of("ALTER RESOURCE GROUP rg DISABLE", Feature.alterResourceGroup),
                 Arguments.of("SET RESOURCE GROUP rg", Feature.setResourceGroup),
+                Arguments.of("INSTALL PLUGIN p SONAME 'p.so'", Feature.installPlugin),
+                Arguments.of("UNINSTALL COMPONENT 'file://c'", Feature.installComponent),
                 Arguments.of("LOCK TABLE t IN EXCLUSIVE MODE", Feature.lock),
                 Arguments.of("ALTER SESSION SET CURRENT_SCHEMA = other", Feature.alterSession),
                 Arguments.of("ALTER SYSTEM SET archive_command = 'cp %p /tmp/%f'",

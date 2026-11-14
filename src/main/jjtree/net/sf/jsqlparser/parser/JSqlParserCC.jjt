@@ -59,6 +59,8 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.create.operator.*;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
@@ -73,6 +75,7 @@ import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.macro.*;
+import net.sf.jsqlparser.statement.create.spatial.*;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
@@ -107,6 +110,11 @@ import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
 import net.sf.jsqlparser.statement.admin.*;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.CursorOption;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchDirection;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CancellationException;
@@ -194,6 +202,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isKillAhead();
             case K_HANDLER:
                 return isHandlerAhead();
+            case K_FETCH: case K_MOVE: case K_CLOSE:
+                return isCursorStatementAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -202,7 +212,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || "REASSIGN".equalsIgnoreCase(next.image)
                     || "REVOKE".equalsIgnoreCase(next.image)
                     || "RELEASE".equalsIgnoreCase(next.image)
-                    || isAbortTransactionAhead() || isXaStatementAhead();
+                    || isAbortTransactionAhead() || isXaStatementAhead()
+                    || isPluginStatementAhead();
         }
     }
 
@@ -1116,6 +1127,82 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             linkAST(left, first);
         }
         return left;
+    }
+
+    /**
+     * Whether the token after the ":" of a JSON path is a word that is no identifier token, i.e. a
+     * keyword, which names the path element all the same. A word followed by "(" stays a function.
+     */
+    private boolean isKeywordJsonPathName() {
+        Token colon = getToken(0);
+        return colon != null && ":".equals(colon.image) && isKeywordWord(1);
+    }
+
+    /**
+     * Whether the token at the given position is a word that is no identifier token, i.e. a keyword,
+     * and not the name of a function call.
+     */
+    private boolean isKeywordWord(int position) {
+        Token word = getToken(position);
+        if (word.image == null || word.kind == S_IDENTIFIER || word.kind == S_QUOTED_IDENTIFIER
+                || "(".equals(getToken(position + 1).image)) {
+            return false;
+        }
+        String image = word.image;
+        if (image.isEmpty() || (!Character.isLetter(image.charAt(0)) && image.charAt(0) != '_')) {
+            return false;
+        }
+        for (int i = 1; i < image.length(); i++) {
+            if (!Character.isLetterOrDigit(image.charAt(i)) && image.charAt(i) != '_') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether the path after the ":" of a JSON path, which starts with an identifier, goes on with a
+     * keyword after a ".", e.g. v:a.output or v:a[0].b.from. The expression parser would read such a
+     * path as a qualified column name, which does not take a keyword as a part.
+     */
+    private boolean isJsonPathWithKeywordAfterDot() {
+        Token colon = getToken(0);
+        if (colon == null || !":".equals(colon.image)) {
+            return false;
+        }
+        Token first = getToken(1);
+        if (first.kind != S_IDENTIFIER && first.kind != S_QUOTED_IDENTIFIER) {
+            return false;
+        }
+        int position = 2;
+        while (true) {
+            Token token = getToken(position);
+            if (".".equals(token.image)) {
+                if (isKeywordWord(position + 1)) {
+                    return true;
+                }
+                Token name = getToken(position + 1);
+                if (name.kind != S_IDENTIFIER && name.kind != S_QUOTED_IDENTIFIER) {
+                    return false;
+                }
+                position += 2;
+            } else if ("[".equals(token.image)) {
+                int depth = 0;
+                do {
+                    token = getToken(position);
+                    if ("[".equals(token.image)) {
+                        depth++;
+                    } else if ("]".equals(token.image)) {
+                        depth--;
+                    } else if (token.kind == EOF) {
+                        return false;
+                    }
+                    position++;
+                } while (depth > 0);
+            } else {
+                return false;
+            }
+        }
     }
 
     private boolean isPostgreSqlJsonAccess(Token token) {
@@ -2614,6 +2701,79 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
     }
 
+    /** Whether the token at the position is an identifier spelled as one of the words. */
+    private boolean isAnyWordAt(int position, String... words) {
+        Token token = getToken(position);
+        if (token.kind != S_IDENTIFIER) {
+            return false;
+        }
+        for (String word : words) {
+            if (word.equalsIgnoreCase(token.image)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The MySQL server SHOW statements are read with Dialect.MYSQL or MARIADB, or without one. */
+    private boolean isMySqlShowDialect() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * MySQL 8.4 removed SHOW MASTER STATUS, MASTER LOGS, SLAVE STATUS and SLAVE HOSTS, so they are
+     * read with Dialect.MARIADB or without a dialect only.
+     */
+    private boolean isLegacyMySqlShowDialect() {
+        return !Dialect.MYSQL.name().equals(getAsString(Feature.dialect));
+    }
+
+    /** [GLOBAL | SESSION | LOCAL] VARIABLES or STATUS follows. */
+    private boolean isShowVariablesAhead() {
+        int kind = getToken(1).kind;
+        return isAnyWordAt(kind == K_GLOBAL || kind == K_SESSION || kind == K_LOCAL ? 2 : 1,
+                "VARIABLES", "STATUS");
+    }
+
+    /**
+     * A MySQL text string: '...' or "..." without a prefix or introducer. The lexer reads "..." as
+     * a string with a MySQL dialect and as a quoted identifier without one.
+     */
+    private boolean isMySqlTextStringAt(int position) {
+        Token token = getToken(position);
+        char quote = token.image == null || token.image.isEmpty() ? ' ' : token.image.charAt(0);
+        return token.kind == S_CHAR_LITERAL && (quote == '\'' || quote == '"')
+                || token.kind == S_QUOTED_IDENTIFIER && quote == '"';
+    }
+
+    /**
+     * Whether the lookahead of a SHOW statement has scanned the WHERE of its filter: a WHERE lies
+     * between the last consumed token and the scan position.
+     */
+    private boolean isShowWhereScanned() {
+        Token scanned = getToken(1);
+        for (Token t = token.next; t != null && t != scanned; t = t.next) {
+            if (t.kind == K_WHERE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** COUNT(*) with the parenthesis right after COUNT, as the MySQL lexer requires. */
+    private boolean isShowCountAhead() {
+        Token count = getToken(1);
+        Token parenthesis = getToken(2);
+        return count.kind == K_COUNT && "(".equals(parenthesis.image)
+                && parenthesis.beginLine == count.endLine
+                && parenthesis.beginColumn == count.endColumn + 1;
+    }
+
+    /** FOR CHANNEL 'channel' follows. */
+    private boolean isShowChannelAhead() {
+        return getToken(1).kind == K_FOR && isAnyWordAt(2, "CHANNEL") && isMySqlTextStringAt(3);
+    }
+
     /**
      * Whether a MySQL CHECK, CHECKSUM, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or
      * TABLES must follow, so other uses of these words are unaffected.
@@ -2797,6 +2957,91 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             throw new ParseException("Unknown FLUSH option: " + keyword);
         }
         return kind;
+    }
+
+    /** MySQL statements that MariaDB does not have are read with the MySQL dialect or none. */
+    private boolean isMySqlOnlyStatementDialect(boolean orNone) {
+        String dialect = getAsString(Feature.dialect);
+        return orNone && dialect == null || Dialect.MYSQL.name().equals(dialect);
+    }
+
+    /**
+     * Whether MySQL's SPATIAL REFERENCE SYSTEM follows CREATE or DROP. The MySQL dialect has no
+     * other statement that continues with SPATIAL but CREATE SPATIAL INDEX, so there a misspelled
+     * object type is an error; without a dialect only the three words select the statement.
+     */
+    private boolean isSpatialReferenceSystemAhead() {
+        if (getToken(1).kind != K_SPATIAL) {
+            return false;
+        }
+        return isMySqlOnlyStatementDialect(false) && getToken(2).kind != K_INDEX
+                || isMySqlOnlyStatementDialect(true) && isWordAt(2, "REFERENCE")
+                    && getToken(3).kind == K_SYSTEM;
+    }
+
+    /**
+     * Whether MySQL's ALTER INSTANCE follows ALTER. Without a dialect, one of its actions must
+     * follow; other text stays an unsupported statement.
+     */
+    private boolean isAlterInstanceAhead() {
+        if (!isWordAt(1, "INSTANCE")) {
+            return false;
+        }
+        int action = getToken(2).kind;
+        return isMySqlOnlyStatementDialect(false)
+                || isMySqlOnlyStatementDialect(true) && (action == K_ENABLE || action == K_DISABLE
+                    || isWordAt(2, "ROTATE") || isWordAt(2, "RELOAD"));
+    }
+
+    private boolean isSpatialReferenceSystemAttributeAhead() {
+        return getToken(1).kind == K_NAME || isKeywordAhead("DEFINITION")
+                || isKeywordAhead("ORGANIZATION") || isKeywordAhead("DESCRIPTION");
+    }
+
+    /**
+     * Whether MySQL reads the token as a plain string: quoted with ' or ", without a prefix such
+     * as N or _utf8. A double-quoted token is a string in MySQL's default SQL mode.
+     */
+    private static boolean isMySqlTextString(Token token) {
+        return token.image.startsWith("'") || token.image.startsWith("\"");
+    }
+
+    /**
+     * The number MySQL reads as an SRID or an organization's identifier: an unsigned integer up to
+     * 2^64 - 1, 0x... with a lower-case x, or X'...' with whole bytes. The server checks the range
+     * of the value when it runs the statement.
+     */
+    private Expression spatialReferenceSystemNumber(Token token) throws ParseException {
+        boolean valid;
+        if (token.kind == S_HEX) {
+            valid = token.image.matches("[Xx]'([0-9A-Fa-f]{2})*'|0x[0-9A-Fa-f]+");
+        } else {
+            valid = token.image.matches("[0-9]+")
+                    && new java.math.BigInteger(token.image).bitLength() <= 64;
+        }
+        requireDdlSyntax(valid, "Expected an unsigned integer: " + token.image);
+        Expression number = token.kind == S_HEX ? new HexValue(token.image)
+                : new LongValue(token.image);
+        linkAST((ASTNodeAccess) number, token, token);
+        return number;
+    }
+
+    /**
+     * The word of ALTER INSTANCE that MySQL reads as an identifier and compares with a fixed name:
+     * plain or in backticks, and where {@code text} is set also a string.
+     */
+    private static String alterInstanceWord(Token token, boolean text) throws ParseException {
+        String image = token.image;
+        if (token.kind == S_IDENTIFIER) {
+            return image;
+        }
+        if (image.startsWith("`")) {
+            return image.substring(1, image.length() - 1).replace("``", "`");
+        }
+        if (text && isMySqlTextString(token)) {
+            return new StringValue(image).getValue();
+        }
+        throw new ParseException("Unexpected " + image + " in ALTER INSTANCE");
     }
 
     /**
@@ -3019,6 +3264,174 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             "XMLELEMENT", "XMLEXISTS", "XMLFOREST", "XMLNAMESPACES", "XMLPARSE", "XMLPI", "XMLROOT",
             "XMLSERIALIZE", "XMLTABLE"));
 
+    /**
+     * PostgreSQL 18's unreserved keywords and its column name keywords that are type names: the
+     * keywords that are in none of the sets above.
+     */
+    private static final Set<String> POSTGRESQL_OTHER_KEYWORDS = new HashSet<String>(Arrays.asList(
+            "ABORT", "ABSENT", "ABSOLUTE", "ACCESS", "ACTION", "ADD", "ADMIN", "AFTER",
+            "AGGREGATE", "ALSO", "ALTER", "ALWAYS", "ASENSITIVE", "ASSERTION", "ASSIGNMENT",
+            "AT", "ATOMIC", "ATTACH", "ATTRIBUTE", "BACKWARD", "BEFORE", "BEGIN", "BIGINT",
+            "BIT", "BOOLEAN", "BREADTH", "BY", "CACHE", "CALL", "CALLED", "CASCADE", "CASCADED",
+            "CATALOG", "CHAIN", "CHAR", "CHARACTER", "CHARACTERISTICS", "CHECKPOINT", "CLASS",
+            "CLOSE", "CLUSTER", "COLUMNS", "COMMENT", "COMMENTS", "COMMIT", "COMMITTED",
+            "COMPRESSION", "CONDITIONAL", "CONFIGURATION", "CONFLICT", "CONNECTION",
+            "CONSTRAINTS", "CONTENT", "CONTINUE", "CONVERSION", "COPY", "COST", "CSV", "CUBE",
+            "CURRENT", "CURSOR", "CYCLE", "DATA", "DATABASE", "DAY", "DEALLOCATE", "DEC",
+            "DECIMAL", "DECLARE", "DEFAULTS", "DEFERRED", "DEFINER", "DELETE", "DELIMITER",
+            "DELIMITERS", "DEPENDS", "DEPTH", "DETACH", "DICTIONARY", "DISABLE", "DISCARD",
+            "DOCUMENT", "DOMAIN", "DOUBLE", "DROP", "EACH", "EMPTY", "ENABLE", "ENCODING",
+            "ENCRYPTED", "ENFORCED", "ENUM", "ERROR", "ESCAPE", "EVENT", "EXCLUDE", "EXCLUDING",
+            "EXCLUSIVE", "EXECUTE", "EXPLAIN", "EXPRESSION", "EXTENSION", "EXTERNAL", "FAMILY",
+            "FILTER", "FINALIZE", "FIRST", "FLOAT", "FOLLOWING", "FORCE", "FORMAT", "FORWARD",
+            "FUNCTION", "FUNCTIONS", "GENERATED", "GLOBAL", "GRANTED", "GROUPS", "HANDLER",
+            "HEADER", "HOLD", "HOUR", "IDENTITY", "IF", "IMMEDIATE", "IMMUTABLE", "IMPLICIT",
+            "IMPORT", "INCLUDE", "INCLUDING", "INCREMENT", "INDENT", "INDEX", "INDEXES",
+            "INHERIT", "INHERITS", "INLINE", "INPUT", "INSENSITIVE", "INSERT", "INSTEAD", "INT",
+            "INTEGER", "INTERVAL", "INVOKER", "ISOLATION", "JSON", "KEEP", "KEY", "KEYS",
+            "LABEL", "LANGUAGE", "LARGE", "LAST", "LEAKPROOF", "LEVEL", "LISTEN", "LOAD",
+            "LOCAL", "LOCATION", "LOCK", "LOCKED", "LOGGED", "MAPPING", "MATCH", "MATCHED",
+            "MATERIALIZED", "MAXVALUE", "MERGE", "METHOD", "MINUTE", "MINVALUE", "MODE",
+            "MONTH", "MOVE", "NAME", "NAMES", "NCHAR", "NESTED", "NEW", "NEXT", "NFC", "NFD",
+            "NFKC", "NFKD", "NO", "NONE", "NORMALIZED", "NOTHING", "NOTIFY", "NOWAIT", "NULLS",
+            "NUMERIC", "OBJECT", "OBJECTS", "OF", "OFF", "OIDS", "OLD", "OMIT", "OPERATOR",
+            "OPTION", "OPTIONS", "ORDINALITY", "OTHERS", "OVER", "OVERRIDING", "OWNED", "OWNER",
+            "PARALLEL", "PARAMETER", "PARSER", "PARTIAL", "PARTITION", "PASSING", "PASSWORD",
+            "PATH", "PERIOD", "PLAN", "PLANS", "POLICY", "PRECEDING", "PREPARE", "PREPARED",
+            "PRESERVE", "PRIOR", "PRIVILEGES", "PROCEDURAL", "PROCEDURE", "PROCEDURES",
+            "PROGRAM", "PUBLICATION", "QUOTE", "QUOTES", "RANGE", "READ", "REAL", "REASSIGN",
+            "RECURSIVE", "REF", "REFERENCING", "REFRESH", "REINDEX", "RELATIVE", "RELEASE",
+            "RENAME", "REPEATABLE", "REPLACE", "REPLICA", "RESET", "RESTART", "RESTRICT",
+            "RETURN", "RETURNS", "REVOKE", "ROLE", "ROLLBACK", "ROLLUP", "ROUTINE", "ROUTINES",
+            "ROWS", "RULE", "SAVEPOINT", "SCALAR", "SCHEMA", "SCHEMAS", "SCROLL", "SEARCH",
+            "SECOND", "SECURITY", "SEQUENCE", "SEQUENCES", "SERIALIZABLE", "SERVER", "SESSION",
+            "SET", "SETS", "SHARE", "SHOW", "SIMPLE", "SKIP", "SMALLINT", "SNAPSHOT", "SOURCE",
+            "SQL", "STABLE", "STANDALONE", "START", "STATEMENT", "STATISTICS", "STDIN",
+            "STDOUT", "STORAGE", "STORED", "STRICT", "STRING", "STRIP", "SUBSCRIPTION",
+            "SUPPORT", "SYSID", "SYSTEM", "TABLES", "TABLESPACE", "TARGET", "TEMP", "TEMPLATE",
+            "TEMPORARY", "TEXT", "TIES", "TIME", "TIMESTAMP", "TRANSACTION", "TRANSFORM",
+            "TRIGGER", "TRUNCATE", "TRUSTED", "TYPE", "TYPES", "UESCAPE", "UNBOUNDED",
+            "UNCOMMITTED", "UNCONDITIONAL", "UNENCRYPTED", "UNKNOWN", "UNLISTEN", "UNLOGGED",
+            "UNTIL", "UPDATE", "VACUUM", "VALID", "VALIDATE", "VALIDATOR", "VALUE", "VARCHAR",
+            "VARYING", "VERSION", "VIEW", "VIEWS", "VIRTUAL", "VOLATILE", "WHITESPACE",
+            "WITHIN", "WITHOUT", "WORK", "WRAPPER", "WRITE", "XML", "YEAR", "YES", "ZONE"));
+
+    /** Whether the word is a keyword of PostgreSQL 18, of any kind. A quoted identifier is none. */
+    private static boolean isPostgreSqlKeyword(String word) {
+        String upper = word.toUpperCase(Locale.ROOT);
+        return POSTGRESQL_RESERVED_KEYWORDS.contains(upper)
+                || POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS.contains(upper)
+                || POSTGRESQL_NON_TYPE_COL_NAME_KEYWORDS.contains(upper)
+                || POSTGRESQL_OTHER_KEYWORDS.contains(upper);
+    }
+
+    /**
+     * Checks an operator name the way PostgreSQL's lexer delimits one. A name of several characters
+     * ends in + or - only if it has one of ~ ! @ # % ^ & | ` ?, since the lexer otherwise leaves
+     * the sign to the next token; "=>" is not an operator, and a name has at most 63 characters.
+     */
+    private static void requirePostgreSqlOperatorName(String name) throws ParseException {
+        char last = name.charAt(name.length() - 1);
+        boolean signLeftOver = name.length() > 1 && (last == '+' || last == '-')
+                && !name.matches(".*[~!@#%^&|`?].*");
+        if (signLeftOver || "=>".equals(name) || name.length() > 63) {
+            throw new ParseException("PostgreSQL does not take " + name + " as an operator name");
+        }
+    }
+
+    /** Whether OPERATOR is followed by CLASS or FAMILY as a keyword, not as the schema of an operator. */
+    private boolean isOperatorClassOrFamilyAhead() {
+        return ("CLASS".equalsIgnoreCase(getToken(2).image) || "FAMILY".equalsIgnoreCase(getToken(2).image))
+                && !".".equals(getToken(3).image);
+    }
+
+    /**
+     * Whether CREATE or ALTER is followed by a PostgreSQL operator, operator class or operator
+     * family. Without the PostgreSQL dialect, an operator is known by its symbol, because Oracle
+     * names its operators with identifiers, as in CREATE OPERATOR name BINDING (...).
+     */
+    private boolean isPostgreSqlOperatorDdlAhead() {
+        if (!isKeywordAhead("OPERATOR")) {
+            return false;
+        }
+        if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            return true;
+        }
+        if (isOperatorClassOrFamilyAhead()) {
+            // an Oracle operator may be named class or family
+            String next = getToken(3).image;
+            return !"BINDING".equalsIgnoreCase(next) && !"COMPILE".equalsIgnoreCase(next)
+                    && !"BINDING".equalsIgnoreCase(getToken(4).image);
+        }
+        return isOperatorNameAhead(2);
+    }
+
+    /** Whether an operator symbol follows at the offset, possibly after schema names and dots. */
+    private boolean isOperatorNameAhead(int offset) {
+        int name = offset;
+        while (".".equals(getToken(name + 1).image)) {
+            name += 2;
+        }
+        return DropLookahead.isOperatorSymbol(getToken(name));
+    }
+
+    /**
+     * Whether CREATE is followed by a PostgreSQL aggregate. Without the PostgreSQL dialect, MySQL's
+     * CREATE AGGREGATE FUNCTION and SQL Server's CREATE AGGREGATE name (@parameter type) are not.
+     */
+    private boolean isPostgreSqlCreateAggregateAhead() {
+        if (getToken(1).kind != K_AGGREGATE) {
+            return false;
+        }
+        if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            return true;
+        }
+        int name = 2;
+        while (".".equals(getToken(name + 1).image)) {
+            name += 2;
+        }
+        String parameter = getToken(name + 2).image;
+        return getToken(2).kind != K_FUNCTION && (parameter == null || !parameter.startsWith("@"));
+    }
+
+    /**
+     * Whether an aggregate name is followed by the definition of the old CREATE AGGREGATE form,
+     * "(" name "=", and not by an argument signature.
+     */
+    private boolean isOldAggregateDefinitionAhead() {
+        int name = 1;
+        while (".".equals(getToken(name + 1).image)) {
+            name += 2;
+        }
+        return getToken(name + 1).kind == OPENING_BRACKET && "=".equals(getToken(name + 3).image);
+    }
+
+    /** PostgreSQL's aggr_args: an aggregate signature is "*" or has at least one argument. */
+    private static boolean isAggregateSignature(RoutineReference aggregate) {
+        return aggregate.getArguments() != null && (aggregate.isAllArguments()
+                || !aggregate.getArguments().isEmpty() || aggregate.getOrderByArguments() != null);
+    }
+
+    /**
+     * PostgreSQL's old_aggr_definition: every element has a value, and its name is an identifier,
+     * which no keyword is.
+     */
+    private void requireOldAggregateDefinition(List<DefinitionElement> definition) throws ParseException {
+        for (DefinitionElement element : definition) {
+            requireDdlSyntax(element.getArgument() != null && !isPostgreSqlKeyword(element.getName()),
+                    "PostgreSQL expects an identifier and a value: " + element);
+        }
+    }
+
+    /** PostgreSQL's Iconst: the strategy or support number of an operator class member. */
+    private int operatorClassNumber(Token token) throws ParseException {
+        try {
+            return Integer.parseInt(token.image);
+        } catch (NumberFormatException exception) {
+            throw new ParseException("Expected an integer: " + token.image);
+        }
+    }
+
     /** Whether the token is an identifier or a keyword: a word PostgreSQL takes as a label. */
     private static boolean isPostgreSqlWord(Token token) {
         return token.kind == S_IDENTIFIER || token.kind == S_QUOTED_IDENTIFIER || token.kind == DATA_TYPE
@@ -3134,6 +3547,163 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         return withColumns ? token.kind == OPENING_BRACKET || ",".equals(token.image)
                 || "*".equals(token.image) : token.kind == K_USING || token.kind == K_ON;
+    }
+
+    /** The direction words of FETCH and MOVE that the grammar has no token for. */
+    private static final Set<String> FETCH_DIRECTION_WORDS = new HashSet<String>(Arrays.asList(
+            "ABSOLUTE", "RELATIVE", "FORWARD", "BACKWARD"));
+
+    /** The cursor options of DECLARE that the grammar has no token for. */
+    private static final Set<String> CURSOR_OPTION_WORDS = new HashSet<String>(Arrays.asList(
+            "SCROLL", "ASENSITIVE", "INSENSITIVE"));
+
+    /**
+     * Whether a PostgreSQL FETCH, MOVE or CLOSE statement starts here. The PostgreSQL dialect
+     * always reads these words as cursor statements, and other dialects never do. Without a
+     * dialect the whole statement must take the PostgreSQL form, so that other products' variants
+     * such as FETCH NEXT FROM c INTO @x or CLOSE GLOBAL c stay unsupported statements.
+     */
+    private boolean isCursorStatementAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_FETCH && kind != K_MOVE && kind != K_CLOSE) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect != null) {
+            return Dialect.POSTGRESQL.name().equals(dialect);
+        }
+        int offset = 2;
+        if (kind == K_CLOSE && getToken(offset).kind == K_ALL) {
+            return isCursorStatementEnd(getToken(offset + 1));
+        }
+        if (kind != K_CLOSE) {
+            offset = skipFetchDirection(offset);
+            if (offset < 0) {
+                return false;
+            }
+            if (getToken(offset).kind == K_FROM || getToken(offset).kind == K_IN) {
+                offset++;
+            }
+        }
+        return isCursorNameToken(getToken(offset)) && isCursorStatementEnd(getToken(offset + 1));
+    }
+
+    private static boolean isCursorStatementEnd(Token token) {
+        return token.kind == EOF || token.kind == ST_SEMICOLON;
+    }
+
+    /** Whether the token can name a cursor: PostgreSQL takes any column identifier (ColId). */
+    private static boolean isCursorNameToken(Token token) {
+        if (!isIdentifierishNameToken(token)) {
+            return false;
+        }
+        String word = token.image.toUpperCase(Locale.ROOT);
+        return !POSTGRESQL_RESERVED_KEYWORDS.contains(word)
+                && !POSTGRESQL_TYPE_FUNC_NAME_KEYWORDS.contains(word);
+    }
+
+    /**
+     * Whether a FETCH or MOVE direction starts at the offset. As in PostgreSQL's grammar, a
+     * direction word right before the end of the statement is the cursor name, as in FETCH next.
+     */
+    private boolean isFetchDirectionAt(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_ALL || isFetchCountAt(offset)) {
+            return true;
+        }
+        boolean word = token.kind == K_NEXT || token.kind == K_PRIOR || token.kind == K_FIRST
+                || token.kind == K_LAST || token.kind == S_IDENTIFIER
+                        && FETCH_DIRECTION_WORDS.contains(token.image.toUpperCase(Locale.ROOT));
+        return word && !isCursorStatementEnd(getToken(offset + 1));
+    }
+
+    /** Whether a FETCH or MOVE count, an integer with an optional sign, starts at the offset. */
+    private boolean isFetchCountAt(int offset) {
+        Token token = getToken(offset);
+        return token.kind == S_LONG || ("+".equals(token.image) || "-".equals(token.image))
+                && getToken(offset + 1).kind == S_LONG;
+    }
+
+    private int skipFetchCount(int offset) {
+        return getToken(offset).kind == S_LONG ? offset + 1 : offset + 2;
+    }
+
+    /**
+     * The offset after the FETCH or MOVE direction at the offset, the offset itself without a
+     * direction, or -1 when ABSOLUTE or RELATIVE lacks its count.
+     */
+    private int skipFetchDirection(int offset) {
+        if (!isFetchDirectionAt(offset)) {
+            return offset;
+        }
+        if (getToken(offset).kind == K_ALL) {
+            return offset + 1;
+        }
+        if (isFetchCountAt(offset)) {
+            return skipFetchCount(offset);
+        }
+        String word = getToken(offset).image.toUpperCase(Locale.ROOT);
+        int next = offset + 1;
+        if ("ABSOLUTE".equals(word) || "RELATIVE".equals(word)) {
+            return isFetchCountAt(next) ? skipFetchCount(next) : -1;
+        }
+        if ("FORWARD".equals(word) || "BACKWARD".equals(word)) {
+            if (getToken(next).kind == K_ALL) {
+                return next + 1;
+            }
+            if (isFetchCountAt(next)) {
+                return skipFetchCount(next);
+            }
+        }
+        return next;
+    }
+
+    /**
+     * A FETCH or MOVE count. PostgreSQL's grammar takes a 32-bit integer; a larger one is a
+     * numeric constant there and a syntax error.
+     */
+    private Long fetchCount(Token sign, Token digits) throws ParseException {
+        String value = digits.image.replaceFirst("^0+(?=.)", "");
+        requireDdlSyntax(value.length() < 10 || value.length() == 10 && value.compareTo("2147483647") <= 0,
+                "A FETCH or MOVE count must be a 32-bit integer: " + digits.image);
+        long count = Long.parseLong(value);
+        return sign != null && "-".equals(sign.image) ? -count : count;
+    }
+
+    /**
+     * Whether a PostgreSQL DECLARE ... CURSOR starts here rather than the SQL Server DECLARE of a
+     * variable. The PostgreSQL dialect reads every DECLARE of a name as a cursor; without a dialect
+     * the name, the cursor options and CURSOR must follow. Other dialects keep their readings.
+     */
+    private boolean isDeclareCursorAhead() {
+        if (getToken(1).kind != K_DECLARE || getToken(2).kind == S_AT_IDENTIFIER) {
+            return false;
+        }
+        String dialect = getAsString(Feature.dialect);
+        if (dialect != null) {
+            return Dialect.POSTGRESQL.name().equals(dialect);
+        }
+        int offset = 3;
+        while (isCursorOptionAt(offset)) {
+            offset += getToken(offset).kind == K_NO ? 2 : 1;
+        }
+        Token cursor = getToken(offset);
+        return isCursorNameToken(getToken(2)) && cursor.kind == S_IDENTIFIER
+                && "CURSOR".equalsIgnoreCase(cursor.image);
+    }
+
+    /** Whether a DECLARE cursor option starts at the offset: BINARY, [NO] SCROLL or a sensitivity. */
+    private boolean isCursorOptionAt(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_BINARY) {
+            return true;
+        }
+        if (token.kind == K_NO) {
+            Token next = getToken(offset + 1);
+            return next.kind == S_IDENTIFIER && "SCROLL".equalsIgnoreCase(next.image);
+        }
+        return token.kind == S_IDENTIFIER
+                && CURSOR_OPTION_WORDS.contains(token.image.toUpperCase(Locale.ROOT));
     }
 
     /**
@@ -3897,6 +4467,113 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         return new ExplainStatement.Option(ExplainStatement.OptionType.FORMAT)
                 .withValue(format.name()).withUseEqual(true);
+    }
+
+    /**
+     * Whether a MySQL INSTALL or UNINSTALL PLUGIN or COMPONENT statement starts here; read with the
+     * MySQL and MariaDB dialects or none. UNINSTALL is not a token. With those dialects every
+     * INSTALL is this statement and FORCE INSTALL is an error. Without a dialect, INSTALL plugin
+     * and INSTALL component stay DuckDB extension names unless SONAME or a component URN follows.
+     */
+    private boolean isPluginStatementAhead() {
+        boolean install = getToken(1).kind == K_INSTALL;
+        boolean plugin = isWordAt(2, "PLUGIN");
+        boolean object = plugin || isWordAt(2, "COMPONENT");
+        if (getAsString(Feature.dialect) != null) {
+            return isMySqlDialect() && (install || object && isWordAt(1, "UNINSTALL")
+                    || getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL);
+        }
+        if (!object) {
+            return false;
+        }
+        return install
+                ? (plugin ? isWordAt(4, "SONAME") : getToken(3).kind == S_CHAR_LITERAL)
+                : isWordAt(1, "UNINSTALL");
+    }
+
+    /** Whether the literal is MySQL's TEXT_STRING_sys: a quoted string without a prefix. */
+    private static boolean isMySqlTextString(StringValue value) {
+        return value.getPrefix() == null && value.getQuoteStr() != null
+                && !value.getQuoteStr().startsWith("$");
+    }
+
+    /** The string after SONAME or a component URN. */
+    private StringValue mySqlTextString(Token token) throws ParseException {
+        StringValue value = stringValue(token);
+        requireDdlSyntax(isMySqlTextString(value), "Expected a string literal but found " + token.image);
+        return value;
+    }
+
+    /**
+     * Whether the name is one MySQL does not read as a variable of INSTALL COMPONENT ... SET: an
+     * unquoted scope keyword on its own, or GLOBAL, LOCAL or SESSION as the qualifier, quoted or
+     * not.
+     */
+    private static boolean isComponentVariableScopeWord(String name, boolean qualifier) {
+        switch ((qualifier ? MultiPartName.unquote(name) : name).toUpperCase(Locale.ROOT)) {
+            case "GLOBAL": case "LOCAL": case "SESSION":
+                return true;
+            case "PERSIST": case "PERSIST_ONLY":
+                return !qualifier;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Checks the value of INSTALL COMPONENT ... SET, an expression that starts at {@code first}:
+     * MySQL takes neither the words DEFAULT and ALL nor a subquery, which SELECT, or TABLE, VALUES
+     * or WITH after a parenthesis, starts.
+     */
+    private void requireComponentVariableValue(Token first) throws ParseException {
+        Token last = getToken(0);
+        requireDdlSyntax(first.kind != K_DEFAULT && first.kind != K_ALL
+                || first != last && first.next.kind == OPENING_BRACKET,
+                "Expected a value but found " + first.image);
+        boolean afterParenthesis = false;
+        for (Token token = first; token != last.next; token = token.next) {
+            int kind = token.kind;
+            requireDdlSyntax(kind != K_SELECT
+                    && !(afterParenthesis && (kind == K_TABLE || kind == K_VALUES || kind == K_WITH)),
+                    "INSTALL COMPONENT ... SET does not accept a subquery");
+            afterParenthesis = kind == OPENING_BRACKET;
+        }
+    }
+
+    /** Whether CREATE SERVER and ALTER SERVER take MySQL's quoted names and numeric option values. */
+    private boolean isMySqlServerSyntaxAllowed() {
+        return getAsString(Feature.dialect) == null || isMySqlDialect();
+    }
+
+    /**
+     * Checks the options of CREATE SERVER and ALTER SERVER. A numeric value is MySQL's, read with
+     * the MySQL and MariaDB dialects or none. With the MySQL dialect the options are exactly its
+     * server_option: USER, HOST, DATABASE, OWNER, PASSWORD or SOCKET with a string, or PORT with a
+     * number.
+     */
+    private void requireServerOptions(List<ForeignDataOption> options) throws ParseException {
+        boolean mySql = Dialect.MYSQL.name().equals(getAsString(Feature.dialect));
+        for (ForeignDataOption option : options) {
+            boolean numeric = option.getValueExpression() != null && option.getValue() == null;
+            requireDdlSyntax(!numeric || isMySqlServerSyntaxAllowed(), "Option values are string constants");
+            if (mySql) {
+                requireDdlSyntax(option.getAction() == null, "MySQL server options do not allow ADD, SET or DROP");
+                requireDdlSyntax(isMySqlServerOption(option, numeric),
+                        "Unknown MySQL server option or value: " + option);
+            }
+        }
+    }
+
+    private static boolean isMySqlServerOption(ForeignDataOption option, boolean numeric) {
+        switch (option.getName().toUpperCase(Locale.ROOT)) {
+            case "USER": case "HOST": case "DATABASE": case "OWNER": case "PASSWORD": case "SOCKET":
+                return !numeric && isMySqlTextString(option.getValue());
+            case "PORT":
+                return numeric && (!(option.getValueExpression() instanceof HexValue)
+                        || isXaHexPart(option.getValueExpression().toString()));
+            default:
+                return false;
+        }
     }
 
     /**
@@ -5359,6 +6036,7 @@ String NonReservedWordPart2() :
       | tk=<K_MODE: "MODE">
       | tk=<K_MODULUS: "MODULUS">
       | tk=<K_MODIFY: "MODIFY">
+      | tk=<K_MOVE: "MOVE">
       | tk=<K_MOVEMENT: "MOVEMENT">
       | tk=<K_NAMES:"NAMES">
       | tk=<K_NAME:"NAME">
@@ -6259,6 +6937,11 @@ Statement SingleStatement() :
             |
             stm = Explain()
             |
+            LOOKAHEAD({ isDeclareCursorAhead() }) stm = DeclareCursorStatement()
+            |
+            LOOKAHEAD({ isCursorStatementAhead() })
+            ( stm = FetchCursorStatement() | stm = CloseCursorStatement() )
+            |
             stm = Declare()
             |
             stm = Grant()
@@ -6268,6 +6951,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
             |
             LOOKAHEAD({ isMySqlLoadDataAhead() }) stm = MySqlLoadDataStatement()
+            |
+            LOOKAHEAD({ isPluginStatementAhead() }) stm = PluginStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_INSTALL
                     || (getToken(1).kind == K_LOAD && getToken(2).kind != K_DATA)
@@ -6740,6 +7425,147 @@ BackupLockStatement BackupLockStatement():
         <K_UNLOCK> ContextualKeyword("INSTANCE") { statement.setAction(BackupLockStatement.Action.UNLOCK); }
     )
     { return statement; }
+}
+
+/**
+ * MySQL ALTER INSTANCE, after ALTER. MySQL reads INNODB, BINLOG and REDO_LOG as identifiers that
+ * it compares with these names, and the engine of ROTATE also as a string.
+ */
+// https://dev.mysql.com/doc/refman/8.4/en/alter-instance.html
+AlterInstance AlterInstance():
+{
+    AlterInstance statement;
+    Token word;
+    String name;
+    String channel;
+}
+{
+    ContextualKeyword("INSTANCE")
+    (
+        (
+            <K_ENABLE> { statement = new AlterInstance(AlterInstance.Action.ENABLE_INNODB_REDO_LOG); }
+            |
+            <K_DISABLE> { statement = new AlterInstance(AlterInstance.Action.DISABLE_INNODB_REDO_LOG); }
+        )
+        word=AlterInstanceWord()
+        { requireDdlSyntax("INNODB".equalsIgnoreCase(alterInstanceWord(word, false)), "Expected INNODB but found " + word.image); }
+        word=AlterInstanceWord()
+        { requireDdlSyntax("REDO_LOG".equalsIgnoreCase(alterInstanceWord(word, false)), "Expected REDO_LOG but found " + word.image); }
+        |
+        LOOKAHEAD({ isKeywordAhead("ROTATE") }) ContextualKeyword("ROTATE") word=AlterInstanceWord()
+        {
+            name = alterInstanceWord(word, true);
+            requireDdlSyntax("INNODB".equalsIgnoreCase(name) || "BINLOG".equalsIgnoreCase(name),
+                    "Expected INNODB or BINLOG but found " + word.image);
+            statement = new AlterInstance("INNODB".equalsIgnoreCase(name)
+                    ? AlterInstance.Action.ROTATE_INNODB_MASTER_KEY
+                    : AlterInstance.Action.ROTATE_BINLOG_MASTER_KEY);
+        }
+        ContextualKeyword("MASTER") <K_KEY>
+        |
+        ContextualKeyword("RELOAD")
+        (
+            LOOKAHEAD({ isKeywordAhead("KEYRING") }) ContextualKeyword("KEYRING")
+            { statement = new AlterInstance(AlterInstance.Action.RELOAD_KEYRING); }
+            |
+            ContextualKeyword("TLS") { statement = new AlterInstance(AlterInstance.Action.RELOAD_TLS); }
+            [
+                <K_FOR> ContextualKeyword("CHANNEL") channel=RelObjectName()
+                {
+                    // a double-quoted name is a string in MySQL, which takes an identifier here
+                    requireDdlSyntax(!channel.startsWith("\"") && !channel.startsWith("["),
+                            "Expected a channel name but found " + channel);
+                    statement.setChannel(channel);
+                }
+            ]
+            [ <K_NO> <K_ROLLBACK> <K_ON> <K_ERROR> { statement.setNoRollbackOnError(true); } ]
+        )
+    )
+    { return statement; }
+}
+
+Token AlterInstanceWord():
+{ Token token; }
+{
+    ( token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER> | token=<S_CHAR_LITERAL> )
+    { return token; }
+}
+
+/**
+ * MySQL CREATE [OR REPLACE] SPATIAL REFERENCE SYSTEM [IF NOT EXISTS] srid srs_attribute ...,
+ * after CREATE [OR REPLACE]. The attributes come in any order; the server, not its grammar, reports
+ * a repeated or a missing one.
+ */
+// https://dev.mysql.com/doc/refman/8.4/en/create-spatial-reference-system.html
+CreateSpatialReferenceSystem CreateSpatialReferenceSystem(boolean orReplace):
+{
+    CreateSpatialReferenceSystem statement;
+    boolean ifNotExists = false;
+    Expression srid;
+    SpatialReferenceSystemAttribute attribute;
+}
+{
+    <K_SPATIAL> ContextualKeyword("REFERENCE") <K_SYSTEM>
+    [
+        <K_IF> <K_NOT> <K_EXISTS>
+        { requireDdlSyntax(!orReplace, "CREATE OR REPLACE SPATIAL REFERENCE SYSTEM does not take IF NOT EXISTS"); ifNotExists = true; }
+    ]
+    srid=SpatialReferenceSystemNumber()
+    {
+        statement = new CreateSpatialReferenceSystem(srid).withOrReplace(orReplace)
+                .withIfNotExists(ifNotExists);
+    }
+    (
+        LOOKAHEAD({ isSpatialReferenceSystemAttributeAhead() })
+        attribute=SpatialReferenceSystemAttribute() { statement.addAttributes(attribute); }
+    )*
+    { return statement; }
+}
+
+SpatialReferenceSystemAttribute SpatialReferenceSystemAttribute():
+{
+    Token first = getToken(1);
+    SpatialReferenceSystemAttribute attribute;
+    StringValue value;
+    Expression organizationId;
+}
+{
+    (
+        <K_NAME> value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.NAME, value); }
+        |
+        LOOKAHEAD({ isKeywordAhead("DEFINITION") })
+        ContextualKeyword("DEFINITION") value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.DEFINITION, value); }
+        |
+        LOOKAHEAD({ isKeywordAhead("DESCRIPTION") })
+        ContextualKeyword("DESCRIPTION") value=SpatialReferenceSystemString()
+        { attribute = new SpatialReferenceSystemAttribute(SpatialReferenceSystemAttribute.Kind.DESCRIPTION, value); }
+        |
+        ContextualKeyword("ORGANIZATION") value=SpatialReferenceSystemString()
+        <K_IDENTIFIED> <K_BY> organizationId=SpatialReferenceSystemNumber()
+        { attribute = new SpatialReferenceSystemAttribute(value, organizationId); }
+    )
+    { return linked(attribute, first); }
+}
+
+/** A plain MySQL string; the grammar takes no prefix and no adjacent strings here. */
+StringValue SpatialReferenceSystemString():
+{ Token token; }
+{
+    ( token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> )
+    {
+        requireDdlSyntax(isMySqlTextString(token), "Expected a string but found " + token.image);
+        return stringValue(token);
+    }
+}
+
+/** The SRID, or the identifier an organization gives the system, as written. */
+Expression SpatialReferenceSystemNumber():
+{ Token token; }
+{
+    ( token=<S_LONG> | token=<S_HEX> )
+    { return spatialReferenceSystemNumber(token); }
 }
 
 LockStatement.Target LockTarget():
@@ -7660,6 +8486,134 @@ DeclareStatement Declare(): {
     }
 }
 
+// https://www.postgresql.org/docs/18/sql-declare.html
+DeclareCursorStatement DeclareCursorStatement():
+{
+    DeclareCursorStatement statement = new DeclareCursorStatement();
+    String name;
+    CursorOption option;
+    Select query;
+}
+{
+    <K_DECLARE> name=CursorName() { statement.setCursorName(name); }
+    ( LOOKAHEAD({ isCursorOptionAt(1) }) option=CursorOption() { statement.getOptions().add(option); } )*
+    ContextualKeyword("CURSOR")
+    [
+        <K_WITH> ContextualKeyword("HOLD")
+        { statement.setHoldability(DeclareCursorStatement.Holdability.WITH_HOLD); }
+        |
+        <K_WITHOUT> ContextualKeyword("HOLD")
+        { statement.setHoldability(DeclareCursorStatement.Holdability.WITHOUT_HOLD); }
+    ]
+    <K_FOR> query=Select() { statement.setQuery(query); }
+    { return statement; }
+}
+
+/** Only used where isCursorOptionAt(1) holds, which limits the identifier to the option words. */
+CursorOption CursorOption():
+{ Token token; CursorOption option; }
+{
+    (
+        <K_BINARY> { option = CursorOption.BINARY; }
+        |
+        <K_NO> ContextualKeyword("SCROLL") { option = CursorOption.NO_SCROLL; }
+        |
+        token=<S_IDENTIFIER> { option = CursorOption.valueOf(token.image.toUpperCase(Locale.ROOT)); }
+    )
+    { return option; }
+}
+
+/** A cursor name: any name but the words PostgreSQL reserves or keeps for types and functions. */
+String CursorName():
+{ Token token = getToken(1); String name; }
+{
+    name=RelObjectName()
+    {
+        requireDdlSyntax(isCursorNameToken(token), "Invalid cursor name: " + token.image);
+        return name;
+    }
+}
+
+// https://www.postgresql.org/docs/18/sql-fetch.html
+// https://www.postgresql.org/docs/18/sql-move.html
+FetchCursorStatement FetchCursorStatement():
+{
+    FetchCursorStatement statement = new FetchCursorStatement();
+    String name;
+}
+{
+    ( <K_FETCH> | <K_MOVE> { statement.setKind(FetchCursorStatement.Kind.MOVE); } )
+    [ LOOKAHEAD({ isFetchDirectionAt(1) }) FetchCursorDirection(statement) ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_FROM || getToken(1).kind == K_IN })
+        (
+            <K_FROM> { statement.setFromKeyword(FetchCursorStatement.FromKeyword.FROM); }
+            |
+            <K_IN> { statement.setFromKeyword(FetchCursorStatement.FromKeyword.IN); }
+        )
+    ]
+    name=CursorName() { statement.setCursorName(name); }
+    { return statement; }
+}
+
+/** Only used where isFetchDirectionAt(1) holds. */
+void FetchCursorDirection(FetchCursorStatement statement):
+{ Token token; Long count; }
+{
+    (
+        <K_NEXT> { statement.setDirection(FetchDirection.NEXT); }
+        |
+        <K_PRIOR> { statement.setDirection(FetchDirection.PRIOR); }
+        |
+        <K_FIRST> { statement.setDirection(FetchDirection.FIRST); }
+        |
+        <K_LAST> { statement.setDirection(FetchDirection.LAST); }
+        |
+        <K_ALL> { statement.setAll(true); }
+        |
+        count=FetchCount() { statement.setCount(count); }
+        |
+        // ABSOLUTE n or RELATIVE n
+        LOOKAHEAD({ isKeywordAhead("ABSOLUTE") || isKeywordAhead("RELATIVE") })
+        token=<S_IDENTIFIER> count=FetchCount()
+        {
+            statement.setDirection(FetchDirection.valueOf(token.image.toUpperCase(Locale.ROOT)));
+            statement.setCount(count);
+        }
+        |
+        // FORWARD or BACKWARD [n | ALL]
+        token=<S_IDENTIFIER>
+        { statement.setDirection(FetchDirection.valueOf(token.image.toUpperCase(Locale.ROOT))); }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_ALL || isFetchCountAt(1) })
+            ( <K_ALL> { statement.setAll(true); } | count=FetchCount() { statement.setCount(count); } )
+        ]
+    )
+}
+
+Long FetchCount():
+{ Token sign = null; Token digits; }
+{
+    [ sign="+" | sign="-" ] digits=<S_LONG>
+    { return fetchCount(sign, digits); }
+}
+
+// https://www.postgresql.org/docs/18/sql-close.html
+CloseCursorStatement CloseCursorStatement():
+{
+    CloseCursorStatement statement = new CloseCursorStatement();
+    String name;
+}
+{
+    <K_CLOSE>
+    (
+        LOOKAHEAD({ getToken(1).kind == K_ALL }) <K_ALL>
+        |
+        name=CursorName() { statement.setCursorName(name); }
+    )
+    { return statement; }
+}
+
 SessionStatement SessionStatement():
 {
     SessionStatement sessionsStatement;
@@ -8367,6 +9321,85 @@ DetachStatement DetachStatement() #DetachStatement:
 }
 
 /**
+ * MySQL INSTALL PLUGIN name SONAME 'library', UNINSTALL PLUGIN name,
+ * INSTALL COMPONENT 'urn'[, ...] [SET [GLOBAL | PERSIST] variable = value[, ...]] and
+ * UNINSTALL COMPONENT 'urn'[, ...]. isPluginStatementAhead() routes here.
+ */
+PluginStatement PluginStatement():
+{
+    PluginStatement statement;
+    PluginStatement.Action action;
+    String name;
+    Token token;
+    ComponentVariable variable;
+}
+{
+    (
+        <K_INSTALL> { action = PluginStatement.Action.INSTALL; }
+        |
+        // The action keeps the JAVACODE call from being the lookahead's first unit.
+        LOOKAHEAD({ isWordAt(1, "UNINSTALL") }) { action = PluginStatement.Action.UNINSTALL; }
+        consumeTransactionWord()
+    )
+    (
+        LOOKAHEAD({ isKeywordAhead("PLUGIN") }) ContextualKeyword("PLUGIN")
+        { statement = new PluginStatement(action, PluginStatement.ObjectType.PLUGIN); }
+        name=RelObjectName() { statement.setPluginName(name); }
+        [ LOOKAHEAD({ isKeywordAhead("SONAME") }) ContextualKeyword("SONAME") token=<S_CHAR_LITERAL>
+            { statement.setLibrary(mySqlTextString(token)); } ]
+        {
+            requireDdlSyntax((action == PluginStatement.Action.INSTALL) == (statement.getLibrary() != null),
+                    "INSTALL PLUGIN names a library after SONAME, UNINSTALL PLUGIN does not");
+        }
+        |
+        ContextualKeyword("COMPONENT")
+        {
+            statement = new PluginStatement(action, PluginStatement.ObjectType.COMPONENT);
+            requireDdlSyntax(!Dialect.MARIADB.name().equals(getAsString(Feature.dialect)),
+                    "MariaDB has no components");
+        }
+        token=<S_CHAR_LITERAL> { statement.addComponents(mySqlTextString(token)); }
+        ( "," token=<S_CHAR_LITERAL> { statement.addComponents(mySqlTextString(token)); } )*
+        [
+            LOOKAHEAD(1) <K_SET> { requireDdlSyntax(action == PluginStatement.Action.INSTALL, "UNINSTALL COMPONENT does not accept SET"); }
+            variable=ComponentVariable() { statement.addVariables(variable); }
+            ( "," variable=ComponentVariable() { statement.addVariables(variable); } )*
+        ]
+    )
+    { return statement; }
+}
+
+/** One assignment of INSTALL COMPONENT ... SET: [GLOBAL | PERSIST] name[.name] {= | :=} {expr | ON}. */
+ComponentVariable ComponentVariable():
+{
+    SetScope scope = SetScope.NONE;
+    String name;
+    String member = null;
+    SetStatement.AssignmentOperator operator;
+    Expression value;
+    Token first;
+}
+{
+    // persist.variable is a name
+    [ LOOKAHEAD({ (getToken(1).kind == K_GLOBAL || isKeywordAhead("PERSIST")) && !".".equals(getToken(2).image) })
+        ( <K_GLOBAL> { scope = SetScope.GLOBAL; } | ContextualKeyword("PERSIST") { scope = SetScope.PERSIST; } ) ]
+    (
+        LOOKAHEAD(1) <K_DEFAULT> "." member=RelObjectName() { name = "DEFAULT"; }
+        |
+        name=RelObjectName() [ "." member=RelObjectName() ]
+        { requireDdlSyntax(!isComponentVariableScopeWord(name, member != null), "Expected a variable name but found " + name); }
+    )
+    ( "=" { operator = SetStatement.AssignmentOperator.EQUALS; }
+      | ":=" { operator = SetStatement.AssignmentOperator.COLON_EQUALS; } )
+    ( LOOKAHEAD({ getToken(1).kind == K_ON }) <K_ON> { value = linkToLastToken(new Column("ON")); }
+      | { first = getToken(1); } value=Expression() { requireComponentVariableValue(first); } )
+    {
+        return new ComponentVariable(member == null ? name : name + "." + member, value)
+                .withScope(scope).withOperator(operator);
+    }
+}
+
+/**
  * DuckDB's [FORCE] INSTALL extension [FROM repository] and LOAD extension.
  */
 ExtensionStatement ExtensionStatement() #ExtensionStatement:
@@ -9025,15 +10058,16 @@ Statement Show():
     Statement statement;
     List<String> captureRest;
     String name;
+    Token first;
 }
 {
-    <K_SHOW>
+    <K_SHOW> { first = getToken(1); }
     (
         // A typed form must span the whole statement; other dialects' trailing clauses
         // (e.g. Snowflake IN SCHEMA s, ClickHouse FORMAT f) still fall back to captureRest().
         LOOKAHEAD(ShowColumns() ShowStatementEnd()) statement = ShowColumns()
         |
-        LOOKAHEAD(2) statement = ShowIndex()
+        LOOKAHEAD(ShowIndex() ShowStatementEnd()) statement = ShowIndex()
         |
         LOOKAHEAD(2) statement = ShowTables()
         |
@@ -9047,6 +10081,15 @@ Statement Show():
         LOOKAHEAD(ConfigurationParameterName() ShowStatementEnd(),
                 { isConfigurationParameterPhraseAhead() && isPostgreSqlUtilityDialect() })
         name = ConfigurationParameterName() { statement = new ShowStatement(name); }
+        |
+        LOOKAHEAD(MySqlShow() ShowStatementEnd(), { isMySqlShowDialect() })
+        statement = MySqlShow()
+        {
+            if (getAsString(Feature.dialect) == null && token == first) {
+                // without a dialect, a single word stays a ShowStatement as before
+                statement = new ShowStatement(first.image);
+            }
+        }
         |
         // any of the RDBMS specific SHOW syntax
         captureRest = captureRest()
@@ -9066,7 +10109,8 @@ Statement Show():
 /**
  * Only used inside the SHOW lookaheads: a typed SHOW statement ends at a semicolon, the input end,
  * the ELSE or END of an enclosing IF or block, or the start of the next statement, as in
- * Statements().
+ * Statements(). A lookahead that has entered a WHERE filter ends there too: it sees the first
+ * condition only, because prattExpressionRest() reads the rest of the expression.
  */
 void ShowStatementEnd():
 {}
@@ -9079,16 +10123,142 @@ void ShowStatementEnd():
     |
     <K_END>
     |
-    LOOKAHEAD({ getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
+    LOOKAHEAD({ isShowWhereScanned() || getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
             && getToken(1).kind != K_UNPIVOT && isStatementStartAhead() }) {}
+}
+
+/** The {FROM | IN} db clause of the MySQL SHOW statements. */
+ShowDbSelection ShowDbSelection():
+{
+    ShowDbSelection selection = new ShowDbSelection();
+    String name;
+}
+{
+    ( <K_FROM> | <K_IN> { selection.setSelectionMode(ShowTablesStatement.SelectionMode.IN); } )
+    name = RelObjectName() { selection.setName(name); }
+    {
+        return selection;
+    }
+}
+
+/**
+ * The LIKE 'pattern' or WHERE expr filter of the MySQL SHOW statements. MySQL and MariaDB take a
+ * string literal as the pattern; without a dialect any simple expression is read, as before.
+ */
+ShowFilter ShowFilter():
+{
+    ShowFilter filter;
+    Expression expression;
+}
+{
+    (
+        <K_LIKE>
+        (
+            LOOKAHEAD({ isMySqlDialect() }) expression = ShowTextString()
+            |
+            LOOKAHEAD({ !isMySqlDialect() }) expression = SimpleExpression()
+        )
+        { filter = ShowFilter.like(expression); }
+        |
+        <K_WHERE> expression = Expression() { filter = ShowFilter.where(expression); }
+    )
+    {
+        return filter;
+    }
+}
+
+/** A MySQL text string, '...' or "...", where the server takes no other expression. */
+StringValue ShowTextString():
+{
+    Token token;
+    StringValue value;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL && isMySqlTextStringAt(1) })
+        token = <S_CHAR_LITERAL> { value = stringValue(token); }
+        |
+        LOOKAHEAD({ getToken(1).kind == S_QUOTED_IDENTIFIER && isMySqlTextStringAt(1) })
+        token = <S_QUOTED_IDENTIFIER>
+        {
+            value = linkToLastToken(new StringValue()
+                    .withValue(token.image.substring(1, token.image.length() - 1)).setQuoteStr("\""));
+        }
+    )
+    {
+        return value;
+    }
+}
+
+/**
+ * LIMIT [offset,] row_count or LIMIT row_count OFFSET offset of SHOW WARNINGS, ERRORS, PROFILE and
+ * BINLOG or RELAYLOG EVENTS.
+ */
+void ShowLimit(MySqlShowStatement statement):
+{
+    Limit limit = new Limit();
+    Offset offset = null;
+    Token first;
+    Token last;
+    Expression rowCount;
+    Expression second;
+}
+{
+    <K_LIMIT> { first = getToken(0); }
+    rowCount = ShowLimitOption() { limit.setRowCount(rowCount); last = getToken(0); }
+    [
+        "," second = ShowLimitOption()
+        { limit.setOffset(rowCount); limit.setRowCount(second); last = getToken(0); }
+        |
+        <K_OFFSET> second = ShowLimitOption() { offset = new Offset().withOffset(second); }
+    ]
+    {
+        linkAST(limit, first, last);
+        statement.setLimit(limit);
+        statement.setOffset(offset);
+    }
+}
+
+/** A limit value: an unsigned integer, a name (a stored program variable) or a ? parameter. */
+Expression ShowLimitOption():
+{
+    Token token = getToken(1);
+    String name;
+    JdbcParameter parameter;
+    Expression expression;
+}
+{
+    (
+        token = <S_LONG> { expression = linkToLastToken(new LongValue(token.image)); }
+        |
+        parameter = JdbcParameter() { expression = linked(parameter, token); }
+        |
+        LOOKAHEAD({ !isMySqlTextStringAt(1) }) name = RelObjectName()
+        { expression = linkToLastToken(new Column(name)); }
+    )
+    {
+        return expression;
+    }
+}
+
+/** FOR CHANNEL 'channel', checked by the caller's lookahead. */
+StringValue ShowChannel():
+{
+    StringValue channel;
+}
+{
+    <K_FOR> <S_IDENTIFIER> channel = ShowTextString()
+    {
+        return channel;
+    }
 }
 
 // https://dev.mysql.com/doc/refman/8.4/en/show-columns.html
 ShowColumnsStatement ShowColumns(): {
     ShowColumnsStatement statement = new ShowColumnsStatement();
     Table table;
-    String dbName;
-    Expression expression;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
     [ <K_EXTENDED> { statement.setExtended(true); } ]
@@ -9100,20 +10270,8 @@ ShowColumnsStatement ShowColumns(): {
         <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
     )
     table = Table() { statement.setTable(table); }
-    [
-        LOOKAHEAD(2)
-        (
-            <K_FROM>
-            |
-            <K_IN> { statement.setDbSelectionMode(ShowTablesStatement.SelectionMode.IN); }
-        )
-        dbName = RelObjectName() { statement.setDbName(dbName); }
-    ]
-    [
-        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
-        |
-        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
-    ]
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
     {
         return statement;
     }
@@ -9122,25 +10280,13 @@ ShowColumnsStatement ShowColumns(): {
 // https://dev.mysql.com/doc/refman/8.4/en/show-table-status.html
 ShowTableStatusStatement ShowTableStatus(): {
     ShowTableStatusStatement statement = new ShowTableStatusStatement();
-    String dbName;
-    Expression expression;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
     <K_TABLE> ContextualKeyword("STATUS")
-    [
-        LOOKAHEAD(2)
-        (
-            <K_FROM>
-            |
-            <K_IN> { statement.setSelectionMode(ShowTablesStatement.SelectionMode.IN); }
-        )
-        dbName = RelObjectName() { statement.setDbName(dbName); }
-    ]
-    [
-        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
-        |
-        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
-    ]
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
     {
         return statement;
     }
@@ -9195,14 +10341,310 @@ ShowCreateStatement ShowCreate(): {
     }
 }
 
+// https://dev.mysql.com/doc/refman/8.4/en/show-index.html
 ShowIndexStatement ShowIndex(): {
-    String tableName;
+    ShowIndexStatement statement = new ShowIndexStatement();
+    Table table;
+    ShowDbSelection dbSelection;
+    Expression condition;
 }
 {
-    <K_INDEX> <K_FROM> tableName = RelObjectName()
+    [ <K_EXTENDED> { statement.setExtended(true); } ]
+    (
+        <K_INDEX>
+        |
+        <K_KEYS> { statement.setKeyword(ShowIndexStatement.Keyword.KEYS); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "INDEXES") }) <S_IDENTIFIER>
+        { statement.setKeyword(ShowIndexStatement.Keyword.INDEXES); }
+    )
+    (
+        <K_FROM>
+        |
+        <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+    )
+    table = Table() { statement.setTable(table); }
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ <K_WHERE> condition = Expression() { statement.setWhereCondition(condition); } ]
     {
-        return new ShowIndexStatement(tableName);
+        return statement;
     }
+}
+
+/**
+ * The MySQL SHOW statements of MySqlShowStatement. Each alternative is chosen by its leading
+ * keywords, so a SHOW statement of another form fails the caller's lookahead at once.
+ */
+MySqlShowStatement MySqlShow():
+{
+    MySqlShowStatement statement = new MySqlShowStatement();
+    MySqlShowStatement.Scope scope = null;
+    boolean full = false;
+    Token token;
+    StringValue channel;
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
+}
+{
+    (
+        // [GLOBAL | SESSION | LOCAL] {VARIABLES | STATUS} [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isShowVariablesAhead() })
+        [
+            <K_GLOBAL> { scope = MySqlShowStatement.Scope.GLOBAL; }
+            |
+            <K_SESSION> { scope = MySqlShowStatement.Scope.SESSION; }
+            |
+            <K_LOCAL> { scope = MySqlShowStatement.Scope.LOCAL; }
+        ]
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); statement.setScope(scope); }
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // [FULL] PROCESSLIST
+        LOOKAHEAD({ isAnyWordAt(getToken(1).kind == K_FULL ? 2 : 1, "PROCESSLIST") })
+        [ <K_FULL> { full = true; } ]
+        <S_IDENTIFIER> { statement.setKeyword("PROCESSLIST"); statement.setFull(full); }
+        |
+        // {DATABASES | SCHEMAS | CHARSET | COLLATION} [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isAnyWordAt(1, "DATABASES", "SCHEMAS", "CHARSET", "COLLATION") })
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); }
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // {CHARACTER | CHAR} SET [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ (getToken(1).kind == K_CHARACTER || "CHAR".equalsIgnoreCase(getToken(1).image))
+                && getToken(2).kind == K_SET })
+        (
+            <K_CHARACTER> { statement.setKeyword("CHARACTER SET"); }
+            |
+            ( <K_CHAR> | <DATA_TYPE> ) { statement.setKeyword("CHAR SET"); }
+        )
+        <K_SET>
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // {PROCEDURE | FUNCTION} STATUS [LIKE 'pattern' | WHERE expr] and {PROCEDURE | FUNCTION} CODE name
+        LOOKAHEAD({ (getToken(1).kind == K_PROCEDURE || getToken(1).kind == K_FUNCTION)
+                && isAnyWordAt(2, "STATUS", "CODE") })
+        ( token = <K_PROCEDURE> | token = <K_FUNCTION> )
+        (
+            LOOKAHEAD({ isAnyWordAt(1, "STATUS") }) <S_IDENTIFIER>
+            { statement.setKeyword(token.image + " STATUS"); }
+            [ filter = ShowFilter() { statement.setFilter(filter); } ]
+            |
+            <S_IDENTIFIER> { statement.setKeyword(token.image + " CODE"); }
+            ShowRoutineName(statement)
+        )
+        |
+        // {[FULL] TRIGGERS | EVENTS | OPEN TABLES} [{FROM | IN} db] [LIKE 'pattern' | WHERE expr]
+        LOOKAHEAD({ isAnyWordAt(1, "TRIGGERS", "EVENTS")
+                || getToken(1).kind == K_FULL && isAnyWordAt(2, "TRIGGERS")
+                || getToken(1).kind == K_OPEN && getToken(2).kind == K_TABLES })
+        (
+            <K_OPEN> <K_TABLES> { statement.setKeyword("OPEN TABLES"); }
+            |
+            [ <K_FULL> { full = true; } ]
+            token = <S_IDENTIFIER> { statement.setKeyword(token.image); statement.setFull(full); }
+        )
+        [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+        [ filter = ShowFilter() { statement.setFilter(filter); } ]
+        |
+        // ENGINES, PLUGINS, PRIVILEGES, PROFILES, REPLICAS
+        LOOKAHEAD({ isAnyWordAt(1, "ENGINES", "PLUGINS", "PRIVILEGES", "PROFILES", "REPLICAS") })
+        token = <S_IDENTIFIER> { statement.setKeyword(token.image); }
+        |
+        // STORAGE ENGINES
+        LOOKAHEAD({ getToken(1).kind == K_STORAGE && isAnyWordAt(2, "ENGINES") })
+        <K_STORAGE> <S_IDENTIFIER> { statement.setKeyword("STORAGE ENGINES"); }
+        |
+        // BINARY LOGS and BINARY LOG STATUS
+        LOOKAHEAD({ getToken(1).kind == K_BINARY && (isAnyWordAt(2, "LOGS")
+                || getToken(2).kind == K_LOG && isAnyWordAt(3, "STATUS")) })
+        <K_BINARY>
+        (
+            <K_LOG> <S_IDENTIFIER> { statement.setKeyword("BINARY LOG STATUS"); }
+            |
+            <S_IDENTIFIER> { statement.setKeyword("BINARY LOGS"); }
+        )
+        |
+        // MASTER LOGS and MASTER STATUS, the spellings before MySQL 8.4
+        LOOKAHEAD({ isLegacyMySqlShowDialect() && isAnyWordAt(1, "MASTER")
+                && isAnyWordAt(2, "LOGS", "STATUS") })
+        <S_IDENTIFIER> token = <S_IDENTIFIER> { statement.setKeyword("MASTER " + token.image); }
+        |
+        // SLAVE HOSTS, the spelling of REPLICAS before MySQL 8.4
+        LOOKAHEAD({ isLegacyMySqlShowDialect() && getToken(1).kind == K_SLAVE && isAnyWordAt(2, "HOSTS") })
+        <K_SLAVE> <S_IDENTIFIER> { statement.setKeyword("SLAVE HOSTS"); }
+        |
+        // REPLICA STATUS [FOR CHANNEL 'channel']; SLAVE STATUS is the spelling before MySQL 8.4
+        LOOKAHEAD({ (isLegacyMySqlShowDialect() && getToken(1).kind == K_SLAVE || isAnyWordAt(1, "REPLICA"))
+                && isAnyWordAt(2, "STATUS") })
+        ( token = <K_SLAVE> | token = <S_IDENTIFIER> ) <S_IDENTIFIER>
+        { statement.setKeyword(token.image + " STATUS"); }
+        [ LOOKAHEAD({ isShowChannelAhead() }) channel = ShowChannel() { statement.setChannel(channel); } ]
+        |
+        // GRANTS [FOR account [USING role [, role] ...]]
+        LOOKAHEAD({ isAnyWordAt(1, "GRANTS") })
+        <S_IDENTIFIER> { statement.setKeyword("GRANTS"); }
+        [ ShowGrantsAccount(statement) ]
+        |
+        // {WARNINGS | ERRORS} [LIMIT ...]
+        LOOKAHEAD({ getToken(1).kind == K_ERRORS || isAnyWordAt(1, "WARNINGS") })
+        ( <K_ERRORS> { statement.setKeyword("ERRORS"); } | <S_IDENTIFIER> { statement.setKeyword("WARNINGS"); } )
+        [ ShowLimit(statement) ]
+        |
+        // COUNT(*) {WARNINGS | ERRORS}
+        LOOKAHEAD({ isShowCountAhead() })
+        <K_COUNT> "(" "*" ")"
+        (
+            <K_ERRORS> { statement.setKeyword("ERRORS"); }
+            |
+            LOOKAHEAD({ isAnyWordAt(1, "WARNINGS") }) <S_IDENTIFIER> { statement.setKeyword("WARNINGS"); }
+        )
+        { statement.setCount(true); }
+        |
+        // {BINLOG | RELAYLOG} EVENTS [IN 'log_name'] [FROM pos] [LIMIT ...] [FOR CHANNEL 'channel'],
+        // the channel only for RELAYLOG
+        LOOKAHEAD({ isAnyWordAt(1, "BINLOG", "RELAYLOG") && isAnyWordAt(2, "EVENTS") })
+        (
+            LOOKAHEAD({ isAnyWordAt(1, "BINLOG") })
+            <S_IDENTIFIER> <S_IDENTIFIER> { statement.setKeyword("BINLOG EVENTS"); }
+            ShowLogRange(statement)
+            |
+            <S_IDENTIFIER> <S_IDENTIFIER> { statement.setKeyword("RELAYLOG EVENTS"); }
+            ShowLogRange(statement)
+            [ LOOKAHEAD({ isShowChannelAhead() }) channel = ShowChannel() { statement.setChannel(channel); } ]
+        )
+        |
+        // ENGINE {engine_name | ALL} {STATUS | MUTEX | LOGS}
+        LOOKAHEAD({ getToken(1).kind == K_ENGINE })
+        <K_ENGINE> { statement.setKeyword("ENGINE"); }
+        ShowEngine(statement)
+        |
+        // PROFILE [type [, type] ...] [FOR QUERY n] [LIMIT ...]
+        LOOKAHEAD({ isAnyWordAt(1, "PROFILE") })
+        <S_IDENTIFIER> { statement.setKeyword("PROFILE"); }
+        ShowProfile(statement)
+    )
+    {
+        return statement;
+    }
+}
+
+/** The routine of SHOW {PROCEDURE | FUNCTION} CODE: name or db.name. */
+void ShowRoutineName(MySqlShowStatement statement):
+{
+    Token first = getToken(1);
+    String name;
+    String routine = null;
+    Table table;
+}
+{
+    name = RelObjectName() [ "." routine = RelObjectName() ]
+    {
+        table = routine == null ? new Table(name) : new Table(name, routine);
+        linkAST(table, first);
+        statement.setRoutineName(table);
+    }
+}
+
+/** {engine_name | ALL} {STATUS | MUTEX | LOGS} of SHOW ENGINE; the engine is a name or a string. */
+void ShowEngine(MySqlShowStatement statement):
+{
+    Token token;
+    String name;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_CHAR_LITERAL && isMySqlTextStringAt(1) })
+        token = <S_CHAR_LITERAL> { name = token.image; }
+        |
+        // RelObjectName() also reads ALL, which shows every engine
+        LOOKAHEAD({ getToken(1).kind != S_CHAR_LITERAL }) name = RelObjectName()
+    )
+    { statement.setEngineName(name); }
+    (
+        LOOKAHEAD({ isAnyWordAt(1, "STATUS") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.STATUS); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "MUTEX") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.MUTEX); }
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "LOGS") }) <S_IDENTIFIER>
+        { statement.setEngineInfo(MySqlShowStatement.EngineInfo.LOGS); }
+    )
+}
+
+/** [type [, type] ...] [FOR QUERY n] [LIMIT ...] of SHOW PROFILE. */
+void ShowProfile(MySqlShowStatement statement):
+{
+    List<MySqlShowStatement.ProfileType> types = new ArrayList<MySqlShowStatement.ProfileType>();
+    MySqlShowStatement.ProfileType type;
+    Token token;
+}
+{
+    [
+        type = ShowProfileType() { types.add(type); }
+        ( "," type = ShowProfileType() { types.add(type); } )*
+        { statement.setProfileTypes(types); }
+    ]
+    [
+        LOOKAHEAD(2) <K_FOR> <K_QUERY> token = <S_LONG>
+        { statement.setProfileQuery(linkToLastToken(new LongValue(token.image))); }
+    ]
+    [ ShowLimit(statement) ]
+}
+
+MySqlShowStatement.ProfileType ShowProfileType():
+{
+    Token token;
+    Token second = null;
+}
+{
+    (
+        token = <K_ALL>
+        |
+        LOOKAHEAD({ getToken(1).kind == K_BLOCK && isAnyWordAt(2, "IO") })
+        token = <K_BLOCK> second = <S_IDENTIFIER>
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "CONTEXT") && isAnyWordAt(2, "SWITCHES")
+                || isAnyWordAt(1, "PAGE") && isAnyWordAt(2, "FAULTS") })
+        token = <S_IDENTIFIER> second = <S_IDENTIFIER>
+        |
+        LOOKAHEAD({ isAnyWordAt(1, "CPU", "IPC", "MEMORY", "SOURCE", "SWAPS") })
+        token = <S_IDENTIFIER>
+    )
+    {
+        return MySqlShowStatement.ProfileType
+                .fromKeyword(second == null ? token.image : token.image + " " + second.image);
+    }
+}
+
+/** FOR account [USING role [, role] ...] of SHOW GRANTS, read like the accounts of CREATE USER. */
+void ShowGrantsAccount(MySqlShowStatement statement):
+{
+    UserAccount account;
+    List<UserAccount> roles;
+}
+{
+    <K_FOR> account = MySqlAccountName() { statement.setAccount(account); }
+    [ <K_USING> roles = MySqlAccountNameList() { statement.setUsingRoles(roles); } ]
+}
+
+/** [IN 'log_name'] [FROM pos] [LIMIT ...] of SHOW BINLOG and RELAYLOG EVENTS. */
+void ShowLogRange(MySqlShowStatement statement):
+{
+    Token token;
+    StringValue logName;
+}
+{
+    [ <K_IN> logName = ShowTextString() { statement.setLogName(logName); } ]
+    [
+        LOOKAHEAD(2) <K_FROM>
+        (
+            token = <S_LONG> { statement.setPosition(linkToLastToken(new LongValue(token.image))); }
+            |
+            token = <S_DOUBLE> { statement.setPosition(linkToLastToken(new DoubleValue(token.image))); }
+        )
+    ]
+    [ ShowLimit(statement) ]
 }
 
 Statement RefreshMaterializedView(): {
@@ -9231,37 +10673,22 @@ Statement RefreshMaterializedView(): {
         }
     }
 }
-// https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
+// https://dev.mysql.com/doc/refman/8.4/en/show-tables.html
 ShowTablesStatement ShowTables(): {
-    ShowTablesStatement showTablesStatement;
-    EnumSet<ShowTablesStatement.Modifiers> modifiers =  EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
-    ShowTablesStatement.SelectionMode selectionMode = null;
-    String dbName = null;
-    Expression likeExpression = null;
-    Expression whereCondition = null;
+    ShowTablesStatement statement = new ShowTablesStatement();
+    EnumSet<ShowTablesStatement.Modifiers> modifiers = EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
+    ShowDbSelection dbSelection;
+    ShowFilter filter;
 }
 {
-  [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
-  [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
-  <K_TABLES>
-  [
-    LOOKAHEAD(2) (
-        <K_FROM> { selectionMode = ShowTablesStatement.SelectionMode.FROM; }
-        |
-        <K_IN> { selectionMode = ShowTablesStatement.SelectionMode.IN; }
-    )
-    dbName = RelObjectName()
-  ]
-  [ (<K_LIKE> likeExpression = SimpleExpression() | <K_WHERE> whereCondition = Expression()) ]
-  {
-    showTablesStatement = new ShowTablesStatement();
-    showTablesStatement.setModifiers(modifiers);
-    showTablesStatement.setSelectionMode(selectionMode);
-    showTablesStatement.setDbName(dbName);
-    showTablesStatement.setLikeExpression(likeExpression);
-    showTablesStatement.setWhereCondition(whereCondition);
-    return showTablesStatement;
-  }
+    [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
+    [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
+    <K_TABLES> { statement.setModifiers(modifiers); }
+    [ LOOKAHEAD(2) dbSelection = ShowDbSelection() { statement.setDbSelection(dbSelection); } ]
+    [ filter = ShowFilter() { statement.setFilter(filter); } ]
+    {
+        return statement;
+    }
 }
 
 Values Values(): {
@@ -15503,11 +16930,7 @@ Expression PrimaryExpression() #PrimaryExpression:
                 token="#>>"
             )
 
-            (
-                LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted }) expression=Expression()
-                |
-                expression=SimpleExpression()
-            )
+            expression=JsonPathElement()
             {
                 if (jsonIdents == null) {
                     jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
@@ -15892,6 +17315,75 @@ StructType StructType() #StruckType:
     }
 }
 
+/**
+ * The element after a ":" in a JSON path (Snowflake, Databricks).  A path name is mandatory there,
+ * so any word is a name, reserved or not: v:from::INT, v:select, v:output.x[0].
+ */
+Expression JsonPathElement() #void:
+{ Expression element; }
+{
+    (
+        LOOKAHEAD({ isKeywordJsonPathName() || isJsonPathWithKeywordAfterDot() }) element=JsonPathKeyword()
+        |
+        LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) element=Expression()
+        |
+        element=SimpleExpression()
+    )
+    { return element; }
+}
+
+/**
+ * A keyword used as a JSON path name. The token is taken as it is, as no token kind in the grammar
+ * stands for "any keyword", then the path name continues like a primary expression: further
+ * navigation steps, casts and the arithmetic tier SimpleExpression() also applies.
+ */
+Expression JsonPathKeyword() #void:
+{
+    Token first = getToken(1);
+    Token keyword;
+    Expression element;
+    Expression step;
+    ColDataType type;
+    CastExpression cast;
+}
+{
+    {
+        keyword = getNextToken();
+        element = linkToLastToken(new Column(keyword.image));
+    }
+    ( LOOKAHEAD(2) step=JsonPathStep(element) { element = linked(step, first); } )*
+    (
+        LOOKAHEAD(2) "::" type=ColDataType() {
+            cast = new CastExpression();
+            cast.setUseCastKeyword(false);
+            cast.setLeftExpression(element);
+            cast.setColDataType(type);
+            element = linked(cast, first);
+        }
+    )*
+    {
+        int arithFloor = Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) ? 2 : 4;
+        return prattArithRest(element, first, arithFloor);
+    }
+}
+
+/**
+ * A navigation step within a JSON path, where a keyword after a "." names a path element as well:
+ * v:a.output, v:a[0].from.
+ */
+Expression JsonPathStep(Expression base) #void:
+{ Expression step; }
+{
+    (
+        LOOKAHEAD({ ".".equals(getToken(1).image) && isKeywordWord(2) }) "." {
+            step = new RowGetExpression(base, getNextToken().image);
+        }
+        |
+        step=NavigationStep(base)
+    )
+    { return step; }
+}
+
 JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String>> idents) : {
   JsonExpression result = new JsonExpression(expr, idents);
   Expression expression;
@@ -15935,11 +17427,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
                 token="#>>"
             )
 
-            (
-                LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expression=Expression()
-                |
-                expression=SimpleExpression()
-            )
+            expression=JsonPathElement()
             {
                 result.addIdent( expression, token.image );
             }
@@ -20850,6 +22338,26 @@ ForeignTableOptions ForeignTableOptions():
 }
 
 List<ForeignDataOption> ForeignDataOptions(boolean alter):
+{ List<ForeignDataOption> options; }
+{
+    options=ForeignDataOptionList(alter)
+    {
+        for (ForeignDataOption item : options) {
+            requireDdlSyntax(item.getValueExpression() == null || item.getValue() != null,
+                    "Option values are string constants");
+        }
+        return options;
+    }
+}
+
+/** OPTIONS of CREATE SERVER and ALTER SERVER, where MySQL also takes a number, as in PORT 3306. */
+List<ForeignDataOption> ServerOptions(boolean alter):
+{ List<ForeignDataOption> options; }
+{
+    options=ForeignDataOptionList(alter) { requireServerOptions(options); return options; }
+}
+
+List<ForeignDataOption> ForeignDataOptionList(boolean alter):
 {
     List<ForeignDataOption> options = new ArrayList<ForeignDataOption>();
     ForeignDataOption option;
@@ -20870,6 +22378,7 @@ ForeignDataOption ForeignDataOption():
     ForeignDataOption.Action action = null;
     String name;
     Token value;
+    Expression number;
     ForeignDataOption option;
 }
 {
@@ -20879,10 +22388,22 @@ ForeignDataOption ForeignDataOption():
         |
         [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
           | <K_SET> { action = ForeignDataOption.Action.SET; } ) ]
-        name=RelObjectName() value=<S_CHAR_LITERAL>
-        { option = new ForeignDataOption(name, stringValue(value)); option.setAction(action); }
+        name=RelObjectName()
+        ( value=<S_CHAR_LITERAL> { option = new ForeignDataOption(name, stringValue(value)); }
+          | number=ServerOptionNumber() { option = new ForeignDataOption(name, null).withValueExpression(number); } )
+        { option.setAction(action); }
     )
     { return option; }
+}
+
+/** MySQL's ulong_num, the value of the PORT server option; only ServerOptions() keeps it. */
+Expression ServerOptionNumber():
+{ Token token; Expression number; }
+{
+    ( token=<S_LONG> { number = new LongValue(token.image); }
+      | token=<S_DOUBLE> { number = new DoubleValue(token.image); }
+      | token=<S_HEX> { number = new HexValue(token.image); } )
+    { linkAST(number, token, token); return number; }
 }
 
 TableElement CreateTableElement(boolean typed):
@@ -22905,9 +24426,14 @@ void DropTargets(Drop drop):
     TransformSignature transform;
     OperatorSignature operator;
     Table name;
+    Expression srid;
 }
 {
     (
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.SPATIAL_REFERENCE_SYSTEM })
+        srid=SpatialReferenceSystemNumber()
+        { drop.addNames(linkToLastToken(new Table(srid.toString(), false))); }
+        |
         LOOKAHEAD({ drop.getObjectType().hasRoutineTargets() })
         routine=RoutineReference(aggregate) { drop.addRoutines(routine); }
         ( "," routine=RoutineReference(aggregate) { drop.addRoutines(routine); } )*
@@ -22928,7 +24454,8 @@ void DropTargets(Drop drop):
         transform=TransformSignature() { drop.setTransform(transform); }
         |
         LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.OPERATOR
-                && DropLookahead.isOperatorAhead(getToken(1), getToken(2), getToken(3)) })
+                && (DropLookahead.isOperatorAhead(getToken(1), getToken(2), getToken(3))
+                    || isOperatorNameAhead(1)) })
         operator=OperatorSignature() { drop.addOperators(operator); }
         ( "," operator=OperatorSignature() { drop.addOperators(operator); } )*
         |
@@ -23047,6 +24574,10 @@ Drop Drop():
             | ContextualKeyword("TEMPLATE") { multiWordType = "TEXT SEARCH TEMPLATE"; }
         )
         |
+        // MySQL DROP SPATIAL REFERENCE SYSTEM [IF EXISTS] srid
+        LOOKAHEAD({ isSpatialReferenceSystemAhead() })
+        <K_SPATIAL> ContextualKeyword("REFERENCE") <K_SYSTEM> { multiWordType = "SPATIAL REFERENCE SYSTEM"; }
+        |
         // PostgreSQL DROP OWNED BY role [, ...]
         LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
         |
@@ -23163,6 +24694,11 @@ Drop Drop():
                 || DropLookahead.isResourceGroupTarget(drop) && dropArgs.isEmpty()
                     && indexTable == null && indexOptions.isEmpty() && behavior == null,
                 "DROP RESOURCE GROUP takes one group name and FORCE");
+        // MySQL's DROP SPATIAL REFERENCE SYSTEM ends with the SRID
+        requireDdlSyntax(drop.getObjectType() != Drop.ObjectType.SPATIAL_REFERENCE_SYSTEM
+                || dropArgs.isEmpty() && indexTable == null && indexOptions.isEmpty()
+                    && behavior == null && !drop.isMaterialized(),
+                "Unexpected clause in DROP " + drop.getType());
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
         }
@@ -24839,6 +26375,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD({ isAlterInstanceAhead() }) statement = AlterInstance()
+                |
                 LOOKAHEAD(<K_FOREIGN> <K_DATA>) statement = AlterForeignDataWrapper()
                 |
                 LOOKAHEAD({ isKeywordAhead("SERVER") }) statement = AlterServer()
@@ -24852,6 +26390,10 @@ Statement Alter():
                 LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
                 |
                 LOOKAHEAD({ isKeywordAhead("RULE") }) statement = AlterRule()
+                |
+                LOOKAHEAD({ isPostgreSqlOperatorDdlAhead() }) statement = PostgreSqlAlterOperator()
+                |
+                LOOKAHEAD(1, <K_AGGREGATE>) statement = AlterAggregate()
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
@@ -26953,12 +28495,21 @@ Statement Create():
         |
         LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
         |
+        LOOKAHEAD({ isPostgreSqlOperatorDdlAhead() })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE OPERATOR does not support OR REPLACE"); }
+        statement = PostgreSqlCreateOperator()
+        |
+        LOOKAHEAD({ isPostgreSqlCreateAggregateAhead() }) statement = CreateAggregate(isUsingOrReplace)
+        |
         LOOKAHEAD({ getToken(1).kind == K_TABLESPACE
                 || isKeywordAhead("UNDO") && getToken(2).kind == K_TABLESPACE })
         { requireDdlSyntax(!isUsingOrReplace, "CREATE TABLESPACE does not support OR REPLACE"); }
         statement = CreateTablespace()
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
+        |
+        LOOKAHEAD({ isSpatialReferenceSystemAhead() })
+        statement = CreateSpatialReferenceSystem(isUsingOrReplace)
         |
         LOOKAHEAD({ isMySqlCreateRoleAhead() }) statement = MySqlCreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }
@@ -27536,6 +29087,247 @@ DefinitionArgument PostgreSqlDefinitionArgument():
     { return result; }
 }
 
+/** PostgreSQL CREATE OPERATOR, CREATE OPERATOR CLASS or CREATE OPERATOR FAMILY. */
+Statement PostgreSqlCreateOperator():
+{ Statement statement; }
+{
+    (
+        LOOKAHEAD({ isOperatorClassOrFamilyAhead() && "CLASS".equalsIgnoreCase(getToken(2).image) })
+        ContextualKeyword("OPERATOR") statement=CreateOperatorClass()
+        |
+        LOOKAHEAD({ isOperatorClassOrFamilyAhead() })
+        ContextualKeyword("OPERATOR") statement=CreateOperatorFamily()
+        |
+        ContextualKeyword("OPERATOR") statement=CreateOperator()
+    )
+    { return statement; }
+}
+
+/** PostgreSQL's CREATE OPERATOR any_operator definition. */
+CreateOperator CreateOperator():
+{ CreateOperator statement = new CreateOperator(); ExclusionOperator operator; List<DefinitionElement> definition; }
+{
+    operator=PostgreSqlOperatorReference() { statement.setOperator(operator); }
+    definition=PostgreSqlDefinition() { statement.setDefinition(definition); }
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's CREATE OPERATOR CLASS name [ DEFAULT ] FOR TYPE type USING index_method
+ * [ FAMILY family ] AS opclass_item_list.
+ */
+CreateOperatorClass CreateOperatorClass():
+{
+    CreateOperatorClass statement = new CreateOperatorClass(); String name; ColDataType type;
+    OperatorClassItem item;
+}
+{
+    ContextualKeyword("CLASS") name=TypeDdlName() { statement.setName(name); }
+    [ <K_DEFAULT> { statement.setDefaultClass(true); } ]
+    <K_FOR> <K_TYPE> type=ColDataType() { statement.setDataType(type); }
+    <K_USING> name=RelObjectName() { statement.setAccessMethod(name); }
+    [ LOOKAHEAD({ isKeywordAhead("FAMILY") }) ContextualKeyword("FAMILY")
+      name=TypeDdlName() { statement.setFamily(name); } ]
+    <K_AS> item=OperatorClassItem() { statement.getItems().add(item); }
+    ( "," item=OperatorClassItem() { statement.getItems().add(item); } )*
+    { return statement; }
+}
+
+/** PostgreSQL's CREATE OPERATOR FAMILY name USING index_method. */
+CreateOperatorFamily CreateOperatorFamily():
+{ CreateOperatorFamily statement = new CreateOperatorFamily(); String name; }
+{
+    ContextualKeyword("FAMILY") name=TypeDdlName() { statement.setName(name); }
+    <K_USING> name=RelObjectName() { statement.setAccessMethod(name); }
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's opclass_item: OPERATOR n operator [ (left, right) ] [ FOR SEARCH | FOR ORDER BY
+ * family ], FUNCTION n [ (type [, ...]) ] function [ (arguments) ], or STORAGE type.
+ */
+OperatorClassItem OperatorClassItem():
+{
+    OperatorClassItem item = new OperatorClassItem(); Token number; String name;
+    ExclusionOperator operator; OperatorSignature signature; RoutineReference function;
+    List<ColDataType> types; ColDataType type;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("OPERATOR") }) ContextualKeyword("OPERATOR")
+        number=<S_LONG> { item.setKind(OperatorClassItem.Kind.OPERATOR); item.setNumber(operatorClassNumber(number)); }
+        (
+            LOOKAHEAD(PostgreSqlOperatorReference() "(") signature=OperatorSignature()
+            {
+                item.setOperator(signature.getOperator());
+                item.setOperandTypes(new ArrayList<ColDataType>(
+                        Arrays.asList(signature.getLeftType(), signature.getRightType())));
+            }
+            |
+            operator=PostgreSqlOperatorReference() { item.setOperator(operator); }
+        )
+        [
+            <K_FOR>
+            ( <K_SEARCH> { item.setPurpose(OperatorClassItem.Purpose.SEARCH); }
+              | <K_ORDER> <K_BY> name=TypeDdlName()
+                { item.setPurpose(OperatorClassItem.Purpose.ORDER_BY); item.setSortFamily(name); } )
+        ]
+        |
+        <K_FUNCTION>
+        number=<S_LONG> { item.setKind(OperatorClassItem.Kind.FUNCTION); item.setNumber(operatorClassNumber(number)); }
+        [ LOOKAHEAD(1) types=OperatorClassTypes() { item.setOperandTypes(types); } ]
+        function=RoutineReference(false) { item.setFunction(function); }
+        |
+        <K_STORAGE> type=ColDataType() { item.setKind(OperatorClassItem.Kind.STORAGE); item.setStorageType(type); }
+    )
+    { return item; }
+}
+
+/** PostgreSQL's opclass_drop: OPERATOR n (type [, ...]) or FUNCTION n (type [, ...]). */
+OperatorClassItem OperatorClassDropItem():
+{ OperatorClassItem item = new OperatorClassItem(); Token number; List<ColDataType> types; }
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("OPERATOR") }) ContextualKeyword("OPERATOR")
+        { item.setKind(OperatorClassItem.Kind.OPERATOR); }
+        |
+        <K_FUNCTION> { item.setKind(OperatorClassItem.Kind.FUNCTION); }
+    )
+    number=<S_LONG> { item.setNumber(operatorClassNumber(number)); }
+    types=OperatorClassTypes() { item.setOperandTypes(types); }
+    { return item; }
+}
+
+/** PostgreSQL's type_list in parentheses. */
+List<ColDataType> OperatorClassTypes():
+{ List<ColDataType> types = new ArrayList<ColDataType>(); ColDataType type; }
+{
+    "(" type=ColDataType() { types.add(type); }
+    ( "," type=ColDataType() { types.add(type); } )* ")"
+    { return types; }
+}
+
+/** PostgreSQL ALTER OPERATOR, ALTER OPERATOR CLASS or ALTER OPERATOR FAMILY. */
+Statement PostgreSqlAlterOperator():
+{ Statement statement; }
+{
+    (
+        LOOKAHEAD({ isOperatorClassOrFamilyAhead() && "CLASS".equalsIgnoreCase(getToken(2).image) })
+        ContextualKeyword("OPERATOR") statement=AlterOperatorClass()
+        |
+        LOOKAHEAD({ isOperatorClassOrFamilyAhead() })
+        ContextualKeyword("OPERATOR") statement=AlterOperatorFamily()
+        |
+        ContextualKeyword("OPERATOR") statement=AlterOperator()
+    )
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's ALTER OPERATOR operator_with_argtypes { OWNER TO role | SET SCHEMA schema |
+ * SET ( operator_def_list ) }.
+ */
+AlterOperator AlterOperator():
+{
+    AlterOperator statement = new AlterOperator(); OperatorSignature operator; String name;
+    List<DefinitionElement> properties;
+}
+{
+    operator=OperatorSignature() { statement.setOperator(operator); }
+    (
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterOperator.Action.OWNER); statement.setNewName(name); }
+        |
+        <K_SET>
+        (
+            <K_SCHEMA> name=RelObjectName()
+            { statement.setAction(AlterOperator.Action.SET_SCHEMA); statement.setNewName(name); }
+            |
+            properties=PostgreSqlDefinition()
+            { statement.setAction(AlterOperator.Action.SET_PROPERTIES); statement.setProperties(properties); }
+        )
+    )
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's ALTER OPERATOR CLASS name USING index_method { RENAME TO name | OWNER TO role |
+ * SET SCHEMA schema }.
+ */
+AlterOperatorClass AlterOperatorClass():
+{ AlterOperatorClass statement = new AlterOperatorClass(); String name; }
+{
+    ContextualKeyword("CLASS") name=TypeDdlName() { statement.setName(name); }
+    <K_USING> name=RelObjectName() { statement.setAccessMethod(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName() { statement.setAction(AlterOperatorClass.Action.RENAME); }
+        | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setAction(AlterOperatorClass.Action.OWNER); }
+        | <K_SET> <K_SCHEMA> name=RelObjectName() { statement.setAction(AlterOperatorClass.Action.SET_SCHEMA); }
+    )
+    { statement.setNewName(name); return statement; }
+}
+
+/**
+ * PostgreSQL's ALTER OPERATOR FAMILY name USING index_method { ADD opclass_item_list |
+ * DROP opclass_drop_list | RENAME TO name | OWNER TO role | SET SCHEMA schema }.
+ */
+AlterOperatorFamily AlterOperatorFamily():
+{ AlterOperatorFamily statement = new AlterOperatorFamily(); String name = null; OperatorClassItem item; }
+{
+    ContextualKeyword("FAMILY") name=TypeDdlName() { statement.setName(name); }
+    <K_USING> name=RelObjectName() { statement.setAccessMethod(name); name = null; }
+    (
+        <K_ADD> { statement.setAction(AlterOperatorFamily.Action.ADD); }
+        item=OperatorClassItem() { statement.getItems().add(item); }
+        ( "," item=OperatorClassItem() { statement.getItems().add(item); } )*
+        |
+        <K_DROP> { statement.setAction(AlterOperatorFamily.Action.DROP); }
+        item=OperatorClassDropItem() { statement.getItems().add(item); }
+        ( "," item=OperatorClassDropItem() { statement.getItems().add(item); } )*
+        | <K_RENAME> <K_TO> name=RelObjectName() { statement.setAction(AlterOperatorFamily.Action.RENAME); }
+        | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setAction(AlterOperatorFamily.Action.OWNER); }
+        | <K_SET> <K_SCHEMA> name=RelObjectName() { statement.setAction(AlterOperatorFamily.Action.SET_SCHEMA); }
+    )
+    { statement.setNewName(name); return statement; }
+}
+
+/**
+ * PostgreSQL's CREATE [ OR REPLACE ] AGGREGATE name aggr_args definition, and the old form
+ * CREATE AGGREGATE name old_aggr_definition, whose definition names the input type.
+ */
+CreateAggregate CreateAggregate(boolean orReplace):
+{
+    CreateAggregate statement = new CreateAggregate(); String name;
+    RoutineReference aggregate; List<DefinitionElement> definition;
+}
+{
+    <K_AGGREGATE> { statement.setOrReplace(orReplace); }
+    (
+        LOOKAHEAD({ isOldAggregateDefinitionAhead() })
+        name=TypeDdlName() { aggregate = new RoutineReference(); aggregate.setName(name); }
+        definition=PostgreSqlDefinition() { requireOldAggregateDefinition(definition); }
+        |
+        aggregate=RoutineReference(true) definition=PostgreSqlDefinition()
+    )
+    { statement.setAggregate(aggregate); statement.setDefinition(definition); return statement; }
+}
+
+/**
+ * PostgreSQL's ALTER AGGREGATE name aggr_args { RENAME TO name | OWNER TO role |
+ * SET SCHEMA schema }.
+ */
+AlterAggregate AlterAggregate():
+{ AlterAggregate statement = new AlterAggregate(); RoutineReference aggregate; String name; }
+{
+    <K_AGGREGATE> aggregate=RoutineReference(true) { statement.setAggregate(aggregate); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName() { statement.setAction(AlterAggregate.Action.RENAME); }
+        | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setAction(AlterAggregate.Action.OWNER); }
+        | <K_SET> <K_SCHEMA> name=RelObjectName() { statement.setAction(AlterAggregate.Action.SET_SCHEMA); }
+    )
+    { statement.setNewName(name); return statement; }
+}
+
 RangeTypeDefinition.Option RangeTypeOption():
 { String name; RangeTypeDefinition.OptionKind kind; ColDataType type; }
 {
@@ -27769,18 +29561,22 @@ RoutineReference RoutineReference(boolean aggregate):
         )
         ")"
     ]
-    { requireTypeDdlSyntax(!aggregate || result.getArguments() != null, "An aggregate signature is required"); return result; }
+    { requireTypeDdlSyntax(!aggregate || isAggregateSignature(result), "An aggregate signature is required"); return result; }
 }
 
 String ExtensionOperatorName():
 { ExclusionOperator operator; }
 { operator=PostgreSqlOperatorReference() { return operator.getQualifiedName(); } }
 
-/** Shared schema-qualified operator spelling used in DDL references. */
+/**
+ * Shared schema-qualified operator spelling used in DDL references. A database may precede the
+ * schema, as in db.schema.+, and is then a part of the schema name.
+ */
 ExclusionOperator PostgreSqlOperatorReference():
 { String schema = null; String name; }
 {
-    [ LOOKAHEAD(RelObjectName() ".") schema=RelObjectName() "." ]
+    ( LOOKAHEAD(RelObjectName() ".") name=RelObjectName() "."
+      { schema = schema == null ? name : schema + "." + name; } )*
     name=PostgreSqlOperatorName()
     { return new ExclusionOperator().withSchemaName(schema).withName(name); }
 }
@@ -27798,7 +29594,7 @@ String PostgreSqlOperatorName():
                 && getToken(1).beginColumn == getToken(0).endColumn + 1 })
         token=PostgreSqlOperatorPart() { name.append(token.image); }
     )*
-    { return name.toString(); }
+    { requirePostgreSqlOperatorName(name.toString()); return name.toString(); }
 }
 
 Token PostgreSqlOperatorPart():
@@ -27814,8 +29610,14 @@ Token PostgreSqlOperatorPart():
         | token="~~~" | token="!" | token=<K_AT_SIGN> | token="@>" | token="<@" | token="@@" | token=<OP_JSON_PATH_EXISTS>
         | token="?" | token="?|" | token="?&" | token="->" | token="->>" | token=<S_HASH_OPERATOR> | token="#>"
         | token="#>>" | token=<OP_JSON_PATH_DELETE> | token="-#" | token="<->" | token="<#>"
+        // "=>" is no operator by itself, but it is a part of one such as <==>
+        | token=<K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
+        // the lexer reads @ before # as the start of a variable name, as in @#@
+        | token=<S_AT_IDENTIFIER>
     )
     {
+        requireTypeDdlSyntax(token.kind != S_AT_IDENTIFIER || token.image.matches("[@#]+"),
+                "Expected an operator but found " + token.image);
         // PostgreSQL reads "< =" as two operators, while the lexer tolerates whitespace inside it
         requireTypeDdlSyntax(!token.image.matches("(?s).*\\s.*"),
                 "Unexpected whitespace in operator " + token.image);
@@ -28673,12 +30475,32 @@ CreateServer CreateServer():
 {
     ContextualKeyword("SERVER")
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
-    name=RelObjectName() { statement.setName(name); }
+    name=ServerObjectName() { statement.setName(name); }
     [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(stringValue(type)); } ]
     [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
-    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setForeignDataWrapper(name); }
-    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
-    { return statement; }
+    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=ServerObjectName() { statement.setForeignDataWrapper(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ServerOptions(false) { statement.setOptions(options); } ]
+    {
+        // MySQL: CREATE SERVER name FOREIGN DATA WRAPPER wrapper OPTIONS (option[, ...])
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || !statement.isIfNotExists() && statement.getType() == null && statement.getVersion() == null
+                    && statement.getOptions() != null,
+                "MySQL CREATE SERVER takes a name, FOREIGN DATA WRAPPER and OPTIONS");
+        return statement;
+    }
+}
+
+/** A server or wrapper name; MySQL's ident_or_text also takes a string literal, kept as written. */
+String ServerObjectName():
+{ String name; Token token; }
+{
+    ( name=RelObjectName()
+      | token=<S_CHAR_LITERAL> {
+            requireDdlSyntax(isMySqlServerSyntaxAllowed() && isMySqlTextString(new StringValue(token.image)),
+                    "Expected a name but found " + token.image);
+            name = token.image;
+        } )
+    { return name; }
 }
 
 Expression ForeignServerVersion():
@@ -28695,18 +30517,24 @@ AlterServer AlterServer():
     Expression version; List<ForeignDataOption> options;
 }
 {
-    ContextualKeyword("SERVER") name=RelObjectName() { statement.setName(name); }
+    ContextualKeyword("SERVER") name=ServerObjectName() { statement.setName(name); }
     (
         <K_RENAME> <K_TO> name=RelObjectName()
         { statement.setAction(ForeignObjectAlterAction.RENAME); statement.setNewName(name); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
         { statement.setAction(ForeignObjectAlterAction.OWNER); statement.setOwner(name); }
         | [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
-          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
+          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ServerOptions(true) { statement.setOptions(options); } ]
           { requireDdlSyntax(statement.getVersion() != null || statement.getOptions() != null,
                     "ALTER SERVER requires VERSION or OPTIONS"); }
     )
-    { return statement; }
+    {
+        // MySQL: ALTER SERVER name OPTIONS (option[, ...])
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || statement.getAction() == ForeignObjectAlterAction.OPTIONS && statement.getVersion() == null,
+                "MySQL ALTER SERVER takes OPTIONS");
+        return statement;
+    }
 }
 
 CreateUserMapping CreateUserMapping():

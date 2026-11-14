@@ -43,8 +43,7 @@ public class BaseTypeDefinition implements TypeDefinition {
      * @return the first element of that name, or {@code null}
      */
     public DefinitionElement getElement(String name) {
-        return elements.stream().filter(element -> name.equalsIgnoreCase(element.getName()))
-                .findFirst().orElse(null);
+        return DefinitionElement.find(elements, name);
     }
 
     @Override

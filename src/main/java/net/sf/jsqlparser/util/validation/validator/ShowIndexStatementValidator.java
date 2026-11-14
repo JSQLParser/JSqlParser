@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -21,6 +22,9 @@ public class ShowIndexStatementValidator extends AbstractValidator<ShowIndexStat
 
     @Override
     public void validate(ShowIndexStatement show) {
-        validateFeatureAndName(Feature.showIndex, NamedObject.table, show.getTableName());
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = show.getQualifiedTable();
+        validateFeatureAndName(Feature.showIndex, NamedObject.table,
+                table == null ? null : table.getFullyQualifiedName());
     }
 }
