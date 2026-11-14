@@ -36,6 +36,14 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
@@ -46,6 +54,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -80,6 +89,7 @@ import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.subscription.SubscriptionOption;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
@@ -89,6 +99,9 @@ import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
@@ -140,6 +153,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -610,6 +624,14 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        // loads or unloads server code, like DuckDB's INSTALL; no data or schema changes
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SESSION);
         return null;
@@ -1088,6 +1110,33 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        // opens a cursor of the session over its query, which reads as the cursor is fetched
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        if (declareCursor.getQuery() != null) {
+            declareCursor.getQuery().accept(analysis.selects, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        // moves the cursor and runs its query that far; only FETCH returns the rows
+        if (analysis.claimTopLevel() && fetchCursor.getKind() == FetchCursorStatement.Kind.FETCH) {
+            analysis.certain(StmtFeature.RETURNS_RESULT_SET);
+        }
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        analysis.possible(StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
+        return sessionOnly();
+    }
+
+    @Override
     public <S> Void visit(AlterSystemStatement alterSystemStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SESSION);
@@ -1130,6 +1179,11 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(ShowCreateStatement showCreate, S context) {
+        return metadataOnly();
+    }
+
+    @Override
+    public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
         return metadataOnly();
     }
 
@@ -1449,6 +1503,17 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(CreateSpatialReferenceSystem statement, S context) {
+        return schemaOnly();
+    }
+
+    /** A server operation, like ALTER SYSTEM. */
+    @Override
+    public <S> Void visit(AlterInstance statement, S context) {
+        return sessionOnly();
+    }
+
+    @Override
     public <S> Void visit(AlterTablespace statement, S context) {
         return schemaOnly();
     }
@@ -1568,7 +1633,17 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(CreateOperator statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
     public <S> Void visit(CreateTransform statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateOperatorClass statement, S context) {
         return schemaOnly();
     }
 
@@ -1578,7 +1653,37 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(CreateOperatorFamily statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
     public <S> Void visit(AlterConversion statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateAggregate statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterOperator statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorClass statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorFamily statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterAggregate statement, S context) {
         return schemaOnly();
     }
 }

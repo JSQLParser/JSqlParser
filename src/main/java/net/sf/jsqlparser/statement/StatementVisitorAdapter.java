@@ -66,6 +66,7 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -82,6 +83,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
@@ -128,6 +130,7 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -141,6 +144,9 @@ import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
@@ -285,6 +291,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(SetResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(PluginStatement statement, S context) {
         return null;
     }
 
@@ -615,6 +626,24 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(DeclareCursorStatement declareCursor, S context) {
+        if (declareCursor.getQuery() != null) {
+            declareCursor.getQuery().accept(selectVisitor, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FetchCursorStatement fetchCursor, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CloseCursorStatement closeCursor, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(CreatePolicy createPolicy, S context) {
         fromItemVisitor.visitFromItem(createPolicy.getTable(), context);
         expressionVisitor.visitExpression(createPolicy.getUsingExpression(), context);
@@ -715,6 +744,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(ShowCreateStatement showCreate, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(MySqlShowStatement mySqlShow, S context) {
         return null;
     }
 
@@ -1125,6 +1159,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(CreateTablespace statement, S context) {
         statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateSpatialReferenceSystem statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterInstance statement, S context) {
         return null;
     }
 

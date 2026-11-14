@@ -10,6 +10,14 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
@@ -103,6 +111,7 @@ import net.sf.jsqlparser.statement.TransactionMode;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -122,6 +131,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
@@ -156,6 +166,7 @@ import net.sf.jsqlparser.statement.resourcegroup.SetResourceGroup;
 import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -173,11 +184,15 @@ import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
@@ -492,6 +507,15 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        validateFeature(statement.getObjectType() == PluginStatement.ObjectType.COMPONENT
+                ? Feature.installComponent
+                : Feature.installPlugin);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
         validateTransactionCompletion(commit);
@@ -569,6 +593,12 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(ShowCreateStatement showCreate, S context) {
         getValidator(ShowCreateStatementValidator.class).validate(showCreate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
+        getValidator(MySqlShowStatementValidator.class).validate(mySqlShow);
         return null;
     }
 
@@ -973,6 +1003,27 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+    @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        validateFeature(Feature.declareCursor);
+        if (declareCursor.getQuery() != null) {
+            visit(declareCursor.getQuery(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        validateFeature(Feature.fetchCursor);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
+        validateFeature(Feature.closeCursor);
+        return null;
+    }
+
     public void visit(CreateIndex createIndex) {
         visit(createIndex, null);
     }
@@ -1089,6 +1140,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public void visit(ShowCreateStatement showCreate) {
         visit(showCreate, null);
+    }
+
+    @Override
+    public void visit(MySqlShowStatement mySqlShow) {
+        visit(mySqlShow, null);
     }
 
     public void visit(Block block) {
@@ -1602,6 +1658,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateSpatialReferenceSystem statement, S context) {
+        validateFeature(Feature.createSpatialReferenceSystem);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterInstance statement, S context) {
+        validateFeature(Feature.alterInstance);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterTablespace statement, S context) {
         validateFeature(Feature.alterTablespace);
         statement.visitExpressions(this::validateOptionalExpression);
@@ -1660,8 +1728,20 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateOperator statement, S context) {
+        validateFeature(Feature.createOperator);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateTransform statement, S context) {
         validateFeature(Feature.createTransform);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateOperatorClass statement, S context) {
+        validateFeature(Feature.createOperatorClass);
         return null;
     }
 
@@ -1672,8 +1752,44 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateOperatorFamily statement, S context) {
+        validateFeature(Feature.createOperatorFamily);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterConversion statement, S context) {
         validateFeature(Feature.alterConversion);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateAggregate statement, S context) {
+        validateFeature(Feature.createAggregate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperator statement, S context) {
+        validateFeature(Feature.alterOperator);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorClass statement, S context) {
+        validateFeature(Feature.alterOperatorClass);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorFamily statement, S context) {
+        validateFeature(Feature.alterOperatorFamily);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterAggregate statement, S context) {
+        validateFeature(Feature.alterAggregate);
         return null;
     }
 }

@@ -146,16 +146,18 @@ class PostgreSqlCastTransformConversionTest extends ValidationTestAsserts {
                 + "CREATE TRANSFORM FOR int LANGUAGE l (FROM SQL WITH FUNCTION f);"
                 + "CREATE DEFAULT CONVERSION c FOR 'UTF8' TO 'LATIN1' FROM s.f; "
                 + "ALTER CONVERSION c OWNER TO r; ALTER CONVERSION c RENAME TO d; "
-                + "DROP CAST (int AS text); DROP TRANSFORM FOR int LANGUAGE l; SELECT 1";
+                + "DROP CAST (int AS text); DROP TRANSFORM FOR int LANGUAGE l; "
+                + "CREATE OPERATOR === (FUNCTION = f, LEFTARG = int); "
+                + "CREATE AGGREGATE agg(int) (SFUNC = f, STYPE = int); SELECT 1";
         for (Consumer<CCJSqlParser> mode : Arrays.<Consumer<CCJSqlParser>>asList(POSTGRESQL,
                 parser -> {
                 })) {
             Statements statements = CCJSqlParserUtil.parseStatements(script, mode);
-            assertThat(statements).hasSize(9);
+            assertThat(statements).hasSize(11);
             assertThat(statements).extracting(statement -> statement.getClass().getSimpleName())
                     .containsExactly("CreateCast", "CreateCast", "CreateTransform",
                             "CreateConversion", "AlterConversion", "AlterConversion", "Drop",
-                            "Drop", "PlainSelect");
+                            "Drop", "CreateOperator", "CreateAggregate", "PlainSelect");
             assertThat(statements.get(0)).hasToString("CREATE CAST (int AS text) WITH FUNCTION f");
             assertThat(statements.get(5)).hasToString("ALTER CONVERSION c RENAME TO d");
         }

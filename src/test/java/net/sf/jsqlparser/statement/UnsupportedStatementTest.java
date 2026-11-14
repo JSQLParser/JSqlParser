@@ -207,10 +207,7 @@ public class UnsupportedStatementTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "CREATE LANGUAGE plperl",
-            "CREATE OR REPLACE TRUSTED PROCEDURAL LANGUAGE plsample HANDLER plsample_call_handler",
-            "CREATE OPERATOR CLASS gist__int_ops DEFAULT FOR TYPE _int4 USING gist AS OPERATOR 3 &&",
-            "CREATE OPERATOR FAMILY myfam USING btree",
-            "CREATE OR REPLACE AGGREGATE myavg(float8) (SFUNC = float8_accum, STYPE = float8[])"})
+            "CREATE OR REPLACE TRUSTED PROCEDURAL LANGUAGE plsample HANDLER plsample_call_handler"})
     void unknownCreateFallsBackToUnsupportedStatement(String sql) throws JSQLParserException {
         for (Consumer<CCJSqlParser> dialect : Arrays.<Consumer<CCJSqlParser>>asList(parser -> {
         }, parser -> parser.withDialect(Dialect.POSTGRESQL))) {

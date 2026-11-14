@@ -94,6 +94,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
@@ -130,6 +131,14 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
@@ -140,6 +149,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
+import net.sf.jsqlparser.statement.alter.AlterInstance;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -175,6 +185,7 @@ import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
@@ -184,6 +195,9 @@ import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -284,6 +298,7 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
@@ -2121,11 +2136,8 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
-        Table table = showColumnsStatement.getTable();
-        if (table != null && showColumnsStatement.getDbName() != null) {
-            // MySQL: the trailing FROM db names the database of the table
-            table = new Table(showColumnsStatement.getDbName(), table.getName());
-        }
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = showColumnsStatement.getQualifiedTable();
         if (table != null) {
             visit(table, context);
         }
@@ -2139,7 +2151,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ShowIndexStatement showIndex, S context) {
-        throwUnsupported(showIndex);
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = showIndex.getQualifiedTable();
+        if (table != null) {
+            visit(table, context);
+        }
         return null;
     }
 
@@ -2345,6 +2361,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetResourceGroup statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PluginStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
     }
 
@@ -2659,6 +2681,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(ShowCreateStatement showCreate) {
         StatementVisitor.super.visit(showCreate);
+    }
+
+    @Override
+    public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
+        // reads server settings, state or object lists, but names no table
+        return null;
+    }
+
+    @Override
+    public void visit(MySqlShowStatement mySqlShow) {
+        StatementVisitor.super.visit(mySqlShow);
     }
 
     @Override
@@ -3219,6 +3252,25 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(DeclareCursorStatement declareCursor, S context) {
+        if (declareCursor.getQuery() != null) {
+            visit(declareCursor.getQuery(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FetchCursorStatement fetchCursor, S context) {
+        // FETCH and MOVE name a cursor, not a table
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CloseCursorStatement closeCursor, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
         if (createPolicy.getTable() != null) {
             visit(createPolicy.getTable(), context);
@@ -3395,6 +3447,16 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateSpatialReferenceSystem statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterInstance statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterTablespace statement, S context) {
         statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
@@ -3543,7 +3605,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateOperator statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateTransform statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateOperatorClass statement, S context) {
         return null;
     }
 
@@ -3553,7 +3625,37 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateOperatorFamily statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterConversion statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateAggregate statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperator statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorClass statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterOperatorFamily statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterAggregate statement, S context) {
         return null;
     }
 }

@@ -139,6 +139,14 @@ public class ASTNodeCoverageTest {
                 "CREATE RESOURCE GROUP rg TYPE = USER VCPU = 0-3, 5 THREAD_PRIORITY = 10 ENABLE",
                 "ALTER RESOURCE GROUP rg VCPU = 0 DISABLE FORCE",
                 "SET RESOURCE GROUP rg FOR 14, 0x1F", "DROP RESOURCE GROUP rg FORCE",
+                "CREATE SPATIAL REFERENCE SYSTEM 4120 NAME 'Greek' ORGANIZATION 'EPSG' IDENTIFIED BY 0x1018 DEFINITION 'x' DESCRIPTION 'd'",
+                "DROP SPATIAL REFERENCE SYSTEM IF EXISTS 4120",
+                "ALTER INSTANCE RELOAD TLS FOR CHANNEL mysql_admin NO ROLLBACK ON ERROR",
+                "INSTALL PLUGIN p SONAME 'p.so'", "UNINSTALL PLUGIN p",
+                "INSTALL COMPONENT 'file://c', 'file://d' SET GLOBAL c.v = 1 + 2, w = ON",
+                "UNINSTALL COMPONENT 'file://c'",
+                "CREATE SERVER 's' FOREIGN DATA WRAPPER mysql OPTIONS (HOST 'h', PORT 3306)",
+                "ALTER SERVER s OPTIONS (PORT 0x10, SOCKET '/tmp/x')",
                 "CREATE SCHEMA s CREATE TABLE t (a INT) CREATE VIEW v AS SELECT 1",
                 "CREATE TABLE t AS EXECUTE p",
                 "ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO r",
@@ -150,6 +158,14 @@ public class ASTNodeCoverageTest {
                         + "ELEMENT = setof float8[], LIKE = t.a%TYPE, DEFAULT = E'x', x = extended)",
                 "ALTER TYPE box3 SET (SEND = NONE, STORAGE = plain, x = +1.5, y = varchar(3))",
                 "SHOW TRANSACTION ISOLATION LEVEL", "RESET SESSION AUTHORIZATION",
+                "SHOW GLOBAL VARIABLES LIKE 'a%'",
+                "SHOW STATUS WHERE Variable_name LIKE 'a%' AND Value > 0",
+                "SHOW BINLOG EVENTS IN 'f' FROM 4 LIMIT 2, 3",
+                "SHOW RELAYLOG EVENTS FROM 1.5 LIMIT 5 OFFSET a FOR CHANNEL 'c'",
+                "SHOW GRANTS FOR 'u'@'h' USING r1, `r2`@`h`",
+                "SHOW PROCEDURE CODE d.p", "SHOW PROFILE CPU, BLOCK IO FOR QUERY 2 LIMIT ?",
+                "SHOW EXTENDED INDEXES IN t IN d WHERE Key_name = 'x'",
+                "SHOW ENGINE 'innodb' STATUS", "SHOW TRIGGERS FROM d LIKE 't%'",
                 "COPY s.t (a) TO STDOUT WITH NULL AS 'x' CSV FORCE QUOTE a, \"B\"",
                 "COPY BINARY t FROM STDIN FREEZE ENCODING 'UTF8'",
                 "COPY t FROM STDIN DELIMITER AS ';' CSV FORCE NOT NULL *",
@@ -177,6 +193,23 @@ public class ASTNodeCoverageTest {
                         + "(TO SQL WITH FUNCTION g(internal), FROM SQL WITH FUNCTION s.f(internal))",
                 "CREATE DEFAULT CONVERSION s.c FOR 'UTF8' TO E'LATIN1' FROM s.f",
                 "ALTER CONVERSION s.c OWNER TO CURRENT_USER",
+                "CREATE OPERATOR public.=== (FUNCTION = s.f, LEFTARG = int[], COMMUTATOR = <==>, "
+                        + "NEGATOR = OPERATOR(s.!==), HASHES)",
+                "ALTER OPERATOR s.@#@ (NONE, varchar(3)) SET (RESTRICT = NONE, JOIN = s.f, x = 1)",
+                "ALTER OPERATOR + (int, int) OWNER TO u",
+                "CREATE OPERATOR CLASS s.oc DEFAULT FOR TYPE varchar(3) USING gist FAMILY s.fam AS "
+                        + "OPERATOR 1 s.< (int, int[]) FOR ORDER BY s.float_ops, OPERATOR 2 <=, "
+                        + "FUNCTION 1 (int, text) s.f(IN a int, text), STORAGE double precision",
+                "ALTER OPERATOR CLASS s.oc USING btree SET SCHEMA t",
+                "CREATE OPERATOR FAMILY s.fam USING btree",
+                "ALTER OPERATOR FAMILY s.fam USING btree ADD OPERATOR 1 < (int4, int2) FOR SEARCH, "
+                        + "FUNCTION 1 (int4) cmp(int4, int2)",
+                "ALTER OPERATOR FAMILY s.fam USING btree DROP OPERATOR 1 (int4, int2), "
+                        + "FUNCTION 1 (varchar(3))",
+                "CREATE OR REPLACE AGGREGATE s.agg (a int, VARIADIC b text[] ORDER BY c numeric(3, 1)) "
+                        + "(SFUNC = s.f, STYPE = int[], SORTOP = <, INITCOND = '0', MSSPACE = 8)",
+                "CREATE AGGREGATE agg (BASETYPE = varchar(3), SFUNC = f, STYPE = int)",
+                "ALTER AGGREGATE s.agg (int, varchar(3)) RENAME TO agg2",
                 "SELECT a FROM t AS x USE KEY (i1) FORCE INDEX FOR JOIN (i2, i3) WHERE a = 1",
                 "SELECT a FROM t USE INDEX () JOIN s IGNORE INDEX FOR ORDER BY (i1) ON t.a = s.a",
                 "UPDATE t USE INDEX (i1) IGNORE INDEX FOR ORDER BY (i2) SET a = 1",
@@ -192,8 +225,19 @@ public class ASTNodeCoverageTest {
                 "EXPLAIN FORMAT = JSON INTO @'p' REPLACE INTO t VALUES (1)",
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
-                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)"}) {
+                "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "DECLARE c BINARY NO SCROLL CURSOR WITH HOLD FOR WITH x AS (SELECT a FROM t) "
+                        + "SELECT a FROM x",
+                "FETCH FORWARD -2 FROM c",
+                "MOVE ALL IN c",
+                "CLOSE ALL"}) {
             new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql));
+        }
+        for (String sql : new String[] {"SELECT v:select FROM t", "SELECT v:select::INT FROM t",
+                "SELECT v:select.x[0], v:from::INT + 1 FROM t",
+                "SELECT v:a.output, v:a.b.from::INT, v:a[0].from.x[1] + 1 FROM t"}) {
+            new Walk(sql, sql, problems).check(CCJSqlParserUtil.parseStatements(sql,
+                    parser -> parser.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE)));
         }
         String describe = "DESC TABLE t; DO 'x'; DESCRIBE t 'a%'; EXPLAIN t a; DESC t 0x61";
         new Walk(describe, describe, problems).check(CCJSqlParserUtil.parseStatements(describe,
