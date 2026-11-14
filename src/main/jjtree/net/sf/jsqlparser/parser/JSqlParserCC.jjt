@@ -113,6 +113,7 @@ import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
 import net.sf.jsqlparser.statement.admin.*;
 import net.sf.jsqlparser.statement.handler.HandlerStatement;
+import net.sf.jsqlparser.statement.replication.*;
 import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
 import net.sf.jsqlparser.statement.cursor.CursorOption;
 import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
@@ -183,6 +184,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
             case K_DO:
                 return isDoStatementAhead();
+            case K_CHANGE:
+                return isChangeReplicationAhead();
+            case K_STOP:
+                return isReplicaThreadStatementAhead(K_STOP);
             case K_SECURITY:
                 return "LABEL".equalsIgnoreCase(getToken(2).image);
             case K_REINDEX:
@@ -2698,6 +2703,78 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     private static <E extends Enum<E>> E replicationEnum(Class<E> type, String value) throws ParseException {
         try { return Enum.valueOf(type, MultiPartName.unquote(value).toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException exception) { throw new ParseException("Unknown " + type.getSimpleName() + ": " + value); }
+    }
+
+    /**
+     * MySQL's replication statements parse without a dialect and with MySQL's. MariaDB spells
+     * them differently (CHANGE MASTER, connection names, MASTER_ options) and keeps today's
+     * readings, except for PURGE BINARY LOGS, which it shares.
+     */
+    private boolean isMySqlReplicationDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.MYSQL.name().equals(dialect);
+    }
+
+    private static boolean isWord(Token token, String word) {
+        return token.kind == S_IDENTIFIER && word.equalsIgnoreCase(token.image);
+    }
+
+    /** START REPLICA or STOP REPLICA, as {@code kind} says. */
+    private boolean isReplicaThreadStatementAhead(int kind) {
+        return getToken(1).kind == kind && isWord(getToken(2), "REPLICA") && isMySqlReplicationDialect();
+    }
+
+    /** CHANGE REPLICATION SOURCE TO or CHANGE REPLICATION FILTER. */
+    private boolean isChangeReplicationAhead() {
+        Token third = getToken(3);
+        return getToken(1).kind == K_CHANGE && isWord(getToken(2), "REPLICATION")
+                && (isWord(third, "SOURCE") && getToken(4).kind == K_TO || third.kind == K_FILTER)
+                && isMySqlReplicationDialect();
+    }
+
+    /**
+     * RESET BINARY LOGS AND GTIDS or RESET REPLICA. Without a dialect, a bare RESET REPLICA keeps
+     * its reading as the PostgreSQL RESET of a parameter named replica; ALL, FOR CHANNEL or a
+     * further reset option after it is MySQL's.
+     */
+    private boolean isResetReplicationAhead() {
+        if (getToken(1).kind != K_RESET || !isMySqlReplicationDialect()) {
+            return false;
+        }
+        if (getToken(2).kind == K_BINARY) {
+            return isWord(getToken(3), "LOGS");
+        }
+        int next = getToken(3).kind;
+        return isWord(getToken(2), "REPLICA") && (getAsString(Feature.dialect) != null
+                || next == K_ALL || next == K_FOR || next == K_COMMA);
+    }
+
+    /**
+     * BINARY LOGS after PURGE, and MariaDB's MASTER LOGS, which MySQL 8.4 removed. PURGE is
+     * already consumed here.
+     */
+    private boolean isPurgeLogsAhead() {
+        if (!isWord(getToken(2), "LOGS")) {
+            return false;
+        }
+        boolean mariaDb = Dialect.MARIADB.name().equals(getAsString(Feature.dialect));
+        return getToken(1).kind == K_BINARY && (mariaDb || isMySqlReplicationDialect())
+                || isWord(getToken(1), "MASTER") && mariaDb;
+    }
+
+    /** A MySQL text string: a plain single-quoted literal, without a prefix. */
+    private StringValue replicationString(Token token) throws ParseException {
+        requireReplicationSyntax(token.image.startsWith("'"), "Expected a quoted string: " + token.image);
+        return stringValue(token);
+    }
+
+    /** PRIVILEGE_CHECKS_USER takes user[@host]; CURRENT_USER is reserved in MySQL. */
+    private static UserAccount requirePrivilegeChecksAccount(UserAccount account) throws ParseException {
+        StringValue user = account.getUser();
+        requireReplicationSyntax(!account.isCurrentUserParentheses()
+                && !("".equals(user.getQuoteStr()) && "CURRENT_USER".equalsIgnoreCase(user.getValue())),
+                "PRIVILEGE_CHECKS_USER takes an account name");
+        return account;
     }
 
     /**
@@ -6363,6 +6440,7 @@ String NonReservedWordPart2() :
       | tk=<K_STARTS: "STARTS">
       | tk=<K_STARTING:"STARTING">
       | tk=<K_STEP: "STEP">
+      | tk=<K_STOP: "STOP">
       | tk=<K_STORED: "STORED">
       | tk=<K_STATEMENT:"STATEMENT">
       | tk=<K_STORAGE: "STORAGE">
@@ -7058,6 +7136,15 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_SECURITY && "LABEL".equalsIgnoreCase(getToken(2).image) })
             stm = SecurityLabel()
+            |
+            // https://dev.mysql.com/doc/refman/8.4/en/replication-statements.html
+            LOOKAHEAD({ isReplicaThreadStatementAhead(K_START) }) stm = StartReplicaStatement()
+            |
+            LOOKAHEAD({ isReplicaThreadStatementAhead(K_STOP) }) stm = StopReplicaStatement()
+            |
+            LOOKAHEAD({ isChangeReplicationAhead() }) stm = ChangeReplicationStatement()
+            |
+            LOOKAHEAD({ isResetReplicationAhead() }) stm = ResetReplicationStatement()
             |
             stm = Truncate()
             |
@@ -9910,12 +9997,31 @@ PurgeStatement PurgeStatement(): {
     PurgeStatement purgeStatement = null;
     Table table;
     Index index;
-    Token tableSpaceToken;
-    Token userToken = null;
+    String tableSpaceName;
+    String userName = null;
+    PurgeObjectType logs;
+    Token logName;
+    Expression before;
 }
 {
     <K_PURGE>
     (
+        // https://dev.mysql.com/doc/refman/8.4/en/purge-binary-logs.html
+        LOOKAHEAD({ isPurgeLogsAhead() })
+        ( <K_BINARY> { logs = PurgeObjectType.BINARY_LOGS; }
+          | ContextualKeyword("MASTER") { logs = PurgeObjectType.MASTER_LOGS; } )
+        ContextualKeyword("LOGS")
+        (
+            <K_TO> logName=<S_CHAR_LITERAL>
+            { purgeStatement = new PurgeStatement(logs, PurgeStatement.LogBound.TO, replicationString(logName)); }
+            |
+            <K_BEFORE> before=Expression()
+            {
+                requireReplicationSyntax(!containsSubquery(before), "PURGE BINARY LOGS BEFORE takes no subquery");
+                purgeStatement = new PurgeStatement(logs, PurgeStatement.LogBound.BEFORE, before);
+            }
+        )
+        |
         <K_TABLE> table=Table() { purgeStatement = new PurgeStatement(table); }
         |
         <K_INDEX> index=Index() { purgeStatement = new PurgeStatement(index); }
@@ -9924,17 +10030,247 @@ PurgeStatement PurgeStatement(): {
         |
         <K_DBA_RECYCLEBIN> { purgeStatement = new PurgeStatement(PurgeObjectType.DBA_RECYCLEBIN); }
         |
-        <K_TABLESPACE> tableSpaceToken=<S_IDENTIFIER> [ <K_USER> userToken=<S_IDENTIFIER> ] {
-            purgeStatement = new PurgeStatement(
-                PurgeObjectType.TABLESPACE
-                , tableSpaceToken.image
-                , userToken!=null ? userToken.image : null);
+        // the names take non-reserved keywords such as STOP, which were plain identifiers before
+        <K_TABLESPACE> tableSpaceName=RelObjectName() [ <K_USER> userName=RelObjectName() ] {
+            purgeStatement = new PurgeStatement(PurgeObjectType.TABLESPACE, tableSpaceName, userName);
             }
     )
 
     {
         return purgeStatement;
     }
+}
+
+/** FOR CHANNEL 'channel' of MySQL's replication statements; the channel is a string. */
+StringValue ReplicationChannel():
+{ Token token; }
+{
+    <K_FOR> ContextualKeyword("CHANNEL") token=<S_CHAR_LITERAL>
+    { return replicationString(token); }
+}
+
+/** IO_THREAD and SQL_THREAD of START REPLICA and STOP REPLICA. */
+void ReplicaThreads(List<ReplicaThread> threads):
+{ Token token; }
+{
+    token=<S_IDENTIFIER> { threads.add(replicationEnum(ReplicaThread.class, token.image)); }
+    ( "," token=<S_IDENTIFIER> { threads.add(replicationEnum(ReplicaThread.class, token.image)); } )*
+}
+
+/**
+ * A value of a MySQL replication option: a string, an unsigned number, NULL, or one of the
+ * keywords ON, OFF, LOCAL, STREAM and GENERATE, which are kept as a Column like ON in
+ * ReplicationOptionValue(). The option checks which of them it takes.
+ */
+Expression MySqlReplicationValue():
+{ Token token; Expression value; }
+{
+    (
+        token=<S_CHAR_LITERAL> { value = replicationString(token); }
+        | token=<S_LONG> { value = linkToLastToken(new LongValue(token.image)); }
+        | token=<S_DOUBLE> { value = linkToLastToken(new DoubleValue(token.image)); }
+        | <K_NULL> { value = linkToLastToken(new NullValue()); }
+        | ( token=<K_ON> | token=<K_OFF> | token=<K_LOCAL> | token=<K_STREAM> )
+          { value = linkToLastToken(new Column(token.image)); }
+        | LOOKAHEAD({ isKeywordAhead("GENERATE") }) token=<S_IDENTIFIER>
+          { value = linkToLastToken(new Column(token.image)); }
+    )
+    { return value; }
+}
+
+/** The server IDs of IGNORE_SERVER_IDS = (id [, id] ...), which may be empty. */
+ParenthesedExpressionList<Expression> ReplicationServerIds():
+{ ParenthesedExpressionList<Expression> ids = new ParenthesedExpressionList<Expression>(); Token open; Token token; }
+{
+    open="("
+    [
+        ( token=<S_LONG> { ids.add(linkToLastToken(new LongValue(token.image))); }
+          | token=<S_DOUBLE> { ids.add(linkToLastToken(new DoubleValue(token.image))); } )
+        ( ","
+          ( token=<S_LONG> { ids.add(linkToLastToken(new LongValue(token.image))); }
+            | token=<S_DOUBLE> { ids.add(linkToLastToken(new DoubleValue(token.image))); } ) )*
+    ]
+    ")"
+    { linkAST(ids, open); return ids; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/change-replication-source-to.html
+ReplicationSourceOption ReplicationSourceOption():
+{ Token name; Expression value = null; UserAccount account = null; ReplicationSourceOption.Kind kind; }
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("PRIVILEGE_CHECKS_USER") })
+        name=<S_IDENTIFIER> "="
+        ( <K_NULL> { value = linkToLastToken(new NullValue()); }
+          | account=MySqlAccountName() { requirePrivilegeChecksAccount(account); } )
+        |
+        LOOKAHEAD({ isKeywordAhead("IGNORE_SERVER_IDS") })
+        name=<S_IDENTIFIER> "=" value=ReplicationServerIds()
+        |
+        name=<S_IDENTIFIER> "=" value=MySqlReplicationValue()
+    )
+    {
+        kind = replicationEnum(ReplicationSourceOption.Kind.class, name.image);
+        if (account != null) {
+            return new ReplicationSourceOption(name.image, account);
+        }
+        requireReplicationSyntax(kind.getValueType().accepts(value),
+                "Unexpected value for " + name.image + ": " + value);
+        return new ReplicationSourceOption(name.image, kind, value);
+    }
+}
+
+/** A database name of a replication filter. */
+String ReplicationFilterDatabase():
+{ String name; }
+{
+    name=RelObjectName() { return name; }
+}
+
+/** A table of a replication filter, which names its database. */
+Table ReplicationFilterTable():
+{ Token first = getToken(1); String database; String name; Table table; }
+{
+    database=RelObjectName() "." name=RelObjectName()
+    {
+        table = createTable(Arrays.asList(database, name));
+        linkAST(table, first);
+        return table;
+    }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/change-replication-filter.html
+ReplicationFilter ReplicationFilter():
+{ Token name; Token token; ReplicationFilter filter; Table table; String from; String to; }
+{
+    name=<S_IDENTIFIER> { filter = new ReplicationFilter(replicationEnum(ReplicationFilter.Kind.class, name.image)); }
+    "=" "("
+    [
+        "(" from=ReplicationFilterDatabase() "," to=ReplicationFilterDatabase() ")"
+        { filter.getRewrites().add(new ReplicationFilter.DatabaseRewrite(from, to)); }
+        ( "," "(" from=ReplicationFilterDatabase() "," to=ReplicationFilterDatabase() ")"
+          { filter.getRewrites().add(new ReplicationFilter.DatabaseRewrite(from, to)); } )*
+        |
+        token=<S_CHAR_LITERAL> { filter.getPatterns().add(replicationString(token)); }
+        ( "," token=<S_CHAR_LITERAL> { filter.getPatterns().add(replicationString(token)); } )*
+        |
+        LOOKAHEAD(2) table=ReplicationFilterTable() { filter.getTables().add(table); }
+        ( "," table=ReplicationFilterTable() { filter.getTables().add(table); } )*
+        |
+        from=ReplicationFilterDatabase() { filter.getDatabases().add(from); }
+        ( "," from=ReplicationFilterDatabase() { filter.getDatabases().add(from); } )*
+    ]
+    ")"
+    {
+        requireReplicationSyntax(filter.getValues().size() == filter.getDatabases().size()
+                + filter.getTables().size() + filter.getPatterns().size() + filter.getRewrites().size(),
+                "Unexpected list for " + name.image);
+        return filter;
+    }
+}
+
+Statement ChangeReplicationStatement():
+{
+    ChangeReplicationSourceStatement source = new ChangeReplicationSourceStatement();
+    ChangeReplicationFilterStatement filters = new ChangeReplicationFilterStatement();
+    ReplicationSourceOption option;
+    ReplicationFilter filter;
+    StringValue channel;
+    Statement result;
+}
+{
+    <K_CHANGE> ContextualKeyword("REPLICATION")
+    (
+        ContextualKeyword("SOURCE") <K_TO>
+        option=ReplicationSourceOption() { source.getOptions().add(option); }
+        ( "," option=ReplicationSourceOption() { source.getOptions().add(option); } )*
+        [ channel=ReplicationChannel() { source.setChannel(channel); } ]
+        { result = source; }
+        |
+        <K_FILTER>
+        filter=ReplicationFilter() { filters.getFilters().add(filter); }
+        ( "," filter=ReplicationFilter() { filters.getFilters().add(filter); } )*
+        [ channel=ReplicationChannel() { filters.setChannel(channel); } ]
+        { result = filters; }
+    )
+    { return result; }
+}
+
+/** A condition of START REPLICA ... UNTIL. */
+ReplicaUntilOption ReplicaUntilOption():
+{ Token name; Expression value = null; ReplicaUntilOption.Kind kind; }
+{
+    name=<S_IDENTIFIER> { kind = replicationEnum(ReplicaUntilOption.Kind.class, name.image); }
+    [ "=" value=MySqlReplicationValue() ]
+    {
+        requireReplicationSyntax(kind.getValueType().accepts(value),
+                "Unexpected value for " + name.image + ": " + value);
+        return new ReplicaUntilOption(name.image, kind, value);
+    }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/start-replica.html
+StartReplicaStatement StartReplicaStatement():
+{ StartReplicaStatement statement = new StartReplicaStatement(); ReplicaUntilOption until; Token token; StringValue channel; }
+{
+    <K_START> ContextualKeyword("REPLICA")
+    [ LOOKAHEAD({ isKeywordAhead("IO_THREAD") || isKeywordAhead("SQL_THREAD") }) ReplicaThreads(statement.getThreads()) ]
+    [
+        LOOKAHEAD({ isKeywordAhead("UNTIL") }) ContextualKeyword("UNTIL")
+        until=ReplicaUntilOption() { statement.getUntilOptions().add(until); }
+        (
+            "," until=ReplicaUntilOption()
+            {
+                requireReplicationSyntax(until.getKind().isLogCoordinate(),
+                        "Only a log file or position may follow another UNTIL condition");
+                statement.getUntilOptions().add(until);
+            }
+        )*
+    ]
+    [ <K_USER> "=" token=<S_CHAR_LITERAL> { statement.setUser(replicationString(token)); } ]
+    [ <K_PASSWORD> "=" token=<S_CHAR_LITERAL> { statement.setPassword(replicationString(token)); } ]
+    [ LOOKAHEAD({ isKeywordAhead("DEFAULT_AUTH") }) ContextualKeyword("DEFAULT_AUTH") "="
+      token=<S_CHAR_LITERAL> { statement.setDefaultAuth(replicationString(token)); } ]
+    [ LOOKAHEAD({ isKeywordAhead("PLUGIN_DIR") }) ContextualKeyword("PLUGIN_DIR") "="
+      token=<S_CHAR_LITERAL> { statement.setPluginDir(replicationString(token)); } ]
+    [ channel=ReplicationChannel() { statement.setChannel(channel); } ]
+    { return statement; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/stop-replica.html
+StopReplicaStatement StopReplicaStatement():
+{ StopReplicaStatement statement = new StopReplicaStatement(); StringValue channel; }
+{
+    <K_STOP> ContextualKeyword("REPLICA")
+    [ LOOKAHEAD({ isKeywordAhead("IO_THREAD") || isKeywordAhead("SQL_THREAD") }) ReplicaThreads(statement.getThreads()) ]
+    [ channel=ReplicationChannel() { statement.setChannel(channel); } ]
+    { return statement; }
+}
+
+/** A reset_option of MySQL's RESET: BINARY LOGS AND GTIDS [TO n] or REPLICA [ALL] [FOR CHANNEL c]. */
+ResetReplicationStatement.Option ResetReplicationOption():
+{ ResetReplicationStatement.Option option; Token token; StringValue channel; }
+{
+    (
+        <K_BINARY> ContextualKeyword("LOGS") <K_AND> ContextualKeyword("GTIDS")
+        { option = new ResetReplicationStatement.Option(ResetReplicationStatement.Kind.BINARY_LOGS_AND_GTIDS); }
+        [ <K_TO> token=<S_LONG> { option.setBinaryLogIndex(linkToLastToken(new LongValue(token.image))); } ]
+        |
+        ContextualKeyword("REPLICA")
+        { option = new ResetReplicationStatement.Option(ResetReplicationStatement.Kind.REPLICA); }
+        [ <K_ALL> { option.setAll(true); } ]
+        [ channel=ReplicationChannel() { option.setChannel(channel); } ]
+    )
+    { return option; }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/reset.html
+ResetReplicationStatement ResetReplicationStatement():
+{ ResetReplicationStatement statement = new ResetReplicationStatement(); ResetReplicationStatement.Option option; }
+{
+    <K_RESET> option=ResetReplicationOption() { statement.getOptions().add(option); }
+    ( "," option=ResetReplicationOption() { statement.getOptions().add(option); } )*
+    { return statement; }
 }
 
 DescribeStatement Describe(): {

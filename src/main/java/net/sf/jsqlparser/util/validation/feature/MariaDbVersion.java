@@ -86,6 +86,9 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/lock-tables/
                     Feature.lock, Feature.unlockTables,
 
+                    // https://mariadb.com/kb/en/purge-binary-logs/
+                    Feature.purgeBinaryLogs,
+
                     // https://mariadb.com/kb/en/load-data-infile/
                     // https://mariadb.com/kb/en/load-xml/
                     Feature.loadData,

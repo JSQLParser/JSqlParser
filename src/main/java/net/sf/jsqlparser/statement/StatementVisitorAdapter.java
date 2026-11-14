@@ -114,6 +114,11 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement;
+import net.sf.jsqlparser.statement.replication.ResetReplicationStatement;
+import net.sf.jsqlparser.statement.replication.StartReplicaStatement;
+import net.sf.jsqlparser.statement.replication.StopReplicaStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
 import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
@@ -623,6 +628,31 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(BackupLockStatement backupLock, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ChangeReplicationSourceStatement changeReplicationSource, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ChangeReplicationFilterStatement changeReplicationFilter, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(StartReplicaStatement startReplica, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(StopReplicaStatement stopReplica, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ResetReplicationStatement resetReplication, S context) {
         return null;
     }
 
