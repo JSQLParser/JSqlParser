@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.StmtFeature;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
@@ -264,9 +265,11 @@ class PostgreSqlAggregateDdlTest extends ValidationTestAsserts {
     @Test
     void testOtherDialectsKeepTheirAggregates() throws Exception {
         String mysql = "CREATE AGGREGATE FUNCTION f RETURNS STRING SONAME 'x.so'";
-        assertThat(CCJSqlParserUtil.parse(mysql)).isInstanceOf(UnsupportedStatement.class);
-        assertThat(CCJSqlParserUtil.parse(mysql, parser -> parser.withDialect(Dialect.MYSQL)))
-                .isInstanceOf(UnsupportedStatement.class);
+        for (Statement statement : new Statement[] {CCJSqlParserUtil.parse(mysql),
+                CCJSqlParserUtil.parse(mysql, parser -> parser.withDialect(Dialect.MYSQL))}) {
+            assertThat(statement).isInstanceOf(CreateFunction.class).hasToString(mysql);
+            assertThat(((CreateFunction) statement).getLoadableFunction()).isNotNull();
+        }
         String sqlServer = "CREATE AGGREGATE dbo.Concatenate (@input nvarchar(200)) "
                 + "RETURNS nvarchar(max) EXTERNAL NAME StringUtilities.Concatenate";
         assertThat(CCJSqlParserUtil.parse(sqlServer)).isInstanceOf(UnsupportedStatement.class);

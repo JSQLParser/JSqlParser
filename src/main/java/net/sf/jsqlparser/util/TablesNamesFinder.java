@@ -169,6 +169,7 @@ import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.extension.CreateExtension;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -2634,7 +2635,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateFunctionalStatement createFunctionalStatement, S context) {
-        throwUnsupported(createFunctionalStatement);
+        // a MySQL loadable function names a shared library and no table
+        if (!(createFunctionalStatement instanceof CreateFunction)
+                || ((CreateFunction) createFunctionalStatement).getLoadableFunction() == null) {
+            throwUnsupported(createFunctionalStatement);
+        }
         return null;
     }
 

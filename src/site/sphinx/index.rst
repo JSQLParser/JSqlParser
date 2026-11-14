@@ -168,6 +168,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
     * - **MySQL resource groups**
       - ``CREATE``/``ALTER``/``DROP RESOURCE GROUP`` · ``SET RESOURCE GROUP``
+    * - **MySQL loadable functions**
+      - ``CREATE [AGGREGATE] FUNCTION … RETURNS … SONAME``
     * - **MySQL servers, plugins and components**
       - ``CREATE SERVER`` · ``ALTER SERVER`` with ``OPTIONS (… PORT 3306)`` · ``INSTALL``/``UNINSTALL PLUGIN`` · ``INSTALL``/``UNINSTALL COMPONENT``
     * - **PostgreSQL session statements**
