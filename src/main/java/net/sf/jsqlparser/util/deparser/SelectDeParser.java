@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.select.Distinct;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
+import net.sf.jsqlparser.statement.select.ForUpdateClause;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.InterpolateElement;
@@ -312,6 +313,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 builder.append(" NOWAIT");
             } else if (plainSelect.isSkipLocked()) {
                 builder.append(" SKIP LOCKED");
+            }
+            if (plainSelect.getAdditionalForUpdateClauses() != null) {
+                for (ForUpdateClause forUpdateClause : plainSelect
+                        .getAdditionalForUpdateClauses()) {
+                    forUpdateClause.appendTo(builder);
+                }
             }
         }
 
