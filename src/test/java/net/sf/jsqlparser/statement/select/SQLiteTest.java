@@ -14,6 +14,8 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.TableOption;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.InsertConflictAlgorithm;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateConflictAlgorithm;
 import net.sf.jsqlparser.test.TestUtils;
@@ -44,6 +46,38 @@ public class SQLiteTest {
                 parser -> parser.withDialect(Dialect.SQLITE));
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "insert or " + algorithm.toLowerCase(Locale.ROOT) + " into t select * from s", true,
+                parser -> parser.withDialect(Dialect.SQLITE));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ABORT", "FAIL", "IGNORE", "REPLACE", "ROLLBACK"})
+    void testInsertOrConflictAlgorithmIsAnInsert(String algorithm) throws JSQLParserException {
+        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "INSERT OR " + algorithm + " INTO t (a) VALUES (1)", true,
+                parser -> parser.withDialect(Dialect.SQLITE));
+        assertEquals(InsertConflictAlgorithm.fromAlgorithm(algorithm),
+                insert.getConflictAlgorithm());
+    }
+
+    // The OR-form keeps the clauses the plain INSERT production reads, which the separate
+    // Upsert() production never had: SQLite accepts INSERT OR IGNORE with ON CONFLICT and
+    // RETURNING, and REPLACE is only the REPLACE algorithm without the OR.
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "INSERT OR IGNORE INTO t (a) VALUES (1) ON CONFLICT DO NOTHING",
+            "INSERT OR IGNORE INTO t (a) VALUES (1) ON CONFLICT (a) DO UPDATE SET a = 2",
+            "INSERT OR IGNORE INTO t (a) VALUES (1) RETURNING a",
+            "INSERT OR IGNORE INTO t DEFAULT VALUES",
+            "INSERT OR IGNORE INTO t AS alias VALUES (1)",
+            "INSERT OR REPLACE INTO t (a) VALUES (1) RETURNING a"})
+    void testInsertOrKeepsTheInsertClauses(String sql) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true,
+                parser -> parser.withDialect(Dialect.SQLITE));
+    }
+
+    @Test
+    void testInsertOrKeepsTheOptionalInto() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("INSERT OR IGNORE t VALUES (1)", true,
                 parser -> parser.withDialect(Dialect.SQLITE));
     }
 

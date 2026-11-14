@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.MySqlFileFormat;
 
 public class MySqlSelectIntoClause extends ASTNodeAccessImpl implements Serializable {
 
@@ -27,6 +28,10 @@ public class MySqlSelectIntoClause extends ASTNodeAccessImpl implements Serializ
         OUTFILE, DUMPFILE, VARIABLES
     }
 
+    /**
+     * The spelling of the fields clause, as {@link #getFieldsKeyword()} reports it from
+     * {@link MySqlFileFormat.FieldsKeyword}.
+     */
     public enum FieldsKeyword {
         FIELDS, COLUMNS
     }
@@ -36,13 +41,8 @@ public class MySqlSelectIntoClause extends ASTNodeAccessImpl implements Serializ
     private StringValue fileName;
     private ExpressionList<UserVariable> variables;
     private String characterSet;
-    private FieldsKeyword fieldsKeyword;
-    private StringValue fieldsTerminatedBy;
-    private boolean fieldsOptionallyEnclosed;
-    private StringValue fieldsEnclosedBy;
-    private StringValue fieldsEscapedBy;
-    private StringValue linesStartingBy;
-    private StringValue linesTerminatedBy;
+    private boolean useCharsetKeyword;
+    private MySqlFileFormat fileFormat;
 
     public Position getPosition() {
         return position;
@@ -89,69 +89,105 @@ public class MySqlSelectIntoClause extends ASTNodeAccessImpl implements Serializ
         this.characterSet = characterSet;
     }
 
+    /** Whether the character set clause is spelled CHARSET rather than CHARACTER SET. */
+    public boolean isUseCharsetKeyword() {
+        return useCharsetKeyword;
+    }
+
+    public void setUseCharsetKeyword(boolean useCharsetKeyword) {
+        this.useCharsetKeyword = useCharsetKeyword;
+    }
+
+    /**
+     * The FIELDS and LINES clauses of INTO OUTFILE, shared with LOAD DATA. The getters and setters
+     * of the separate subclauses below read and write this format.
+     */
+    public MySqlFileFormat getFileFormat() {
+        return fileFormat;
+    }
+
+    public void setFileFormat(MySqlFileFormat fileFormat) {
+        this.fileFormat = fileFormat;
+    }
+
+    public MySqlSelectIntoClause withFileFormat(MySqlFileFormat fileFormat) {
+        setFileFormat(fileFormat);
+        return this;
+    }
+
+    private MySqlFileFormat fileFormat() {
+        if (fileFormat == null) {
+            fileFormat = new MySqlFileFormat();
+        }
+        return fileFormat;
+    }
+
     public FieldsKeyword getFieldsKeyword() {
-        return fieldsKeyword;
+        MySqlFileFormat.FieldsKeyword keyword =
+                fileFormat != null ? fileFormat.getFieldsKeyword() : null;
+        return keyword != null ? FieldsKeyword.valueOf(keyword.name()) : null;
     }
 
     public void setFieldsKeyword(FieldsKeyword fieldsKeyword) {
-        this.fieldsKeyword = fieldsKeyword;
+        fileFormat().setFieldsKeyword(fieldsKeyword != null
+                ? MySqlFileFormat.FieldsKeyword.valueOf(fieldsKeyword.name())
+                : null);
     }
 
     public StringValue getFieldsTerminatedBy() {
-        return fieldsTerminatedBy;
+        return fileFormat != null ? fileFormat.getFieldsTerminatedBy() : null;
     }
 
     public void setFieldsTerminatedBy(StringValue fieldsTerminatedBy) {
-        this.fieldsTerminatedBy = fieldsTerminatedBy;
+        fileFormat().setFieldsTerminatedBy(fieldsTerminatedBy);
     }
 
     public boolean isFieldsOptionallyEnclosed() {
-        return fieldsOptionallyEnclosed;
+        return fileFormat != null && fileFormat.isFieldsOptionallyEnclosed();
     }
 
     public void setFieldsOptionallyEnclosed(boolean fieldsOptionallyEnclosed) {
-        this.fieldsOptionallyEnclosed = fieldsOptionallyEnclosed;
+        fileFormat().setFieldsOptionallyEnclosed(fieldsOptionallyEnclosed);
     }
 
     public StringValue getFieldsEnclosedBy() {
-        return fieldsEnclosedBy;
+        return fileFormat != null ? fileFormat.getFieldsEnclosedBy() : null;
     }
 
     public void setFieldsEnclosedBy(StringValue fieldsEnclosedBy) {
-        this.fieldsEnclosedBy = fieldsEnclosedBy;
+        fileFormat().setFieldsEnclosedBy(fieldsEnclosedBy);
     }
 
     public StringValue getFieldsEscapedBy() {
-        return fieldsEscapedBy;
+        return fileFormat != null ? fileFormat.getFieldsEscapedBy() : null;
     }
 
     public void setFieldsEscapedBy(StringValue fieldsEscapedBy) {
-        this.fieldsEscapedBy = fieldsEscapedBy;
+        fileFormat().setFieldsEscapedBy(fieldsEscapedBy);
     }
 
     public StringValue getLinesStartingBy() {
-        return linesStartingBy;
+        return fileFormat != null ? fileFormat.getLinesStartingBy() : null;
     }
 
     public void setLinesStartingBy(StringValue linesStartingBy) {
-        this.linesStartingBy = linesStartingBy;
+        fileFormat().setLinesStartingBy(linesStartingBy);
     }
 
     public StringValue getLinesTerminatedBy() {
-        return linesTerminatedBy;
+        return fileFormat != null ? fileFormat.getLinesTerminatedBy() : null;
     }
 
     public void setLinesTerminatedBy(StringValue linesTerminatedBy) {
-        this.linesTerminatedBy = linesTerminatedBy;
+        fileFormat().setLinesTerminatedBy(linesTerminatedBy);
     }
 
     public boolean hasFieldsClause() {
-        return fieldsKeyword != null || fieldsTerminatedBy != null || fieldsEnclosedBy != null
-                || fieldsEscapedBy != null;
+        return fileFormat != null && fileFormat.hasFieldsClause();
     }
 
     public boolean hasLinesClause() {
-        return linesStartingBy != null || linesTerminatedBy != null;
+        return fileFormat != null && fileFormat.hasLinesClause();
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
@@ -168,59 +204,17 @@ public class MySqlSelectIntoClause extends ASTNodeAccessImpl implements Serializ
             return builder;
         }
         builder.append(type);
-        appendFileName(builder);
-        appendCharacterSet(builder);
-        appendFieldsClause(builder);
-        appendLinesClause(builder);
-        return builder;
-    }
-
-    private void appendFileName(StringBuilder builder) {
         if (fileName != null) {
             builder.append(" ").append(fileName);
         }
-    }
-
-    private void appendCharacterSet(StringBuilder builder) {
         if (characterSet != null) {
-            builder.append(" CHARACTER SET ").append(characterSet);
+            builder.append(useCharsetKeyword ? " CHARSET " : " CHARACTER SET ")
+                    .append(characterSet);
         }
-    }
-
-    private void appendFieldsClause(StringBuilder builder) {
-        if (!hasFieldsClause()) {
-            return;
+        if (fileFormat != null && !fileFormat.isEmpty()) {
+            fileFormat.appendTo(builder.append(" "));
         }
-
-        builder.append(" ").append(fieldsKeyword != null ? fieldsKeyword : FieldsKeyword.FIELDS);
-
-        if (fieldsTerminatedBy != null) {
-            builder.append(" TERMINATED BY ").append(fieldsTerminatedBy);
-        }
-        if (fieldsEnclosedBy != null) {
-            builder.append(" ");
-            if (fieldsOptionallyEnclosed) {
-                builder.append("OPTIONALLY ");
-            }
-            builder.append("ENCLOSED BY ").append(fieldsEnclosedBy);
-        }
-        if (fieldsEscapedBy != null) {
-            builder.append(" ESCAPED BY ").append(fieldsEscapedBy);
-        }
-    }
-
-    private void appendLinesClause(StringBuilder builder) {
-        if (!hasLinesClause()) {
-            return;
-        }
-
-        builder.append(" LINES");
-        if (linesStartingBy != null) {
-            builder.append(" STARTING BY ").append(linesStartingBy);
-        }
-        if (linesTerminatedBy != null) {
-            builder.append(" TERMINATED BY ").append(linesTerminatedBy);
-        }
+        return builder;
     }
 
     @Override

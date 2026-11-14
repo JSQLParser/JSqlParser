@@ -189,6 +189,11 @@ public class ASTNodeCoverageTest {
                 "DROP CAST IF EXISTS (int[] AS public.t) CASCADE",
                 "DROP OPERATOR public.=== (integer, integer), ~ (NONE, bigint)",
                 "DROP TRANSFORM FOR public.hstore LANGUAGE plpython3u",
+                "CREATE CAST (int[] AS public.t) WITH FUNCTION s.f(IN a int[], text) AS ASSIGNMENT",
+                "CREATE OR REPLACE TRANSFORM FOR public.hstore LANGUAGE plpython3u "
+                        + "(TO SQL WITH FUNCTION g(internal), FROM SQL WITH FUNCTION s.f(internal))",
+                "CREATE DEFAULT CONVERSION s.c FOR 'UTF8' TO E'LATIN1' FROM s.f",
+                "ALTER CONVERSION s.c OWNER TO CURRENT_USER",
                 "CREATE OPERATOR public.=== (FUNCTION = s.f, LEFTARG = int[], COMMUTATOR = <==>, "
                         + "NEGATOR = OPERATOR(s.!==), HASHES)",
                 "ALTER OPERATOR s.@#@ (NONE, varchar(3)) SET (RESTRICT = NONE, JOIN = s.f, x = 1)",
@@ -222,6 +227,13 @@ public class ASTNodeCoverageTest {
                 "DESC FOR CONNECTION 0x1F",
                 "PREPARE s FROM @'q'", "PREPARE s FROM 'SELECT ?'", "EXECUTE s USING @a, @'b'",
                 "DROP PREPARE s", "DO 1 AS a, (SELECT 1)",
+                "LOAD DATA LOCAL INFILE 'a' REPLACE INTO TABLE db1.t PARTITION (p0) CHARSET latin1"
+                        + " FIELDS TERMINATED BY ',' LINES TERMINATED BY ';' IGNORE 1 LINES"
+                        + " (a, @b) SET c = @b + 1, d = DEFAULT",
+                "LOAD XML INFILE 'a' INTO TABLE t ROWS IDENTIFIED BY '<r>' LINES STARTING BY 'x' ()",
+                "SELECT a INTO OUTFILE '/tmp/o' COLUMNS ESCAPED BY '^' FROM t",
+                "SELECT a FROM t INTO OUTFILE '/tmp/o' CHARACTER SET 'utf8mb4'"
+                        + " LINES TERMINATED BY ';'",
                 "DECLARE c BINARY NO SCROLL CURSOR WITH HOLD FOR WITH x AS (SELECT a FROM t) "
                         + "SELECT a FROM x",
                 "FETCH FORWARD -2 FROM c",

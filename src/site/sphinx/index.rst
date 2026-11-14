@@ -168,6 +168,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``LOCK TABLES`` · ``UNLOCK TABLES`` · ``LOCK INSTANCE FOR BACKUP`` · ``UNLOCK INSTANCE``
     * - **MySQL resource groups**
       - ``CREATE``/``ALTER``/``DROP RESOURCE GROUP`` · ``SET RESOURCE GROUP``
+    * - **MySQL loadable functions**
+      - ``CREATE [AGGREGATE] FUNCTION … RETURNS … SONAME``
     * - **MySQL servers, plugins and components**
       - ``CREATE SERVER`` · ``ALTER SERVER`` with ``OPTIONS (… PORT 3306)`` · ``INSTALL``/``UNINSTALL PLUGIN`` · ``INSTALL``/``UNINSTALL COMPONENT``
     * - **PostgreSQL session statements**
@@ -176,6 +178,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
     * - **PostgreSQL foreign schema import**
       - ``IMPORT FOREIGN SCHEMA … [LIMIT TO | EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]``
+    * - **MySQL data loading**
+      - ``LOAD DATA`` · ``LOAD XML`` · ``SELECT … INTO OUTFILE`` with the same ``FIELDS`` and ``LINES`` clauses
     * - **PostgreSQL cursors**
       - ``DECLARE … CURSOR`` · ``FETCH`` · ``MOVE`` · ``CLOSE``
     * - **MySQL account management**
@@ -196,6 +200,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE``/``ALTER EVENT TRIGGER`` · ``REINDEX`` · ``SECURITY LABEL``
     * - **PostgreSQL types and rules**
       - ``CREATE TYPE`` (shell, composite, enum, range and base types) · ``ALTER TYPE`` · ``CREATE RULE`` · ``ALTER RULE``
+    * - **PostgreSQL casts, transforms and conversions**
+      - ``CREATE CAST`` · ``DROP CAST`` · ``CREATE [OR REPLACE] TRANSFORM`` · ``DROP TRANSFORM`` · ``CREATE [DEFAULT] CONVERSION`` · ``ALTER CONVERSION``
     * - **PostgreSQL operators and aggregates**
       - ``CREATE``/``ALTER OPERATOR`` · ``CREATE``/``ALTER OPERATOR CLASS`` · ``CREATE``/``ALTER OPERATOR FAMILY`` · ``CREATE``/``ALTER AGGREGATE``
     * - **Salesforce SOQL**

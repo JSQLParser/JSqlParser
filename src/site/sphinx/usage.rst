@@ -2637,6 +2637,57 @@ PostgreSQL's ``ALTER RULE name ON table RENAME TO new_name``
 its table and validators report ``alterRule``, which PostgreSQL enables. It is the only
 ``ALTER RULE`` form, so any other text after ``ALTER RULE`` is a parse error.
 
+PostgreSQL's cast, transform and conversion definitions are typed statements:
+
+* ``CREATE CAST (source_type AS target_type) {WITH FUNCTION function [(argument_type [, ...])] | WITHOUT FUNCTION | WITH INOUT} [AS ASSIGNMENT | AS IMPLICIT]``
+  (`CREATE CAST <https://www.postgresql.org/docs/18/sql-createcast.html>`_) parses to
+  ``CreateCast``. ``getCast()`` is the ``CastSignature`` that ``DROP CAST`` uses,
+  ``getMethod()`` is ``WITH_FUNCTION``, ``WITHOUT_FUNCTION`` or ``WITH_INOUT``,
+  ``getFunction()`` is the ``RoutineReference`` of ``WITH FUNCTION``, and ``getContext()``
+  is ``ASSIGNMENT``, ``IMPLICIT`` or ``null`` for a cast that applies only when written.
+* ``CREATE [OR REPLACE] TRANSFORM FOR type_name LANGUAGE lang_name (FROM SQL WITH FUNCTION function, TO SQL WITH FUNCTION function)``
+  (`CREATE TRANSFORM <https://www.postgresql.org/docs/18/sql-createtransform.html>`_) parses
+  to ``CreateTransform``. ``getTransform()`` is the ``TransformSignature`` that
+  ``DROP TRANSFORM`` uses. ``getFromSqlFunction()`` and ``getToSqlFunction()`` are
+  ``RoutineReference`` objects, one of them ``null`` when the statement has only the other
+  item, and ``isToSqlFirst()`` keeps the order of the two items.
+* ``CREATE [DEFAULT] CONVERSION name FOR 'source_encoding' TO 'dest_encoding' FROM function_name``
+  (`CREATE CONVERSION <https://www.postgresql.org/docs/18/sql-createconversion.html>`_) parses
+  to ``CreateConversion`` with ``isDefaultConversion()``, ``getName()``,
+  ``getSourceEncoding()`` and ``getDestinationEncoding()`` as ``StringValue`` and
+  ``getFunction()``.
+* ``ALTER CONVERSION name {RENAME TO new_name | OWNER TO role | SET SCHEMA schema}``
+  (`ALTER CONVERSION <https://www.postgresql.org/docs/18/sql-alterconversion.html>`_) parses
+  to ``AlterConversion`` with ``getAction()`` and ``getNewName()``, ``getOwner()`` or
+  ``getSchemaName()``.
+
+.. code-block:: java
+
+    CreateCast cast = (CreateCast) CCJSqlParserUtil.parse(
+            "CREATE CAST (bigint AS int4) WITH FUNCTION int4(bigint) AS ASSIGNMENT");
+    cast.getCast().getSourceType();   // ColDataType bigint
+    cast.getMethod();                 // CreateCast.Method.WITH_FUNCTION
+    cast.getFunction().getName();     // int4
+    cast.getContext();                // CreateCast.Context.ASSIGNMENT
+
+    CreateTransform transform = (CreateTransform) CCJSqlParserUtil.parse(
+            "CREATE TRANSFORM FOR hstore LANGUAGE plpython3u ("
+                    + "FROM SQL WITH FUNCTION hstore_to_plpython(internal), "
+                    + "TO SQL WITH FUNCTION plpython_to_hstore(internal))");
+    transform.getTransform().getLanguage();     // plpython3u
+    transform.getToSqlFunction().getName();     // plpython_to_hstore
+
+Validators report ``createCast``, ``createTransform``, ``createConversion`` and
+``alterConversion``, which PostgreSQL enables. With ``Dialect.POSTGRESQL`` these are the only
+statements that ``CREATE CAST``, ``CREATE TRANSFORM``, ``CREATE [DEFAULT] CONVERSION`` and
+``ALTER CONVERSION`` start, so any other text after them is a parse error. In another dialect
+and without one, a statement is read this way when it has PostgreSQL's form
+(``CAST (...) WITH FUNCTION``, ``WITH INOUT`` or ``WITHOUT FUNCTION``,
+``TRANSFORM FOR type LANGUAGE``, ``CONVERSION name FOR``, and ``ALTER CONVERSION name``
+followed by ``RENAME``, ``OWNER`` or ``SET``); a statement of another product that starts with
+the same words, such as ``CREATE CAST (a AS b) WITH SPECIFIC FUNCTION f``, remains an
+``UnsupportedStatement``.
+
 ``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
 ``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
 triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,
@@ -2996,6 +3047,48 @@ Other dialects keep rejecting the statement, and the EXASOL dialect keeps ``IMPO
 own statement. Table visitors report no table: the listed names belong to the remote schema.
 Validators report the ``importForeignSchema`` feature, which the PostgreSQL capabilities and
 ``FeaturesAllowed.DDL`` enable. Feature analysis reports ``MODIFIES_SCHEMA``.
+
+MySQL LOAD DATA and LOAD XML
+----------------------------
+
+MySQL and MariaDB `LOAD DATA <https://dev.mysql.com/doc/refman/8.4/en/load-data.html>`_ and
+`LOAD XML <https://dev.mysql.com/doc/refman/8.4/en/load-xml.html>`_ parse to
+``MySqlLoadDataStatement``; BigQuery's ``LOAD DATA {INTO | OVERWRITE}`` remains
+``LoadDataStatement``. ``getFormat()`` is ``DATA`` or ``XML``. As in the server's grammar,
+both forms take every clause: ``getLockOption()`` (``LOW_PRIORITY`` or ``CONCURRENT``),
+``isLocal()``, ``getFileName()``, ``getDuplicateHandling()`` (``REPLACE`` or ``IGNORE``, the
+enum of ``CREATE TABLE … SELECT``), ``getTable()``, ``getPartitions()``,
+``getCharacterSet()`` with ``isUseCharsetKeyword()`` for the ``CHARSET`` spelling,
+``getRowsIdentifiedBy()``, ``getFileFormat()``, ``getIgnoreCount()`` with ``getIgnoreUnit()``
+(``LINES`` or ``ROWS``), ``getColumns()`` (columns and ``UserVariable`` targets, empty for
+``()``) and ``getUpdateSets()`` for the ``SET`` clause.
+
+.. code-block:: java
+
+    MySqlLoadDataStatement load = (MySqlLoadDataStatement) CCJSqlParserUtil.parse(
+        "LOAD DATA LOCAL INFILE 'a.csv' INTO TABLE t FIELDS TERMINATED BY ',' "
+            + "IGNORE 1 LINES (a, @b) SET c = @b + 1");
+    load.getFileFormat().getFieldsTerminatedBy().getValue();   // ,
+    load.getUpdateSets().get(0).getValue(0);                   // @b + 1
+
+``MySqlFileFormat`` holds the ``{FIELDS | COLUMNS}`` and ``LINES`` clauses, which
+``SELECT … INTO OUTFILE`` shares: ``MySqlSelectIntoClause.getFileFormat()`` returns it, and the
+clause's earlier getters and setters, such as ``getFieldsTerminatedBy()``, read and write it.
+Each clause needs at least one subclause, so a bare ``FIELDS`` or ``LINES``, which MySQL
+rejects, is now a parse error. The subclauses may come in any order and repeat, as MySQL
+allows; like the server, the format keeps the last value of each and prints them in the
+documented order. ``INTO OUTFILE`` also takes ``CHARSET`` and a quoted character set name.
+
+The MySQL and MariaDB dialects read these forms, and so does the parser without a dialect:
+``INFILE`` after ``LOAD DATA`` or ``LOAD XML`` and the optional ``LOW_PRIORITY``,
+``CONCURRENT`` and ``LOCAL`` tells them from BigQuery's ``LOAD DATA INTO`` and from DuckDB's
+and PostgreSQL's ``LOAD name``, so ``LOAD xml`` still loads an extension named ``xml``. The
+other dialects keep rejecting the MySQL forms. ``INFILE`` and ``CONCURRENT`` remain ordinary
+identifiers.
+
+Table visitors report the target table and the tables of subqueries in the ``SET`` clause.
+Validators report the ``loadData`` feature, which the MySQL and MariaDB capabilities now
+enable. Feature analysis reports ``MODIFIES_DATA``.
 
 PostgreSQL cursors
 ------------------
@@ -3435,6 +3528,59 @@ RESOURCE GROUP`` stay an ``UnsupportedStatement`` and ``DROP RESOURCE GROUP rg``
 generic ``Drop`` reading. The validator checks ``createResourceGroup``,
 ``alterResourceGroup`` and ``setResourceGroup`` (MySQL); feature analysis reports
 ``SET RESOURCE GROUP`` as a session change and the others as schema changes.
+
+MySQL loadable functions
+========================
+
+MySQL ``CREATE [AGGREGATE] FUNCTION [IF NOT EXISTS] name RETURNS {STRING | INTEGER | REAL |
+DECIMAL} SONAME 'library'`` produces a ``CreateFunction`` whose ``getLoadableFunction()``
+holds the name, the ``ReturnType``, the library as a ``StringValue`` and ``isIfNotExists()``;
+``isAggregate()`` tells the two forms apart. The synonyms ``INT``, ``INT4`` and ``DEC`` keep
+their spelling in ``getReturnTypeKeyword()``. ``getFunctionDeclarationParts()`` is derived from
+the definition, and setting declaration parts removes it.
+
+.. code-block:: java
+
+    CreateFunction function = (CreateFunction) CCJSqlParserUtil.parse(
+        "CREATE AGGREGATE FUNCTION IF NOT EXISTS f RETURNS REAL SONAME 'udf.so'",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    LoadableFunction definition = function.getLoadableFunction();
+    // true, f, REAL, udf.so
+    String parts = function.isAggregate() + ", " + definition.getName() + ", "
+        + definition.getReturnType() + ", " + definition.getLibrary().getValue();
+
+With the MySQL dialect the statement follows MySQL's grammar: ``AGGREGATE``, or a function name
+directly followed by ``RETURNS``, must continue as a loadable function, without ``OR REPLACE``.
+With the MariaDB dialect or without one, a statement of exactly this shape gets the definition
+(``OR REPLACE`` included) and anything else keeps its previous reading. Other dialects are
+unchanged: ``CREATE AGGREGATE FUNCTION`` stays an ``UnsupportedStatement`` there.
+``TablesNamesFinder`` finds no tables in a loadable function.
+
+MySQL ALTER TABLE validation modifier
+=====================================
+
+MySQL ``ALTER TABLE ... {WITH | WITHOUT} VALIDATION`` is an ``AlterExpressionTableOption``
+with the operation ``VALIDATION`` and ``getValidationMode()``, like the ``ALGORITHM`` and
+``LOCK`` modifiers it may be mixed with in the action list. The mode written directly after
+``EXCHANGE PARTITION ... WITH TABLE t`` still belongs to that action
+(``AlterExpressionPartition.getExchangeValidationMode()``).
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t1 WITHOUT VALIDATION, EXCHANGE PARTITION p0 WITH TABLE t2",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    AlterExpressionTableOption modifier =
+        (AlterExpressionTableOption) alter.getAlterExpressions().get(0);
+    // VALIDATION, WITHOUT, EXCHANGE_PARTITION
+    String parts = modifier.getOperation() + ", " + modifier.getValidationMode() + ", "
+        + alter.getAlterExpressions().get(1).getOperation();
+
+With the MySQL dialect, ``WITH`` or ``WITHOUT`` at the start of an action must be this
+modifier, and it is rejected after a comma that follows a command MySQL accepts only at the
+end of the list (a partition management command, ``DISCARD`` or ``IMPORT TABLESPACE``,
+``PARTITION BY``, ``REMOVE PARTITIONING``). With the MariaDB dialect or without one, the
+modifier is read where it is a whole item of the list; other dialects keep the raw-text action.
 
 MySQL SHOW statements
 =====================

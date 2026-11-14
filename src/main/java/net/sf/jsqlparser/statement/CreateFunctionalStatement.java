@@ -142,6 +142,14 @@ public abstract class CreateFunctionalStatement extends ASTNodeAccessImpl implem
         return kind;
     }
 
+    /**
+     * @return the keywords that name the kind in the statement, which may carry a modifier of
+     *         {@link #getKind()}
+     */
+    protected String getKindKeywords() {
+        return kind;
+    }
+
     public void setOrReplace(boolean orReplace) {
         this.orReplace = orReplace;
     }
@@ -156,7 +164,7 @@ public abstract class CreateFunctionalStatement extends ASTNodeAccessImpl implem
 
     private StringBuilder appendDeclarationTo(StringBuilder builder,
             Consumer<TableElement> printer) {
-        appendTokens(builder, functionDeclarationParts);
+        appendTokens(builder, getFunctionDeclarationParts());
         if (returnType != null) {
             builder.append(' ');
             returnType.appendTo(builder, printer);
@@ -188,7 +196,7 @@ public abstract class CreateFunctionalStatement extends ASTNodeAccessImpl implem
         if (definer != null) {
             builder.append("DEFINER = ").append(definer).append(' ');
         }
-        builder.append(kind).append(' ');
+        builder.append(getKindKeywords()).append(' ');
         return appendDeclarationTo(builder, printer);
     }
 

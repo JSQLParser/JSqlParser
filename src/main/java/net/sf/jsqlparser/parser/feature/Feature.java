@@ -1043,6 +1043,30 @@ public enum Feature {
      */
     alterRule,
     /**
+     * PostgreSQL "CREATE CAST" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.cast.CreateCast
+     */
+    createCast,
+    /**
+     * PostgreSQL "CREATE TRANSFORM" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.transform.CreateTransform
+     */
+    createTransform,
+    /**
+     * PostgreSQL "CREATE CONVERSION" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.conversion.CreateConversion
+     */
+    createConversion,
+    /**
+     * PostgreSQL "ALTER CONVERSION" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterConversion
+     */
+    alterConversion,
+    /**
      * PostgreSQL "CREATE OPERATOR" statement is allowed
      *
      * @see net.sf.jsqlparser.statement.create.operator.CreateOperator
@@ -1348,10 +1372,12 @@ public enum Feature {
     export,
 
     /**
-     * PostgreSQL and DuckDB "COPY" and BigQuery "LOAD DATA" statements are allowed
+     * PostgreSQL and DuckDB "COPY", BigQuery and MySQL "LOAD DATA" and MySQL "LOAD XML" statements
+     * are allowed
      *
      * @see net.sf.jsqlparser.statement.CopyStatement
      * @see net.sf.jsqlparser.statement.load.LoadDataStatement
+     * @see net.sf.jsqlparser.statement.load.MySqlLoadDataStatement
      */
     copy, loadData,
 

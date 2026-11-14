@@ -41,6 +41,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -185,6 +189,7 @@ import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.load.MySqlLoadDataStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -855,8 +860,15 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(LoadDataStatement loadDataStatement, S context) {
-        loadDataStatement.appendTo(builder);
+        loadDataStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(MySqlLoadDataStatement loadData, S context) {
+        return loadData.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override
@@ -1215,7 +1227,17 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(CreateCast statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(CreateOperator statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTransform statement, S context) {
         return statement.appendTo(builder);
     }
 
@@ -1225,7 +1247,17 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(CreateConversion statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
     public <S> StringBuilder visit(CreateOperatorFamily statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterConversion statement, S context) {
         return statement.appendTo(builder);
     }
 

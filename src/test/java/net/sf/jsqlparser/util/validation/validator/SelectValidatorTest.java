@@ -122,6 +122,16 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidationMultipleLockingClauses() throws JSQLParserException {
+        String sql = "SELECT * FROM t, u FOR UPDATE OF t FOR SHARE OF u";
+        validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
+
+        String sql2 = "SELECT * FROM t FOR UPDATE FOR NO KEY UPDATE";
+        validateNotSupported(sql2, 1, 1, DatabaseType.ORACLE,
+                Feature.selectForNoKeyUpdate);
+    }
+
+    @Test
     public void testValidationForUpdateNoWait() throws JSQLParserException {
         String sql = "SELECT * FROM mytable FOR UPDATE NOWAIT";
         validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.MARIADB,

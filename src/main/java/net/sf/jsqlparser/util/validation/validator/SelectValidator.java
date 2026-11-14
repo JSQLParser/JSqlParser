@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.ForMode;
+import net.sf.jsqlparser.statement.select.ForUpdateClause;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.InterpolateElement;
 import net.sf.jsqlparser.statement.select.IntersectOp;
@@ -142,6 +143,29 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
                 validateFeature(c, plainSelect.isSkipLocked(), Feature.selectForUpdateSkipLocked);
+
+                if (plainSelect.getAdditionalForUpdateClauses() != null) {
+                    for (ForUpdateClause forUpdateClause : plainSelect
+                            .getAdditionalForUpdateClauses()) {
+                        validateFeature(c, forUpdateClause.getMode() == ForMode.KEY_SHARE,
+                                Feature.selectForKeyShare);
+                        validateFeature(c, forUpdateClause.getMode() == ForMode.NO_KEY_UPDATE,
+                                Feature.selectForNoKeyUpdate);
+                        validateFeature(c, forUpdateClause.getMode() == ForMode.SHARE,
+                                Feature.selectForShare);
+                        if (forUpdateClause.getTables() != null) {
+                            forUpdateClause.getTables()
+                                    .forEach(t -> validateOptionalFeature(c, t,
+                                            Feature.selectForUpdateOfTable));
+                        }
+                        validateOptionalFeature(c, forUpdateClause.getWait(),
+                                Feature.selectForUpdateWait);
+                        validateFeature(c, forUpdateClause.isNoWait(),
+                                Feature.selectForUpdateNoWait);
+                        validateFeature(c, forUpdateClause.isSkipLocked(),
+                                Feature.selectForUpdateSkipLocked);
+                    }
+                }
             }
 
             validateOptionalFeature(c, plainSelect.getForXmlPath(), Feature.selectForXmlPath);
