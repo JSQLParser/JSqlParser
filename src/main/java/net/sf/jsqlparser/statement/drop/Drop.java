@@ -35,7 +35,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop extends ASTNodeAccessImpl implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, CAST, OPERATOR, TRANSFORM, RESOURCE_GROUP, OTHER;
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, FOREIGN_DATA_WRAPPER, AGGREGATE, DOMAIN, EVENT_TRIGGER, GROUP, OWNED, ROLE, ROUTINE, RULE, TYPE, USER, SYNONYM, ACCESS_METHOD, LANGUAGE, OPERATOR_CLASS, OPERATOR_FAMILY, TEXT_SEARCH_CONFIGURATION, TEXT_SEARCH_DICTIONARY, TEXT_SEARCH_PARSER, TEXT_SEARCH_TEMPLATE, CAST, OPERATOR, TRANSFORM, RESOURCE_GROUP, SPATIAL_REFERENCE_SYSTEM, OTHER;
 
         /** Targets are {@link RoutineReference}s, each with an optional argument signature. */
         public boolean hasRoutineTargets() {
@@ -129,7 +129,8 @@ public class Drop extends ASTNodeAccessImpl implements Statement {
     /**
      * Returns the dropped object names. Routine, account and operator targets return a read-only
      * snapshot of their names; edit {@link #getRoutines()}, {@link #getAccounts()} or
-     * {@link #getOperators()} to change them. A cast or transform has no name.
+     * {@link #getOperators()} to change them. A cast or transform has no name. The name of a MySQL
+     * {@link ObjectType#SPATIAL_REFERENCE_SYSTEM} is its SRID as written.
      */
     public List<Table> getNames() {
         if (!routines.isEmpty()) {

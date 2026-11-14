@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.PluginStatement;
 import net.sf.jsqlparser.statement.PrepareTransactionStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetConstraintsStatement;
@@ -53,6 +54,9 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.cursor.CloseCursorStatement;
+import net.sf.jsqlparser.statement.cursor.DeclareCursorStatement;
+import net.sf.jsqlparser.statement.cursor.FetchCursorStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
@@ -483,6 +487,18 @@ public enum Feature {
      * @see net.sf.jsqlparser.statement.alter.AlterTablespace
      */
     alterTablespace,
+    /**
+     * MySQL "CREATE SPATIAL REFERENCE SYSTEM" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.spatial.CreateSpatialReferenceSystem
+     */
+    createSpatialReferenceSystem,
+    /**
+     * MySQL "ALTER INSTANCE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterInstance
+     */
+    alterInstance,
 
 
     /**
@@ -817,6 +833,18 @@ public enum Feature {
      */
     xa,
     /**
+     * MySQL and MariaDB INSTALL PLUGIN and UNINSTALL PLUGIN
+     *
+     * @see PluginStatement
+     */
+    installPlugin,
+    /**
+     * MySQL INSTALL COMPONENT and UNINSTALL COMPONENT
+     *
+     * @see PluginStatement
+     */
+    installComponent,
+    /**
      * SQL "LOCK TABLE" statement is allowed
      *
      * @see net.sf.jsqlparser.statement.lock.LockStatement
@@ -950,6 +978,13 @@ public enum Feature {
      */
     showCreate,
     /**
+     * The MySQL/MariaDB "SHOW" statements of server settings, state and object lists, such as "SHOW
+     * VARIABLES", "SHOW GRANTS" or "SHOW BINLOG EVENTS"
+     *
+     * @see MySqlShowStatement
+     */
+    mySqlShow,
+    /**
      * @see UseStatement
      */
     use,
@@ -1008,6 +1043,54 @@ public enum Feature {
      */
     alterRule,
     /**
+     * PostgreSQL "CREATE OPERATOR" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperator
+     */
+    createOperator,
+    /**
+     * PostgreSQL "CREATE OPERATOR CLASS" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperatorClass
+     */
+    createOperatorClass,
+    /**
+     * PostgreSQL "CREATE OPERATOR FAMILY" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily
+     */
+    createOperatorFamily,
+    /**
+     * PostgreSQL "CREATE AGGREGATE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.aggregate.CreateAggregate
+     */
+    createAggregate,
+    /**
+     * PostgreSQL "ALTER OPERATOR" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperator
+     */
+    alterOperator,
+    /**
+     * PostgreSQL "ALTER OPERATOR CLASS" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperatorClass
+     */
+    alterOperatorClass,
+    /**
+     * PostgreSQL "ALTER OPERATOR FAMILY" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterOperatorFamily
+     */
+    alterOperatorFamily,
+    /**
+     * PostgreSQL "ALTER AGGREGATE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterAggregate
+     */
+    alterAggregate,
+    /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *
      * @see Block
@@ -1017,6 +1100,24 @@ public enum Feature {
      * @see DeclareStatement
      */
     declare,
+    /**
+     * PostgreSQL "DECLARE name CURSOR FOR query" statement is allowed
+     *
+     * @see DeclareCursorStatement
+     */
+    declareCursor,
+    /**
+     * PostgreSQL "FETCH" and "MOVE" statements of a cursor are allowed
+     *
+     * @see FetchCursorStatement
+     */
+    fetchCursor,
+    /**
+     * PostgreSQL "CLOSE" statement of a cursor is allowed
+     *
+     * @see CloseCursorStatement
+     */
+    closeCursor,
 
     /** SQL Server local table variables in queries and DML targets. */
     tableVariable,

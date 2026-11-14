@@ -152,17 +152,21 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |
 | **MySQL resource groups** | `CREATE`/`ALTER`/`DROP RESOURCE GROUP` · `SET RESOURCE GROUP` |
+| **MySQL servers, plugins and components** | `CREATE SERVER` · `ALTER SERVER` with `OPTIONS (… PORT 3306)` · `INSTALL`/`UNINSTALL PLUGIN` · `INSTALL`/`UNINSTALL COMPONENT` |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |
 | **PostgreSQL foreign schema import** | `IMPORT FOREIGN SCHEMA … [LIMIT TO \| EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]` |
+| **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
+| **MySQL spatial reference systems and instance** | `CREATE`/`DROP SPATIAL REFERENCE SYSTEM` · `ALTER INSTANCE` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
 | **Routine changes** | `ALTER FUNCTION` · `ALTER PROCEDURE` · `ALTER ROUTINE` · PostgreSQL `ALTER TRIGGER` |
-| **MySQL metadata statements** | `SHOW [FULL] COLUMNS`/`FIELDS` · `SHOW TABLE STATUS` · `SHOW CREATE TABLE`/`VIEW`/`PROCEDURE`/`FUNCTION`/`TRIGGER`/`EVENT`/`DATABASE`/`USER` |
+| **MySQL metadata statements** | `SHOW [FULL] COLUMNS`/`FIELDS` · `SHOW INDEX`/`INDEXES`/`KEYS` · `SHOW TABLE STATUS` · `SHOW CREATE TABLE`/`VIEW`/`PROCEDURE`/`FUNCTION`/`TRIGGER`/`EVENT`/`DATABASE`/`USER` · `SHOW [GLOBAL | SESSION] VARIABLES`/`STATUS` · `SHOW [FULL] PROCESSLIST` · `SHOW GRANTS [FOR …]` · `SHOW WARNINGS`/`ERRORS` · `SHOW BINARY LOGS`/`BINLOG EVENTS`/`RELAYLOG EVENTS` · `SHOW ENGINE …` · `SHOW PROFILE` · `SHOW DATABASES`/`TRIGGERS`/`EVENTS`/`OPEN TABLES`/`CHARACTER SET`/`COLLATION` · `SHOW PROCEDURE`/`FUNCTION STATUS`/`CODE` · `SHOW REPLICA STATUS`/`REPLICAS` |
 | **MySQL utility statements** | `EXPLAIN`/`DESCRIBE [ANALYZE] FORMAT = …` · `EXPLAIN FOR CONNECTION` · `DESCRIBE t col` · `PREPARE … FROM` · `EXECUTE … USING` · `DROP PREPARE` · `DO` |
 | **PostgreSQL administration** | `CREATE`/`ALTER EVENT TRIGGER` · `REINDEX` · `SECURITY LABEL` |
 | **PostgreSQL types and rules** | `CREATE TYPE` (shell, composite, enum, range and base types) · `ALTER TYPE` · `CREATE RULE` · `ALTER RULE` |
+| **PostgreSQL operators and aggregates** | `CREATE`/`ALTER OPERATOR` · `CREATE`/`ALTER OPERATOR CLASS` · `CREATE`/`ALTER OPERATOR FAMILY` · `CREATE`/`ALTER AGGREGATE` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |
 | **Salesforce SOQL** | `INCLUDES` · `EXCLUDES` |
 

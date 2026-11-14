@@ -16,7 +16,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterOperator;
+import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
+import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
@@ -25,6 +29,10 @@ import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
+import net.sf.jsqlparser.statement.create.aggregate.CreateAggregate;
+import net.sf.jsqlparser.statement.create.operator.CreateOperator;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorClass;
+import net.sf.jsqlparser.statement.create.operator.CreateOperatorFamily;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.test.TestUtils;
@@ -49,6 +57,20 @@ class StatementFeatureVisitorMetadataDdlTest {
                 Arguments.of("ALTER FUNCTION f READS SQL DATA", AlterRoutine.class),
                 Arguments.of("ALTER TRIGGER t ON tbl RENAME TO t2", AlterTrigger.class),
                 Arguments.of("ALTER RULE r ON tbl RENAME TO r2", AlterRule.class),
+                Arguments.of("CREATE OPERATOR === (FUNCTION = f, LEFTARG = int)",
+                        CreateOperator.class),
+                Arguments.of("ALTER OPERATOR === (int, int) SET (RESTRICT = NONE)",
+                        AlterOperator.class),
+                Arguments.of("CREATE OPERATOR CLASS oc FOR TYPE int USING btree AS OPERATOR 1 <",
+                        CreateOperatorClass.class),
+                Arguments.of("ALTER OPERATOR CLASS oc USING btree RENAME TO oc2",
+                        AlterOperatorClass.class),
+                Arguments.of("CREATE OPERATOR FAMILY f USING btree", CreateOperatorFamily.class),
+                Arguments.of("ALTER OPERATOR FAMILY f USING btree DROP OPERATOR 1 (int, int)",
+                        AlterOperatorFamily.class),
+                Arguments.of("CREATE AGGREGATE agg(int) (SFUNC = f, STYPE = int)",
+                        CreateAggregate.class),
+                Arguments.of("ALTER AGGREGATE agg(*) OWNER TO u", AlterAggregate.class),
                 Arguments.of("ALTER SCHEMA s RENAME TO s2", AlterSchema.class),
                 Arguments.of("ALTER SCHEMA s OWNER TO CURRENT_USER", AlterSchema.class),
                 Arguments.of("ALTER STATISTICS s RENAME TO s2", AlterStatistics.class),

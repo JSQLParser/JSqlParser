@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -20,11 +21,9 @@ public class ShowColumnsStatementValidator extends AbstractValidator<ShowColumns
 
     @Override
     public void validate(ShowColumnsStatement show) {
-        String tableName = show.getTableName();
-        if (show.getDbName() != null && show.getTable() != null) {
-            // MySQL: the trailing FROM db names the database of the table
-            tableName = show.getDbName() + "." + show.getTable().getName();
-        }
-        validateFeatureAndName(Feature.showColumns, NamedObject.table, tableName);
+        // MySQL: the trailing FROM db names the database of the table
+        Table table = show.getQualifiedTable();
+        validateFeatureAndName(Feature.showColumns, NamedObject.table,
+                table == null ? null : table.getFullyQualifiedName());
     }
 }

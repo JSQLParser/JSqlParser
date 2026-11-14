@@ -208,12 +208,9 @@ public class UnsupportedStatementTest {
     @ValueSource(strings = {
             "CREATE LANGUAGE plperl",
             "CREATE OR REPLACE TRUSTED PROCEDURAL LANGUAGE plsample HANDLER plsample_call_handler",
-            "CREATE OPERATOR CLASS gist__int_ops DEFAULT FOR TYPE _int4 USING gist AS OPERATOR 3 &&",
-            "CREATE OPERATOR FAMILY myfam USING btree",
             "CREATE DEFAULT CONVERSION myconv FOR 'LATIN1' TO 'UTF8' FROM latin1_to_utf8",
             "CREATE TRANSFORM FOR hstore LANGUAGE plpython3u (FROM SQL WITH FUNCTION "
-                    + "hstore_to_plpython(internal), TO SQL WITH FUNCTION plpython_to_hstore(internal))",
-            "CREATE OR REPLACE AGGREGATE myavg(float8) (SFUNC = float8_accum, STYPE = float8[])"})
+                    + "hstore_to_plpython(internal), TO SQL WITH FUNCTION plpython_to_hstore(internal))"})
     void unknownCreateFallsBackToUnsupportedStatement(String sql) throws JSQLParserException {
         for (Consumer<CCJSqlParser> dialect : Arrays.<Consumer<CCJSqlParser>>asList(parser -> {
         }, parser -> parser.withDialect(Dialect.POSTGRESQL))) {

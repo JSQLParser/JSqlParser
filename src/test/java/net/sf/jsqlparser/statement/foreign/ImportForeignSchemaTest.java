@@ -262,9 +262,10 @@ class ImportForeignSchemaTest {
                             + "IMPORT FOREIGN SCHEMA r EXCEPT (t) FROM SERVER s INTO l OPTIONS (a 'b');"
                             + "IMPORT FOREIGN SCHEMA r FROM SERVER s INTO l\n"
                             + "IMPORT FOREIGN SCHEMA r FROM SERVER s INTO l OPTIONS (a 'b')\n"
-                            + "SELECT 2",
+                            + "SELECT 2; DECLARE c CURSOR FOR SELECT * FROM local.t; "
+                            + "IMPORT FOREIGN SCHEMA r FROM SERVER s INTO l; FETCH NEXT FROM c; CLOSE c",
                     mode);
-            assertEquals(6, statements.size());
+            assertEquals(10, statements.size());
             assertEquals("IMPORT FOREIGN SCHEMA remote FROM SERVER srv INTO local",
                     statements.get(0).toString());
             assertInstanceOf(Select.class, statements.get(1));
@@ -275,6 +276,13 @@ class ImportForeignSchemaTest {
             assertEquals("IMPORT FOREIGN SCHEMA r FROM SERVER s INTO l OPTIONS (a 'b')",
                     statements.get(4).toString());
             assertInstanceOf(Select.class, statements.get(5));
+            assertEquals("DeclareCursorStatement", statements.get(6).getClass().getSimpleName());
+            assertInstanceOf(ImportForeignSchema.class, statements.get(7));
+            assertEquals("FetchCursorStatement", statements.get(8).getClass().getSimpleName());
+            assertEquals("CloseCursorStatement", statements.get(9).getClass().getSimpleName());
+            assertThat(new TablesNamesFinder<>().getTables(statements.get(6)))
+                    .containsExactly("local.t");
+            assertThat(new TablesNamesFinder<>().getTables(statements.get(7))).isEmpty();
         }
 
         Statements afterUnsupported = CCJSqlParserUtil.parseStatements(
