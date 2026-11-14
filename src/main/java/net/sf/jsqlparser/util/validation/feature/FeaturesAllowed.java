@@ -183,7 +183,8 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all DDL {@link Feature}'s
      */
     public static final FeaturesAllowed DDL =
-            new FeaturesAllowed("DDL").add(CREATE, ALTER, DROP).unmodifyable();
+            new FeaturesAllowed("DDL", Feature.importForeignSchema).add(CREATE, ALTER, DROP)
+                    .unmodifyable();
     private static final String SEPERATOR = " + ";
     private Set<String> names = new LinkedHashSet<>();
     private Set<Feature> features = new HashSet<>();

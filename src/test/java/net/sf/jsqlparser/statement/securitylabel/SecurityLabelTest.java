@@ -194,7 +194,7 @@ class SecurityLabelTest {
     @Test
     void startsAStatementAmongUnsupportedStatements() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; SECURITY LABEL ON TABLE t IS 'x'",
+                "IMPORT INTO t FROM LOCAL CSV FILE 'f.csv'; SECURITY LABEL ON TABLE t IS 'x'",
                 parser -> parser.withUnsupportedStatements(true));
 
         assertEquals(2, statements.size());

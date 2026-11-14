@@ -108,6 +108,7 @@ import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.grant.*;
 import net.sf.jsqlparser.statement.role.*;
+import net.sf.jsqlparser.statement.foreign.ImportForeignSchema;
 import net.sf.jsqlparser.statement.imprt.*;
 import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
@@ -209,7 +210,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return isCursorStatementAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
-                    || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
+                    || next.kind == K_EXPORT && getToken(2).kind == K_DATA
+                    || isImportForeignSchemaAhead();
             default:
                 return "NOTIFY".equalsIgnoreCase(next.image)
                     || "REASSIGN".equalsIgnoreCase(next.image)
@@ -3172,6 +3174,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return getAsString(Feature.dialect) != null || target.kind == K_ALL
                 || target.kind == K_TEMP || target.kind == K_TEMPORARY
                 || "PLANS".equalsIgnoreCase(target.image) || "SEQUENCES".equalsIgnoreCase(target.image);
+    }
+
+    /**
+     * Whether PostgreSQL's IMPORT FOREIGN SCHEMA starts here. The EXASOL dialect keeps IMPORT for
+     * its own statement, which FOREIGN cannot continue.
+     */
+    private boolean isImportForeignSchemaAhead() {
+        return getToken(1).kind == K_IMPORT && getToken(2).kind == K_FOREIGN
+                && isPostgreSqlUtilityDialect();
     }
 
     /**
@@ -7187,6 +7198,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ isUnlockTablesAhead() }) stm = UnlockStatement()
             |
             stm = LockStatement()
+            |
+            LOOKAHEAD({ isImportForeignSchemaAhead() }) stm = ImportForeignSchema()
             |
             LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
         )
@@ -31022,6 +31035,37 @@ NotifyStatement NotifyStatement():
 {
     <K_NOTIFY> channel=RelObjectName() { statement.setChannel(channel); }
     [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(stringValue(payload)); } ]
+    { return statement; }
+}
+
+/**
+ * PostgreSQL's IMPORT FOREIGN SCHEMA remote_schema [{LIMIT TO | EXCEPT} (relation_expr [, ...])]
+ * FROM SERVER server INTO local_schema [OPTIONS (option 'value' [, ...])].
+ */
+ImportForeignSchema ImportForeignSchema():
+{
+    ImportForeignSchema statement = new ImportForeignSchema();
+    ImportForeignSchema.Qualification qualification = null;
+    List<TableReference> tables = new ArrayList<TableReference>();
+    TableReference table;
+    String name;
+    List<ForeignDataOption> options;
+}
+{
+    <K_IMPORT> <K_FOREIGN> <K_SCHEMA> name=RelObjectName() { statement.setRemoteSchema(name); }
+    [
+        (
+            <K_LIMIT> <K_TO> { qualification = ImportForeignSchema.Qualification.LIMIT_TO; }
+            |
+            <K_EXCEPT> { qualification = ImportForeignSchema.Qualification.EXCEPT; }
+        )
+        "(" table=RelationTarget() { tables.add(table); }
+        ( "," table=RelationTarget() { tables.add(table); } )* ")"
+        { statement.setTables(qualification, tables); }
+    ]
+    <K_FROM> ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
+    <K_INTO> name=RelObjectName() { statement.setLocalSchema(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
     { return statement; }
 }
 
