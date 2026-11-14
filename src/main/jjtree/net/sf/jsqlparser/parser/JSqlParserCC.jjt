@@ -2386,6 +2386,34 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isKeywordAhead("MATCH_RECOGNIZE") && getToken(2).kind == OPENING_BRACKET;
     }
 
+    /**
+     * The conflict resolution of SQLite's INSERT OR &lt;algorithm&gt;. Every algorithm needs
+     * Dialect.SQLITE, as ABORT, FAIL, IGNORE and ROLLBACK are SQLite's own wording; without a
+     * dialect the Upsert() production keeps the historic reading of INSERT OR REPLACE.
+     */
+    private InsertConflictAlgorithm insertOrAlgorithm(String algorithm) throws ParseException {
+        if (!"REPLACE".equalsIgnoreCase(algorithm)
+                && !Dialect.SQLITE.name().equals(getAsString(Feature.dialect))) {
+            throw new ParseException("INSERT OR " + algorithm + " needs Dialect.SQLITE");
+        }
+        try {
+            return InsertConflictAlgorithm.fromAlgorithm(algorithm);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage());
+        }
+    }
+
+    /**
+     * Whether INSERT OR &lt;algorithm&gt; follows, the prefix that the plain Insert() production reads
+     * and that keeps ON CONFLICT, RETURNING, DEFAULT VALUES and the table aliases. It is read with
+     * Dialect.SQLITE only; without a dialect Upsert() keeps the historic INSERT OR REPLACE reading.
+     */
+    private boolean isInsertOrPrefixAhead() {
+        return getToken(1).kind == K_INSERT
+                && getToken(2).kind == K_OR
+                && Dialect.SQLITE.name().equals(getAsString(Feature.dialect));
+    }
+
     private boolean isCreateTableQueryPrefix() {
         int kind = getToken(1).kind;
         return kind == K_AS || kind == K_TABLE || kind == K_IGNORE || kind == K_REPLACE;
@@ -6977,6 +7005,10 @@ Statement SingleStatement() :
             |
             stm = Select()
             |
+            // SQLite's INSERT OR <algorithm> takes the plain Insert() production, so that it keeps
+            // ON CONFLICT, RETURNING, DEFAULT VALUES and the table aliases; REPLACE stays an Upsert
+            LOOKAHEAD({ isInsertOrPrefixAhead() }) stm = Insert()
+            |
             LOOKAHEAD(3) stm = Upsert()
             |
             LOOKAHEAD({ isResourceGroupStatementAhead() }) stm = ResourceGroupStatement()
@@ -11308,9 +11340,18 @@ Insert Insert():
     List<OracleMultiInsertBranch> oracleMultiInsertBranches = new ArrayList<OracleMultiInsertBranch>();
     OracleMultiInsertClause oracleMultiInsertClause = null;
     OracleMultiInsertBranch oracleMultiInsertBranch = null;
+    String algorithm;
 }
 {
-    <K_INSERT> { insert.setOracleHint(getOracleHint()); }
+    (
+        <K_INSERT>
+        // SQLite: INSERT OR <algorithm>. ABORT and FAIL are not keywords of the parser, so the
+        // word is read as a name and the algorithm is checked in AbstractJSqlParser
+        [ LOOKAHEAD({ getToken(1).kind == K_OR })
+            <K_OR> algorithm=RelObjectName()
+            { insert.setConflictAlgorithm(insertOrAlgorithm(algorithm)); } ]
+        )
+    { insert.setOracleHint(getOracleHint()); }
 
     [
         LOOKAHEAD(2) (tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
@@ -11320,6 +11361,11 @@ Insert Insert():
         }
     ]
     [ LOOKAHEAD(2) <K_IGNORE>{ modifierIgnore = true; }]
+    {
+        // SQLite takes the target of INSERT OR ... without the INTO, as in INSERT OR IGNORE t
+        insert.setOmitInto(insert.getConflictAlgorithm() != null
+                && getToken(1).kind != K_INTO && getToken(1).kind != K_OVERWRITE);
+    }
     (
         LOOKAHEAD(2, (<K_ALL> | <K_FIRST>) (<K_INTO> | <K_WHEN>))
         (
