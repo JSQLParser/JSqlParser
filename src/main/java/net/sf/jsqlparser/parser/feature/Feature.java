@@ -1037,6 +1037,30 @@ public enum Feature {
      */
     alterRule,
     /**
+     * PostgreSQL "CREATE CAST" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.cast.CreateCast
+     */
+    createCast,
+    /**
+     * PostgreSQL "CREATE TRANSFORM" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.transform.CreateTransform
+     */
+    createTransform,
+    /**
+     * PostgreSQL "CREATE CONVERSION" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.create.conversion.CreateConversion
+     */
+    createConversion,
+    /**
+     * PostgreSQL "ALTER CONVERSION" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterConversion
+     */
+    alterConversion,
+    /**
      * PostgreSQL "CREATE OPERATOR" statement is allowed
      *
      * @see net.sf.jsqlparser.statement.create.operator.CreateOperator

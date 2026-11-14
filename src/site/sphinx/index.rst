@@ -198,6 +198,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE``/``ALTER EVENT TRIGGER`` · ``REINDEX`` · ``SECURITY LABEL``
     * - **PostgreSQL types and rules**
       - ``CREATE TYPE`` (shell, composite, enum, range and base types) · ``ALTER TYPE`` · ``CREATE RULE`` · ``ALTER RULE``
+    * - **PostgreSQL casts, transforms and conversions**
+      - ``CREATE CAST`` · ``DROP CAST`` · ``CREATE [OR REPLACE] TRANSFORM`` · ``DROP TRANSFORM`` · ``CREATE [DEFAULT] CONVERSION`` · ``ALTER CONVERSION``
     * - **PostgreSQL operators and aggregates**
       - ``CREATE``/``ALTER OPERATOR`` · ``CREATE``/``ALTER OPERATOR CLASS`` · ``CREATE``/``ALTER OPERATOR FAMILY`` · ``CREATE``/``ALTER AGGREGATE``
     * - **Salesforce SOQL**

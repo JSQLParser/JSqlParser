@@ -33,6 +33,10 @@ import net.sf.jsqlparser.statement.alter.AlterOperatorClass;
 import net.sf.jsqlparser.statement.alter.AlterOperatorFamily;
 import net.sf.jsqlparser.statement.alter.AlterAggregate;
 import net.sf.jsqlparser.statement.alter.AlterRule;
+import net.sf.jsqlparser.statement.create.cast.CreateCast;
+import net.sf.jsqlparser.statement.create.transform.CreateTransform;
+import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -1259,6 +1263,38 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterRule statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateCast statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateCast statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTransform statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTransform statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateConversion statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateConversion statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterConversion statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterConversion statement) {
         visit(statement, null);
     }
 
