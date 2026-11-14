@@ -15,7 +15,11 @@ import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 
-/** A foreign table or column option; absent action means the implicit ADD form. */
+/**
+ * A foreign table, column or server option; absent action means the implicit ADD form. The value is
+ * a string constant; MySQL's CREATE SERVER and ALTER SERVER also take a number, as in
+ * {@code PORT 3306}.
+ */
 public class ForeignDataOption implements Serializable {
     public enum Action {
         ADD, SET, DROP
@@ -23,7 +27,7 @@ public class ForeignDataOption implements Serializable {
 
     private Action action;
     private String name;
-    private StringValue value;
+    private Expression value;
 
     public ForeignDataOption(String name, StringValue value) {
         this.name = name;
@@ -49,12 +53,29 @@ public class ForeignDataOption implements Serializable {
         this.name = name;
     }
 
+    /** The string value, or null if the option has none or has a numeric value. */
     public StringValue getValue() {
-        return value;
+        return value instanceof StringValue ? (StringValue) value : null;
     }
 
     public void setValue(StringValue value) {
         this.value = value;
+    }
+
+    /**
+     * The value as written: a {@link StringValue}, or a numeric literal of a MySQL server option.
+     */
+    public Expression getValueExpression() {
+        return value;
+    }
+
+    public void setValueExpression(Expression value) {
+        this.value = value;
+    }
+
+    public ForeignDataOption withValueExpression(Expression value) {
+        setValueExpression(value);
+        return this;
     }
 
     public void appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {

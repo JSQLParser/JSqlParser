@@ -1388,4 +1388,21 @@ public class CreateTableTest {
                 defaultSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
         assertEquals(PartitionBound.Type.DEFAULT, defaultPartition.getPartitionBound().getType());
     }
+
+    @Test
+    void testCreateOrReplaceTableCopyGrantsAsSelectFromFlattenedVariant()
+            throws JSQLParserException {
+        String sql =
+                "CREATE OR REPLACE TABLE \"MY_DB\".\"MY_SCHEMA\".\"STAGING_TRACES\" COPY GRANTS\n"
+                        + "AS (SELECT\n"
+                        + "  *\n"
+                        + "FROM (SELECT\n"
+                        + "  \"FLATTEN_VARIANT_INPUT\".\"DATA_VALUE\":id::VARCHAR AS \"id\",\n"
+                        + "  \"FLATTEN_VARIANT_INPUT\".\"DATA_VALUE\":input::VARIANT AS \"input\",\n"
+                        + "  \"FLATTEN_VARIANT_INPUT\".\"DATA_VALUE\":output::VARIANT AS \"output\"\n"
+                        + "FROM (SELECT\n"
+                        + "        \"DATA_VALUE\"\n"
+                        + "      FROM \"MY_DB\".\"MY_SCHEMA\".\"RAW_TRACES\") AS \"FLATTEN_VARIANT_INPUT\"))";
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+    }
 }

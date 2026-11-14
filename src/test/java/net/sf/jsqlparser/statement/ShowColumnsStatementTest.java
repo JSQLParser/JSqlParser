@@ -130,7 +130,7 @@ public class ShowColumnsStatementTest {
             "SHOW COLUMNS LIKE 'x' IN TABLE t",
             "SHOW COLUMNS FROM t NOT LIKE 'x'",
             "SHOW COLUMNS FROM t FROM db LIMIT 3",
-            "SHOW FULL PROCESSLIST"
+            "SHOW FULL FUNCTIONS"
     })
     void otherDialectFormsRemainUnsupported(String sql) throws JSQLParserException {
         Statement statement = assertSqlCanBeParsedAndDeparsed(sql, true);
