@@ -55,6 +55,10 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.notify.ListenStatement;
@@ -5125,6 +5129,66 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && ("SQL_SMALL_RESULT".equalsIgnoreCase(token.image)
                     || "SQL_BIG_RESULT".equalsIgnoreCase(token.image)
                     || "SQL_BUFFER_RESULT".equalsIgnoreCase(token.image));
+    }
+
+    /** Recognizes PostgreSQL's language form without taking other products' opaque LANGUAGE DDL. */
+    private boolean isCreateLanguageAhead() {
+        if (isPostgreSqlDialect() && isAnyWordAt(1, "TRUSTED", "PROCEDURAL", "LANGUAGE")) {
+            return true;
+        }
+        int offset = isWordAt(1, "TRUSTED") ? 2 : 1;
+        if (isWordAt(offset, "PROCEDURAL")) {
+            offset++;
+        }
+        if (!isWordAt(offset, "LANGUAGE")) {
+            return false;
+        }
+        int following = getToken(offset + 2).kind;
+        return following == EOF || following == ST_SEMICOLON || following == K_HANDLER;
+    }
+
+    private boolean isAlterLanguageAhead() {
+        int offset = isWordAt(1, "PROCEDURAL") ? 2 : 1;
+        return isWordAt(offset, "LANGUAGE") && (isPostgreSqlDialect()
+                || getToken(offset + 2).kind == K_RENAME || isWordAt(offset + 2, "OWNER"));
+    }
+
+    private boolean isTextSearchMetadataAhead() {
+        return getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
+                && (getToken(3).kind == K_PARSER || isAnyWordAt(3, "DICTIONARY", "TEMPLATE"));
+    }
+
+    /** Quoted definition keys retain case in PostgreSQL; unquoted keys are folded to lower case. */
+    private static String textSearchDefinitionKey(DefinitionElement element) {
+        String name = element.getName();
+        return name.startsWith("\"") ? name.substring(1, name.length() - 1).replace("\"\"", "\"")
+                : name.toLowerCase(Locale.ROOT);
+    }
+
+    private void requireTextSearchDictionary(List<DefinitionElement> options) throws ParseException {
+        int templates = 0;
+        for (DefinitionElement option : options) {
+            requireDdlSyntax(option.getArgument() != null, "CREATE dictionary options require a value");
+            if ("template".equals(textSearchDefinitionKey(option))) {
+                templates++;
+            }
+        }
+        requireDdlSyntax(templates > 0, "CREATE TEXT SEARCH DICTIONARY requires TEMPLATE");
+    }
+
+    private void requireTextSearchFunctions(List<DefinitionElement> functions, boolean parser)
+            throws ParseException {
+        Set<String> required = new HashSet<String>(parser
+                ? Arrays.asList("start", "gettoken", "end", "lextypes") : Arrays.asList("lexize"));
+        Set<String> seen = new HashSet<String>();
+        for (DefinitionElement function : functions) {
+            String name = textSearchDefinitionKey(function);
+            requireDdlSyntax(required.contains(name) || (parser ? "headline" : "init").equals(name),
+                    "Unknown text-search function: " + function.getName());
+            requireDdlSyntax(function.getArgument() != null, "Text-search functions require a value");
+            seen.add(name);
+        }
+        requireDdlSyntax(seen.containsAll(required), "Missing required text-search functions");
     }
 
     /** Whether the dialect is PostgreSQL: forms the server rejects are then not read. */
@@ -27055,6 +27119,12 @@ Statement Alter():
                 |
                 LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) statement = AlterUserMapping()
                 |
+                LOOKAHEAD({ isAlterLanguageAhead() }) statement = AlterLanguage()
+                |
+                LOOKAHEAD({ isWordSequenceAhead(1, "LARGE", "OBJECT") }) statement = AlterLargeObject()
+                |
+                LOOKAHEAD({ isTextSearchMetadataAhead() }) statement = AlterTextSearchMetadata()
+                |
                 LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
                         && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
                 statement = AlterTextSearchConfiguration()
@@ -29166,6 +29236,12 @@ Statement Create():
         LOOKAHEAD({ isKeywordAhead("SERVER") }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateServer()
         |
         LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateUserMapping()
+        |
+        LOOKAHEAD({ isCreateLanguageAhead() }) statement = CreateLanguage(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isTextSearchMetadataAhead() })
+        { requireDdlSyntax(!isUsingOrReplace, "Text-search objects do not support OR REPLACE"); }
+        statement = CreateTextSearchMetadata()
         |
         LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
                 && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
@@ -31312,6 +31388,181 @@ CreateAccessMethod CreateAccessMethod():
                | <K_INDEX> { statement.setType(CreateAccessMethod.Type.INDEX); } )
     <K_HANDLER> name=AccessQualifiedName()
     { statement.setHandler(name); return statement; }
+}
+
+/** PostgreSQL CREATE [OR REPLACE] [TRUSTED] [PROCEDURAL] LANGUAGE name [HANDLER ...]. */
+CreateLanguage CreateLanguage(boolean orReplace):
+{
+    CreateLanguage statement = new CreateLanguage(); String name;
+}
+{
+    { statement.setOrReplace(orReplace); }
+    [ LOOKAHEAD({ isKeywordAhead("TRUSTED") }) ContextualKeyword("TRUSTED") { statement.setTrusted(true); } ]
+    [ LOOKAHEAD({ isKeywordAhead("PROCEDURAL") }) ContextualKeyword("PROCEDURAL") { statement.setProcedural(true); } ]
+    ContextualKeyword("LANGUAGE") name=RelObjectName()
+    { requireConversionName(name, false); statement.setName(name); }
+    [ LOOKAHEAD({ getToken(1).kind == K_HANDLER }) <K_HANDLER> name=TypeDdlName()
+        { requireConversionName(name, false); statement.setHandler(name); }
+        [ LOOKAHEAD({ isKeywordAhead("INLINE") }) ContextualKeyword("INLINE") name=TypeDdlName()
+            { requireConversionName(name, false); statement.setInlineHandler(name); } ]
+        [
+            LOOKAHEAD({ isKeywordAhead("VALIDATOR") }) ContextualKeyword("VALIDATOR") name=TypeDdlName()
+            { requireConversionName(name, false); statement.setValidator(name); }
+            |
+            <K_NO> ContextualKeyword("VALIDATOR") { statement.setNoValidator(true); }
+        ]
+    ]
+    { return statement; }
+}
+
+AlterLanguage AlterLanguage():
+{ AlterLanguage statement = new AlterLanguage(); String name; }
+{
+    [ LOOKAHEAD({ isKeywordAhead("PROCEDURAL") }) ContextualKeyword("PROCEDURAL") { statement.setProcedural(true); } ]
+    ContextualKeyword("LANGUAGE") name=RelObjectName()
+    { requireConversionName(name, false); statement.setName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterLanguage.Action.RENAME); statement.setNewName(name); }
+        |
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { requireConversionName(name, true); statement.setAction(AlterLanguage.Action.OWNER); statement.setOwner(name); }
+    )
+    { return statement; }
+}
+
+AlterLargeObject AlterLargeObject():
+{
+    AlterLargeObject statement = new AlterLargeObject(); String owner;
+    Token first; Token sign = null; Token number; Expression objectId;
+}
+{
+    ContextualKeyword("LARGE") ContextualKeyword("OBJECT") { first = getToken(1); }
+    [ sign="+" | sign="-" ]
+    (
+        number=<S_LONG> { objectId = linkToLastToken(new LongValue(number.image)); }
+        |
+        number=<S_DOUBLE> { objectId = linkToLastToken(new DoubleValue(number.image)); }
+        |
+        number=<S_HEX> {
+            requireDdlSyntax(number.image.regionMatches(true, 0, "0x", 0, 2),
+                    "A large-object OID must be numeric, not a bit string");
+            objectId = linkToLastToken(new HexValue(number.image));
+        }
+    )
+    {
+        if (sign != null) {
+            objectId = linked(new SignedExpression(sign.image.charAt(0), objectId), first);
+        }
+        statement.setLargeObjectId(objectId);
+    }
+    ContextualKeyword("OWNER") <K_TO> owner=RelObjectName()
+    { requireConversionName(owner, true); statement.setOwner(owner); return statement; }
+}
+
+Statement CreateTextSearchMetadata():
+{ Statement statement; }
+{
+    <K_TEXT_LITERAL> <K_SEARCH>
+    (
+        LOOKAHEAD({ isKeywordAhead("DICTIONARY") }) statement=CreateTextSearchDictionary()
+        |
+        LOOKAHEAD({ isKeywordAhead("PARSER") }) statement=CreateTextSearchParser()
+        |
+        statement=CreateTextSearchTemplate()
+    )
+    { return statement; }
+}
+
+CreateTextSearchDictionary CreateTextSearchDictionary():
+{ CreateTextSearchDictionary statement = new CreateTextSearchDictionary(); String name; List<DefinitionElement> options; }
+{
+    ContextualKeyword("DICTIONARY") name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    options=PostgreSqlDefinition()
+    { requireTextSearchDictionary(options); statement.setOptions(options); return statement; }
+}
+
+CreateTextSearchParser CreateTextSearchParser():
+{ CreateTextSearchParser statement = new CreateTextSearchParser(); String name; List<DefinitionElement> functions; }
+{
+    <K_PARSER> name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    functions=PostgreSqlDefinition()
+    { requireTextSearchFunctions(functions, true); statement.setFunctions(functions); return statement; }
+}
+
+CreateTextSearchTemplate CreateTextSearchTemplate():
+{ CreateTextSearchTemplate statement = new CreateTextSearchTemplate(); String name; List<DefinitionElement> functions; }
+{
+    ContextualKeyword("TEMPLATE") name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    functions=PostgreSqlDefinition()
+    { requireTextSearchFunctions(functions, false); statement.setFunctions(functions); return statement; }
+}
+
+Statement AlterTextSearchMetadata():
+{ Statement statement; }
+{
+    <K_TEXT_LITERAL> <K_SEARCH>
+    (
+        LOOKAHEAD({ isKeywordAhead("DICTIONARY") }) statement=AlterTextSearchDictionary()
+        |
+        LOOKAHEAD({ isKeywordAhead("PARSER") }) statement=AlterTextSearchParser()
+        |
+        statement=AlterTextSearchTemplate()
+    )
+    { return statement; }
+}
+
+AlterTextSearchDictionary AlterTextSearchDictionary():
+{ AlterTextSearchDictionary statement = new AlterTextSearchDictionary(); String name; List<DefinitionElement> options; }
+{
+    ContextualKeyword("DICTIONARY") name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    (
+        options=PostgreSqlDefinition() { statement.setAction(AlterTextSearchDictionary.Action.OPTIONS); statement.setOptions(options); }
+        |
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchDictionary.Action.RENAME); statement.setNewName(name); }
+        |
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { requireConversionName(name, true); statement.setAction(AlterTextSearchDictionary.Action.OWNER); statement.setOwner(name); }
+        |
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchDictionary.Action.SET_SCHEMA); statement.setSchemaName(name); }
+    )
+    { return statement; }
+}
+
+AlterTextSearchParser AlterTextSearchParser():
+{ AlterTextSearchParser statement = new AlterTextSearchParser(); String name; }
+{
+    <K_PARSER> name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchParser.Action.RENAME); statement.setNewName(name); }
+        |
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchParser.Action.SET_SCHEMA); statement.setSchemaName(name); }
+    )
+    { return statement; }
+}
+
+AlterTextSearchTemplate AlterTextSearchTemplate():
+{ AlterTextSearchTemplate statement = new AlterTextSearchTemplate(); String name; }
+{
+    ContextualKeyword("TEMPLATE") name=TypeDdlName()
+    { requireConversionName(name, false); statement.setName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchTemplate.Action.RENAME); statement.setNewName(name); }
+        |
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { requireConversionName(name, false); statement.setAction(AlterTextSearchTemplate.Action.SET_SCHEMA); statement.setSchemaName(name); }
+    )
+    { return statement; }
 }
 
 CreateTextSearchConfiguration CreateTextSearchConfiguration():

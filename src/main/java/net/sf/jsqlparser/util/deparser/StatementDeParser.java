@@ -44,6 +44,15 @@ import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLargeObject;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate;
 import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -1317,6 +1326,52 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterAggregate statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateLanguage statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterLanguage statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterLargeObject statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTextSearchDictionary statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterTextSearchDictionary statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTextSearchParser statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterTextSearchParser statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTextSearchTemplate statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterTextSearchTemplate statement, S context) {
         return statement.appendTo(builder);
     }
 }

@@ -22,6 +22,15 @@ import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLargeObject;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate;
 import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
@@ -1848,6 +1857,61 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(AlterAggregate statement, S context) {
         validateFeature(Feature.alterAggregate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateLanguage statement, S context) {
+        validateFeature(Feature.createLanguage);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterLanguage statement, S context) {
+        validateFeature(Feature.alterLanguage);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterLargeObject statement, S context) {
+        validateFeature(Feature.alterLargeObject);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchDictionary statement, S context) {
+        validateFeature(Feature.createTextSearchDictionary);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchDictionary statement, S context) {
+        validateFeature(Feature.alterTextSearchDictionary);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchParser statement, S context) {
+        validateFeature(Feature.createTextSearchParser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchParser statement, S context) {
+        validateFeature(Feature.alterTextSearchParser);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchTemplate statement, S context) {
+        validateFeature(Feature.createTextSearchTemplate);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchTemplate statement, S context) {
+        validateFeature(Feature.alterTextSearchTemplate);
         return null;
     }
 }

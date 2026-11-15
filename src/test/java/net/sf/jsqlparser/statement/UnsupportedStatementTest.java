@@ -206,8 +206,8 @@ public class UnsupportedStatementTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "CREATE LANGUAGE plperl",
-            "CREATE OR REPLACE TRUSTED PROCEDURAL LANGUAGE plsample HANDLER plsample_call_handler"})
+            "CREATE SECRET sample (TYPE S3)",
+            "CREATE OR REPLACE SECRET sample (TYPE S3)"})
     void unknownCreateFallsBackToUnsupportedStatement(String sql) throws JSQLParserException {
         for (Consumer<CCJSqlParser> dialect : Arrays.<Consumer<CCJSqlParser>>asList(parser -> {
         }, parser -> parser.withDialect(Dialect.POSTGRESQL))) {
@@ -222,7 +222,7 @@ public class UnsupportedStatementTest {
     @Test
     void unknownCreateDoesNotStopAScript() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "CREATE TABLE a (x int); CREATE LANGUAGE plperl; CREATE INDEX i ON a (x);",
+                "CREATE TABLE a (x int); CREATE SECRET sample (TYPE S3); CREATE INDEX i ON a (x);",
                 parser -> parser.withDialect(Dialect.POSTGRESQL));
 
         assertEquals(3, statements.size());

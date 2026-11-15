@@ -36,6 +36,15 @@ import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLargeObject;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate;
 import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -1413,6 +1422,78 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterAggregate statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateLanguage statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateLanguage statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterLanguage statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterLanguage statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterLargeObject statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterLargeObject statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTextSearchDictionary statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTextSearchDictionary statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTextSearchDictionary statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTextSearchDictionary statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTextSearchParser statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTextSearchParser statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTextSearchParser statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTextSearchParser statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTextSearchTemplate statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTextSearchTemplate statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTextSearchTemplate statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTextSearchTemplate statement) {
         visit(statement, null);
     }
 }

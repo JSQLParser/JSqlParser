@@ -14,6 +14,15 @@ import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLargeObject;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate;
 import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -1352,6 +1361,52 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(AlterConversion statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateLanguage statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterLanguage statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterLargeObject statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateTextSearchDictionary statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTextSearchDictionary statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateTextSearchParser statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTextSearchParser statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateTextSearchTemplate statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTextSearchTemplate statement, S context) {
         return null;
     }
 }

@@ -172,6 +172,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL administration** | `CREATE`/`ALTER EVENT TRIGGER` · `REINDEX` · `SECURITY LABEL` |
 | **PostgreSQL types and rules** | `CREATE TYPE` (shell, composite, enum, range and base types) · `ALTER TYPE` · `CREATE RULE` · `ALTER RULE` |
 | **PostgreSQL casts, transforms and conversions** | `CREATE CAST` · `DROP CAST` · `CREATE [OR REPLACE] TRANSFORM` · `DROP TRANSFORM` · `CREATE [DEFAULT] CONVERSION` · `ALTER CONVERSION` |
+| **PostgreSQL metadata objects** | `CREATE`/`ALTER [PROCEDURAL] LANGUAGE` · `ALTER LARGE OBJECT … OWNER TO` · `CREATE`/`ALTER TEXT SEARCH DICTIONARY` · `CREATE`/`ALTER TEXT SEARCH PARSER` · `CREATE`/`ALTER TEXT SEARCH TEMPLATE` |
 | **PostgreSQL operators and aggregates** | `CREATE`/`ALTER OPERATOR` · `CREATE`/`ALTER OPERATOR CLASS` · `CREATE`/`ALTER OPERATOR FAMILY` · `CREATE`/`ALTER AGGREGATE` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |
 | **Salesforce SOQL** | `INCLUDES` · `EXCLUDES` |
