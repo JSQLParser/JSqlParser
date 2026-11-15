@@ -151,6 +151,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **PostgreSQL foreign schema import** | `IMPORT FOREIGN SCHEMA … [LIMIT TO \| EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]` |
+| **PostgreSQL table and index options** | Bare `CAST`/`EXTRACT` keys with `Dialect.POSTGRESQL` · either order of HASH partition bound options · identity sequence `LOGGED`/`UNLOGGED` |
 | **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |

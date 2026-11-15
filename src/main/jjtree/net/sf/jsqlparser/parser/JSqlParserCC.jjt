@@ -20514,6 +20514,14 @@ KeyElement IndexColumnWithParams(): {
 }
 {
     (
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && getToken(1).kind == K_CAST && getToken(2).kind == OPENING_BRACKET }) expression=CastExpression()
+        { expressionParenthesized = false; }
+        |
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && getToken(1).kind == K_EXTRACT && getToken(2).kind == OPENING_BRACKET }) expression=ExtractExpression()
+        { expressionParenthesized = false; }
+        |
         LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && isFunctionAhead() }) expression=Function()
         { expressionParenthesized = false; }
         |
@@ -21054,6 +21062,7 @@ IdentityDefinition IdentityDefinition():
     List<Sequence.Parameter> parameters = new ArrayList<Sequence.Parameter>();
     Sequence.Parameter parameter;
     Sequence sequenceName;
+    boolean hasPersistence = false;
 }
 {
     token=<S_IDENTIFIER> {
@@ -21069,6 +21078,15 @@ IdentityDefinition IdentityDefinition():
                 <K_SEQUENCE> <K_NAME> sequenceName=Sequence()
                 { parameter = new Sequence.Parameter(Sequence.ParameterType.SEQUENCE_NAME)
                         .withSequenceName(sequenceName); }
+                |
+                LOOKAHEAD({ isKeywordAhead("LOGGED") || getToken(1).kind == K_UNLOGGED })
+                ( token=<S_IDENTIFIER> | token=<K_UNLOGGED> ) {
+                    requireDdlSyntax(!hasPersistence,
+                            "Identity sequence persistence cannot be specified more than once");
+                    hasPersistence = true;
+                    parameter = new Sequence.Parameter(Sequence.ParameterType.valueOf(
+                            token.image.toUpperCase(Locale.ROOT)));
+                }
                 | parameter=SequenceParameter()
             )
             { parameters.add(parameter); }
@@ -25832,8 +25850,13 @@ PartitionBound PostgreSqlPartitionBound():
                 bound.setInExpressions(expressions);
             }
             |
-            <K_WITH> "(" <K_MODULUS> modulus=Expression() ","
-                <K_REMAINDER> remainder=Expression() ")"
+            <K_WITH> "("
+            (
+                <K_MODULUS> modulus=Expression() "," <K_REMAINDER> remainder=Expression()
+                |
+                <K_REMAINDER> remainder=Expression() "," <K_MODULUS> modulus=Expression()
+            )
+            ")"
             {
                 bound = new PartitionBound(PartitionBound.Type.HASH);
                 bound.setModulus(modulus);
