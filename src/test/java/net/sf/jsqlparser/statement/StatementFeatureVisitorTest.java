@@ -315,6 +315,17 @@ class StatementFeatureVisitorTest {
         assertThat(f.modifiesData()).isTrue();
     }
 
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"WITH c AS (DELETE FROM t RETURNING *) TABLE c",
+            "WITH c AS (UPDATE t SET a = 1 RETURNING *) TABLE u",
+            "WITH c AS (INSERT INTO t VALUES (1) RETURNING *) TABLE c ORDER BY a LIMIT 1"})
+    @DisplayName("data-modifying CTE in front of TABLE: TABLE returns rows, the CTE still mutates")
+    void dataModifyingCteBeforeTable(String sql) throws JSQLParserException {
+        StatementFeatures f = analyse(sql);
+        assertThat(f.returnsResultSet()).isTrue();
+        assertThat(f.modifiesData()).isTrue();
+    }
+
     @Test
     @DisplayName("RETURNING inside a nested CTE of an INSERT returns nothing to the client")
     void nestedReturningIsNotAResultSet() throws JSQLParserException {
@@ -666,7 +677,12 @@ class StatementFeatureVisitorTest {
                 "SELECT a[1:length(pg_read_file('x'))] FROM t",
                 "SELECT a FROM t WHERE a[length(pg_read_file('x'))] = 1",
                 "SELECT 1 UNION SELECT 2 LIMIT length(pg_read_file('x'))",
-                "SELECT 1 UNION SELECT 2 FETCH FIRST length(pg_read_file('x')) ROWS ONLY"})
+                "SELECT 1 UNION SELECT 2 FETCH FIRST length(pg_read_file('x')) ROWS ONLY",
+                "WITH c AS (SELECT pg_read_file('x')) TABLE c",
+                "TABLE t ORDER BY pg_read_file('x')",
+                "TABLE t LIMIT length(pg_read_file('x'))",
+                "TABLE t OFFSET length(pg_read_file('x'))",
+                "TABLE t FETCH FIRST length(pg_read_file('x')) ROWS ONLY"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
