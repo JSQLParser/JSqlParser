@@ -176,6 +176,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``DISCARD`` · ``LISTEN`` · ``UNLISTEN`` · ``SHOW``/``RESET TIME ZONE``/``TRANSACTION ISOLATION LEVEL``/``SESSION AUTHORIZATION`` · ``COPY`` options from before 9.0
     * - **MySQL server administration**
       - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
+    * - **PostgreSQL foreign schema import**
+      - ``IMPORT FOREIGN SCHEMA … [LIMIT TO | EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]``
     * - **MySQL replication**
       - ``CHANGE REPLICATION SOURCE TO`` · ``CHANGE REPLICATION FILTER`` · ``START``/``STOP REPLICA`` · ``RESET REPLICA`` · ``RESET BINARY LOGS AND GTIDS`` · ``PURGE BINARY LOGS``
     * - **MySQL data loading**

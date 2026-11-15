@@ -109,7 +109,7 @@ class DiscardStatementTest {
         assertEquals("DISCARD SEQUENCES", statements.get(5).toString());
 
         Statements unsupported = CCJSqlParserUtil.parseStatements(
-                "IMPORT FOREIGN SCHEMA s FROM SERVER v INTO t; DISCARD ALL",
+                "IMPORT INTO t FROM LOCAL CSV FILE 'f.csv'; DISCARD ALL",
                 parser -> parser.withUnsupportedStatements(true));
         assertEquals(2, unsupported.size());
         assertInstanceOf(DiscardStatement.class, unsupported.get(1));

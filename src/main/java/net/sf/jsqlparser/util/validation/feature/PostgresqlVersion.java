@@ -119,7 +119,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.createTablespace, Feature.alterTablespace,
                     Feature.createForeignDataWrapper, Feature.alterForeignDataWrapper,
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
-                    Feature.alterUserMapping,
+                    Feature.alterUserMapping, // https://www.postgresql.org/docs/current/sql-importforeignschema.html
+                    Feature.importForeignSchema,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createRule, Feature.notifyStatement,
                     Feature.createCollation, Feature.alterCollation,
@@ -129,8 +130,7 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-createconversion.html
                     // https://www.postgresql.org/docs/current/sql-alterconversion.html
                     Feature.createCast, Feature.createTransform, Feature.createConversion,
-                    Feature.alterConversion,
-                    // https://www.postgresql.org/docs/current/sql-createoperator.html
+                    Feature.alterConversion, // https://www.postgresql.org/docs/current/sql-createoperator.html
                     // https://www.postgresql.org/docs/current/sql-createopclass.html
                     // https://www.postgresql.org/docs/current/sql-createopfamily.html
                     // https://www.postgresql.org/docs/current/sql-createaggregate.html

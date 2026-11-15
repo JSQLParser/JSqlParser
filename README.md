@@ -148,21 +148,22 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **Oracle vector types** | `VECTOR(*, *)` · `VECTOR(*, FLOAT32)` · `VECTOR(3, *)`, including dense and sparse storage formats |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **Two-phase commit** | PostgreSQL `PREPARE TRANSACTION` · `COMMIT PREPARED` · `ROLLBACK PREPARED` · MySQL `XA START`/`END`/`PREPARE`/`COMMIT`/`ROLLBACK`/`RECOVER` |
-| **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
+| **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
+| **PostgreSQL foreign schema import** | `IMPORT FOREIGN SCHEMA … [LIMIT TO \| EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]` |
+| **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
+| **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
+| **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |
 | **MySQL resource groups** | `CREATE`/`ALTER`/`DROP RESOURCE GROUP` · `SET RESOURCE GROUP` |
 | **MySQL loadable functions** | `CREATE [AGGREGATE] FUNCTION … RETURNS … SONAME` |
 | **MySQL servers, plugins and components** | `CREATE SERVER` · `ALTER SERVER` with `OPTIONS (… PORT 3306)` · `INSTALL`/`UNINSTALL PLUGIN` · `INSTALL`/`UNINSTALL COMPONENT` |
-| **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |
 | **MySQL replication** | `CHANGE REPLICATION SOURCE TO` · `CHANGE REPLICATION FILTER` · `START`/`STOP REPLICA` · `RESET REPLICA` · `RESET BINARY LOGS AND GTIDS` · `PURGE BINARY LOGS` |
 | **MySQL data loading** | `LOAD DATA` · `LOAD XML` · `SELECT … INTO OUTFILE` with the same `FIELDS` and `LINES` clauses |
-| **PostgreSQL cursors** | `DECLARE … CURSOR` · `FETCH` · `MOVE` · `CLOSE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
 | **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
 | **MySQL spatial reference systems and instance** | `CREATE`/`DROP SPATIAL REFERENCE SYSTEM` · `ALTER INSTANCE` |
-| **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
 | **Routine changes** | `ALTER FUNCTION` · `ALTER PROCEDURE` · `ALTER ROUTINE` · PostgreSQL `ALTER TRIGGER` |
 | **MySQL metadata statements** | `SHOW [FULL] COLUMNS`/`FIELDS` · `SHOW INDEX`/`INDEXES`/`KEYS` · `SHOW TABLE STATUS` · `SHOW CREATE TABLE`/`VIEW`/`PROCEDURE`/`FUNCTION`/`TRIGGER`/`EVENT`/`DATABASE`/`USER` · `SHOW [GLOBAL | SESSION] VARIABLES`/`STATUS` · `SHOW [FULL] PROCESSLIST` · `SHOW GRANTS [FOR …]` · `SHOW WARNINGS`/`ERRORS` · `SHOW BINARY LOGS`/`BINLOG EVENTS`/`RELAYLOG EVENTS` · `SHOW ENGINE …` · `SHOW PROFILE` · `SHOW DATABASES`/`TRIGGERS`/`EVENTS`/`OPEN TABLES`/`CHARACTER SET`/`COLLATION` · `SHOW PROCEDURE`/`FUNCTION STATUS`/`CODE` · `SHOW REPLICA STATUS`/`REPLICAS` |
 | **MySQL utility statements** | `EXPLAIN`/`DESCRIBE [ANALYZE] FORMAT = …` · `EXPLAIN FOR CONNECTION` · `DESCRIBE t col` · `PREPARE … FROM` · `EXECUTE … USING` · `DROP PREPARE` · `DO` |

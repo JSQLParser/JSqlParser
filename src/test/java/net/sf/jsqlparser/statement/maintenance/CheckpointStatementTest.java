@@ -68,7 +68,7 @@ class CheckpointStatementTest {
         assertEquals(4, statements.size());
 
         Statements afterUnsupported = CCJSqlParserUtil.parseStatements(
-                "IMPORT FOREIGN SCHEMA s FROM SERVER srv INTO t; CHECKPOINT",
+                "IMPORT INTO t FROM LOCAL CSV FILE 'f.csv'; CHECKPOINT",
                 parser -> parser.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(true));
         assertEquals(2, afterUnsupported.size());
         assertInstanceOf(UnsupportedStatement.class, afterUnsupported.get(0));
