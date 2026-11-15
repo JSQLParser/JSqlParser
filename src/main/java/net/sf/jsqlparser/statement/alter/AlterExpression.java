@@ -479,15 +479,18 @@ public class AlterExpression implements Serializable {
     }
 
     private <E extends TableElement> void replaceFirstAddGroupElement(Class<E> type, E element) {
-        List<E> elements = new TableElementList<>(addGroupElements, type);
-        if (elements.isEmpty()) {
-            if (element != null) {
-                elements.add(element);
+        for (int i = 0; i < addGroupElements.size(); i++) {
+            if (type.isInstance(addGroupElements.get(i))) {
+                if (element == null) {
+                    addGroupElements.remove(i);
+                } else {
+                    addGroupElements.set(i, element);
+                }
+                return;
             }
-        } else if (element == null) {
-            elements.remove(0);
-        } else {
-            elements.set(0, element);
+        }
+        if (element != null) {
+            addGroupElements.add(element);
         }
     }
 

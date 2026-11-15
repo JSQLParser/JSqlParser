@@ -110,6 +110,14 @@ class MySqlAlterAddGroupAstTest {
         assertSame(replacement, elements.get(0));
         assertNull(group.getIndex());
         assertThat(elements).filteredOn(KeyConstraint.class::isInstance).hasSize(1);
+
+        Index appended = new Index().withType("KEY").withName("appended")
+                .withColumnsNames(List.of("c"));
+        group.setIndex(appended);
+        assertSame(appended, elements.get(elements.size() - 1));
+        group.setConstraint(null);
+        assertInstanceOf(KeyConstraint.class, group.getConstraint());
+        assertSame(appended, group.getIndex());
     }
 
     @Test
