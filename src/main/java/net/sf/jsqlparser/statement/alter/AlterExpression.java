@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.statement.create.table.TableElement;
+import net.sf.jsqlparser.statement.create.table.TableElementList;
 import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
@@ -50,6 +51,7 @@ public class AlterExpression implements Serializable {
     // private ColDataType dataType;
     private String columnOldName;
     private List<ColumnDataType> colDataTypeList;
+    private List<TableElement> addGroupElements;
     private List<ColumnDropNotNull> columnDropNotNullList;
     private List<ColumnSetNotNull> columnSetNotNullList;
     private List<ColumnDropDefault> columnDropDefaultList;
@@ -434,8 +436,62 @@ public class AlterExpression implements Serializable {
         table.setNameParts(parts);
     }
 
+    /**
+     * Returns the mutable column list, filtering out the other declarations of a mixed ADD group.
+     */
     public List<ColumnDataType> getColDataTypeList() {
+        if (hasAddGroupElements()) {
+            return new TableElementList<>(addGroupElements, ColumnDataType.class);
+        }
         return colDataTypeList;
+    }
+
+    /**
+     * Returns the mutable declarations of a parenthesized mixed ADD group in source order. Parsed
+     * columns are {@link ColumnDataType} nodes shared with {@link #getColDataTypeList()}.
+     */
+    public List<TableElement> getAddGroupElements() {
+        return addGroupElements;
+    }
+
+    /** Copies the group membership, retaining the mutable column, index and constraint nodes. */
+    public void setAddGroupElements(List<TableElement> elements) {
+        addGroupElements = elements == null ? null : new ArrayList<>(elements);
+        if (elements != null) {
+            colDataTypeList = null;
+            constraint = null;
+            index = null;
+            useBrackets = true;
+        }
+    }
+
+    public boolean hasAddGroupElements() {
+        return operation == AlterOperation.ADD && addGroupElements != null;
+    }
+
+    private <E extends TableElement> E firstAddGroupElement(Class<E> type) {
+        for (TableElement element : addGroupElements) {
+            if (type.isInstance(element)) {
+                return type.cast(element);
+            }
+        }
+        return null;
+    }
+
+    private <E extends TableElement> void replaceFirstAddGroupElement(Class<E> type, E element) {
+        for (int i = 0; i < addGroupElements.size(); i++) {
+            if (type.isInstance(addGroupElements.get(i))) {
+                if (element == null) {
+                    addGroupElements.remove(i);
+                } else {
+                    addGroupElements.set(i, element);
+                }
+                return;
+            }
+        }
+        if (element != null) {
+            addGroupElements.add(element);
+        }
     }
 
     public void addColDataType(String columnName, ColDataType colDataType) {
@@ -443,6 +499,10 @@ public class AlterExpression implements Serializable {
     }
 
     public void addColDataType(ColumnDataType columnDataType) {
+        if (hasAddGroupElements()) {
+            addGroupElements.add(columnDataType);
+            return;
+        }
         if (colDataTypeList == null) {
             colDataTypeList = new ArrayList<>();
         }
@@ -782,7 +842,11 @@ public class AlterExpression implements Serializable {
         }
     }
 
+    /** Returns the ordinary index, or the first ordinary index in a mixed ADD group. */
     public Index getIndex() {
+        if (hasAddGroupElements()) {
+            return firstAddGroupElement(Index.class);
+        }
         return index;
     }
 
@@ -878,8 +942,15 @@ public class AlterExpression implements Serializable {
         return hasExplicitConstraintHeader();
     }
 
-    /** Sets an index definition or target; a non-null value replaces any constraint definition. */
+    /**
+     * Sets an index definition or target; a non-null value replaces any constraint definition. In a
+     * mixed ADD group, replaces or removes only its first ordinary index.
+     */
     public void setIndex(Index index) {
+        if (hasAddGroupElements()) {
+            replaceFirstAddGroupElement(Index.class, index);
+            return;
+        }
         this.index = index;
         if (index != null) {
             clearReplacedConstraintAliases(null);
@@ -887,13 +958,23 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    /** Returns the constraint definition, distinct from an ordinary index or a named target. */
+    /** Returns the constraint definition, or the first constraint in a mixed ADD group. */
     public NamedConstraint getConstraint() {
+        if (hasAddGroupElements()) {
+            return firstAddGroupElement(NamedConstraint.class);
+        }
         return constraint;
     }
 
-    /** Sets a constraint definition; a non-null value replaces any ordinary index definition. */
+    /**
+     * Sets a constraint definition; a non-null value replaces any ordinary index definition. In a
+     * mixed ADD group, replaces or removes only its first constraint.
+     */
     public void setConstraint(NamedConstraint constraint) {
+        if (hasAddGroupElements()) {
+            replaceFirstAddGroupElement(NamedConstraint.class, constraint);
+            return;
+        }
         clearReplacedConstraintAliases(constraint);
         this.constraint = constraint;
         if (constraint != null) {
@@ -1208,7 +1289,9 @@ public class AlterExpression implements Serializable {
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
     protected void appendBody(StringBuilder b) {
-        if (operation == AlterOperation.UNSPECIFIC) {
+        if (hasAddGroupElements()) {
+            appendAddGroupBody(b, b::append);
+        } else if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
         } else if (hasActiveConstraintHeader()) {
             toStringConstraintAlter(b);
@@ -1250,7 +1333,28 @@ public class AlterExpression implements Serializable {
      * deparsing. Subclasses with their own body dispatch override this method accordingly.
      */
     public boolean hasActiveColumnDefinitions() {
-        return hasColumnDefinitionPayload() && usesGeneralBody();
+        return hasAddGroupElements() || hasColumnDefinitionPayload() && usesGeneralBody();
+    }
+
+    /** Appends a mixed ADD group using the supplied renderer for every declaration. */
+    public void appendAddGroupTo(StringBuilder b, Consumer<TableElement> elementPrinter) {
+        appendAddGroupBody(b, elementPrinter);
+        appendCommonTail(b);
+    }
+
+    private void appendAddGroupBody(StringBuilder b, Consumer<TableElement> elementPrinter) {
+        b.append("ADD ");
+        if (hasColumn) {
+            b.append("COLUMN ");
+        }
+        b.append('(');
+        for (int i = 0; i < addGroupElements.size(); i++) {
+            if (i > 0) {
+                b.append(", ");
+            }
+            elementPrinter.accept(addGroupElements.get(i));
+        }
+        b.append(')');
     }
 
     /** Whether this action selects the general body, before choosing its active payload. */
