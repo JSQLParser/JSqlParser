@@ -85,8 +85,15 @@ public class AlterValidator extends AbstractValidator<Alter> {
                 validateOptionalColumnNames(c, e.getDropColumns());
             }
 
-            validateConstraint(c, definition);
-            validateIndex(c, e, definition);
+            if (e.hasAddGroupElements()) {
+                for (TableElement element : e.getAddGroupElements()) {
+                    validateConstraint(c, element);
+                    validateIndex(c, e, element);
+                }
+            } else {
+                validateConstraint(c, definition);
+                validateIndex(c, e, definition);
+            }
         }
     }
 
@@ -137,7 +144,9 @@ public class AlterValidator extends AbstractValidator<Alter> {
 
     private void validateIndex(ValidationCapability capability, AlterExpression expression,
             TableElement definition) {
-        Index index = expression.getIndex();
+        Index index = expression.hasAddGroupElements() && definition instanceof Index
+                ? (Index) definition
+                : expression.getIndex();
         boolean rename = expression.getOperation() == AlterOperation.RENAME_INDEX
                 || expression.getOperation() == AlterOperation.RENAME_KEY;
         if (index == null || definition != index && !rename) {

@@ -59,6 +59,10 @@ public final class TableDefinitionTraversal {
      */
     public static void visit(AlterExpression action, Consumer<Expression> expressions,
             Consumer<Table> tables) {
+        if (action.hasAddGroupElements()) {
+            action.getAddGroupElements().forEach(element -> visit(element, expressions, tables));
+            return;
+        }
         if (visitSpecialBody(action, expressions, tables)) {
             return;
         }

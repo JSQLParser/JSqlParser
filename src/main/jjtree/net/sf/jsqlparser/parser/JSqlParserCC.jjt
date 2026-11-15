@@ -25361,6 +25361,47 @@ Truncate Truncate():
     }
 }
 
+
+/** MySQL ADD (table_element_list), preserving interleaved columns, indexes and constraints. */
+void MySqlAlterAddGroup(AlterExpression alterExp):
+{
+    List<TableElement> elements = new ArrayList<TableElement>();
+    TableElement element;
+    boolean mixed = false;
+}
+{
+    [ <K_COLUMN> { alterExp.hasColumn(true); } ]
+    "(" element=MySqlAlterAddGroupElement() { elements.add(element); }
+    ( "," element=MySqlAlterAddGroupElement() { elements.add(element); } )*
+    ")"
+    {
+        for (TableElement item : elements) {
+            if (!(item instanceof AlterExpression.ColumnDataType)) {
+                mixed = true;
+            }
+        }
+        if (mixed) {
+            alterExp.setAddGroupElements(elements);
+        } else {
+            // Keep the existing representation and accessors for column-only groups.
+            alterExp.useBrackets(true);
+            for (TableElement item : elements) {
+                alterExp.addColDataType((AlterExpression.ColumnDataType) item);
+            }
+        }
+    }
+}
+
+TableElement MySqlAlterAddGroupElement():
+{
+    TableElement element;
+}
+{
+    ( LOOKAHEAD(3) element=CreateTableConstraint()
+      | element=AlterExpressionColumnDataType() )
+    { return element; }
+}
+
 /**
  * Parses common column-level changes shared between the COLUMN-prefixed and bare forms:
  * DROP DEFAULT, SET DEFAULT, SET NOT NULL, SET VISIBLE/INVISIBLE, and bracketed multi-column
@@ -26546,6 +26587,13 @@ AlterExpression AlterExpressionAddAlterModify():
                 ( "(" <K_PARTITION> | <K_PARTITIONS> <S_LONG> ),
                 { alterExp.getOperation() == AlterOperation.ADD })
         alterExp=AddPartition()
+        |
+        LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
+                && (getAsString(Feature.dialect) == null
+                    || Dialect.MYSQL.name().equals(getAsString(Feature.dialect)))
+                && (getToken(1).kind == OPENING_BRACKET
+                    || getToken(1).kind == K_COLUMN && getToken(2).kind == OPENING_BRACKET) })
+        MySqlAlterAddGroup(alterExp)
         |
         LOOKAHEAD(3) (
             ( LOOKAHEAD(2)

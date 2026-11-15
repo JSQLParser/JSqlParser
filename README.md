@@ -156,6 +156,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `CHECKSUM` · `OPTIMIZE` · `REPAIR TABLE` |
 | **MySQL locks** | `LOCK TABLES` · `UNLOCK TABLES` · `LOCK INSTANCE FOR BACKUP` · `UNLOCK INSTANCE` |
 | **MySQL resource groups** | `CREATE`/`ALTER`/`DROP RESOURCE GROUP` · `SET RESOURCE GROUP` |
+| **MySQL mixed ADD groups** | `ALTER TABLE … ADD [COLUMN] (columns, indexes, constraints)` |
 | **MySQL loadable functions** | `CREATE [AGGREGATE] FUNCTION … RETURNS … SONAME` |
 | **MySQL servers, plugins and components** | `CREATE SERVER` · `ALTER SERVER` with `OPTIONS (… PORT 3306)` · `INSTALL`/`UNINSTALL PLUGIN` · `INSTALL`/`UNINSTALL COMPONENT` |
 | **MySQL server administration** | `FLUSH` · `KILL` · `RESET PERSIST` · `HANDLER … OPEN`/`READ`/`CLOSE` |

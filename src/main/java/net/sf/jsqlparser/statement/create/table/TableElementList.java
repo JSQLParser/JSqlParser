@@ -20,12 +20,12 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /** A mutable, filtered view preserving the other declarations in a table definition. */
-final class TableElementList<E extends TableElement> extends AbstractList<E>
+public final class TableElementList<E extends TableElement> extends AbstractList<E>
         implements Serializable {
     private final List<TableElement> elements;
     private final Class<E> type;
 
-    TableElementList(List<TableElement> elements, Class<E> type) {
+    public TableElementList(List<TableElement> elements, Class<E> type) {
         this.elements = elements;
         this.type = type;
     }

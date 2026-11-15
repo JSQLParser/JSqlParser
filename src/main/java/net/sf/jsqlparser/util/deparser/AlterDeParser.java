@@ -45,6 +45,11 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
     }
 
     private void deParseAction(AlterExpression action) {
+        if (action.hasAddGroupElements()) {
+            TableElementDeParser elements = new TableElementDeParser(builder, expressionVisitor);
+            action.appendAddGroupTo(builder, elements::deParse);
+            return;
+        }
         if (action instanceof AlterForeignDataOptions) {
             ((AlterForeignDataOptions) action).appendTo(builder,
                     expression -> expression.accept(expressionVisitor, null));
