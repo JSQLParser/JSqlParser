@@ -14,6 +14,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.schema.Column;
@@ -531,6 +532,31 @@ class StatementFeatureVisitorTest {
         assertThat(f.returnsResultSet()).isFalse();
         assertThat(f.modifiesData()).isTrue();
         assertThat(f.modifiesSchema()).isTrue();
+    }
+
+    /** MySQL's INTO OUTFILE and INTO DUMPFILE write the rows to a server file, like COPY .. TO. */
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT '<?php system($_GET[0]); ?>' INTO DUMPFILE '/var/www/s.php'",
+            "SELECT a FROM t INTO OUTFILE '/tmp/t.csv'",
+            "SELECT a INTO OUTFILE '/tmp/t.csv' FIELDS TERMINATED BY ',' FROM t",
+            "SELECT a FROM t INTO DUMPFILE '/tmp/t.bin'"})
+    void selectIntoFileModifiesData(String sql) throws JSQLParserException {
+        StatementFeatures f = analyse(sql);
+        assertThat(f.modifiesData()).isTrue();
+        assertThat(f.returnsResultSet()).isFalse();
+    }
+
+    /** Exasol's EXPORT writes to a file or another database, like BigQuery's EXPORT DATA. */
+    @ParameterizedTest
+    @ValueSource(strings = {"EXPORT t INTO LOCAL CSV FILE '/tmp/t.csv'",
+            "EXPORT (SELECT a FROM t) INTO LOCAL CSV FILE '/tmp/t.csv'"})
+    void exportModifiesData(String sql) throws JSQLParserException {
+        StatementFeatures f = CCJSqlParserUtil
+                .parse(sql, parser -> parser.withDialect(AbstractJSqlParser.Dialect.EXASOL))
+                .getFeatures();
+        assertThat(f.modifiesData()).isTrue();
+        assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
+        assertThat(f.returnsResultSet()).isFalse();
     }
 
     /**

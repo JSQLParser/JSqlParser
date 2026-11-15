@@ -545,7 +545,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     @Override
     public <S> Void visit(Export export, S context) {
         analysis.claimTopLevel();
-        analysis.certain(StmtFeature.READS_DATA);
+        // writes the rows to a file or into a table of another database, like EXPORT DATA
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
         if (export.getSelect() != null) {
             export.getSelect().accept(analysis.selects, context);
         }
@@ -1286,6 +1287,10 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             MySqlSelectIntoClause mySqlInto = plainSelect.getMySqlSelectIntoClause();
             if (mySqlInto != null && mySqlInto.getType() == MySqlSelectIntoClause.Type.VARIABLES) {
                 analysis.certain(StmtFeature.MODIFIES_SESSION);
+                analysis.certain.remove(StmtFeature.RETURNS_RESULT_SET);
+            } else if (mySqlInto != null) {
+                // INTO OUTFILE / DUMPFILE writes the rows to a file on the server, like COPY .. TO
+                analysis.certain(StmtFeature.MODIFIES_DATA);
                 analysis.certain.remove(StmtFeature.RETURNS_RESULT_SET);
             }
 
