@@ -117,6 +117,11 @@ import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement;
+import net.sf.jsqlparser.statement.replication.ResetReplicationStatement;
+import net.sf.jsqlparser.statement.replication.StartReplicaStatement;
+import net.sf.jsqlparser.statement.replication.StopReplicaStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
 import net.sf.jsqlparser.statement.resourcegroup.CreateResourceGroup;
@@ -849,6 +854,46 @@ public interface StatementVisitor<T> {
 
     default void visit(BackupLockStatement backupLock) {
         visit(backupLock, null);
+    }
+
+    default <S> T visit(ChangeReplicationSourceStatement changeReplicationSource, S context) {
+        return null;
+    }
+
+    default void visit(ChangeReplicationSourceStatement changeReplicationSource) {
+        visit(changeReplicationSource, null);
+    }
+
+    default <S> T visit(ChangeReplicationFilterStatement changeReplicationFilter, S context) {
+        return null;
+    }
+
+    default void visit(ChangeReplicationFilterStatement changeReplicationFilter) {
+        visit(changeReplicationFilter, null);
+    }
+
+    default <S> T visit(StartReplicaStatement startReplica, S context) {
+        return null;
+    }
+
+    default void visit(StartReplicaStatement startReplica) {
+        visit(startReplica, null);
+    }
+
+    default <S> T visit(StopReplicaStatement stopReplica, S context) {
+        return null;
+    }
+
+    default void visit(StopReplicaStatement stopReplica) {
+        visit(stopReplica, null);
+    }
+
+    default <S> T visit(ResetReplicationStatement resetReplication, S context) {
+        return null;
+    }
+
+    default void visit(ResetReplicationStatement resetReplication) {
+        visit(resetReplication, null);
     }
 
     default <S> T visit(DeclareCursorStatement declareCursor, S context) {

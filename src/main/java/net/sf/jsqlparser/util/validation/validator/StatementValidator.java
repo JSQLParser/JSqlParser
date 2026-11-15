@@ -154,6 +154,11 @@ import net.sf.jsqlparser.statement.handler.HandlerStatement;
 import net.sf.jsqlparser.statement.lock.BackupLockStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.lock.UnlockStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationFilterStatement;
+import net.sf.jsqlparser.statement.replication.ChangeReplicationSourceStatement;
+import net.sf.jsqlparser.statement.replication.ResetReplicationStatement;
+import net.sf.jsqlparser.statement.replication.StartReplicaStatement;
+import net.sf.jsqlparser.statement.replication.StopReplicaStatement;
 import net.sf.jsqlparser.statement.maintenance.CheckpointStatement;
 import net.sf.jsqlparser.statement.maintenance.ClusterStatement;
 import net.sf.jsqlparser.statement.maintenance.VacuumStatement;
@@ -961,7 +966,8 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
-        validateFeature(Feature.purge);
+        validateFeature(purgeStatement.getLogBound() != null ? Feature.purgeBinaryLogs
+                : Feature.purge);
         return null;
     }
 
@@ -1010,6 +1016,36 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(BackupLockStatement backupLock, S context) {
         validateFeature(Feature.backupLock);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ChangeReplicationSourceStatement changeReplicationSource, S context) {
+        validateFeature(Feature.changeReplicationSource);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ChangeReplicationFilterStatement changeReplicationFilter, S context) {
+        validateFeature(Feature.changeReplicationFilter);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(StartReplicaStatement startReplica, S context) {
+        validateFeature(Feature.startReplica);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(StopReplicaStatement stopReplica, S context) {
+        validateFeature(Feature.stopReplica);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ResetReplicationStatement resetReplication, S context) {
+        validateFeature(Feature.resetReplication);
         return null;
     }
 

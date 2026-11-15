@@ -97,6 +97,11 @@ public enum MySqlVersion implements Version {
                     Feature.createResourceGroup, Feature.alterResourceGroup,
                     Feature.setResourceGroup,
 
+                    // https://dev.mysql.com/doc/refman/8.4/en/replication-statements.html
+                    Feature.purgeBinaryLogs, Feature.resetReplication,
+                    Feature.changeReplicationSource, Feature.changeReplicationFilter,
+                    Feature.startReplica, Feature.stopReplica,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/load-data.html
                     // https://dev.mysql.com/doc/refman/8.0/en/load-xml.html
                     Feature.loadData,

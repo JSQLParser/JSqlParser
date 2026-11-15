@@ -15,7 +15,11 @@ import java.util.Locale;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum PurgeObjectType {
-    TABLE, INDEX, RECYCLEBIN, DBA_RECYCLEBIN, TABLESPACE;
+    TABLE, INDEX, RECYCLEBIN, DBA_RECYCLEBIN, TABLESPACE,
+    /** MySQL and MariaDB {@code PURGE BINARY LOGS} */
+    BINARY_LOGS,
+    /** MariaDB {@code PURGE MASTER LOGS}, which MySQL 8.4 removed */
+    MASTER_LOGS;
 
     public static PurgeObjectType from(String type) {
         return Enum.valueOf(PurgeObjectType.class, type.toUpperCase(Locale.ROOT));
