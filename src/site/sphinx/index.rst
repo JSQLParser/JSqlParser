@@ -178,6 +178,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``FLUSH`` · ``KILL`` · ``RESET PERSIST`` · ``HANDLER … OPEN``/``READ``/``CLOSE``
     * - **PostgreSQL foreign schema import**
       - ``IMPORT FOREIGN SCHEMA … [LIMIT TO | EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]``
+    * - **MySQL replication**
+      - ``CHANGE REPLICATION SOURCE TO`` · ``CHANGE REPLICATION FILTER`` · ``START``/``STOP REPLICA`` · ``RESET REPLICA`` · ``RESET BINARY LOGS AND GTIDS`` · ``PURGE BINARY LOGS``
     * - **MySQL data loading**
       - ``LOAD DATA`` · ``LOAD XML`` · ``SELECT … INTO OUTFILE`` with the same ``FIELDS`` and ``LINES`` clauses
     * - **PostgreSQL cursors**

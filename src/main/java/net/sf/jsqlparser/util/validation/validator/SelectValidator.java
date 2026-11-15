@@ -503,6 +503,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     @Override
     public <S> Void visit(TableStatement tableStatement, S context) {
+        if (isNotEmpty(tableStatement.getWithItemsList())) {
+            tableStatement.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
+        }
         getValidator(TableStatementValidator.class).validate(tableStatement);
         return null;
     }
@@ -525,6 +529,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     @Override
     public <S> Void visit(Values values, S context) {
+        if (isNotEmpty(values.getWithItemsList())) {
+            values.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
+        }
         getValidator(ValuesStatementValidator.class).validate(values);
         return null;
     }
