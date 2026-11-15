@@ -130,6 +130,10 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-createconversion.html
                     // https://www.postgresql.org/docs/current/sql-alterconversion.html
                     Feature.createCast, Feature.createTransform, Feature.createConversion,
+                    Feature.createLanguage, Feature.alterLanguage, Feature.alterLargeObject,
+                    Feature.createTextSearchDictionary, Feature.alterTextSearchDictionary,
+                    Feature.createTextSearchParser, Feature.alterTextSearchParser,
+                    Feature.createTextSearchTemplate, Feature.alterTextSearchTemplate,
                     Feature.alterConversion, // https://www.postgresql.org/docs/current/sql-createoperator.html
                     // https://www.postgresql.org/docs/current/sql-createopclass.html
                     // https://www.postgresql.org/docs/current/sql-createopfamily.html

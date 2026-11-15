@@ -76,7 +76,7 @@ public class StatementValidatorTest extends ValidationTestAsserts {
                 Arguments.of("ALTER EVENT e DISABLE", Feature.alterEvent),
                 Arguments.of("CREATE TRIGGER trg BEFORE INSERT ON t FOR EACH ROW SELECT 1",
                         Feature.createTrigger),
-                Arguments.of("CREATE LANGUAGE plperlu", Feature.allowUnsupportedStatements));
+                Arguments.of("CREATE LANGUAGE plperlu", Feature.createLanguage));
     }
 
     @ParameterizedTest

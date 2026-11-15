@@ -48,6 +48,15 @@ import net.sf.jsqlparser.statement.alter.AlterRule;
 import net.sf.jsqlparser.statement.create.cast.CreateCast;
 import net.sf.jsqlparser.statement.create.transform.CreateTransform;
 import net.sf.jsqlparser.statement.create.conversion.CreateConversion;
+import net.sf.jsqlparser.statement.create.language.CreateLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLanguage;
+import net.sf.jsqlparser.statement.alter.AlterLargeObject;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchParser;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate;
 import net.sf.jsqlparser.statement.alter.AlterConversion;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
@@ -1733,6 +1742,51 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(AlterAggregate statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateLanguage statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterLanguage statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterLargeObject statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchDictionary statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchDictionary statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchParser statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchParser statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchTemplate statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchTemplate statement, S context) {
         return schemaOnly();
     }
 }

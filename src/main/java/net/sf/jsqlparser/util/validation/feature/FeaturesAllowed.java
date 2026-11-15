@@ -102,6 +102,8 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      */
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
             Feature.createTextSearchConfiguration,
+            Feature.createLanguage, Feature.createTextSearchDictionary,
+            Feature.createTextSearchParser, Feature.createTextSearchTemplate,
             Feature.createRule,
             Feature.createCollation,
             Feature.createCast, Feature.createTransform, Feature.createConversion,
@@ -124,6 +126,9 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterTextSearchConfiguration,
+                    Feature.alterLanguage, Feature.alterLargeObject,
+                    Feature.alterTextSearchDictionary, Feature.alterTextSearchParser,
+                    Feature.alterTextSearchTemplate,
                     Feature.alterCollation, Feature.alterRule,
                     Feature.alterConversion,
                     Feature.alterOperator, Feature.alterOperatorClass,

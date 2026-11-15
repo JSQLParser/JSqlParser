@@ -1103,6 +1103,60 @@ public enum Feature {
      */
     alterConversion,
     /**
+     * PostgreSQL CREATE metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.create.language.CreateLanguage
+     */
+    createLanguage,
+    /**
+     * PostgreSQL ALTER metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterLanguage
+     */
+    alterLanguage,
+    /**
+     * PostgreSQL ALTER metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterLargeObject
+     */
+    alterLargeObject,
+    /**
+     * PostgreSQL CREATE metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchDictionary
+     */
+    createTextSearchDictionary,
+    /**
+     * PostgreSQL ALTER metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTextSearchDictionary
+     */
+    alterTextSearchDictionary,
+    /**
+     * PostgreSQL CREATE metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchParser
+     */
+    createTextSearchParser,
+    /**
+     * PostgreSQL ALTER metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTextSearchParser
+     */
+    alterTextSearchParser,
+    /**
+     * PostgreSQL CREATE metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchTemplate
+     */
+    createTextSearchTemplate,
+    /**
+     * PostgreSQL ALTER metadata statement is allowed.
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTextSearchTemplate
+     */
+    alterTextSearchTemplate,
+    /**
      * PostgreSQL "CREATE OPERATOR" statement is allowed
      *
      * @see net.sf.jsqlparser.statement.create.operator.CreateOperator
