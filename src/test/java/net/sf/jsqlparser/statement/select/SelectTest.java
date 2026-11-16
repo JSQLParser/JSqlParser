@@ -6725,4 +6725,32 @@ public class SelectTest {
         Assertions.assertFalse(joinInner.isLeft(), "Should not be a left join");
     }
 
+    @Test
+    void testSnowflakeArrayCastOnVariantPathInFlatten() throws Exception {
+        String sql = "CREATE OR REPLACE TABLE \"DB\".\"S\".\"T\" COPY GRANTS\n"
+                + "AS (SELECT * FROM (WITH flattened_users AS (\n"
+                + "    SELECT user.value:subscription_groups::ARRAY AS SUBSCRIPTION_GROUPS\n"
+                + "    FROM (SELECT \"DATA_VALUE\" FROM \"DB\".\"L\".\"STG\"),\n"
+                + "    LATERAL FLATTEN(input => DATA_VALUE:users) user\n"
+                + ")\n"
+                + "SELECT * FROM flattened_users))";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    void testSnowflakeArrayCastShapes() throws Exception {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x::ARRAY FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x:y::ARRAY FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT CAST(x AS ARRAY) FROM t", true);
+    }
+
+    @Test
+    void testSnowflakeCastsAndLateralFlattenRegression() throws Exception {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x::INT ARRAY FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x:y::VARIANT FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x:y::OBJECT FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT x:y::STRING FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT user.value FROM t, LATERAL FLATTEN(input => t.data:users) user", true);
+    }
 }
