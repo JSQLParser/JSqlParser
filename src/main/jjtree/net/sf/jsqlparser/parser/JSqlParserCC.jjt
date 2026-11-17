@@ -6992,10 +6992,10 @@ TOKEN:
             lexUnicodeEscapeString(matchedToken);
         }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\""
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\""])* "\""
         // MySQL double-quoted string with backslash escapes; trimmed below when not enabled
-        | "\"" ( "\"\"" | "\\" ~["\n","\r"] | ~["\n","\r","\"","\\"])* "\""
-        | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+        | "\"" ( "\"\"" | "\\" ~[] | ~["\"","\\"])* "\""
+        | ("`" ("``" | ~["`"])* "`") | ( "[" (~["]"])* "]" ) >
     {
         if ( matchedToken.image.charAt(0) == '"' ) {
             // Both alternatives above compete for the longest match. Keep the closing quote of

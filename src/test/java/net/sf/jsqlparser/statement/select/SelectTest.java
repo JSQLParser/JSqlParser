@@ -6725,4 +6725,15 @@ public class SelectTest {
         Assertions.assertFalse(joinInner.isLeft(), "Should not be a left join");
     }
 
+    @Test
+    void testQuotedIdentifierContainingNewline() throws Exception {
+        // the newline is part of the identifier and must survive parse and deparse unchanged
+        String sql = "SELECT \"Planned/\nUnplanned\" FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
+        Column column = (Column) select.getSelectItem(0).getExpression();
+        Assertions.assertEquals("\"Planned/\nUnplanned\"", column.getColumnName());
+    }
+
 }
