@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class MySqlCommentTest {
@@ -242,11 +243,38 @@ class MySqlCommentTest {
         }
     }
 
+    // Expected results checked against MariaDB 13.0.2
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {"SELECT 1--2|SELECT 1 - -2",
+            "SELECT 1 /*! +2 */|SELECT 1 + 2", "SELECT 1 /*M! +2 */|SELECT 1 + 2",
+            "SELECT 1 /*!50000 +2 */|SELECT 1 + 2", "SELECT 1 /*!50700 +2 */|SELECT 1",
+            "SELECT 1 /*!99999 +2 */|SELECT 1", "SELECT 1 /*M!50700 +2 */|SELECT 1 + 2",
+            "SELECT 1 /*!130002 +2 */|SELECT 1 + 2", "SELECT 1 /*!130003 +2 */|SELECT 1",
+            "SELECT 1 /*M!130002 +2 */|SELECT 1 + 2", "SELECT 1 /*M!130003 +2 */|SELECT 1",
+            "SELECT 1 /*!100000+2 */|SELECT 1 + 2", "SELECT 1 /*M!100000+2 */|SELECT 1 + 2",
+            "SELECT 1 /*m! +2 */|SELECT 1",
+            "SELECT 1 /*M! UNION SELECT pw FROM secrets */|SELECT 1 UNION SELECT pw FROM secrets"})
+    void followsMariaDbCommentRules(String sql, String expected) throws Exception {
+        assertEquals(expected, CCJSqlParserUtil.parse(sql,
+                p -> p.withDialect(Dialect.MARIADB).withMySqlServerVersion(130002)).toString());
+    }
+
+    @Test
+    void requiresVersionForMariaDbConditionalComments() {
+        JSQLParserException exception = assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT 1 /*M!100000 +2 */",
+                        p -> p.withDialect(Dialect.MARIADB)));
+        assertTrue(exception.getCause().getMessage().contains("withMySqlServerVersion"));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT /*M! 1 /*! +99 */ + 2 */",
+                        p -> p.withDialect(Dialect.MARIADB)));
+    }
+
     @Test
     void preservesOtherDialectCommentsAndQuotedBodies() throws Exception {
         assertEquals("SELECT 1", CCJSqlParserUtil.parse("SELECT 1--2").toString());
         for (Dialect dialect : Dialect.values()) {
-            if (dialect != Dialect.MYSQL) {
+            if (dialect != Dialect.MYSQL && dialect != Dialect.MARIADB) {
                 assertEquals("SELECT 1", CCJSqlParserUtil.parse("SELECT 1 /*!90702 +2 */ --3",
                         p -> p.withDialect(dialect)).toString(), dialect.name());
             }
