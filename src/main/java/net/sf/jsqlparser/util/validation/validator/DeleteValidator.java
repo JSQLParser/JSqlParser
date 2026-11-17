@@ -33,6 +33,8 @@ public class DeleteValidator extends AbstractValidator<Delete> {
                     Feature.deleteReturningExpressionList);
         }
 
+        validateOptionalWithItems(delete.getWithItemsList());
+
         SelectValidator v = getValidator(SelectValidator.class);
         delete.getTable().accept(v, null);
 

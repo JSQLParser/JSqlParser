@@ -15,6 +15,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import net.sf.jsqlparser.util.validation.feature.PostgresqlVersion;
 import org.junit.jupiter.api.Test;
 
 public class DeleteValidatorTest extends ValidationTestAsserts {
@@ -45,6 +46,14 @@ public class DeleteValidatorTest extends ValidationTestAsserts {
     public void testValidationDeleteLimitOrderBy() throws JSQLParserException {
         String sql = "DELETE FROM table t WHERE t.criteria > 5 ORDER BY t.criteria LIMIT 1;";
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
+    }
+
+    @Test
+    public void testValidateWithItemsOfDelete() {
+        String sql = "WITH d AS (UPDATE s SET a = 1 RETURNING a) DELETE FROM t";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.DELETE, Feature.withItem, Feature.update,
+                Feature.updateReturning);
+        validateNoErrors(sql, 1, PostgresqlVersion.V14);
     }
 
 }

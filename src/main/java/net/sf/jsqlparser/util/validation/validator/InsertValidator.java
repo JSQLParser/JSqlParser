@@ -13,6 +13,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -43,6 +44,8 @@ public class InsertValidator extends AbstractValidator<Insert> {
                     Feature.insertReturningExpressionList);
         }
 
+        validateOptionalWithItems(insert.getWithItemsList());
+
         if (insert.isOracleMultiInsert() && insert.getOracleMultiInsertBranches() != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
@@ -70,6 +73,9 @@ public class InsertValidator extends AbstractValidator<Insert> {
         if (insert.getSelect() instanceof Values) {
             insert.getSelect().accept(getValidator(StatementValidator.class), null);
             validateOptionalExpressions(insert.getValues().getExpressions());
+        } else if (insert.getSelect() != null) {
+            insert.getSelect().accept(
+                    (SelectVisitor<Void>) getValidator(SelectValidator.class), null);
         }
 
         if (insert.getSetUpdateSets() != null) {
