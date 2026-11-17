@@ -6974,22 +6974,37 @@ TOKEN:
                         // lexUnicodeEscapeString(). Backslashes do not escape its quotes.
                         | "U&'" ("''" | ~["'"])* "'"
                             ( ([" ", "\t", "\r", "\n"])* "UESCAPE" ([" ", "\t", "\r", "\n"])* "'" ~["'"] "'" )?
+                        // Databricks raw literal, see below
+                        | "R\"" (~["\""])* "\""
                      ) >
     {
-        // The longest match may run past the closing quote of the active rules. A backslash
-        // escapes the next character only with backslash escapes or in a PostgreSQL E'' string;
-        // otherwise the literal ends at the first quote that is not doubled, so LIKE ... ESCAPE '\\'
-        // still works.
-        boolean backslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
-                || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
-                    && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
-        int end = closingSingleQuote(matchedToken.image, backslashEscapes);
-        if (end > 0 && end < matchedToken.image.length()) {
-            matchedToken.image = image.substring(0, end);
-            input_stream.backup(image.length() - end);
-        }
-        if (isUnicodeEscapeString(matchedToken.image)) {
-            lexUnicodeEscapeString(matchedToken);
+        // A Databricks raw literal R'...' or R"..." has no escapes at all: it ends at the first
+        // closing quote, also after a backslash.
+        boolean databricks = AbstractJSqlParser.Dialect.DATABRICKS.name().equals(configuration.getValue(Feature.dialect));
+        if (matchedToken.image.regionMatches(true, 0, "R\"", 0, 2)) {
+            // Other dialects read the identifier R before a quoted name
+            if (!databricks) {
+                truncateIdentifierToken(matchedToken, 1);
+                matchedToken.kind = S_IDENTIFIER;
+            }
+        } else {
+            // The longest match may run past the closing quote of the active rules. A backslash
+            // escapes the next character only with backslash escapes or in a PostgreSQL E'' string;
+            // otherwise the literal ends at the first quote that is not doubled, so LIKE ... ESCAPE '\\'
+            // still works.
+            boolean backslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+                    || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
+                        && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
+            int end = databricks && matchedToken.image.regionMatches(true, 0, "R'", 0, 2)
+                    ? matchedToken.image.indexOf('\'', 2) + 1
+                    : closingSingleQuote(matchedToken.image, backslashEscapes);
+            if (end > 0 && end < matchedToken.image.length()) {
+                matchedToken.image = image.substring(0, end);
+                input_stream.backup(image.length() - end);
+            }
+            if (isUnicodeEscapeString(matchedToken.image)) {
+                lexUnicodeEscapeString(matchedToken);
+            }
         }
     }
 | < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\""])* "\""

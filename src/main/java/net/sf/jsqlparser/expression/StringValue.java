@@ -86,6 +86,13 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         }
 
         if (escapedValue.length() > 2) {
+            // Databricks raw literal R"..."
+            if (escapedValue.regionMatches(true, 0, "R\"", 0, 2) && escapedValue.endsWith("\"")) {
+                prefix = "R";
+                quoteStr = "\"";
+                value = escapedValue.substring(2, escapedValue.length() - 1);
+                return;
+            }
             for (String p : ALLOWED_PREFIXES) {
                 if (escapedValue.length() > p.length()
                         && escapedValue.substring(0, p.length()).equalsIgnoreCase(p)
