@@ -6735,7 +6735,7 @@ public class SelectTest {
         Column column = (Column) select.getSelectItem(0).getExpression();
         Assertions.assertEquals("\"Planned/\nUnplanned\"", column.getColumnName());
     }
-     
+
     @Test
     void testSnowflakeArrayCastOnVariantPathInFlatten() throws Exception {
         String sql = "CREATE OR REPLACE TABLE \"DB\".\"S\".\"T\" COPY GRANTS\n"
