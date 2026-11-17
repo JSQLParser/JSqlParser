@@ -23696,6 +23696,8 @@ ColDataType ColDataType():
 			| tk=<K_PATH>
 			// Oracle's RAW(n)
 			| tk=<K_RAW>
+			// Snowflake's semi-structured ARRAY type, e.g. value:path::ARRAY
+			| tk=<K_ARRAY_LITERAL>
         )
         {
             schema = tk.image;

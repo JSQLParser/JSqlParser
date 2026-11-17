@@ -743,6 +743,28 @@ class StatementFeatureVisitorTest {
             assertThat(f.returnsResultSet()).isTrue();
         }
 
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SELECT NEXT VALUE FOR s",
+                "SELECT NEXTVAL FOR s",
+                "SELECT NEXT VALUE FOR dbo.s FROM t",
+                "SELECT a FROM t WHERE a = NEXT VALUE FOR s",
+                "SELECT s.NEXTVAL FROM dual",
+                "SELECT a FROM t WHERE a = (SELECT s.nextval FROM dual)"})
+        void sequenceAdvanceIsChecked(String sql) throws JSQLParserException {
+            StatementFeatures f = analyse(sql);
+            assertThat(f.returnsResultSet()).isTrue();
+            assertThat(f.mayModifyData()).isTrue();
+            assertThat(f.getUnresolvedReferences()).containsExactly("nextval");
+        }
+
+        @Test
+        void columnOutsideTheSequenceSyntaxIsNotChecked() throws JSQLParserException {
+            StatementFeatures f = analyse("SELECT nextval, t.currval FROM t");
+            assertThat(f.mayModifyData()).isFalse();
+            assertThat(f.getUnresolvedReferences()).isEmpty();
+        }
+
         @Test
         void topLevelValuesReturnsRowsWithoutReading() throws JSQLParserException {
             StatementFeatures f = analyse("VALUES (1, 2)");
