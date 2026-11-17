@@ -22,8 +22,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.TranscodingFunction;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
@@ -1358,6 +1360,22 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         public <S> Void visit(TranscodingFunction expression, S context) {
             analyseFunction(expression.getKeyword());
             return super.visit(expression, context);
+        }
+
+        /** NEXT VALUE FOR s advances the sequence, like nextval('s'). */
+        @Override
+        public <S> Void visit(NextValExpression nextVal, S context) {
+            analyseFunction("nextval");
+            return super.visit(nextVal, context);
+        }
+
+        /** So does Oracle's s.NEXTVAL, which the grammar keeps as a column. */
+        @Override
+        public <S> Void visit(Column column, S context) {
+            if (column.getTable() != null && "nextval".equalsIgnoreCase(column.getColumnName())) {
+                analyseFunction("nextval");
+            }
+            return super.visit(column, context);
         }
     }
 
