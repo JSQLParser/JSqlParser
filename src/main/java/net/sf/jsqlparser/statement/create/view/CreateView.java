@@ -51,6 +51,7 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
     private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private Boolean backup;
     private boolean withReadOnly = false;
+    private boolean withNoSchemaBinding = false;
     private boolean ifNotExists = false;
     private List<String> viewCommentOptions = null;
     private boolean recursive;
@@ -265,6 +266,19 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
         }
     }
 
+    public boolean isWithNoSchemaBinding() {
+        return withNoSchemaBinding;
+    }
+
+    public void setWithNoSchemaBinding(boolean withNoSchemaBinding) {
+        this.withNoSchemaBinding = withNoSchemaBinding;
+    }
+
+    public CreateView withWithNoSchemaBinding(boolean withNoSchemaBinding) {
+        this.setWithNoSchemaBinding(withNoSchemaBinding);
+        return this;
+    }
+
     public boolean isWithReadOnly() {
         return withReadOnly;
     }
@@ -360,6 +374,9 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
         appendCheckOptionTo(sql, checkOption);
         if (withData != null) {
             sql.append(withData ? " WITH DATA" : " WITH NO DATA");
+        }
+        if (withNoSchemaBinding) {
+            sql.append(" WITH NO SCHEMA BINDING");
         }
     }
 

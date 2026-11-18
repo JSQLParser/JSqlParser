@@ -24636,6 +24636,8 @@ CreateView CreateView(boolean isUsingOrReplace):
         (
             <K_READ> <K_ONLY> { createView.setWithReadOnly(true); }
             |
+            LOOKAHEAD(2) <K_NO> <K_SCHEMA> ContextualKeyword("BINDING") { createView.setWithNoSchemaBinding(true); }
+            |
             checkOption=ViewCheckOption() { createView.setCheckOption(checkOption); }
             |
             withData=DataPopulation() { createView.setWithData(withData); }
