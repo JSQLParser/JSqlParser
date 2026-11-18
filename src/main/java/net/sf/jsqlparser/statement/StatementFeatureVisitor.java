@@ -638,6 +638,7 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(AssertStatement assertStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA);
+        assertStatement.getExpression().accept(analysis.expressions, context);
         return null;
     }
 
@@ -1112,7 +1113,9 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(SetStatement set, S context) {
-        return sessionOnly();
+        sessionOnly();
+        // the assigned values are evaluated, as in SET @x = f()
+        return super.visit(set, context);
     }
 
     @Override
@@ -1147,7 +1150,14 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(DeclareStatement declareStatement, S context) {
-        return sessionOnly();
+        sessionOnly();
+        // the initial values are evaluated, as in DECLARE @x INT = f()
+        for (DeclareStatement.TypeDefExpr typeDefExpr : declareStatement.getTypeDefExprList()) {
+            if (typeDefExpr.getDefaultExpr() != null) {
+                typeDefExpr.getDefaultExpr().accept(analysis.expressions, context);
+            }
+        }
+        return null;
     }
 
     @Override

@@ -708,7 +708,12 @@ class StatementFeatureVisitorTest {
                 "TABLE t ORDER BY pg_read_file('x')",
                 "TABLE t LIMIT length(pg_read_file('x'))",
                 "TABLE t OFFSET length(pg_read_file('x'))",
-                "TABLE t FETCH FIRST length(pg_read_file('x')) ROWS ONLY"})
+                "TABLE t FETCH FIRST length(pg_read_file('x')) ROWS ONLY",
+                "SET @x = pg_read_file('x')",
+                "SET @a = 1, @b = pg_read_file('x')",
+                "SET x = pg_read_file('x')",
+                "DECLARE @x INT = length(pg_read_file('x'))",
+                "ASSERT length(pg_read_file('x')) > 0"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
@@ -763,6 +768,17 @@ class StatementFeatureVisitorTest {
             StatementFeatures f = analyse("SELECT nextval, t.currval FROM t");
             assertThat(f.mayModifyData()).isFalse();
             assertThat(f.getUnresolvedReferences()).isEmpty();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SET @x = (SELECT a FROM t)",
+                "DECLARE @x INT = (SELECT a FROM t)"})
+        void assignedSubqueryIsRead(String sql) throws JSQLParserException {
+            StatementFeatures f = analyse(sql);
+            assertThat(f.is(StmtFeature.MODIFIES_SESSION)).isTrue();
+            assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
+            assertThat(f.returnsResultSet()).isFalse();
         }
 
         @Test
