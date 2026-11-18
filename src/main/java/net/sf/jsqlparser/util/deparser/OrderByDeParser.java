@@ -73,6 +73,9 @@ public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
         } else if (orderBy.isAscDescPresent()) {
             builder.append(" ASC");
         }
+        if (orderBy.getUsingOperator() != null) {
+            builder.append(" USING ").append(orderBy.getUsingOperator());
+        }
         if (orderBy.getNullOrdering() != null) {
             builder.append(' ');
             builder.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST

@@ -20,6 +20,7 @@ public class OrderByElement extends ASTNodeAccessImpl {
     private boolean mysqlWithRollup = false;
     private boolean asc = true;
     private boolean ascDescPresent = false;
+    private String usingOperator;
     private NullOrdering nullOrdering;
     private WithFill withFill;
 
@@ -29,6 +30,20 @@ public class OrderByElement extends ASTNodeAccessImpl {
 
     public void setAsc(boolean asc) {
         this.asc = asc;
+    }
+
+    /** The operator of PostgreSQL's {@code ORDER BY expression USING operator}, or null. */
+    public String getUsingOperator() {
+        return usingOperator;
+    }
+
+    public void setUsingOperator(String usingOperator) {
+        this.usingOperator = usingOperator;
+    }
+
+    public OrderByElement withUsingOperator(String usingOperator) {
+        setUsingOperator(usingOperator);
+        return this;
     }
 
     public NullOrdering getNullOrdering() {
@@ -82,6 +97,9 @@ public class OrderByElement extends ASTNodeAccessImpl {
             b.append(" DESC");
         } else if (ascDescPresent) {
             b.append(" ASC");
+        }
+        if (usingOperator != null) {
+            b.append(" USING ").append(usingOperator);
         }
 
         if (nullOrdering != null) {
