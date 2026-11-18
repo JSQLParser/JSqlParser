@@ -32,6 +32,8 @@ public class UpdateValidator extends AbstractValidator<Update> {
                     Feature.updateReturning);
         }
 
+        validateOptionalWithItems(update.getWithItemsList());
+
         if (!update.isTargetTableAlias()) {
             validateOptionalFromItem(update.getTable());
         }

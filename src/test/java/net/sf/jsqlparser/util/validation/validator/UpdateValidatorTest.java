@@ -14,6 +14,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import net.sf.jsqlparser.util.validation.feature.PostgresqlVersion;
 import org.junit.jupiter.api.Test;
 
 public class UpdateValidatorTest extends ValidationTestAsserts {
@@ -68,6 +69,14 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
     public void testUpdateWithOrderByAndLimit() throws JSQLParserException {
         String sql = "UPDATE tablename SET col = 'thing' WHERE ref > 10 ORDER BY col LIMIT 10";
         validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
+    }
+
+    @Test
+    public void testValidateWithItemsOfUpdate() {
+        String sql = "WITH d AS (DELETE FROM s RETURNING a) UPDATE t SET b = 1";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.UPDATE, Feature.withItem, Feature.delete,
+                Feature.deleteReturningExpressionList);
+        validateNoErrors(sql, 1, PostgresqlVersion.V14);
     }
 
 }

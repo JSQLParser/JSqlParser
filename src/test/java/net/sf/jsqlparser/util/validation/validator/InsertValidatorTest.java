@@ -13,6 +13,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import net.sf.jsqlparser.util.validation.feature.PostgresqlVersion;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -69,6 +70,22 @@ public class InsertValidatorTest extends ValidationTestAsserts {
     public void testInsertMultiRowValue() {
         String sql = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
+    }
+
+    @Test
+    public void testValidateSelectOfInsert() {
+        validateNotAllowed("INSERT INTO t SELECT pg_read_file('/etc/passwd')", 1, 1,
+                FeaturesAllowed.INSERT.copy().remove(Feature.function), Feature.function);
+        validateNotAllowed("INSERT INTO t SELECT a FROM s FOR UPDATE", 1, 1,
+                FeaturesAllowed.INSERT, Feature.selectForUpdate);
+    }
+
+    @Test
+    public void testValidateWithItemsOfInsert() {
+        String sql = "WITH d AS (DELETE FROM s RETURNING a) INSERT INTO t SELECT a FROM d";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.INSERT, Feature.withItem, Feature.delete,
+                Feature.deleteReturningExpressionList);
+        validateNoErrors(sql, 1, PostgresqlVersion.V14);
     }
 
 }

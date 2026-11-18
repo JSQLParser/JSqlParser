@@ -38,4 +38,12 @@ public class MergeValidatorTest extends ValidationTestAsserts {
         }
     }
 
+    @Test
+    public void testValidateWithItemsOfMerge() {
+        String sql = "WITH d AS (DELETE FROM s RETURNING a) "
+                + "MERGE INTO t USING d ON (t.a = d.a) WHEN MATCHED THEN UPDATE SET b = 1";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.MERGE, Feature.withItem, Feature.delete,
+                Feature.deleteReturningExpressionList);
+    }
+
 }
