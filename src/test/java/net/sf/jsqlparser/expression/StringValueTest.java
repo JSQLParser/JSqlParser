@@ -294,6 +294,39 @@ public class StringValueTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"r'a\\'", "R'a\\'", "r\"a\\\"", "R\"a\\\""})
+    void testDatabricksRawLiteralEndsAtFirstQuote(String literal) throws JSQLParserException {
+        Statement statement = CCJSqlParserUtil.parse(
+                "SELECT " + literal + " UNION SELECT pw FROM secrets -- " + literal.charAt(1),
+                parser -> parser.withDialect(Dialect.DATABRICKS));
+
+        assertEquals(new HashSet<>(Arrays.asList("secrets")),
+                new TablesNamesFinder<Void>().getTables(statement));
+    }
+
+    @Test
+    void testDatabricksRawLiteralBody() throws JSQLParserException {
+        StringValue single = literal("r'C:\\dir\\'", Dialect.DATABRICKS);
+        assertEquals("R", single.getPrefix());
+        assertEquals("C:\\dir\\", single.getValue());
+
+        StringValue dbl = literal("r\"C:\\dir\\\"", Dialect.DATABRICKS);
+        assertEquals("R", dbl.getPrefix());
+        assertEquals("\"", dbl.getQuoteStr());
+        assertEquals("C:\\dir\\", dbl.getValue());
+        assertEquals("R\"C:\\dir\\\"", dbl.toString());
+    }
+
+    @Test
+    void testRawLiteralPrefixElsewhereIsUnchanged() throws JSQLParserException {
+        assertEquals("a\\' x", literal("r'a\\' x'", Dialect.BIGQUERY).getValue());
+        assertEquals("a\\' x", literal("r'a\\' x'", Dialect.MYSQL).getValue());
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT r \"x\" FROM t", true);
+        assertEquals("SELECT r \"x\" FROM t",
+                CCJSqlParserUtil.parse("SELECT r\"x\" FROM t").toString());
+    }
+
     @Test
     void testConstructedValuesDefaultToStandardEscaping() {
         StringValue value = new StringValue("'a\\n''b'");
