@@ -3974,6 +3974,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                         && "CHARSET".equalsIgnoreCase(getToken(2).image);
     }
 
+    /**
+     * PostgreSQL's table-level NOT NULL and UNIQUE or PRIMARY KEY USING INDEX constraints: read
+     * with that dialect and without one, never with another dialect.
+     */
+    private boolean isPostgreSqlTableConstraintDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
     private boolean isTableIndexAhead() {
         switch (getToken(1).kind) {
             case K_PRIMARY:
@@ -4011,6 +4020,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return (first.kind == K_CONSTRAINT || first.kind == K_PRIMARY
                     || first.kind == K_UNIQUE)
                     && hasConstraintAttribute(first, body.kind == K_CHECK, source);
+        }
+
+        /**
+         * Whether the action starting at {@code first} is PostgreSQL's table-level
+         * {@code [CONSTRAINT name] NOT NULL column}.
+         */
+        static boolean isNotNullConstraint(Token first, CCJSqlParserTokenManager source) {
+            Token body = first.kind == K_CONSTRAINT ? next(next(first, source), source) : first;
+            return body.kind == K_NOT && next(body, source).kind == K_NULL;
         }
 
         /** An unnamed CHECK, a FOREIGN KEY or an EXCLUDE constraint. */
@@ -22780,8 +22798,7 @@ TableElement TableConstraint(boolean createContext):
             LOOKAHEAD({ isExcludeConstraintAhead() })
             namedConstraint=PostgreSqlExcludeConstraint() { namedConstraint.setName(constraintName); index = namedConstraint; }
             |
-            LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
-                    && getToken(1).kind == K_NOT })
+            LOOKAHEAD({ isPostgreSqlTableConstraintDialect() && getToken(1).kind == K_NOT })
             namedConstraint=PostgreSqlNotNullConstraint() { namedConstraint.setName(constraintName); index = namedConstraint; }
         )
         |
@@ -22791,8 +22808,7 @@ TableElement TableConstraint(boolean createContext):
         |
         LOOKAHEAD({ isExcludeConstraintAhead() }) index=PostgreSqlExcludeConstraint()
         |
-        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
-                && getToken(1).kind == K_NOT })
+        LOOKAHEAD({ isPostgreSqlTableConstraintDialect() && getToken(1).kind == K_NOT })
         index=PostgreSqlNotNullConstraint()
     )
     PostgreSqlConstraintAttributes(index)
@@ -26662,7 +26678,7 @@ AlterExpression AlterExpressionAddAlterModify():
         LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ]
                 ( <K_UNIQUE> | <K_PRIMARY> <K_KEY> ) <K_USING> <K_INDEX>,
                 { alterExp.getOperation() == AlterOperation.ADD
-                    && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+                    && isPostgreSqlTableConstraintDialect() })
         constraint=PostgreSqlConstraintUsingIndex() { alterExp.setConstraint(constraint); }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
@@ -26673,7 +26689,9 @@ AlterExpression AlterExpressionAddAlterModify():
                     || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE
                     || getToken(1).kind == K_NOT
                         && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)))
-                    || AlterConstraintLookahead.needsSharedTableConstraint(getToken(1), token_source)) })
+                    || AlterConstraintLookahead.needsSharedTableConstraint(getToken(1), token_source)
+                    || getAsString(Feature.dialect) == null
+                        && AlterConstraintLookahead.isNotNullConstraint(getToken(1), token_source)) })
         element=TableConstraint(false) { setAlterTableElement(alterExp, element); }
         |
         LOOKAHEAD({ isTableIndexAhead() }) element=TableIndexSpec(false) {
