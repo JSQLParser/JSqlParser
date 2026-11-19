@@ -42,7 +42,8 @@ public class LeadingCommentsTest {
     @Test
     public void mixedCommentsRetainExactImagesAndSourceOrder() throws JSQLParserException {
         Select select = (Select) CCJSqlParserUtil
-                .parse("/* a */ -- b\r\n// c\r/* d */ SELECT 1");
+                .parse("/* a */ -- b\r\n// c\r/* d */ SELECT 1",
+                        parser -> parser.withDoubleSlashLineComments());
         assertEquals(List.of("/* a */", "-- b", "// c", "/* d */"), select.getLeadingComments());
     }
 

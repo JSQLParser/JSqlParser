@@ -1745,7 +1745,9 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
     * - ``DATABRICKS``
       - ``withDoubleQuotedStrings``, ``withBackslashEscapeCharacter``, any-whitespace rule for adjacent string literals
     * - ``SNOWFLAKE``
-      - ``withBackslashEscapeCharacter`` only, double quotes stay quoted identifiers
+      - ``withBackslashEscapeCharacter`` and ``withDoubleSlashLineComments``, double quotes stay quoted identifiers
+    * - ``H2``
+      - ``withDoubleSlashLineComments``
     * - ``INFORMIX``
       - Informix ``ALTER TABLE ... ADD CONSTRAINT`` definitions with optional trailing constraint names
     * - ``SPANNER``
@@ -2097,6 +2099,8 @@ The individual features
       - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``); combined with ``withBackslashEscapeCharacter``, ``\\"`` does not end the literal, as in MySQL ``"it\\"s"``
     * - ``withHashLineComments``
       - ``#`` starts a line comment
+    * - ``withDoubleSlashLineComments``
+      - ``//`` starts a line comment (H2, Snowflake); otherwise ``//*`` is a division followed by a block comment
     * - ``withBlankLinesAsSeparator``
       - ``false`` stops two empty lines (``\n\n\n``) ending a statement, so they read as plain whitespace
     * - ``withAdjacentStringLiterals``

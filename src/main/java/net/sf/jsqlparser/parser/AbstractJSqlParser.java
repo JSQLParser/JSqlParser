@@ -42,15 +42,17 @@ public abstract class AbstractJSqlParser<P> {
                                 Feature.allowSquareBracketQuotation), POSTGRESQL(
                                         AdjacentStringLiterals.NEWLINE,
                                         Feature.allowDollarQuotedStringTags,
-                                        Feature.allowDigitSeparators), H2, EXASOL, BIGQUERY(
-                                                AdjacentStringLiterals.WHITESPACE,
-                                                Feature.allowDoubleQuotedStrings,
-                                                Feature.allowHashLineComments,
-                                                Feature.allowBackslashEscapeCharacter), DATABRICKS(
+                                        Feature.allowDigitSeparators), H2(
+                                                Feature.allowDoubleSlashLineComments), EXASOL, BIGQUERY(
                                                         AdjacentStringLiterals.WHITESPACE,
                                                         Feature.allowDoubleQuotedStrings,
-                                                        Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
-                                                                Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA, SQLITE;
+                                                        Feature.allowHashLineComments,
+                                                        Feature.allowBackslashEscapeCharacter), DATABRICKS(
+                                                                AdjacentStringLiterals.WHITESPACE,
+                                                                Feature.allowDoubleQuotedStrings,
+                                                                Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
+                                                                        Feature.allowBackslashEscapeCharacter,
+                                                                        Feature.allowDoubleSlashLineComments), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA, SQLITE;
 
         private final Set<Feature> lexerFeatures;
         private final AdjacentStringLiterals adjacentStringLiterals;
@@ -195,6 +197,14 @@ public abstract class AbstractJSqlParser<P> {
 
     public P withHashLineComments(boolean allowHashLineComments) {
         return withFeature(Feature.allowHashLineComments, allowHashLineComments);
+    }
+
+    public P withDoubleSlashLineComments() {
+        return withFeature(Feature.allowDoubleSlashLineComments, true);
+    }
+
+    public P withDoubleSlashLineComments(boolean allowDoubleSlashLineComments) {
+        return withFeature(Feature.allowDoubleSlashLineComments, allowDoubleSlashLineComments);
     }
 
     public P withBlankLinesAsSeparator(boolean allowBlankLinesAsStatementSeparator) {

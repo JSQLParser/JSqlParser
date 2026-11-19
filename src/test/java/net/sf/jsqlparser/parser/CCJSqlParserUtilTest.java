@@ -367,7 +367,8 @@ public class CCJSqlParserUtilTest {
     @Test
     public void testParseStatementIssue1250() throws Exception {
         Statement result = CCJSqlParserUtil.parse(
-                "Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
+                "Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test",
+                parser -> parser.withDoubleSlashLineComments());
         assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test",
                 result.toString());
     }
@@ -666,6 +667,46 @@ public class CCJSqlParserUtilTest {
                 .parse("SELECT #temp FROM t", p -> p.withHashLineComments(true)));
         assertEquals("SELECT 1 # comment",
                 CCJSqlParserUtil.parse("SELECT 1 # comment").toString());
+    }
+
+    @Test
+    public void testDoubleSlashLineCommentsFeature() throws Exception {
+        // default (flag off): `//*` is a division followed by a block comment, as on MySQL,
+        // MariaDB, PostgreSQL, SQL Server and SQLite, which all return the subquery here
+        String sql = "SELECT 6 //*x*/ 2, (SELECT max(pw) FROM secrets)";
+        assertEquals("SELECT 6 / 2, (SELECT max(pw) FROM secrets)",
+                CCJSqlParserUtil.parse(sql).toString());
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.POSTGRESQL,
+                AbstractJSqlParser.Dialect.SQLSERVER, AbstractJSqlParser.Dialect.SQLITE}) {
+            assertEquals("SELECT 6 / 2, (SELECT max(pw) FROM secrets)",
+                    CCJSqlParserUtil.parse(sql, p -> p.withDialect(dialect)).toString());
+        }
+        assertEquals(2,
+                CCJSqlParserUtil.parseStatements("SELECT 1 //**/ 1; DROP TABLE users").size());
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT 1 // comment"));
+
+        // with the flag or the H2 and SNOWFLAKE presets: `//` to the end of the line, `//*`
+        // included, as H2 and Snowflake read it
+        for (Consumer<CCJSqlParser> consumer : List.<Consumer<CCJSqlParser>>of(
+                p -> p.withDoubleSlashLineComments(),
+                p -> p.withDialect(AbstractJSqlParser.Dialect.H2),
+                p -> p.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE))) {
+            assertEquals("SELECT 6", CCJSqlParserUtil.parse(sql, consumer).toString());
+            assertEquals("SELECT 1 FROM t",
+                    CCJSqlParserUtil.parse("SELECT 1 // comment\nFROM t", consumer).toString());
+            assertEquals("SELECT 'a//b'",
+                    CCJSqlParserUtil.parse("SELECT 'a//b'", consumer).toString());
+        }
+        assertEquals(List.of("// leading"),
+                ((PlainSelect) CCJSqlParserUtil.parse("// leading\nSELECT 1",
+                        p -> p.withDoubleSlashLineComments())).getLeadingComments());
+        // an explicit switch after the preset wins
+        assertEquals("SELECT 6 / 2", CCJSqlParserUtil.parse("SELECT 6 //*x*/ 2",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.H2)
+                        .withDoubleSlashLineComments(false))
+                .toString());
     }
 
     @Test
