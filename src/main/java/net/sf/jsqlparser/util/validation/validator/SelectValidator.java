@@ -342,7 +342,15 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     public <S> Void visit(Pivot pivot, S context) {
         validateFeature(Feature.pivot);
         validateOptionalExpressions(pivot.getForColumns());
+        validatePivotFunctions(pivot, context);
         return null;
+    }
+
+    private <S> void validatePivotFunctions(Pivot pivot, S context) {
+        if (isNotEmpty(pivot.getFunctionItems())) {
+            ExpressionValidator v = getValidator(ExpressionValidator.class);
+            pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v, context));
+        }
     }
 
     @Override
@@ -358,10 +366,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     public <S> Void visit(PivotXml pivot, S context) {
         validateFeature(Feature.pivotXml);
         validateOptionalExpressions(pivot.getForColumns());
-        if (isNotEmpty(pivot.getFunctionItems())) {
-            ExpressionValidator v = getValidator(ExpressionValidator.class);
-            pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v, context));
-        }
+        validatePivotFunctions(pivot, context);
         if (pivot.getInSelect() != null) {
             pivot.getInSelect().accept((SelectVisitor<Void>) this, context);
         }

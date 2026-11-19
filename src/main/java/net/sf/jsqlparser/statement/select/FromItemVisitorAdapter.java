@@ -91,29 +91,39 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
         matchRecognize.getInput().accept(this, context);
         matchRecognize
                 .forEachExpression(expression -> expression.accept(expressionVisitor, context));
-        PivotVisitorAdapter<T> pivots = new PivotVisitorAdapter<>(expressionVisitor);
-        if (matchRecognize.getPivot() != null) {
-            matchRecognize.getPivot().accept(pivots, context);
-        }
-        if (matchRecognize.getUnPivot() != null) {
-            matchRecognize.getUnPivot().accept(pivots, context);
-        }
+        visitPivots(matchRecognize, context);
         return null;
+    }
+
+    /** Walks the PIVOT / UNPIVOT clause the grammar may attach to any FROM item. */
+    private <S> void visitPivots(FromItem fromItem, S context) {
+        PivotVisitorAdapter<T> pivots = new PivotVisitorAdapter<>(expressionVisitor);
+        if (fromItem.getPivot() != null) {
+            fromItem.getPivot().accept(pivots, context);
+        }
+        if (fromItem.getUnPivot() != null) {
+            fromItem.getUnPivot().accept(pivots, context);
+        }
     }
 
     @Override
     public <S> T visit(Table table, S context) {
+        visitPivots(table, context);
         return null;
     }
 
     @Override
     public <S> T visit(ParenthesedSelect select, S context) {
-        return select.getSelect().accept(selectVisitor, context);
+        T result = select.getSelect().accept(selectVisitor, context);
+        visitPivots(select, context);
+        return result;
     }
 
     @Override
     public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
-        return lateralSubSelect.getSelect().accept(selectVisitor, context);
+        T result = lateralSubSelect.getSelect().accept(selectVisitor, context);
+        visitPivots(lateralSubSelect, context);
+        return result;
     }
 
     @Override
@@ -123,6 +133,7 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
                 function.accept(expressionVisitor, context);
             }
         }
+        visitPivots(tableFunction, context);
         return null;
     }
 
@@ -130,6 +141,7 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     public <S> T visit(ParenthesedFromItem fromItem, S context) {
         T result = fromItem.getFromItem().accept(this, context);
         visitJoins(fromItem.getJoins(), context);
+        visitPivots(fromItem, context);
         return result;
     }
 
@@ -138,6 +150,7 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
         for (Expression expression : values.getExpressions()) {
             expression.accept(expressionVisitor, context);
         }
+        visitPivots(values, context);
         return null;
     }
 
