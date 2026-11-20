@@ -6764,4 +6764,58 @@ public class SelectTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT user.value FROM t, LATERAL FLATTEN(input => t.data:users) user", true);
     }
+
+    @Test
+    void testTrailingCommaInFromListBeforeWhere() throws JSQLParserException {
+        // Snowflake accepts a trailing comma after the last table of a comma separated FROM list
+        assertEquals("SELECT 1 FROM (SELECT 1 AS a) UG, (SELECT 1 AS b) G WHERE UG.a = G.b",
+                CCJSqlParserUtil.parse("SELECT 1\nFROM (SELECT 1 AS a) UG,\n     (SELECT 1 AS b) G,\n"
+                        + "WHERE UG.a = G.b").toString());
+        assertEquals("SELECT * FROM t WHERE a = 1",
+                CCJSqlParserUtil.parse("SELECT * FROM t, WHERE a = 1").toString());
+        assertEquals("SELECT * FROM ONLY t, u WHERE a = 1",
+                CCJSqlParserUtil.parse("SELECT * FROM ONLY t, u, WHERE a = 1").toString());
+    }
+
+    @Test
+    void testTrailingCommaInFromListBeforeWhereShapes() throws JSQLParserException {
+        // more tables, explicit joins and nested queries
+        assertEquals("SELECT * FROM a, b, c WHERE a.x = b.x",
+                CCJSqlParserUtil.parse("SELECT * FROM a, b, c, WHERE a.x = b.x").toString());
+        assertEquals("SELECT * FROM a JOIN b ON a.x = b.x, c WHERE c.y = 1",
+                CCJSqlParserUtil.parse("SELECT * FROM a JOIN b ON a.x = b.x, c, WHERE c.y = 1")
+                        .toString());
+        assertEquals("SELECT * FROM (SELECT * FROM a, b WHERE a.x = b.x) s WHERE s.x > 0",
+                CCJSqlParserUtil
+                        .parse("SELECT * FROM (SELECT * FROM a, b, WHERE a.x = b.x) s WHERE s.x > 0")
+                        .toString());
+        assertEquals("WITH w AS (SELECT * FROM a, b WHERE a.x = b.x) SELECT * FROM w",
+                CCJSqlParserUtil
+                        .parse("WITH w AS (SELECT * FROM a, b, WHERE a.x = b.x) SELECT * FROM w")
+                        .toString());
+        assertEquals("SELECT * FROM a WHERE a.x IN (SELECT x FROM b, c WHERE b.y = c.y)",
+                CCJSqlParserUtil.parse(
+                        "SELECT * FROM a WHERE a.x IN (SELECT x FROM b, c, WHERE b.y = c.y)")
+                        .toString());
+
+        // the trailing comma is dropped rather than kept as an empty join
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse("SELECT * FROM a, b, WHERE 1 = 1");
+        assertEquals(1, select.getJoins().size());
+        assertEquals("b", select.getJoins().get(0).getFromItem().toString());
+        assertNull(((PlainSelect) CCJSqlParserUtil.parse("SELECT * FROM a, WHERE 1 = 1"))
+                .getJoins());
+    }
+
+    @Test
+    void testTrailingCommaInFromListOnlyBeforeWhere() {
+        // only a WHERE may follow the trailing comma
+        for (String sqlStr : new String[] {
+                "SELECT * FROM a, b, GROUP BY x",
+                "SELECT * FROM a, b, ORDER BY x",
+                "SELECT * FROM a, b,",
+                "SELECT * FROM a, b, , WHERE 1 = 1"}) {
+            Assertions.assertThrows(JSQLParserException.class,
+                    () -> CCJSqlParserUtil.parse(sqlStr), sqlStr);
+        }
+    }
 }
