@@ -175,6 +175,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
+        if (isNotEmpty(plainSelect.getLateralViews())) {
+            plainSelect.getLateralViews()
+                    .forEach(view -> validateOptionalExpression(view.getGeneratorFunction()));
+        }
 
         // after the FROM items, to correctly recognize aliased tables
         if (plainSelect.getDistinct() != null

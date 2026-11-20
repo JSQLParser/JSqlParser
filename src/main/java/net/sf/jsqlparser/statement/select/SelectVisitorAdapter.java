@@ -201,9 +201,11 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         fromItemVisitor.visitTables(plainSelect.getIntoTables(), context);
         fromItemVisitor.visitFromItem(plainSelect.getFromItem(), context);
 
-        // if (plainSelect.getLateralViews() != null) {
-        // //@todo: implement this
-        // }
+        if (plainSelect.getLateralViews() != null) {
+            for (LateralView lateralView : plainSelect.getLateralViews()) {
+                expressionVisitor.visitExpression(lateralView.getGeneratorFunction(), context);
+            }
+        }
 
         fromItemVisitor.visitJoins(plainSelect.getJoins(), context);
 
