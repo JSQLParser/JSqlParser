@@ -25,21 +25,6 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateView extends ASTNodeAccessImpl implements Statement {
 
     private MySqlViewOptions mySqlOptions;
-
-    public MySqlViewOptions getMySqlOptions() {
-        return mySqlOptions;
-    }
-
-    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
-        this.mySqlOptions = mySqlOptions;
-    }
-
-    public void appendMySqlOptionsTo(StringBuilder builder) {
-        if (mySqlOptions != null) {
-            mySqlOptions.appendTo(builder);
-        }
-    }
-
     private Table view;
     private Select select;
     private boolean orReplace = false;
@@ -66,6 +51,20 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
     /** DEFAULT preserves a CHECK OPTION clause with no explicit LOCAL or CASCADED keyword. */
     public enum CheckOption {
         DEFAULT, LOCAL, CASCADED
+    }
+
+    public MySqlViewOptions getMySqlOptions() {
+        return mySqlOptions;
+    }
+
+    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
+        this.mySqlOptions = mySqlOptions;
+    }
+
+    public void appendMySqlOptionsTo(StringBuilder builder) {
+        if (mySqlOptions != null) {
+            mySqlOptions.appendTo(builder);
+        }
     }
 
     public boolean isRecursive() {
