@@ -5723,11 +5723,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected boolean isNamedExprListAhead() {
         int depth = 0;
+        // IN, FROM inside CASE ... END belong to the CASE branches, not to the function
+        int caseDepth = 0;
         for (Token t = getToken(1); ; t = nextWithItemToken(t)) {
             if (t.kind == EOF) {
                 return false;
             }
-            if (t.kind == OPENING_BRACKET) {
+            if (t.kind == K_CASE) {
+                caseDepth++;
+            } else if (t.kind == K_END && caseDepth > 0) {
+                caseDepth--;
+            } else if (caseDepth > 0) {
+                continue;
+            } else if (t.kind == OPENING_BRACKET) {
                 depth++;
             } else if (t.kind == CLOSING_BRACKET) {
                 if (depth == 0) {

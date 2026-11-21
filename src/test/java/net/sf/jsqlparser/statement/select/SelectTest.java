@@ -6773,4 +6773,12 @@ public class SelectTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT user.value FROM t, LATERAL FLATTEN(input => t.data:users) user", true);
     }
+
+    @Test
+    void testStringFunctionWithInPredicateInsideCase() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUBSTR(CASE WHEN x IN (1, 2) THEN 'a' END, 1, 2) FROM B", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT POSITION(CASE WHEN x IN (1, 2) THEN 'a' END IN y) FROM B", true);
+    }
 }
