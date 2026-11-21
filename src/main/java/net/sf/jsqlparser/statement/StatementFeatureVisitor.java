@@ -173,6 +173,7 @@ import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.MySqlShowStatement;
 import net.sf.jsqlparser.statement.show.ShowCreateStatement;
+import net.sf.jsqlparser.statement.show.ShowFilter;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
@@ -1225,22 +1226,23 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
-        return metadataOnly();
+        return metadataOnly(showColumnsStatement.getFilter());
     }
 
     @Override
     public <S> Void visit(ShowIndexStatement showIndexStatement, S context) {
-        return metadataOnly();
+        metadataOnly();
+        return walkShowFilter(showIndexStatement.getWhereCondition());
     }
 
     @Override
     public <S> Void visit(ShowTablesStatement showTables, S context) {
-        return metadataOnly();
+        return metadataOnly(showTables.getFilter());
     }
 
     @Override
     public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
-        return metadataOnly();
+        return metadataOnly(showTableStatus.getFilter());
     }
 
     @Override
@@ -1250,7 +1252,7 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(MySqlShowStatement mySqlShow, S context) {
-        return metadataOnly();
+        return metadataOnly(mySqlShow.getFilter());
     }
 
     @Override
@@ -1264,6 +1266,19 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             analysis.certain(StmtFeature.RETURNS_RESULT_SET);
         } else {
             analysis.certain(StmtFeature.OPAQUE); // keeps failLoudIfSilent honest when nested
+        }
+        return null;
+    }
+
+    private Void metadataOnly(ShowFilter filter) {
+        metadataOnly();
+        return walkShowFilter(filter == null ? null : filter.getExpression());
+    }
+
+    /** MySQL evaluates the LIKE or WHERE filter of a SHOW, as in SHOW TABLES WHERE f() = 0. */
+    private Void walkShowFilter(Expression filter) {
+        if (filter != null) {
+            filter.accept(analysis.expressions, null);
         }
         return null;
     }
