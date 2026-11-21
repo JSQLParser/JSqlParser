@@ -6775,6 +6775,22 @@ public class SelectTest {
     }
 
     @Test
+    void testPostgreSqlOrderByUsingOperator() throws JSQLParserException {
+        for (String sql : new String[] {
+                "SELECT * FROM t ORDER BY a ASC NULLS LAST, b USING <",
+                "SELECT * FROM t ORDER BY a USING >",
+                "SELECT * FROM t ORDER BY a USING <= NULLS FIRST",
+                "SELECT * FROM t ORDER BY a USING ~<~, b DESC",
+                "SELECT sum(a) OVER (ORDER BY b USING >) FROM t"}) {
+            assertSqlCanBeParsedAndDeparsed(sql, true,
+                    parser -> parser.withDialect(Dialect.POSTGRESQL));
+        }
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * FROM t ORDER BY b USING <");
+        assertThat(select.getOrderByElements().get(0).getUsingOperator()).isEqualTo("<");
+    }
+
+    @Test
     void testStringFunctionWithInPredicateInsideCase() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT SUBSTR(CASE WHEN x IN (1, 2) THEN 'a' END, 1, 2) FROM B", true);
