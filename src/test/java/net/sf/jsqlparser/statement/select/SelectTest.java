@@ -6789,7 +6789,7 @@ public class SelectTest {
                 .parse("SELECT * FROM t ORDER BY b USING <");
         assertThat(select.getOrderByElements().get(0).getUsingOperator()).isEqualTo("<");
     }
-  
+
     @Test
     void testStringFunctionWithInPredicateInsideCase() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
