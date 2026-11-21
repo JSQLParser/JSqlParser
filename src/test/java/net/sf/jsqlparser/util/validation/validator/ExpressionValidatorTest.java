@@ -15,6 +15,8 @@ import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ExpressionValidatorTest extends ValidationTestAsserts {
 
@@ -269,6 +271,25 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
                 "SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL) FROM mytbl",
                 1,
                 EXPRESSIONS);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT JSON_OBJECT(KEY 'k' VALUE upper(a)) FROM t",
+            "SELECT JSON_OBJECT('k': upper(a)) FROM t",
+            "SELECT JSON_ARRAY(upper(a)) FROM t",
+            "SELECT JSON_ARRAYAGG(upper(a)) FROM t",
+            "SELECT JSON_OBJECTAGG(KEY 'k' VALUE upper(a)) FROM t",
+            "SELECT JSON_ARRAYAGG(a) FILTER (WHERE upper(a) = 'X') FROM t",
+            "SELECT JSON_ARRAYAGG(a) OVER (PARTITION BY upper(a)) FROM t"})
+    public void testValidateFunctionInJsonFunction(String sql) {
+        validateNotAllowed(sql, 1, 1,
+                new FeaturesAllowed(Feature.values()).remove(Feature.function), Feature.function);
+    }
+
+    @Test
+    public void testValidateSubSelectInJsonFunction() {
+        validateNotAllowed("SELECT JSON_ARRAY((SELECT a FROM t FOR UPDATE))", 1, 1,
+                FeaturesAllowed.SELECT, Feature.selectForUpdate);
     }
 
     @Test
