@@ -717,7 +717,7 @@ class StatementFeatureVisitorTest {
                 "SELECT * FROM t PIVOT (sum(pg_read_file('x')) FOR a IN (1))",
                 "SELECT * FROM (SELECT a, b FROM t) PIVOT (sum(pg_read_file('x')) FOR a IN (1))",
                 "SELECT * FROM u JOIN t PIVOT (sum(pg_read_file('x')) FOR a IN (1)) ON 1 = 1",
-                "SELECT * FROM t PIVOT XML (sum(b) FOR a IN (SELECT pg_read_file('x') FROM u))"})
+                "SELECT * FROM t PIVOT XML (sum(b) FOR a IN (SELECT pg_read_file('x') FROM u))",
                 "SHOW TABLES WHERE length(pg_read_file('x')) > 0",
                 "SHOW TABLE STATUS WHERE length(pg_read_file('x')) > 0",
                 "SHOW COLUMNS FROM t WHERE length(pg_read_file('x')) > 0",
