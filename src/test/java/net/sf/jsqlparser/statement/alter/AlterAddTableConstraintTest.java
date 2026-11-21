@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.alter;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -27,9 +26,11 @@ import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
+import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -109,12 +110,66 @@ class AlterAddTableConstraintTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"ALTER TABLE t ADD CONSTRAINT nn NOT NULL id",
+            "ALTER TABLE t ADD NOT NULL id",
+            "ALTER TABLE t ADD CONSTRAINT nn NOT NULL id NO INHERIT",
+            "ALTER TABLE t ADD CONSTRAINT nn NOT NULL id NOT VALID",
+            "ALTER TABLE t ADD CONSTRAINT uk UNIQUE USING INDEX t_idx",
+            "ALTER TABLE t ADD PRIMARY KEY USING INDEX t_idx",
+            "ALTER TABLE t ADD CONSTRAINT pk PRIMARY KEY USING INDEX t_idx DEFERRABLE",
+            "ALTER TABLE t ADD COLUMN c INT, ADD CONSTRAINT nn NOT NULL id, ADD CONSTRAINT uk UNIQUE USING INDEX t_idx"})
+    void postgreSqlOnlyFormsParseWithoutADialectAsWithPostgreSql(String sql)
+            throws JSQLParserException {
+        Alter withoutDialect = (Alter) CCJSqlParserUtil.parse(sql);
+        Alter postgreSql = (Alter) CCJSqlParserUtil.parse(sql,
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals(sql, withoutDialect.toString());
+        assertEquals(postgreSql.toString(), withoutDialect.toString());
+        for (int i = 0; i < postgreSql.getAlterExpressions().size(); i++) {
+            AlterExpression expected = postgreSql.getAlterExpressions().get(i);
+            AlterExpression actual = withoutDialect.getAlterExpressions().get(i);
+            assertEquals(expected.getOperation(), actual.getOperation());
+            assertEquals(
+                    expected.getConstraint() == null ? null : expected.getConstraint().getClass(),
+                    actual.getConstraint() == null ? null : actual.getConstraint().getClass());
+        }
+    }
+
+    @Test
+    void postgreSqlOnlyFormsExposeTheirConstraintWithoutADialect() throws JSQLParserException {
+        AlterExpression notNull = ((Alter) CCJSqlParserUtil
+                .parse("ALTER TABLE t ADD CONSTRAINT nn NOT NULL id"))
+                .getAlterExpressions().get(0);
+        NotNullConstraint notNullConstraint =
+                assertInstanceOf(NotNullConstraint.class, notNull.getConstraint());
+        assertEquals("nn", notNullConstraint.getName());
+        assertEquals("id", notNullConstraint.getColumn().getColumnName());
+
+        AlterExpression usingIndex = ((Alter) CCJSqlParserUtil
+                .parse("ALTER TABLE t ADD CONSTRAINT uk UNIQUE USING INDEX t_idx"))
+                .getAlterExpressions().get(0);
+        ConstraintUsingIndex usingIndexConstraint =
+                assertInstanceOf(ConstraintUsingIndex.class, usingIndex.getConstraint());
+        assertEquals("uk", usingIndexConstraint.getName());
+        assertEquals("t_idx", usingIndexConstraint.getExistingIndexName());
+    }
+
+    @Test
+    void tableLevelNotNullParsesInCreateTableWithoutADialect() throws JSQLParserException {
+        String sql = "CREATE TABLE t (id INT, CONSTRAINT nn NOT NULL id NO INHERIT)";
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(sql);
+        assertEquals(sql, createTable.toString());
+        assertEquals(CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(Dialect.POSTGRESQL))
+                .toString(), createTable.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t ADD CONSTRAINT nn NOT NULL id",
             "ALTER TABLE t ADD CONSTRAINT uk UNIQUE USING INDEX t_idx"})
-    void postgreSqlOnlyFormsStillRequireThePostgreSqlDialect(String sql) {
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql));
-        assertDoesNotThrow(
-                () -> CCJSqlParserUtil.parse(sql,
-                        parser -> parser.withDialect(Dialect.POSTGRESQL)));
+    void postgreSqlOnlyFormsAreStillRejectedWithAnotherDialect(String sql) {
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, Dialect.ORACLE}) {
+            assertThrows(JSQLParserException.class,
+                    () -> CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(dialect)));
+        }
     }
 
     @Test

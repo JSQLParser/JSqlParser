@@ -4472,6 +4472,15 @@ public class SelectTest {
     }
 
     @Test
+    public void testMultiPartUserVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg");
+        assertSqlCanBeParsedAndDeparsed("SELECT @a.b.c.d");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM DIRECTORY(@db.sch.stg)");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg = 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg := @db.sch.stg + 1 AS counter");
+    }
+
+    @Test
     public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
     }
@@ -6779,5 +6788,13 @@ public class SelectTest {
         PlainSelect select = (PlainSelect) CCJSqlParserUtil
                 .parse("SELECT * FROM t ORDER BY b USING <");
         assertThat(select.getOrderByElements().get(0).getUsingOperator()).isEqualTo("<");
+    }
+  
+    @Test
+    void testStringFunctionWithInPredicateInsideCase() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUBSTR(CASE WHEN x IN (1, 2) THEN 'a' END, 1, 2) FROM B", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT POSITION(CASE WHEN x IN (1, 2) THEN 'a' END IN y) FROM B", true);
     }
 }

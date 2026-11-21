@@ -937,6 +937,24 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     public <S> StringBuilder visit(Values values, S context) {
         new ValuesStatementDeParser(expressionVisitor, this, builder).deParse(values, context);
+
+        if (values.getOrderByElements() != null) {
+            new OrderByDeParser(expressionVisitor, builder).deParse(values.isOracleSiblings(),
+                    values.getOrderByElements());
+            deParseInterpolate(values.getInterpolate());
+        }
+        if (values.getLimit() != null) {
+            new LimitDeparser(expressionVisitor, builder).deParse(values.getLimit());
+        }
+        if (values.getOffset() != null) {
+            visit(values.getOffset());
+        }
+        if (values.getFetch() != null) {
+            visit(values.getFetch());
+        }
+        if (values.getIsolation() != null) {
+            builder.append(values.getIsolation().toString());
+        }
         return builder;
     }
 
