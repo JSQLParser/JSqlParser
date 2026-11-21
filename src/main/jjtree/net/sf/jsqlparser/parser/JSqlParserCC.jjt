@@ -2502,8 +2502,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /** Whether the parser was configured with Dialect.SNOWFLAKE. */
-    private boolean isSnowflakeDialect(){
-      return Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect));
+    private boolean isSnowflakeDialect() {
+        return Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect));
     }
 
     /**

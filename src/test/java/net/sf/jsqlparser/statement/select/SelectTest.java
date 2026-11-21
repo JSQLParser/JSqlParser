@@ -6846,6 +6846,8 @@ public class SelectTest {
                     () -> CCJSqlParserUtil.parse(sqlStr, parser -> parser.withDialect(dialect)),
                     dialect + " " + sqlStr);
         }
+    }
+
     @Test
     void testPostgreSqlOrderByUsingOperator() throws JSQLParserException {
         for (String sql : new String[] {
