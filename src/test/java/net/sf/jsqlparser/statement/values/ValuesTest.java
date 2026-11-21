@@ -66,6 +66,17 @@ public class ValuesTest {
     }
 
     @Test
+    public void testOrderByLimitOffsetAndFetch() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("VALUES (2), (1) ORDER BY 1 LIMIT 1", true);
+        assertSqlCanBeParsedAndDeparsed("VALUES (2), (1) LIMIT 1 OFFSET 1", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "VALUES (2), (1) ORDER BY 1 OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY", true);
+        assertSqlCanBeParsedAndDeparsed("WITH c AS (SELECT 1) VALUES (2), (1) ORDER BY 1", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t WHERE x IN (VALUES (2), (1) ORDER BY 1 LIMIT 1)", true);
+    }
+
+    @Test
     public void testValuesWithAliasWithoutAs() throws JSQLParserException {
         String sqlStr = "SELECT a, b, cume_dist() OVER (PARTITION BY a ORDER BY b) AS cume_dist\n" +
                 "    FROM VALUES ('A1', 2), ('A1', 1), ('A2', 3), ('A1', 1) tab(a, b);";
