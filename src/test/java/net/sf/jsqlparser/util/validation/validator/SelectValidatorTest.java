@@ -267,7 +267,8 @@ public class SelectValidatorTest extends ValidationTestAsserts {
             "SELECT a FROM t LIMIT 1 OFFSET upper(a)",
             "SELECT a FROM t OFFSET upper(a) ROWS",
             "SELECT a FROM t FETCH FIRST upper(a) ROWS ONLY",
-            "SELECT a FROM t UNION SELECT b FROM u LIMIT upper(a)"})
+            "SELECT a FROM t UNION SELECT b FROM u LIMIT upper(a)",
+            "SELECT * FROM t PIVOT (max(upper(a)) FOR b IN (1))"})
     public void testValidateFunctionOutsideWhere(String sql) {
         validateNotAllowed(sql, 1, 1,
                 new FeaturesAllowed(Feature.values()).remove(Feature.function), Feature.function);
