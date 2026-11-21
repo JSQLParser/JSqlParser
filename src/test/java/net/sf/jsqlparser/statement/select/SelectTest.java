@@ -4472,6 +4472,15 @@ public class SelectTest {
     }
 
     @Test
+    public void testMultiPartUserVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg");
+        assertSqlCanBeParsedAndDeparsed("SELECT @a.b.c.d");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM DIRECTORY(@db.sch.stg)");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg = 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg := @db.sch.stg + 1 AS counter");
+    }
+
+    @Test
     public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
     }

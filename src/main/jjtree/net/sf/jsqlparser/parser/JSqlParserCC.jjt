@@ -17136,7 +17136,10 @@ Expression SimpleExpression():
     Token first;
 }
 {
-    [ LOOKAHEAD( 5, { getToken(1).kind == S_AT_IDENTIFIER } ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
+    // Scan the whole variable chain before the operator, so "@db.sch.stg" is not
+    // mistaken for the start of an assignment.
+    [ LOOKAHEAD( UserVariable() ( "=" | ":=" ), { getToken(1).kind == S_AT_IDENTIFIER } )
+      user = UserVariable() ( operation = "=" | operation = ":=" ) ]
     { first = getToken(1); }
     retval=PrimaryExpression()
     // PostgreSQL path operators bind below arithmetic and above comparisons.
