@@ -2495,6 +2495,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Whether the parser was configured with Dialect.SNOWFLAKE. */
+    private boolean isSnowflakeDialect(){
+      return Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect));
+    }
+
     /**
      * Whether the pending "," ends the comma separated FROM list, followed directly by WHERE.
      */
@@ -13628,12 +13633,12 @@ PlainSelect PlainSelect() #PlainSelect:
         [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
         // trailing comma after the last table: FROM a, b, WHERE ...
-        [ LOOKAHEAD({ isTrailingFromItemCommaAhead() }) "," ]
+        [ LOOKAHEAD({ isSnowflakeDialect() && isTrailingFromItemCommaAhead() }) "," ]
     ]
     [ LOOKAHEAD(3) <K_FROM> <K_ONLY> { plainSelect.setUsingOnly(true); } fromItem=FromItem()
             [ LOOKAHEAD(2) lateralViews=LateralViews() ]
             [ LOOKAHEAD(2) joins=JoinsList() ]
-            [ LOOKAHEAD({ isTrailingFromItemCommaAhead() }) "," ]
+            [ LOOKAHEAD({ isSnowflakeDialect() && isTrailingFromItemCommaAhead() }) "," ]
     ]
 
     // Clickhouse FINAL as shown at https://clickhouse.com/docs/en/operations/settings/settings#final
