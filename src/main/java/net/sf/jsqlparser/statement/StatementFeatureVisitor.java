@@ -773,7 +773,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
                 analysis.unresolved("unsupported");
             }
         }
-        return null;
+        // DEFAULT, CHECK and USING expressions are evaluated against the existing rows
+        return super.visit(alter, context);
     }
 
     @Override
@@ -1477,7 +1478,8 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(AlterDomain statement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA);
-        return null;
+        // an added CHECK constraint is evaluated against every column of the domain
+        return super.visit(statement, context);
     }
 
     @Override
