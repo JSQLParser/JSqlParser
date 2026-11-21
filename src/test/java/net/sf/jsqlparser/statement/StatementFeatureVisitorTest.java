@@ -713,7 +713,12 @@ class StatementFeatureVisitorTest {
                 "SET @a = 1, @b = pg_read_file('x')",
                 "SET x = pg_read_file('x')",
                 "DECLARE @x INT = length(pg_read_file('x'))",
-                "ASSERT length(pg_read_file('x')) > 0"})
+                "ASSERT length(pg_read_file('x')) > 0",
+                "SHOW TABLES WHERE length(pg_read_file('x')) > 0",
+                "SHOW TABLE STATUS WHERE length(pg_read_file('x')) > 0",
+                "SHOW COLUMNS FROM t WHERE length(pg_read_file('x')) > 0",
+                "SHOW INDEX FROM t WHERE length(pg_read_file('x')) > 0",
+                "SHOW VARIABLES WHERE length(pg_read_file('x')) > 0"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
@@ -779,6 +784,16 @@ class StatementFeatureVisitorTest {
             assertThat(f.is(StmtFeature.MODIFIES_SESSION)).isTrue();
             assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
             assertThat(f.returnsResultSet()).isFalse();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SHOW TABLES WHERE Tables_in_db IN (SELECT a FROM t)",
+                "SHOW DATABASES WHERE (SELECT count(*) FROM t) > 0"})
+        void showFilterSubqueryIsRead(String sql) throws JSQLParserException {
+            StatementFeatures f = analyse(sql);
+            assertThat(f.returnsResultSet()).isTrue();
+            assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
         }
 
         @Test
