@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Collections;
 import java.util.List;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
@@ -19,7 +20,26 @@ import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ParenthesedStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
+import net.sf.jsqlparser.statement.piped.AsPipeOperator;
+import net.sf.jsqlparser.statement.piped.CallPipeOperator;
+import net.sf.jsqlparser.statement.piped.DropPipeOperator;
+import net.sf.jsqlparser.statement.piped.ExtendPipeOperator;
 import net.sf.jsqlparser.statement.piped.FromQuery;
+import net.sf.jsqlparser.statement.piped.JoinPipeOperator;
+import net.sf.jsqlparser.statement.piped.LimitPipeOperator;
+import net.sf.jsqlparser.statement.piped.OrderByPipeOperator;
+import net.sf.jsqlparser.statement.piped.PipeOperator;
+import net.sf.jsqlparser.statement.piped.PipeOperatorVisitor;
+import net.sf.jsqlparser.statement.piped.PivotPipeOperator;
+import net.sf.jsqlparser.statement.piped.RenamePipeOperator;
+import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetOperationPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetPipeOperator;
+import net.sf.jsqlparser.statement.piped.TableSamplePipeOperator;
+import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
+import net.sf.jsqlparser.statement.piped.WherePipeOperator;
+import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
@@ -272,7 +292,119 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(FromQuery fromQuery, S context) {
+        visitWithItems(fromQuery.getWithItemsList(), context);
+        fromItemVisitor.visitFromItem(fromQuery.getFromItem(), context);
+        if (fromQuery.getLateralViews() != null) {
+            for (LateralView lateralView : fromQuery.getLateralViews()) {
+                expressionVisitor.visitExpression(lateralView.getGeneratorFunction(), context);
+            }
+        }
+        fromItemVisitor.visitJoins(fromQuery.getJoins(), context);
+
+        PipeOperatorWalker<S> pipeOperators = new PipeOperatorWalker<>();
+        for (PipeOperator pipeOperator : fromQuery.getPipeOperators()) {
+            pipeOperator.accept(pipeOperators, context);
+        }
         return null;
+    }
+
+    /** Walks the expressions, joins and nested queries of the pipe operators of a FromQuery. */
+    private final class PipeOperatorWalker<S> implements PipeOperatorVisitor<T, S> {
+
+        @Override
+        public T visit(AggregatePipeOperator aggregate, S context) {
+            visitSelectItems(aggregate.getSelectItems(), context);
+            visitSelectItems(aggregate.getGroupItems(), context);
+            return null;
+        }
+
+        @Override
+        public T visit(AsPipeOperator as, S context) {
+            return null;
+        }
+
+        @Override
+        public T visit(CallPipeOperator call, S context) {
+            return fromItemVisitor.visitFromItem(call.getTableFunction(), context);
+        }
+
+        @Override
+        public T visit(DropPipeOperator drop, S context) {
+            return expressionVisitor.visitExpressions(drop.getColumns(), context);
+        }
+
+        @Override
+        public T visit(ExtendPipeOperator extend, S context) {
+            return visit((SelectPipeOperator) extend, context);
+        }
+
+        @Override
+        public T visit(JoinPipeOperator join, S context) {
+            return fromItemVisitor.visitJoins(Collections.singletonList(join.getJoin()), context);
+        }
+
+        @Override
+        public T visit(LimitPipeOperator limit, S context) {
+            expressionVisitor.visitExpression(limit.getLimitExpression(), context);
+            return expressionVisitor.visitExpression(limit.getOffsetExpression(), context);
+        }
+
+        @Override
+        public T visit(OrderByPipeOperator orderBy, S context) {
+            return expressionVisitor.visitOrderBy(orderBy.getOrderByElements(), context);
+        }
+
+        @Override
+        public T visit(PivotPipeOperator pivot, S context) {
+            expressionVisitor.visitExpression(pivot.getAggregateExpression(), context);
+            visitSelectItems(pivot.getPivotColumns(), context);
+            return null;
+        }
+
+        @Override
+        public T visit(RenamePipeOperator rename, S context) {
+            return visit((SelectPipeOperator) rename, context);
+        }
+
+        @Override
+        public T visit(SelectPipeOperator select, S context) {
+            visitSelectItems(select.getSelectItems(), context);
+            return null;
+        }
+
+        @Override
+        public T visit(SetPipeOperator set, S context) {
+            return expressionVisitor.visitUpdateSets(set.getUpdateSets(), context);
+        }
+
+        @Override
+        public T visit(TableSamplePipeOperator tableSample, S context) {
+            return null;
+        }
+
+        @Override
+        public T visit(SetOperationPipeOperator setOperation, S context) {
+            for (ParenthesedSelect select : setOperation.getSelects()) {
+                select.accept(SelectVisitorAdapter.this, context);
+            }
+            return null;
+        }
+
+        @Override
+        public T visit(UnPivotPipeOperator unPivot, S context) {
+            visitSelectItems(unPivot.getPivotColumns(), context);
+            return null;
+        }
+
+        @Override
+        public T visit(WherePipeOperator where, S context) {
+            return expressionVisitor.visitExpression(where.getExpression(), context);
+        }
+
+        @Override
+        public T visit(WindowPipeOperator window, S context) {
+            return visit((SelectPipeOperator) window, context);
+        }
     }
 
     @Override

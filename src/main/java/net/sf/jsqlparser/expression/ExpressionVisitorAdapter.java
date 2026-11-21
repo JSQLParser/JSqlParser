@@ -969,7 +969,7 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(FromQuery fromQuery, S context) {
-        return null;
+        return visit((Select) fromQuery, context);
     }
 
     @Override
