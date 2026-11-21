@@ -79,4 +79,15 @@ class RedshiftCreateViewTest {
                 "CREATE MATERIALIZED VIEW backup BACKUP YES AS SELECT backup FROM backup");
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT backup FROM backup");
     }
+
+    @Test
+    void lateBindingView() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "CREATE VIEW v AS (SELECT a FROM t) WITH NO SCHEMA BINDING");
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "CREATE OR REPLACE VIEW s.v (a) AS SELECT a FROM s.t WITH NO SCHEMA BINDING");
+        CreateView view = (CreateView) CCJSqlParserUtil
+                .parse("CREATE VIEW v AS SELECT 1 WITH NO SCHEMA BINDING");
+        assertTrue(view.isWithNoSchemaBinding());
+    }
 }
