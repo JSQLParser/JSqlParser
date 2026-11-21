@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.AllValue;
@@ -86,6 +87,9 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @Execution(ExecutionMode.CONCURRENT)
@@ -6774,6 +6778,74 @@ public class SelectTest {
                 "SELECT user.value FROM t, LATERAL FLATTEN(input => t.data:users) user", true);
     }
 
+    private static Statement parseSnowflake(String sqlStr) throws JSQLParserException {
+        return CCJSqlParserUtil.parse(sqlStr, parser -> parser.withDialect(Dialect.SNOWFLAKE));
+    }
+
+    private static Stream<Arguments> trailingCommaInFromList() {
+        return Stream.of(
+                Arguments.of("SELECT 1\nFROM (SELECT 1 AS a) UG,\n     (SELECT 1 AS b) G,\n"
+                        + "WHERE UG.a = G.b",
+                        "SELECT 1 FROM (SELECT 1 AS a) UG, (SELECT 1 AS b) G WHERE UG.a = G.b"),
+                Arguments.of("SELECT * FROM t, WHERE a = 1", "SELECT * FROM t WHERE a = 1"),
+                Arguments.of("SELECT * FROM ONLY t, u, WHERE a = 1",
+                        "SELECT * FROM ONLY t, u WHERE a = 1"),
+                Arguments.of("SELECT * FROM a, b, c, WHERE a.x = b.x",
+                        "SELECT * FROM a, b, c WHERE a.x = b.x"),
+                Arguments.of("SELECT * FROM a JOIN b ON a.x = b.x, c, WHERE c.y = 1",
+                        "SELECT * FROM a JOIN b ON a.x = b.x, c WHERE c.y = 1"),
+                Arguments.of("SELECT * FROM (SELECT * FROM a, b, WHERE a.x = b.x) s WHERE s.x > 0",
+                        "SELECT * FROM (SELECT * FROM a, b WHERE a.x = b.x) s WHERE s.x > 0"),
+                Arguments.of("WITH w AS (SELECT * FROM a, b, WHERE a.x = b.x) SELECT * FROM w",
+                        "WITH w AS (SELECT * FROM a, b WHERE a.x = b.x) SELECT * FROM w"),
+                Arguments.of("SELECT * FROM a WHERE a.x IN (SELECT x FROM b, c, WHERE b.y = c.y)",
+                        "SELECT * FROM a WHERE a.x IN (SELECT x FROM b, c WHERE b.y = c.y)"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("trailingCommaInFromList")
+    void testTrailingCommaInFromListBeforeWhere(String sqlStr, String expected)
+            throws JSQLParserException {
+        // Snowflake accepts a trailing comma after the last table of a comma separated FROM list
+        assertEquals(expected, parseSnowflake(sqlStr).toString());
+    }
+
+    @Test
+    void testTrailingCommaInFromListIsNotAJoin() throws JSQLParserException {
+        // the trailing comma is dropped rather than kept as an empty join
+        PlainSelect select = (PlainSelect) parseSnowflake("SELECT * FROM a, b, WHERE 1 = 1");
+        assertEquals(1, select.getJoins().size());
+        assertEquals("b", select.getJoins().get(0).getFromItem().toString());
+        assertNull(((PlainSelect) parseSnowflake("SELECT * FROM a, WHERE 1 = 1")).getJoins());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM a, b, GROUP BY x",
+            "SELECT * FROM a, b, ORDER BY x",
+            "SELECT * FROM a, b,",
+            "SELECT * FROM a, b, , WHERE 1 = 1"})
+    void testTrailingCommaInFromListOnlyBeforeWhere(String sqlStr) {
+        // only a WHERE may follow the trailing comma
+        Assertions.assertThrows(JSQLParserException.class, () -> parseSnowflake(sqlStr));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT * FROM a, b, WHERE 1 = 1",
+            "SELECT * FROM ONLY a, b, WHERE 1 = 1"})
+    void testTrailingCommaInFromListNeedsDialect(String sqlStr) {
+        Assertions.assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sqlStr));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Dialect.class, names = "SNOWFLAKE", mode = EnumSource.Mode.EXCLUDE)
+    void testTrailingCommaInFromListNeedsSnowflakeDialect(Dialect dialect) {
+        for (String sqlStr : new String[] {"SELECT * FROM a, b, WHERE 1 = 1",
+                "SELECT * FROM ONLY a, b, WHERE 1 = 1"}) {
+            Assertions.assertThrows(JSQLParserException.class,
+                    () -> CCJSqlParserUtil.parse(sqlStr, parser -> parser.withDialect(dialect)),
+                    dialect + " " + sqlStr);
+        }
     @Test
     void testPostgreSqlOrderByUsingOperator() throws JSQLParserException {
         for (String sql : new String[] {
