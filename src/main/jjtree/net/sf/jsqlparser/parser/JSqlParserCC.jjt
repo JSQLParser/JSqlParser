@@ -5389,6 +5389,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    private boolean isExplainPreparedExecutionDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return dialect == null || Dialect.POSTGRESQL.name().equals(dialect);
+    }
+
     private void validatePostgresqlExplain(ExplainStatement explain) throws ParseException {
         if (explain.getTable() != null) {
             throw new ParseException("PostgreSQL EXPLAIN requires a statement");
@@ -10479,7 +10484,7 @@ ExplainStatement MySqlExplain():
             ( schema=RelObjectName() | token=<S_CHAR_LITERAL> { schema = token.image; } )
             { explain.setSchemaName(schema); }
         ]
-        statement=ExplainableStatement() { explain.setStatement(statement); }
+        statement=ExplainableStatement(false) { explain.setStatement(statement); }
     )
     { return explain; }
 }
@@ -10495,8 +10500,8 @@ ExplainStatement.Option MySqlExplainFormat():
     { return mySqlExplainFormat(token); }
 }
 
-/** The statement EXPLAIN explains: a query or a DML statement. */
-Statement ExplainableStatement():
+/** The statement EXPLAIN explains: a query, DML, or prepared execution. */
+Statement ExplainableStatement(boolean allowPreparedExecution):
 {
     List<WithItem<?>> with = null;
     Statement statement;
@@ -10506,6 +10511,16 @@ Statement ExplainableStatement():
     (
         LOOKAHEAD({ getToken(1).kind == K_REPLACE && isMySqlUtilityDialect() })
         statement = Upsert()
+        |
+        LOOKAHEAD(2, <K_EXECUTE> ColumnIdentifier(), { isExplainPreparedExecutionDialect() })
+        statement = Execute()
+        {
+            Execute execute = (Execute) statement;
+            requireDdlSyntax(allowPreparedExecution && execute.getUsingVariables() == null
+                    && (execute.getExprList() == null
+                        || execute.getExprList() instanceof ParenthesedExpressionList),
+                    "EXPLAIN EXECUTE accepts a prepared statement name and optional parenthesized arguments");
+        }
         |
         [ LOOKAHEAD(2) with=WithList() ]
         (
@@ -10540,7 +10555,7 @@ ExplainStatement Explain():
                 LOOKAHEAD(2) "(" options = PostgresqlExplainOptions() ")" { parenthesized = true; }
                 | options = ExplainStatementOptions()
             )
-            statement = ExplainableStatement()
+            statement = ExplainableStatement(tk.kind == K_EXPLAIN)
             {
                 es = new ExplainStatement(tk.image, statement, options);
                 es.setParenthesizedOptions(parenthesized);
