@@ -295,6 +295,26 @@ class StatementFeatureVisitorTest {
         assertThat(f.mayModifyData()).isTrue();
     }
 
+    /**
+     * PostgreSQL evaluates these expressions against the rows already stored in the table, or in
+     * the columns of the domain, while the statement runs, so a function called there may write.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t ALTER COLUMN a TYPE int USING purge_audit(a)",
+            "ALTER TABLE t ADD COLUMN c int DEFAULT purge_audit()",
+            "ALTER TABLE t ADD CONSTRAINT c CHECK (purge_audit(a) > 0)",
+            "ALTER DOMAIN d ADD CONSTRAINT c CHECK (purge_audit(VALUE) > 0)"})
+    void alterExpressionIsChecked(String sql) throws JSQLParserException {
+        StatementFeatures impure = analyse(sql);
+        assertThat(impure.modifiesSchema()).isTrue();
+        assertThat(impure.mayModifyData()).isTrue();
+        assertThat(impure.getUnresolvedReferences()).containsExactly("purge_audit");
+
+        StatementFeatures pure = analyse(sql, "purge_audit");
+        assertThat(pure.mayModifyData()).isFalse();
+        assertThat(pure.getUnresolvedReferences()).isEmpty();
+    }
+
     // ---- the cases a flag union gets wrong --------------------------------------------------
 
     @Test
