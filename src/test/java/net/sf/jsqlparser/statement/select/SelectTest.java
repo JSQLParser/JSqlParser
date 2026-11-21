@@ -4476,6 +4476,15 @@ public class SelectTest {
     }
 
     @Test
+    public void testMultiPartUserVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg");
+        assertSqlCanBeParsedAndDeparsed("SELECT @a.b.c.d");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM DIRECTORY(@db.sch.stg)");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg = 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT @db.sch.stg := @db.sch.stg + 1 AS counter");
+    }
+
+    @Test
     public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
     }
@@ -6837,5 +6846,27 @@ public class SelectTest {
                     () -> CCJSqlParserUtil.parse(sqlStr, parser -> parser.withDialect(dialect)),
                     dialect + " " + sqlStr);
         }
+    @Test
+    void testPostgreSqlOrderByUsingOperator() throws JSQLParserException {
+        for (String sql : new String[] {
+                "SELECT * FROM t ORDER BY a ASC NULLS LAST, b USING <",
+                "SELECT * FROM t ORDER BY a USING >",
+                "SELECT * FROM t ORDER BY a USING <= NULLS FIRST",
+                "SELECT * FROM t ORDER BY a USING ~<~, b DESC",
+                "SELECT sum(a) OVER (ORDER BY b USING >) FROM t"}) {
+            assertSqlCanBeParsedAndDeparsed(sql, true,
+                    parser -> parser.withDialect(Dialect.POSTGRESQL));
+        }
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * FROM t ORDER BY b USING <");
+        assertThat(select.getOrderByElements().get(0).getUsingOperator()).isEqualTo("<");
+    }
+
+    @Test
+    void testStringFunctionWithInPredicateInsideCase() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT SUBSTR(CASE WHEN x IN (1, 2) THEN 'a' END, 1, 2) FROM B", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT POSITION(CASE WHEN x IN (1, 2) THEN 'a' END IN y) FROM B", true);
     }
 }

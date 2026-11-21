@@ -10,11 +10,16 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +29,31 @@ class BetweenTest {
         String sqlStr =
                 "select col FROM tbl WHERE start_time BETWEEN 1706024185 AND MyFunc() - 734400";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT 1 FROM t WHERE d BETWEEN (SELECT m FROM x) - 1 AND (SELECT m FROM x)",
+            "SELECT 1 FROM t WHERE d BETWEEN (SELECT m FROM x) - INTERVAL '7 days' AND now()"
+    })
+    void testBetweenWithSubqueryArithmeticInLowerBoundIssue2944(String sql)
+            throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+        Between between = assertInstanceOf(Between.class, select.getWhere());
+        Subtraction lower =
+                assertInstanceOf(Subtraction.class, between.getBetweenExpressionStart());
+        assertInstanceOf(ParenthesedSelect.class, lower.getLeftExpression());
+    }
+
+    @Test
+    void testBetweenWithSubqueryArithmeticInUpperBoundIssue2944() throws JSQLParserException {
+        String sql =
+                "SELECT 1 FROM t WHERE d BETWEEN (SELECT m FROM x) AND (SELECT m FROM x) + 1";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+        Between between = assertInstanceOf(Between.class, select.getWhere());
+        assertInstanceOf(ParenthesedSelect.class, between.getBetweenExpressionStart());
+        Addition upper = assertInstanceOf(Addition.class, between.getBetweenExpressionEnd());
+        assertInstanceOf(ParenthesedSelect.class, upper.getLeftExpression());
     }
 
     @Test

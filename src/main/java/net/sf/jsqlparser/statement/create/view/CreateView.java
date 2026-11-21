@@ -25,21 +25,6 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateView extends ASTNodeAccessImpl implements Statement {
 
     private MySqlViewOptions mySqlOptions;
-
-    public MySqlViewOptions getMySqlOptions() {
-        return mySqlOptions;
-    }
-
-    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
-        this.mySqlOptions = mySqlOptions;
-    }
-
-    public void appendMySqlOptionsTo(StringBuilder builder) {
-        if (mySqlOptions != null) {
-            mySqlOptions.appendTo(builder);
-        }
-    }
-
     private Table view;
     private Select select;
     private boolean orReplace = false;
@@ -51,6 +36,7 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
     private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private Boolean backup;
     private boolean withReadOnly = false;
+    private boolean withNoSchemaBinding = false;
     private boolean ifNotExists = false;
     private List<String> viewCommentOptions = null;
     private boolean recursive;
@@ -65,6 +51,20 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
     /** DEFAULT preserves a CHECK OPTION clause with no explicit LOCAL or CASCADED keyword. */
     public enum CheckOption {
         DEFAULT, LOCAL, CASCADED
+    }
+
+    public MySqlViewOptions getMySqlOptions() {
+        return mySqlOptions;
+    }
+
+    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
+        this.mySqlOptions = mySqlOptions;
+    }
+
+    public void appendMySqlOptionsTo(StringBuilder builder) {
+        if (mySqlOptions != null) {
+            mySqlOptions.appendTo(builder);
+        }
     }
 
     public boolean isRecursive() {
@@ -265,6 +265,19 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
         }
     }
 
+    public boolean isWithNoSchemaBinding() {
+        return withNoSchemaBinding;
+    }
+
+    public void setWithNoSchemaBinding(boolean withNoSchemaBinding) {
+        this.withNoSchemaBinding = withNoSchemaBinding;
+    }
+
+    public CreateView withWithNoSchemaBinding(boolean withNoSchemaBinding) {
+        this.setWithNoSchemaBinding(withNoSchemaBinding);
+        return this;
+    }
+
     public boolean isWithReadOnly() {
         return withReadOnly;
     }
@@ -360,6 +373,9 @@ public class CreateView extends ASTNodeAccessImpl implements Statement {
         appendCheckOptionTo(sql, checkOption);
         if (withData != null) {
             sql.append(withData ? " WITH DATA" : " WITH NO DATA");
+        }
+        if (withNoSchemaBinding) {
+            sql.append(" WITH NO SCHEMA BINDING");
         }
     }
 
