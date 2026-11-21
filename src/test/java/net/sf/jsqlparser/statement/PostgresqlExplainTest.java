@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.ExplainStatement.Option;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
+import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,34 @@ class PostgresqlExplainTest {
             "EXPLAIN some_table"
     })
     void rejectInvalidPostgresqlOptions(String sql) {
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql,
+                parser -> parser.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(false)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "EXPLAIN EXECUTE q",
+            "EXPLAIN EXECUTE q (42)",
+            "EXPLAIN (FORMAT JSON) EXECUTE q (42)",
+            "EXPLAIN ANALYZE VERBOSE EXECUTE q (42, 7)"
+    })
+    void explainPreparedExecution(String sql) throws JSQLParserException {
+        ExplainStatement explain = assertInstanceOf(ExplainStatement.class,
+                TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true,
+                        parser -> parser.withDialect(Dialect.POSTGRESQL)));
+        Execute execute = assertInstanceOf(Execute.class, explain.getStatement());
+        assertEquals("q", execute.getName());
+        assertEquals(Execute.ExecType.EXECUTE, execute.getExecType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SUMMARIZE EXECUTE q",
+            "EXPLAIN EXECUTE q 42",
+            "EXPLAIN EXECUTE q USING @x",
+            "EXPLAIN CALL q()"
+    })
+    void rejectOtherExecutionForms(String sql) {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql,
                 parser -> parser.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(false)));
     }

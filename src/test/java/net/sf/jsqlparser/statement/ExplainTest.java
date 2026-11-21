@@ -13,8 +13,10 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.execute.Execute;
 import org.junit.jupiter.api.Test;
 
 public class ExplainTest {
@@ -22,6 +24,24 @@ public class ExplainTest {
     @Test
     public void testDescribe() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXPLAIN SELECT * FROM mytable");
+    }
+
+    @Test
+    public void testExplainPreparedExecutionWithoutDialect() throws JSQLParserException {
+        ExplainStatement explain =
+                (ExplainStatement) assertSqlCanBeParsedAndDeparsed("EXPLAIN EXECUTE q");
+        assertThat(explain.getStatement()).isInstanceOf(Execute.class);
+        ExplainStatement bare =
+                (ExplainStatement) assertSqlCanBeParsedAndDeparsed("EXPLAIN EXECUTE");
+        assertThat(bare.getTable().getName()).isEqualTo("EXECUTE");
+    }
+
+    @Test
+    public void testExplainExecuteAsMySqlTableAndColumn() throws JSQLParserException {
+        ExplainStatement explain = (ExplainStatement) assertSqlCanBeParsedAndDeparsed(
+                "EXPLAIN EXECUTE q", true, parser -> parser.withDialect(Dialect.MYSQL));
+        assertThat(explain.getTable().getName()).isEqualTo("EXECUTE");
+        assertThat(explain.getStatement()).isNull();
     }
 
     @Test
