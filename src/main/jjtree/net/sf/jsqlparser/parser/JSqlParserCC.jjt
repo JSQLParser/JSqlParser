@@ -2501,6 +2501,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Whether the parser was configured with Dialect.SNOWFLAKE. */
+    private boolean isSnowflakeDialect() {
+        return Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect));
+    }
+
+    /**
+     * Whether the pending "," ends the comma separated FROM list, followed directly by WHERE.
+     */
+    private boolean isTrailingFromItemCommaAhead() {
+        return ",".equals(getToken(1).image) && getToken(2).kind == K_WHERE;
+    }
+
     /**
      * Whether the REPLACE at {@code offset} is DuckDB's unparenthesized {@code REPLACE expr AS name}:
      * an AS follows at the top level before the end of the select item, so that a star aliased
@@ -13652,10 +13664,13 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
         [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
+        // trailing comma after the last table: FROM a, b, WHERE ...
+        [ LOOKAHEAD({ isSnowflakeDialect() && isTrailingFromItemCommaAhead() }) "," ]
     ]
     [ LOOKAHEAD(3) <K_FROM> <K_ONLY> { plainSelect.setUsingOnly(true); } fromItem=FromItem()
             [ LOOKAHEAD(2) lateralViews=LateralViews() ]
             [ LOOKAHEAD(2) joins=JoinsList() ]
+            [ LOOKAHEAD({ isSnowflakeDialect() && isTrailingFromItemCommaAhead() }) "," ]
     ]
 
     // Clickhouse FINAL as shown at https://clickhouse.com/docs/en/operations/settings/settings#final
