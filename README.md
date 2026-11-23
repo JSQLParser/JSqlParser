@@ -145,6 +145,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **DML** | `INSERT` · `UPDATE` · `UPSERT` · `MERGE` · `DELETE` · `TRUNCATE TABLE` |
 | **Oracle RETURNING** | Named output binds (`INTO :name`), JDBC output parameters (`INTO ?`), and `BULK COLLECT INTO` |
 | **DDL** | `CREATE …` · `ALTER …` · `DROP …` |
+| **DuckDB macro removal** | `DROP MACRO [IF EXISTS] name` · `DROP MACRO TABLE [IF EXISTS] name` |
 | **Oracle vector types** | `VECTOR(*, *)` · `VECTOR(*, FLOAT32)` · `VECTOR(3, *)`, including dense and sparse storage formats |
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **Two-phase commit** | PostgreSQL `PREPARE TRANSACTION` · `COMMIT PREPARED` · `ROLLBACK PREPARED` · MySQL `XA START`/`END`/`PREPARE`/`COMMIT`/`ROLLBACK`/`RECOVER` |

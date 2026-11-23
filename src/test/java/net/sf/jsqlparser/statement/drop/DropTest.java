@@ -21,7 +21,10 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class DropTest {
 
@@ -83,6 +86,21 @@ public class DropTest {
                 new Drop().withType("TABLE").withIfExists(true).withName(new Table("my_table"));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP MACRO simple", "DROP MACRO IF EXISTS main.named",
+            "DROP MACRO TABLE rows_at", "DROP MACRO TABLE IF EXISTS main.\"user rows\""})
+    void testDuckDbDropMacroRoundTrip(String statement) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    void testDuckDbDropTableMacroTypeAndName() throws JSQLParserException {
+        Drop drop = (Drop) CCJSqlParserUtil.parse("DROP MACRO TABLE IF EXISTS main.rows_at");
+        assertEquals("MACRO TABLE", drop.getType());
+        assertEquals("main.rows_at", drop.getName().getFullyQualifiedName());
+        assertTrue(drop.isIfExists());
     }
 
     @Test
