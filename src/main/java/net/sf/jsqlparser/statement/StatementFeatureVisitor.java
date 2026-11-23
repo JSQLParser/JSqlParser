@@ -148,6 +148,7 @@ import net.sf.jsqlparser.statement.notify.ListenStatement;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.resourcegroup.AlterResourceGroup;
@@ -1334,6 +1335,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         public <S> Void visit(TableStatement tableStatement, S context) {
             analysis.certain(StmtFeature.READS_DATA);
             return super.visit(tableStatement, context);
+        }
+
+        /** A pipe query always starts from a FROM item, as in FROM t |> WHERE a = 1. */
+        @Override
+        public <S> Void visit(FromQuery fromQuery, S context) {
+            analysis.certain(StmtFeature.READS_DATA);
+            return super.visit(fromQuery, context);
         }
 
         /**

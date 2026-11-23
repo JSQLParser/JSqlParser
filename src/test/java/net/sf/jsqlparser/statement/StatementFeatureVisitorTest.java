@@ -347,6 +347,17 @@ class StatementFeatureVisitorTest {
         assertThat(f.modifiesData()).isTrue();
     }
 
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"WITH c AS (DELETE FROM t RETURNING *) FROM c |> SELECT a",
+            "WITH c AS (UPDATE t SET a = 1 RETURNING *) FROM u |> WHERE a = 1"})
+    @DisplayName("data-modifying CTE in front of a pipe query: the CTE still mutates")
+    void dataModifyingCteBeforePipeQuery(String sql) throws JSQLParserException {
+        StatementFeatures f = analyse(sql);
+        assertThat(f.returnsResultSet()).isTrue();
+        assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
+        assertThat(f.modifiesData()).isTrue();
+    }
+
     @Test
     @DisplayName("RETURNING inside a nested CTE of an INSERT returns nothing to the client")
     void nestedReturningIsNotAResultSet() throws JSQLParserException {
@@ -742,7 +753,21 @@ class StatementFeatureVisitorTest {
                 "SHOW TABLE STATUS WHERE length(pg_read_file('x')) > 0",
                 "SHOW COLUMNS FROM t WHERE length(pg_read_file('x')) > 0",
                 "SHOW INDEX FROM t WHERE length(pg_read_file('x')) > 0",
-                "SHOW VARIABLES WHERE length(pg_read_file('x')) > 0"})
+                "SHOW VARIABLES WHERE length(pg_read_file('x')) > 0",
+                "FROM t |> WHERE length(pg_read_file('x')) > 0",
+                "FROM t |> SELECT pg_read_file('x')",
+                "FROM t |> EXTEND pg_read_file('x') AS y",
+                "FROM t |> SET a = pg_read_file('x')",
+                "FROM t |> AGGREGATE max(a) GROUP BY pg_read_file('x')",
+                "FROM t |> ORDER BY pg_read_file('x')",
+                "FROM t |> LIMIT length(pg_read_file('x'))",
+                "FROM t |> JOIN u ON u.a = pg_read_file('x')",
+                "FROM t JOIN u ON u.a = pg_read_file('x')",
+                "FROM t |> CALL pg_read_file('x')",
+                "FROM t |> UNION ALL (SELECT pg_read_file('x'))",
+                "FROM t |> PIVOT (sum(pg_read_file('x')) FOR a IN (1))",
+                "FROM t |> WINDOW sum(pg_read_file('x')) OVER () AS w",
+                "SELECT * FROM (FROM t |> WHERE length(pg_read_file('x')) > 0)"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
