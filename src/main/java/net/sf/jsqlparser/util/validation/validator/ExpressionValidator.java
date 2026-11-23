@@ -44,6 +44,8 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.JsonFunctionExpression;
+import net.sf.jsqlparser.expression.JsonKeyValuePair;
 import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
@@ -1103,13 +1105,46 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(JsonAggregateFunction expression, S context) {
-        // no idea what this is good for
+        validateOptionalExpression(expression.getExpression(), this);
+        if (expression.getKey() instanceof Expression) {
+            validateOptionalExpression((Expression) expression.getKey(), this);
+        }
+        if (expression.getValue() instanceof Expression) {
+            validateOptionalExpression((Expression) expression.getValue(), this);
+        }
+        validateOptionalOrderByElements(expression.getExpressionOrderByElements());
+        validateOptionalExpression(expression.getFilterExpression(), this);
+        validateOptionalExpressionList(expression.getPartitionExpressionList());
+        validateOptionalOrderByElements(expression.getOrderByElements());
         return null;
     }
 
     @Override
     public <S> Void visit(JsonFunction expression, S context) {
-        // no idea what this is good for
+        for (JsonKeyValuePair keyValuePair : expression.getKeyValuePairs()) {
+            if (keyValuePair.getKey() instanceof Expression) {
+                validateOptionalExpression((Expression) keyValuePair.getKey(), this);
+            }
+            if (keyValuePair.getValue() instanceof Expression) {
+                validateOptionalExpression((Expression) keyValuePair.getValue(), this);
+            }
+        }
+        for (JsonFunctionExpression jsonExpression : expression.getExpressions()) {
+            validateOptionalExpression(jsonExpression.getExpression(), this);
+        }
+        if (expression.getInputExpression() != null) {
+            validateOptionalExpression(expression.getInputExpression().getExpression(), this);
+        }
+        validateOptionalExpression(expression.getJsonPathExpression(), this);
+        for (Expression passingExpression : expression.getPassingExpressions()) {
+            validateOptionalExpression(passingExpression, this);
+        }
+        if (expression.getOnEmptyBehavior() != null) {
+            validateOptionalExpression(expression.getOnEmptyBehavior().getExpression(), this);
+        }
+        if (expression.getOnErrorBehavior() != null) {
+            validateOptionalExpression(expression.getOnErrorBehavior().getExpression(), this);
+        }
         return null;
     }
 
