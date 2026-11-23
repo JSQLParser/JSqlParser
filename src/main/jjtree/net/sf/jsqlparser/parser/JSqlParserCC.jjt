@@ -29866,6 +29866,7 @@ CreateType CreateType():
     RangeTypeDefinition range = new RangeTypeDefinition();
     RangeTypeDefinition.Option option;
     List<DefinitionElement> elements;
+    ColDataType aliasType;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
@@ -29889,6 +29890,8 @@ CreateType CreateType():
             | "(" [ attribute=TypeAttribute() { composite.getAttributes().add(attribute); }
                     ( "," attribute=TypeAttribute() { composite.getAttributes().add(attribute); } )* ]
               ")" { result.setDefinition(composite); }
+            | LOOKAHEAD({ getAsString(Feature.dialect) == null })
+              aliasType=ColDataType() { result.setDefinition(new AliasTypeDefinition(aliasType)); }
         )
     ]
     { return result; }

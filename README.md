@@ -149,6 +149,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **Two-phase commit** | PostgreSQL `PREPARE TRANSACTION` · `COMMIT PREPARED` · `ROLLBACK PREPARED` · MySQL `XA START`/`END`/`PREPARE`/`COMMIT`/`ROLLBACK`/`RECOVER` |
 | **PostgreSQL maintenance** | `VACUUM` · `ANALYZE` · `CLUSTER` · `CHECKPOINT` |
+| **DuckDB type aliases** | `CREATE TYPE name AS data_type`, including scalar, array, and struct types |
 | **Prepared-statement query plans** | `EXPLAIN EXECUTE` with optional arguments and PostgreSQL `EXPLAIN` options |
 | **PostgreSQL session statements** | `DISCARD` · `LISTEN` · `UNLISTEN` · `SHOW`/`RESET TIME ZONE`/`TRANSACTION ISOLATION LEVEL`/`SESSION AUTHORIZATION` · `COPY` options from before 9.0 |
 | **PostgreSQL foreign schema import** | `IMPORT FOREIGN SCHEMA … [LIMIT TO \| EXCEPT (…)] FROM SERVER … INTO … [OPTIONS (…)]` |
