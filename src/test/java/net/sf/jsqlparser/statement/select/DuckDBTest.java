@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -30,11 +31,15 @@ import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.type.AliasTypeDefinition;
+import net.sf.jsqlparser.statement.create.type.CreateType;
 import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,6 +64,38 @@ public class DuckDBTest {
                         "  values2 struct( field1 varchar(255), field2 double) NOT NULL\n" +
                         ");";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CREATE TYPE status_code AS BIGINT",
+            "CREATE TYPE reports.money_code AS DECIMAL(12, 2)",
+            "CREATE TYPE \"list code\" AS INTEGER[]",
+            "CREATE TYPE device_reading AS STRUCT(device VARCHAR, value BIGINT)"
+    })
+    void testCreateTypeAliases(String sql) throws JSQLParserException {
+        CreateType statement = (CreateType) TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+        Assertions.assertInstanceOf(AliasTypeDefinition.class, statement.getDefinition());
+        Assertions.assertEquals(statement.toString(),
+                CCJSqlParserUtil.parse(statement.toString()).toString());
+    }
+
+    @Test
+    void testCreateTypeAliasDataType() throws JSQLParserException {
+        CreateType statement = (CreateType) CCJSqlParserUtil.parse(
+                "CREATE TYPE reports.money_code AS DECIMAL(12, 2)");
+        AliasTypeDefinition definition = (AliasTypeDefinition) statement.getDefinition();
+        Assertions.assertEquals("reports.money_code", statement.getName());
+        Assertions.assertEquals("DECIMAL", definition.getDataType().getBaseTypeName());
+        Assertions.assertEquals(12, definition.getDataType().getPrecision());
+        Assertions.assertEquals(2, definition.getDataType().getScale());
+    }
+
+    @Test
+    void testCreateTypeAliasRejectedInPostgreSqlDialect() {
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("CREATE TYPE status_code AS BIGINT",
+                        parser -> parser.withDialect(Dialect.POSTGRESQL)));
     }
 
     @Test
