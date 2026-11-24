@@ -5457,6 +5457,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * SQL Server's {@code ENABLE | DISABLE TRIGGER t1, t2} names several triggers in one action. PostgreSQL
+     * takes one trigger per action, so a plain name after the comma, rather than the next action, is the list.
+     */
+    private boolean isTriggerNameListAhead() {
+        Token next = getToken(5);
+        return ",".equals(getToken(4).image)
+                && (next.kind == S_IDENTIFIER || next.kind == S_QUOTED_IDENTIFIER)
+                && !"OWNER".equalsIgnoreCase(next.image) && !"INHERIT".equalsIgnoreCase(next.image)
+                && !"REPLICA".equalsIgnoreCase(next.image);
+    }
+
     private boolean isPostgreSqlRelationActionAhead() {
         Token first = getToken(1);
         if ((first.kind == K_ENABLE || first.kind == K_DISABLE)
@@ -5470,12 +5482,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         // VALIDATE CONSTRAINT starts no other ALTER TABLE action in any dialect.
         if (first.kind == K_VALIDATE && getToken(2).kind == K_CONSTRAINT) { return true; }
-        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
+        // The other actions are PostgreSQL's: read them with that dialect and without one, never with another.
+        // Otherwise the generic fallback takes the action and every action after it as one unstructured text.
+        String dialect = getAsString(Feature.dialect);
+        boolean postgreSql = Dialect.POSTGRESQL.name().equals(dialect);
+        if (!postgreSql && dialect != null) { return false; }
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
-                || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
+                || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER")
+                // Without a dialect only CLUSTER ON is PostgreSQL's; CLUSTER BY belongs to other products.
+                || isKeywordAhead("CLUSTER") && (postgreSql || getToken(2).kind == K_ON)
                 || first.kind == K_OF || first.kind == K_NOT && getToken(2).kind == K_OF
                 || (first.kind == K_ENABLE || first.kind == K_DISABLE)
-                    && (getToken(2).kind == K_TRIGGER || getToken(2).kind == K_ALWAYS
+                    && (getToken(2).kind == K_TRIGGER && (postgreSql || !isTriggerNameListAhead())
+                        || getToken(2).kind == K_ALWAYS
                         || "REPLICA".equalsIgnoreCase(getToken(2).image))) { return true; }
         if (first.kind == K_NO) { return "INHERIT".equalsIgnoreCase(getToken(2).image); }
         if (first.kind == K_SET) {
@@ -5490,12 +5509,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || getToken(4).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(5).image);
         }
         int offset = getToken(2).kind == K_COLUMN ? 4 : 3;
-        return getToken(offset).kind == K_RESET
-                || getToken(offset).kind == K_DROP && "EXPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
-                || getToken(offset).kind == K_SET && (getToken(offset + 1).kind == OPENING_BRACKET
-                    || getToken(offset + 1).kind == K_STORAGE
+        if (getToken(offset).kind == K_RESET
+                || getToken(offset).kind == K_SET && getToken(offset + 1).kind == OPENING_BRACKET) { return true; }
+        // Without a dialect the generic ALTER COLUMN branch already reads these column actions.
+        return postgreSql && (getToken(offset).kind == K_DROP && "EXPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
+                || getToken(offset).kind == K_SET && (getToken(offset + 1).kind == K_STORAGE
                     || "COMPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
-                    || "STATISTICS".equalsIgnoreCase(getToken(offset + 1).image));
+                    || "STATISTICS".equalsIgnoreCase(getToken(offset + 1).image)));
     }
 
     private void validateRelationAction(AlterRelation.ObjectType type, RelationAlterAction action) throws ParseException {
