@@ -2064,7 +2064,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (!prev.image.isEmpty()) {
             switch (prev.image.charAt(0)) {
                 // Structural delimiters
-                case '.': case ',': case ':': case '(': case '=':
+                case '.': case ',': case ':': case '(': case '=': case '[':
                 // Comparison and arithmetic operators
                 case '>': case '<': case '!': case '^':
                 case '+': case '-': case '*': case '/': case '%':
