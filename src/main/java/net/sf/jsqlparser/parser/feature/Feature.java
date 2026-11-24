@@ -1427,6 +1427,12 @@ public enum Feature {
     allowHashLineComments(false),
 
     /**
+     * allows H2 and Snowflake `//` line comments; disabled by default, where `//*` is a division
+     * followed by a block comment as in MySQL, PostgreSQL, SQL Server and SQLite
+     */
+    allowDoubleSlashLineComments(false),
+
+    /**
      * treats three consecutive newlines as a statement separator (enabled by default). When
      * disabled, blank lines are plain whitespace, so a statement containing them is parsed whole
      * instead of ending, or failing to parse, at the first run of blank lines

@@ -6855,9 +6855,13 @@ TOKEN : /* Numeric Constants */
   |     < #HEX_DIGIT: ["0"-"9","A"-"F"]  >
 }
 
+// `//` starts a line comment only under Feature.allowDoubleSlashLineComments
+// (H2, Snowflake), where the stream rewrites its first `/` to
+// SimpleCharStream.DOUBLE_SLASH_SUBSTITUTION as for `#` below. Elsewhere
+// `//*` is a division followed by a block comment.
 SPECIAL_TOKEN:
 {
-   < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*>
+   < LINE_COMMENT: ("--" | "\u0004/") (~["\r","\n"])*>
 }
 
 // MySQL `#` line comment (#2499), flag-gated.  Under
