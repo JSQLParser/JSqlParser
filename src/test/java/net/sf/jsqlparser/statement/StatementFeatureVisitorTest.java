@@ -767,7 +767,9 @@ class StatementFeatureVisitorTest {
                 "FROM t |> UNION ALL (SELECT pg_read_file('x'))",
                 "FROM t |> PIVOT (sum(pg_read_file('x')) FOR a IN (1))",
                 "FROM t |> WINDOW sum(pg_read_file('x')) OVER () AS w",
-                "SELECT * FROM (FROM t |> WHERE length(pg_read_file('x')) > 0)"})
+                "SELECT * FROM (FROM t |> WHERE length(pg_read_file('x')) > 0)",
+                "SELECT a FROM t LATERAL VIEW explode(pg_read_file('x')) v AS c",
+                "SELECT a FROM t LATERAL VIEW OUTER explode(pg_read_file('x')) v AS c"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
