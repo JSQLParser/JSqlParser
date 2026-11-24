@@ -2135,6 +2135,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
         }
 
+        // BigQuery SELECT AS STRUCT / AS VALUE IF(...): STRUCT and VALUE can also be plain
+        // identifiers, so only the IF( function call is accepted after them.
+        if ((prev.kind == K_STRUCT || prev.kind == K_VALUE)
+                && getToken(1).kind == K_IF && getToken(2).kind == OPENING_BRACKET) {
+            return true;
+        }
+
         // ── 5. Conservative default: fall back to follower check ──────
         return isReservedKeywordSafeByFollower();
     }

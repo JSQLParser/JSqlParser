@@ -341,7 +341,21 @@ public class BigQueryTest {
     }
 
     @Test
-    void testCloneRemainsUsableAsIdentifier() throws JSQLParserException {
+    void testCreateTableAsSelectAsStructWithIfFunction() throws JSQLParserException {
+        String sqlStr = "CREATE OR REPLACE TABLE p.d.t AS\n"
+                + "SELECT ARRAY(SELECT AS STRUCT IF(x.l, 'a', 'b') AS label, x.prob AS prob FROM UNNEST(s.arr) x) AS probs\n"
+                + "FROM p.d.src s";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testSelectAsValueWithIfFunction() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY(SELECT AS VALUE IF(x.l, 'a', 'b') FROM UNNEST(s.arr) x) FROM t s";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCloneRemainsUsableAsIdentifier()throws JSQLParserException {
         String sqlStr = "SELECT clone FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
