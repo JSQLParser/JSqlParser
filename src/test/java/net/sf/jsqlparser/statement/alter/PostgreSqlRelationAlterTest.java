@@ -246,6 +246,79 @@ class PostgreSqlRelationAlterTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "OWNER TO bob", "OWNER TO CURRENT_USER", "SET (fillfactor=70)",
+            "SET (toast.autovacuum_enabled=false,fillfactor=70)", "RESET (fillfactor)",
+            "REPLICA IDENTITY FULL", "REPLICA IDENTITY USING INDEX ix", "SET TABLESPACE pg_default",
+            "SET ACCESS METHOD heap", "SET WITHOUT CLUSTER",
+            "SET WITHOUT OIDS", "SET LOGGED", "SET UNLOGGED", "CLUSTER ON ix", "OF public.typ",
+            "NOT OF", "INHERIT p", "NO INHERIT p", "ENABLE TRIGGER ALL", "DISABLE TRIGGER USER",
+            "DISABLE TRIGGER trg", "ENABLE ALWAYS TRIGGER trg", "ENABLE REPLICA TRIGGER trg",
+            "ALTER CONSTRAINT ck INHERIT", "ALTER CONSTRAINT ck NO INHERIT",
+            "ALTER COLUMN c SET (n_distinct=10)", "ALTER COLUMN c RESET (n_distinct)"})
+    void postgreSqlTableActionsAreStructuredWithoutADialect(String action)
+            throws JSQLParserException {
+        String sql = "ALTER TABLE t " + action + ", ADD COLUMN z INT";
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        List<AlterExpression> expressions = alter.getAlterExpressions();
+        assertEquals(2, expressions.size());
+        RelationAlterAction withoutDialect =
+                assertInstanceOf(RelationAlterAction.class, expressions.get(0));
+        RelationAlterAction withPostgreSql =
+                (RelationAlterAction) ((Alter) parse(sql)).getAlterExpressions().get(0);
+        assertEquals(withPostgreSql.getKind(), withoutDialect.getKind());
+        assertEquals(withPostgreSql.toString(), withoutDialect.toString());
+        assertEquals(AlterOperation.ADD, expressions.get(1).getOperation());
+        assertRoundTrip(alter);
+    }
+
+    @Test
+    void setSchemaIsStructuredWithoutADialect() throws JSQLParserException {
+        // PostgreSQL takes SET SCHEMA only as the sole action of the statement.
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed("ALTER TABLE t SET SCHEMA s2", true);
+        RelationAlterAction action =
+                assertInstanceOf(RelationAlterAction.class, alter.getAlterExpressions().get(0));
+        assertEquals(RelationAlterAction.Kind.SET_SCHEMA, action.getKind());
+        assertEquals("s2", action.getValue());
+    }
+
+    @Test
+    void otherDialectsKeepTheGenericReadingOfPostgreSqlTableActions() throws JSQLParserException {
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, Dialect.SQLSERVER}) {
+            Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed("ALTER TABLE t OWNER TO bob",
+                    true, p -> p.withDialect(dialect));
+            assertEquals(AlterOperation.UNSPECIFIC,
+                    alter.getAlterExpressions().get(0).getOperation());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t CLUSTER BY (a)", "ALTER TABLE t DISABLE TRIGGER t1, t2",
+            "ALTER TABLE t ENABLE TRIGGER t1, t2, ADD COLUMN z INT"})
+    void otherProductsFormsKeepTheirReadingWithoutADialect(String sql)
+            throws JSQLParserException {
+        // Snowflake's CLUSTER BY and SQL Server's trigger lists are not PostgreSQL actions.
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql, true);
+        assertEquals(1, alter.getAlterExpressions().size());
+        assertEquals(AlterOperation.UNSPECIFIC,
+                alter.getAlterExpressions().get(0).getOperation());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ALTER TABLE t ALTER COLUMN c SET STATISTICS 100",
+            "ALTER TABLE t ALTER COLUMN c SET STORAGE EXTERNAL",
+            "ALTER TABLE t ALTER COLUMN c SET COMPRESSION lz4",
+            "ALTER TABLE t ALTER COLUMN c DROP EXPRESSION"})
+    void columnActionsOfTheGenericBranchKeepTheirModelWithoutADialect(String sql)
+            throws JSQLParserException {
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql, true);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+        assertFalse(expression instanceof RelationAlterAction);
+        assertEquals(AlterOperation.ALTER, expression.getOperation());
+    }
+
     private static Statement parse(String sql) throws JSQLParserException {
         return CCJSqlParserUtil.parse(sql, p -> p.withDialect(Dialect.POSTGRESQL));
     }
