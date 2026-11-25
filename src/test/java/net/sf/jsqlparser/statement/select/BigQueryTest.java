@@ -350,12 +350,13 @@ public class BigQueryTest {
 
     @Test
     void testSelectAsValueWithIfFunction() throws JSQLParserException {
-        String sqlStr = "SELECT ARRAY(SELECT AS VALUE IF(x.l, 'a', 'b') FROM UNNEST(s.arr) x) FROM t s";
+        String sqlStr =
+                "SELECT ARRAY(SELECT AS VALUE IF(x.l, 'a', 'b') FROM UNNEST(s.arr) x) FROM t s";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test
-    void testCloneRemainsUsableAsIdentifier()throws JSQLParserException {
+    void testCloneRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT clone FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
