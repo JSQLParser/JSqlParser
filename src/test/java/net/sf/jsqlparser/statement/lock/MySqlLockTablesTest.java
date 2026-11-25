@@ -324,8 +324,12 @@ class MySqlLockTablesTest {
         // only the MySQL dialect runs the /*!40000 ... */ statements of a server of version 8.4
         assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Alter", "Insert", "Alter",
                 "UnlockStatement"), dumpStatements(script, MYSQL));
-        for (Consumer<CCJSqlParser> dialect : List.of(NO_DIALECT, MARIADB)) {
+        for (Consumer<CCJSqlParser> dialect : List.of(NO_DIALECT)) {
             assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Insert",
+                    "UnlockStatement"), dumpStatements(script, dialect));
+        }
+        for (Consumer<CCJSqlParser> dialect : List.of(MARIADB)) {
+            assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Alter", "Insert", "Alter",
                     "UnlockStatement"), dumpStatements(script, dialect));
         }
     }
