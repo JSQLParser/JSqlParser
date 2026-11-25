@@ -10,8 +10,14 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
  * @author Mathieu Goeminne
@@ -165,5 +171,33 @@ public class CaseExpressionTest {
     void testFormatClause() throws JSQLParserException {
         String sqlStr = "SELECT CAST('18-12-03' AS DATE FORMAT 'YY-MM-DD') AS string_to_date";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "CASE -1 WHEN -1 THEN 'negative' ELSE 'other' END",
+            "CASE -a WHEN 1 THEN 2 END",
+            "CASE +a WHEN 1 THEN 2 END",
+            "CASE -a + b WHEN 1 THEN 2 END",
+            "CASE -t.a WHEN 1 THEN 2 END",
+            "CASE -abs(a) WHEN 1 THEN 2 END",
+            "CASE -(a) WHEN 1 THEN 2 END"})
+    void testSignedSwitchExpression(String expressionStr) throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(expressionStr, true);
+        CaseExpression caseExpression = assertInstanceOf(CaseExpression.class,
+                CCJSqlParserUtil.parseExpression(expressionStr));
+        assertEquals(expressionStr.substring(5, expressionStr.indexOf(" WHEN")),
+                caseExpression.getSwitchExpression().toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "case - 1",
+            "case + 1",
+            "case - CASE WHEN a THEN 1 END",
+            "case - (CASE a WHEN 1 THEN 2 END)"})
+    void testCaseColumnFollowedBySign(String expressionStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT " + expressionStr + " FROM t", true);
+        assertInstanceOf(BinaryExpression.class, CCJSqlParserUtil.parseExpression(expressionStr));
     }
 }
