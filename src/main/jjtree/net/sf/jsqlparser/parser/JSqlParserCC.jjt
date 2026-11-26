@@ -2030,6 +2030,20 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether the "[" follows an operand (a name, a call or another subscript) and so opens a subscript,
+     * rather than an array literal. The token before it is found from the last consumed token, as the
+     * parser may be scanning ahead.
+     */
+    private boolean isSubscriptOpening(Token opening) {
+        Token before = null;
+        for (Token t = token; t != null && t != opening; t = t.next) {
+            before = t;
+        }
+        return before != null && (before.kind == S_IDENTIFIER || before.kind == S_QUOTED_IDENTIFIER
+                || ")".equals(before.image) || "]".equals(before.image));
+    }
+
+    /**
      * Determines whether a reserved keyword token can be treated as an unquoted
      * identifier in the current parser position.
      *
@@ -2064,13 +2078,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (!prev.image.isEmpty()) {
             switch (prev.image.charAt(0)) {
                 // Structural delimiters
-                case '.': case ',': case ':': case '(': case '=': case '[':
+                case '.': case ',': case ':': case '(': case '=':
                 // Comparison and arithmetic operators
                 case '>': case '<': case '!': case '^':
                 case '+': case '-': case '*': case '/': case '%':
                 case '~': case '|': case '&': case '?':
                     return true;
             }
+        }
+
+        // After the "[" of an array literal an expression starts, so any keyword may name a function,
+        // as in [IF(a, b, c)]. After the "[" of a subscript the keyword keeps its meaning (arr[OFFSET(1)]).
+        if ("[".equals(prev.image) && !isSubscriptOpening(prev)) {
+            return true;
         }
 
         // ── 3. If followed by . or = the keyword is a name/property key ──
@@ -12556,7 +12576,8 @@ Column Column() #Column :
     // @todo: we better should return a SEQUENCE instead of a COLUMN
     [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); name = getToken(0); } ]
 
-    [ LOOKAHEAD(2) arrayConstructor = Subscript() ]
+    // BigQuery's arr[OFFSET(n)] is an ArrayExpression with the OFFSET accessor, not a column subscript.
+    [ LOOKAHEAD(2, { !(getToken(2).kind == K_OFFSET && "(".equals(getToken(3).image)) }) arrayConstructor = Subscript() ]
     {
         Column col = createColumn(data.getNames(), data.getDelimiters());
         if (tk != null) { col.withCommentText(tk.image); }
