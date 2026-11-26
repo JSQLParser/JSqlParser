@@ -113,12 +113,13 @@ public class SelectUtilsTest {
                 select.toString());
     }
 
+    @Test
     public void testTableAliasIssue311_2() {
         Table table1 = new Table("mytable1");
         table1.setAlias(new Alias("tab1"));
 
         Column col = new Column(table1, "col1");
         assertEquals("tab1.col1", col.toString());
-        assertEquals("mytable.col1", col.getFullyQualifiedName());
+        assertEquals("mytable1.col1", col.getFullyQualifiedName());
     }
 }

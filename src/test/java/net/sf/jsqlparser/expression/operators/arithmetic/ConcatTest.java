@@ -34,6 +34,7 @@ class ConcatTest {
         Assertions.assertEquals("NULL", expression.toString());
     }
 
+    @Test
     void addTest() {
         Expression expression = Addition.add(new LongValue(1), new LongValue(2), new LongValue(3));
         Assertions.assertInstanceOf(Addition.class, expression);
@@ -48,11 +49,12 @@ class ConcatTest {
         Assertions.assertEquals("NULL", expression.toString());
     }
 
+    @Test
     void multiplyTest() {
         Expression expression =
                 Multiplication.multiply(new LongValue(1), new LongValue(2), new LongValue(3));
-        Assertions.assertInstanceOf(Addition.class, expression);
-        Assertions.assertEquals("1 + 2 + 3", expression.toString());
+        Assertions.assertInstanceOf(Multiplication.class, expression);
+        Assertions.assertEquals("1 * 2 * 3", expression.toString());
 
         expression = Multiplication.multiply(new LongValue(1));
         Assertions.assertInstanceOf(LongValue.class, expression);
