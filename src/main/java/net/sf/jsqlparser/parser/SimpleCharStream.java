@@ -51,6 +51,9 @@ public class SimpleCharStream {
     // line, column and absolute position of each match begun since the last positionSpecialTokens()
     private int[] matchBegins = new int[24];
     private int matchBeginCount = 0;
+    // signals the end of input to the token manager, which discards it; created once per stream
+    // because filling in the stack trace of the deep lookahead recursion dominates short inputs
+    private java.io.IOException endOfInput;
     int bufsize;
     int available;
     int tokenBegin;
@@ -200,7 +203,10 @@ public class SimpleCharStream {
         try {
             if ((i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
                 inputStream.close();
-                throw new java.io.IOException();
+                if (endOfInput == null) {
+                    endOfInput = new java.io.IOException();
+                }
+                throw endOfInput;
             } else {
                 maxNextCharInd += i;
             }
