@@ -2457,6 +2457,9 @@ public class TablesNamesFinder<Void>
         }
         for (Join join : joins) {
             join.getFromItem().accept(this, context);
+            if (join.getSimilarity() != null) {
+                join.getSimilarity().accept(this, context);
+            }
             for (Expression expression : join.getOnExpressions()) {
                 expression.accept(this, context);
             }

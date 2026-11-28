@@ -71,6 +71,9 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
         if (joins != null) {
             for (Join join : joins) {
                 join.getFromItem().accept(this, context);
+                if (join.getSimilarity() != null) {
+                    join.getSimilarity().accept(expressionVisitor, context);
+                }
                 if (join.getUsingColumns() != null) {
                     for (Column column : join.getUsingColumns()) {
                         column.accept(expressionVisitor, context);

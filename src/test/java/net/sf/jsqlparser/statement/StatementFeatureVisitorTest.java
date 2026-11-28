@@ -769,7 +769,9 @@ class StatementFeatureVisitorTest {
                 "FROM t |> WINDOW sum(pg_read_file('x')) OVER () AS w",
                 "SELECT * FROM (FROM t |> WHERE length(pg_read_file('x')) > 0)",
                 "SELECT a FROM t LATERAL VIEW explode(pg_read_file('x')) v AS c",
-                "SELECT a FROM t LATERAL VIEW OUTER explode(pg_read_file('x')) v AS c"})
+                "SELECT a FROM t LATERAL VIEW OUTER explode(pg_read_file('x')) v AS c",
+                "SELECT a FROM t JOIN u APPROX NEAREST 2 BY SIMILARITY pg_read_file('x')",
+                "SELECT a FROM (t JOIN u APPROX NEAREST 2 BY SIMILARITY pg_read_file('x'))"})
         void functionIsChecked(String sql) throws JSQLParserException {
             StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
             assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");

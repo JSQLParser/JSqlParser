@@ -426,6 +426,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         }
 
         validateOptionalFromItem(join.getFromItem());
+        validateOptionalExpression(join.getSimilarity());
         for (Expression onExpression : join.getOnExpressions()) {
             validateOptionalExpression(onExpression);
         }

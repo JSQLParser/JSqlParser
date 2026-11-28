@@ -1211,6 +1211,16 @@ public class TablesNamesFinderTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
+            "SELECT a FROM t JOIN u APPROX NEAREST 2 BY SIMILARITY (SELECT max(pw) FROM secrets)",
+            "SELECT a FROM (t JOIN u APPROX NEAREST 2 BY SIMILARITY (SELECT max(pw) FROM secrets))",
+            "UPDATE t SET a = 1 FROM s JOIN u APPROX NEAREST 2 BY SIMILARITY (SELECT max(pw) FROM secrets)",
+            "DELETE FROM t USING s JOIN u APPROX NEAREST 2 BY SIMILARITY (SELECT max(pw) FROM secrets)"})
+    void testSubqueryInJoinSimilarityIsFound(String sqlStr) throws JSQLParserException {
+        assertThat(TablesNamesFinder.findTables(sqlStr)).contains("secrets");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
             "DECLARE @x INT = (SELECT max(pw) FROM secrets)",
             "DECLARE @x INT = 1, @y VARCHAR(10) = (SELECT max(pw) FROM secrets)"})
     void testSubqueryInDeclareIsFound(String sqlStr) throws JSQLParserException {
