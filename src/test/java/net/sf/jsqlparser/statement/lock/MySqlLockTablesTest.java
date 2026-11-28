@@ -321,17 +321,13 @@ class MySqlLockTablesTest {
                 + "INSERT INTO `t` VALUES (1,'a'),(2,'b');\n"
                 + "/*!40000 ALTER TABLE `t` ENABLE KEYS */;\n"
                 + "UNLOCK TABLES;\n";
-        // only the MySQL dialect runs the /*!40000 ... */ statements of a server of version 8.4
-        assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Alter", "Insert", "Alter",
-                "UnlockStatement"), dumpStatements(script, MYSQL));
-        for (Consumer<CCJSqlParser> dialect : List.of(NO_DIALECT)) {
-            assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Insert",
-                    "UnlockStatement"), dumpStatements(script, dialect));
+        // MySQL and MariaDB run the /*!40000 ... */ statements; without a dialect they are comments
+        for (Consumer<CCJSqlParser> dialect : List.of(MYSQL, MARIADB)) {
+            assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Alter", "Insert",
+                    "Alter", "UnlockStatement"), dumpStatements(script, dialect));
         }
-        for (Consumer<CCJSqlParser> dialect : List.of(MARIADB)) {
-            assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Alter", "Insert", "Alter",
-                    "UnlockStatement"), dumpStatements(script, dialect));
-        }
+        assertEquals(List.of("Drop", "CreateTable", "LockStatement", "Insert", "UnlockStatement"),
+                dumpStatements(script, NO_DIALECT));
     }
 
     private static List<String> dumpStatements(String script, Consumer<CCJSqlParser> dialect)
